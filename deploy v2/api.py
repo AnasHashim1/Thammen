@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -472,3 +473,10 @@ async def evaluate_with_details(req: EvaluateDetailsRequest):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/")
+async def serve_frontend():
+    return FileResponse("index.html")
+
+@app.get("/logo.png")
+async def serve_logo():
+    return FileResponse("logo.png", media_type="image/png")
