@@ -1,0 +1,1376 @@
+#!/usr/bin/env python3
+"""
+qatar_gis.py v2 — Generic Qatari property classifier and GIS wrapper.
+
+Replaces v1's compound-centric logic with a typed asset taxonomy.
+Classifies any property into one of 10 categories, then applies
+type-appropriate extent-detection and reporting.
+
+Asset taxonomy:
+    TOWER             — high-rise residential/commercial (800-5000 m²)
+    APARTMENT_BUILDING — low/mid-rise (400-2000 m²)
+    COMPOUND_LARGE    — residential compound, 50K+ m²
+    COMPOUND_SMALL    — residential compound, 10K-50K m²
+    STANDALONE_VILLA  — single villa lot (300-1500 m²)
+    PALACE            — luxury single estate (3K-15K m²)
+    RAW_LAND          — vacant parcel of any size
+    COMMERCIAL        — mall/office/mixed-use
+    INDUSTRIAL        — warehouse/factory in industrial zones
+    AGRICULTURAL      — farm (مزرعة)
+    UNKNOWN           — when classification confidence is too low
+
+Endpoints (unchanged from v1):
+  - https://services.gisqatar.org.qa/server/rest/services/Vector/QARS_Search/MapServer/0
+  - https://services.gisqatar.org.qa/server/rest/services/Vector/CadastrePlots/MapServer/0
+  - https://services.gisqatar.org.qa/server/rest/services/Imagery/...
+  - https://services.gisqatar.org.qa/server/rest/services/Utilities/Geometry/GeometryServer
+
+CLI:
+    python3 qatar_gis.py classify <zone> <street> <building>     # classify only
+    python3 qatar_gis.py find <zone> <street> <building>         # raw lookup
+    python3 qatar_gis.py plot <pin>                              # plot info
+    python3 qatar_gis.py extent <pin>                            # detect full extent
+    python3 qatar_gis.py report <zone> <street> <building>       # full end-to-end
+    python3 qatar_gis.py imagery <pin> --years 1995,2003,...
+"""
+
+import argparse
+import json
+import math
+import sys
+import urllib.parse
+import urllib.request
+from dataclasses import dataclass, field, asdict
+from enum import Enum
+from pathlib import Path
+from typing import Optional
+
+
+# ============================================================
+# 1. CONSTANTS
+# ============================================================
+
+GIS_BASE = "https://services.gisqatar.org.qa/server/rest/services"
+
+ENDPOINTS = {
+    'qars': f'{GIS_BASE}/Vector/QARS_Search/MapServer/0/query',
+    'cadastre': f'{GIS_BASE}/Vector/CadastrePlots/MapServer/0/query',
+    'districts': f'{GIS_BASE}/Vector/Districts/MapServer/0/query',
+    'geometry': f'{GIS_BASE}/Utilities/Geometry/GeometryServer/project',
+}
+
+IMAGERY_SERVICES = {
+    1995: 'QatarOrtho_1995',
+    2003: 'QatarSatelitte_2003',
+    2004: 'QatarOrtho_2004',
+    2010: 'QatarSatelitte_2010',
+    2012: 'QatarSatelitte_2012',
+    2017: 'QatarSatelitte_2017',
+    2019: 'QatarSatelitte_2019',
+    2021: 'QatarSatelitte_2021',
+    2024: 'QatarSatelitte2024',
+}
+
+_SERVICE_INFO_CACHE = {}
+
+TILE_SIZE = 512
+DEFAULT_TARGET_RES = 0.265
+
+# Asset-type classification thresholds (m²)
+# These are STARTING POINTS based on Qatar market norms; classifier
+# combines them with shape, PD_NO, and zone evidence.
+TYPICAL_AREAS = {
+    'TINY':              (0,       300),    # too small for any real asset
+    'STANDALONE_VILLA':  (300,     1500),
+    'APARTMENT_BUILDING':(400,     2000),
+    'TOWER':             (800,     5000),
+    'PALACE':            (3000,    15000),
+    'COMPOUND_SMALL':    (10000,   50000),
+    'COMPOUND_LARGE':    (50000,   500000),
+    'AGRICULTURAL':      (10000,   500000),
+}
+
+
+# ============================================================
+# 2. DATA CLASSES
+# ============================================================
+
+class AssetType(str, Enum):
+    TOWER = 'tower'
+    APARTMENT_BUILDING = 'apartment_building'
+    COMPOUND_LARGE = 'compound_large'
+    COMPOUND_SMALL = 'compound_small'
+    STANDALONE_VILLA = 'standalone_villa'
+    PALACE = 'palace'
+    RAW_LAND = 'raw_land'
+    COMMERCIAL = 'commercial'
+    INDUSTRIAL = 'industrial'
+    AGRICULTURAL = 'agricultural'
+    UNKNOWN = 'unknown'
+
+
+@dataclass
+class PropertyLocation:
+    zone: int
+    street: int
+    building: int
+    pin: int
+    qars: str
+    plot_no_old: Optional[int]
+    lon: float
+    lat: float
+    electricity_no: Optional[int]
+    water_no: Optional[int]
+    qtel_id: Optional[int]
+    building_subtype: Optional[int]
+
+
+@dataclass
+class PolygonShape:
+    """Geometric analysis of a parcel polygon."""
+    vertex_count: int                  # outer ring vertices (last == first)
+    is_rectangular: bool               # 4 vertices, mostly orthogonal
+    is_irregular: bool                 # >5 vertices OR non-convex
+    convex_hull_ratio: float           # actual area / convex hull area; 1.0 = convex
+    aspect_ratio: float                # min/max bounding box dimension; near 1.0 = square-ish
+    irregularity_warning: Optional[str]
+
+
+@dataclass
+class PlotInfo:
+    pin: int
+    pdarea: float
+    pd_no: str
+    cdst_key: int
+    ref_number: Optional[str]
+    polygon_4326: list
+    polygon_2932: list
+    bbox_4326: tuple
+    is_unsubdivided: bool
+    shape: PolygonShape
+
+
+@dataclass
+class AssetClassification:
+    """Result of classifying a single plot into an asset type."""
+    asset_type: AssetType
+    confidence: str                    # 'high' | 'medium' | 'low'
+    reasons: list                      # evidence for this classification
+    flags: list                        # warnings or caveats
+    alternative_types: list            # other plausible classifications, ranked
+
+
+@dataclass
+class AssetExtent:
+    """The full physical extent of an asset (may span multiple parcels)."""
+    primary_pin: int
+    included_pins: list
+    plots: list                        # list of PlotInfo
+    total_area_m2: float
+    combined_bbox_4326: tuple
+    asset_type: AssetType
+    detection_confidence: str          # 'high' | 'medium' | 'low'
+    notes: list
+
+
+@dataclass
+class ConstructionYearEstimate:
+    earliest_built_year: int
+    latest_vacant_year: int
+    confidence_years: int
+    summary: str
+
+
+@dataclass
+class DistrictInfo:
+    """Administrative district from GIS — the sole source of truth for area name."""
+    dist_no: int
+    aname: str                         # Arabic name (GIS authoritative)
+    ename: str                         # English name
+    code: Optional[str]
+
+
+@dataclass
+class PropertyReport:
+    location: PropertyLocation
+    plot: PlotInfo
+    classification: AssetClassification
+    extent: AssetExtent
+    construction: Optional[ConstructionYearEstimate]
+    district: Optional[DistrictInfo]
+    flags: list
+
+
+# ============================================================
+# 3. HELPERS
+# ============================================================
+
+def _http_get_json(url, params=None, timeout=30):
+    if params:
+        url = f'{url}?{urllib.parse.urlencode(params)}'
+    req = urllib.request.Request(url, headers={'User-Agent': 'qatar-gis-py/2.0'})
+    last_err = None
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                raw = resp.read()
+            if raw[:3] == b'\xef\xbb\xbf':
+                raw = raw[3:]
+            return json.loads(raw.decode('utf-8'))
+        except urllib.error.URLError as e:
+            last_err = e
+            # Handle SSL cert "not yet valid" (system clock skew) with fallback
+            if 'CERTIFICATE_VERIFY_FAILED' in str(e):
+                import ssl
+                ctx = ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+                try:
+                    with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
+                        raw = resp.read()
+                    if raw[:3] == b'\xef\xbb\xbf':
+                        raw = raw[3:]
+                    return json.loads(raw.decode('utf-8'))
+                except Exception as e2:
+                    last_err = e2
+            import time
+            time.sleep(2 ** attempt)
+    raise last_err
+
+
+def _project_2932_to_4326(points_2932):
+    if not points_2932:
+        return []
+    geoms = {
+        'geometryType': 'esriGeometryPoint',
+        'geometries': [{'x': p[0], 'y': p[1]} for p in points_2932],
+    }
+    res = _http_get_json(ENDPOINTS['geometry'], {
+        'inSR': 2932, 'outSR': 4326, 'f': 'json',
+        'geometries': json.dumps(geoms),
+    })
+    return [[g['x'], g['y']] for g in res.get('geometries', [])]
+
+
+def _project_4326_to_2932(points_4326):
+    if not points_4326:
+        return []
+    geoms = {
+        'geometryType': 'esriGeometryPoint',
+        'geometries': [{'x': p[0], 'y': p[1]} for p in points_4326],
+    }
+    res = _http_get_json(ENDPOINTS['geometry'], {
+        'inSR': 4326, 'outSR': 2932, 'f': 'json',
+        'geometries': json.dumps(geoms),
+    })
+    return [[g['x'], g['y']] for g in res.get('geometries', [])]
+
+
+def _service_info(year):
+    if year in _SERVICE_INFO_CACHE:
+        return _SERVICE_INFO_CACHE[year]
+    slug = IMAGERY_SERVICES.get(year)
+    if not slug:
+        raise ValueError(f'No imagery service for year {year}')
+    url = f'{GIS_BASE}/Imagery/{slug}/MapServer'
+    data = _http_get_json(url, {'f': 'json'})
+    ti = data.get('tileInfo', {})
+    origin = ti.get('origin', {})
+    info = {
+        'origin_x': origin.get('x'),
+        'origin_y': origin.get('y'),
+        'tile_size': ti.get('rows', TILE_SIZE),
+        'lods': {lod['level']: lod['resolution'] for lod in ti.get('lods', [])},
+    }
+    _SERVICE_INFO_CACHE[year] = info
+    return info
+
+
+def _best_lod(year, target_res=DEFAULT_TARGET_RES):
+    info = _service_info(year)
+    lods = info['lods']
+    if not lods:
+        return None
+    eligible = [(lvl, res) for lvl, res in lods.items() if res <= target_res * 1.5]
+    if not eligible:
+        return max(lods, key=lambda l: -lods[l])
+    return min(eligible, key=lambda lr: abs(lr[1] - target_res))[0]
+
+
+def _tile_coord(x_2932, y_2932, lod, year):
+    info = _service_info(year)
+    res = info['lods'].get(lod)
+    if res is None:
+        raise ValueError(f'LOD {lod} not available for year {year}')
+    ox, oy = info['origin_x'], info['origin_y']
+    tile_size_meters = res * TILE_SIZE
+    col = int((x_2932 - ox) / tile_size_meters)
+    row = int((oy - y_2932) / tile_size_meters)
+    return col, row
+
+
+# ============================================================
+# 4. SHAPE ANALYSIS
+# ============================================================
+
+def _polygon_area_2932(points):
+    """Shoelace formula. Returns absolute area in m²."""
+    n = len(points)
+    if n < 3:
+        return 0.0
+    area = 0.0
+    for i in range(n):
+        x1, y1 = points[i]
+        x2, y2 = points[(i + 1) % n]
+        area += x1 * y2 - x2 * y1
+    return abs(area) / 2.0
+
+
+def _convex_hull_2932(points):
+    """Andrew's monotone chain convex hull. Returns hull points in CCW order."""
+    pts = sorted(set((round(p[0], 2), round(p[1], 2)) for p in points))
+    if len(pts) < 3:
+        return list(pts)
+
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+    lower = []
+    for p in pts:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+            lower.pop()
+        lower.append(p)
+
+    upper = []
+    for p in reversed(pts):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+            upper.pop()
+        upper.append(p)
+
+    return lower[:-1] + upper[:-1]
+
+
+def _bbox_aspect_ratio(points):
+    """Min/max ratio of bounding box. Near 1.0 = square-ish."""
+    if not points:
+        return 1.0
+    xs = [p[0] for p in points]
+    ys = [p[1] for p in points]
+    w = max(xs) - min(xs)
+    h = max(ys) - min(ys)
+    if w == 0 or h == 0:
+        return 0.0
+    return min(w, h) / max(w, h)
+
+
+def analyze_polygon_shape(polygon_2932) -> PolygonShape:
+    """
+    Analyze geometric properties of a parcel polygon.
+
+    Returns a PolygonShape with vertex count, rectangularity check,
+    convex-hull ratio (1.0 = perfectly convex), and aspect ratio.
+
+    The irregularity warning is the most actionable output: it tells
+    a user to look harder for missing neighbor parcels.
+    """
+    # ESRI returns polygons with last point == first; strip duplicate
+    pts = polygon_2932[:-1] if len(polygon_2932) > 3 and polygon_2932[0] == polygon_2932[-1] else list(polygon_2932)
+    n = len(pts)
+
+    # Hull-ratio check: hull_area should equal polygon_area for a convex shape
+    poly_area = _polygon_area_2932(pts)
+    hull_pts = _convex_hull_2932(pts)
+    hull_area = _polygon_area_2932(hull_pts)
+    hull_ratio = poly_area / hull_area if hull_area > 0 else 1.0
+    aspect = _bbox_aspect_ratio(pts)
+
+    is_rectangular = (n == 4) and (hull_ratio > 0.97)
+    is_irregular = (n > 5) or (hull_ratio < 0.92)
+
+    warning = None
+    if is_irregular:
+        if hull_ratio < 0.85:
+            warning = (
+                f'Polygon is significantly non-convex (hull ratio={hull_ratio:.2f}). '
+                f'Qatar plots are typically rectangular. The seed may have an adjacent '
+                f'parcel that completes its shape — search for small neighboring plots.'
+            )
+        elif n > 5:
+            warning = (
+                f'Polygon has {n} vertices (rectangular plots have 4). '
+                f'This suggests either a complex original boundary or a missing '
+                f'neighbor parcel. Visual verification recommended.'
+            )
+
+    return PolygonShape(
+        vertex_count=n,
+        is_rectangular=is_rectangular,
+        is_irregular=is_irregular,
+        convex_hull_ratio=round(hull_ratio, 3),
+        aspect_ratio=round(aspect, 3),
+        irregularity_warning=warning,
+    )
+
+
+# ============================================================
+# 5. ASSET CLASSIFIER
+# ============================================================
+
+def classify_asset(plot: PlotInfo, location_metadata=None) -> AssetClassification:
+    """
+    Classify a plot into an AssetType based on geometric and metadata
+    evidence. Imagery is NOT used here (it would require fetching tiles
+    and analyzing them — handled separately).
+
+    The output includes alternative classifications when confidence is low,
+    so downstream code can ask the user to confirm.
+
+    location_metadata: optional dict with extra context (zone classification,
+    neighbor parcels, etc.). Currently unused — placeholder for v3.
+    """
+    area = plot.pdarea
+    pd_no = plot.pd_no
+    is_unsubdivided = plot.is_unsubdivided
+    shape = plot.shape
+
+    reasons = []
+    flags = []
+    alternatives = []
+
+    # === Branch 1: very small plot ===
+    if area < 200:
+        return AssetClassification(
+            asset_type=AssetType.UNKNOWN,
+            confidence='low',
+            reasons=[f'Area {area:,.0f} m² is too small for any standard asset type'],
+            flags=['May be a survey artifact or right-of-way strip'],
+            alternative_types=[],
+        )
+
+    # === Branch 2: huge unsubdivided plot ===
+    # Strong signal for COMPOUND_LARGE
+    if area >= 50000 and is_unsubdivided:
+        reasons.append(f'PDAREA {area:,.0f} m² ≥ 50,000 and PD_NO=0 (unsubdivided)')
+        reasons.append('Strong signature of a large compound parcel')
+        if shape.irregularity_warning:
+            flags.append(shape.irregularity_warning)
+            flags.append('Compound may extend further — check adjacent small parcels')
+        return AssetClassification(
+            asset_type=AssetType.COMPOUND_LARGE,
+            confidence='high',
+            reasons=reasons, flags=flags,
+            alternative_types=[AssetType.AGRICULTURAL] if area > 100000 else [],
+        )
+
+    # === Branch 3: medium unsubdivided plot ===
+    if 10000 <= area < 50000 and is_unsubdivided:
+        reasons.append(f'PDAREA {area:,.0f} m² in 10K-50K range and PD_NO=0')
+        reasons.append('Likely a small-medium compound')
+        if shape.irregularity_warning:
+            flags.append(shape.irregularity_warning)
+        return AssetClassification(
+            asset_type=AssetType.COMPOUND_SMALL,
+            confidence='medium',
+            reasons=reasons, flags=flags,
+            alternative_types=[AssetType.AGRICULTURAL, AssetType.PALACE],
+        )
+
+    # === Branch 4: large subdivided plot — likely already-fragmented ===
+    if area >= 10000 and not is_unsubdivided:
+        reasons.append(f'PDAREA {area:,.0f} m² but PD_NO={pd_no} (subdivided)')
+        reasons.append(
+            'A subdivided large parcel typically means commercial, industrial, '
+            'or a previously-divided estate'
+        )
+        flags.append(
+            'Large subdivided plots can be ambiguous. Imagery and zoning lookup recommended.'
+        )
+        return AssetClassification(
+            asset_type=AssetType.COMMERCIAL,
+            confidence='low',
+            reasons=reasons, flags=flags,
+            alternative_types=[AssetType.AGRICULTURAL, AssetType.INDUSTRIAL, AssetType.PALACE],
+        )
+
+    # === Branch 5: palace size (3K-10K, single subdivided plot) ===
+    if 3000 <= area < 10000:
+        reasons.append(f'PDAREA {area:,.0f} m² in palace/large-villa range')
+        if shape.is_rectangular:
+            reasons.append('Rectangular shape — typical of single estate')
+        return AssetClassification(
+            asset_type=AssetType.PALACE,
+            confidence='medium',
+            reasons=reasons, flags=flags,
+            alternative_types=[AssetType.COMMERCIAL, AssetType.COMPOUND_SMALL],
+        )
+
+    # === Branch 6: standalone villa (300-1500 m²) — checked FIRST in this range ===
+    # Most plots in this size are villas, especially when subdivided + rectangular
+    if 300 <= area < 1500:
+        reasons.append(f'PDAREA {area:,.0f} m² in standard villa range')
+        confidence = 'medium'
+        if shape.is_rectangular:
+            reasons.append('Rectangular shape — typical of villa lot')
+            confidence = 'high'
+        if not is_unsubdivided:
+            reasons.append(f'PD_NO={pd_no} indicates a properly subdivided lot')
+            confidence = 'high'
+        return AssetClassification(
+            asset_type=AssetType.STANDALONE_VILLA,
+            confidence=confidence,
+            reasons=reasons, flags=flags,
+            alternative_types=[AssetType.APARTMENT_BUILDING] if area > 800 else [],
+        )
+
+    # === Branch 7: tower / large apartment (1500-3000 m²) ===
+    if 1500 <= area < 3000:
+        reasons.append(f'PDAREA {area:,.0f} m² in tower/large-apartment range')
+        reasons.append(
+            'Cannot distinguish tower from apartment building from PDAREA alone — '
+            'imagery shadow analysis or zone metadata required'
+        )
+        flags.append('Use estimate_construction_year + imagery to verify building type')
+        return AssetClassification(
+            asset_type=AssetType.TOWER,
+            confidence='low',
+            reasons=reasons, flags=flags,
+            alternative_types=[AssetType.APARTMENT_BUILDING, AssetType.COMMERCIAL, AssetType.PALACE],
+        )
+
+    # === Fallback ===
+    return AssetClassification(
+        asset_type=AssetType.UNKNOWN,
+        confidence='low',
+        reasons=[f'Area {area:,.0f} m² + PD_NO={pd_no} does not match any standard pattern'],
+        flags=['Manual classification needed; check imagery and zoning'],
+        alternative_types=[],
+    )
+
+
+# ============================================================
+# 6. EXTENT DETECTION (type-aware)
+# ============================================================
+
+# Configuration per asset type. Controls how detect_extent expands the search.
+EXTENT_CONFIG = {
+    AssetType.COMPOUND_LARGE: {
+        'expand': True,
+        'search_radius_m': 500,
+        'min_neighbor_area_m2': 200,
+    },
+    AssetType.COMPOUND_SMALL: {
+        'expand': True,
+        'search_radius_m': 300,
+        'min_neighbor_area_m2': 200,
+    },
+    AssetType.PALACE: {
+        # Palaces sometimes have a smaller adjacent parcel (servant quarters)
+        'expand': True,
+        'search_radius_m': 100,
+        'min_neighbor_area_m2': 200,
+        'pd_no_must_match': True,
+    },
+    AssetType.TOWER: {
+        # Some towers have an adjacent dedicated parking parcel
+        'expand': True,
+        'search_radius_m': 50,
+        'min_neighbor_area_m2': 500,
+    },
+    # Single-parcel asset types — no expansion
+    AssetType.STANDALONE_VILLA: {'expand': False},
+    AssetType.APARTMENT_BUILDING: {'expand': False},
+    AssetType.RAW_LAND: {'expand': False},
+    AssetType.COMMERCIAL: {'expand': False},
+    AssetType.INDUSTRIAL: {'expand': False},
+    AssetType.AGRICULTURAL: {'expand': False},
+    AssetType.UNKNOWN: {'expand': False},
+}
+
+
+# ============================================================
+# 7. MAIN CLASS
+# ============================================================
+
+class QatarGIS:
+    """Public API for Qatar GIS lookups, classification, and imagery."""
+
+    def __init__(self, cache_dir=None, verbose=False):
+        if cache_dir is None:
+            cache_dir = Path.home() / '.qatar_gis_cache'
+        self.cache_dir = Path(cache_dir)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.verbose = verbose
+
+    def _log(self, msg):
+        if self.verbose:
+            print(f'[gis] {msg}', file=sys.stderr)
+
+    # ----- Tier 1: lookups -----
+
+    def find_property(self, zone, street, building) -> Optional[PropertyLocation]:
+        params = {
+            'where': f'ZONE_NO={zone} AND STREET_NO={street} AND BUILDING_NO={building}',
+            'outFields': '*', 'f': 'json',
+            'returnGeometry': 'true', 'outSR': 4326,
+        }
+        res = _http_get_json(ENDPOINTS['qars'], params)
+        feats = res.get('features', [])
+        if not feats:
+            return None
+        f = feats[0]
+        a = f['attributes']
+        g = f['geometry']
+        return PropertyLocation(
+            zone=zone, street=street, building=building,
+            pin=a.get('PIN'),
+            qars=a.get('QARS') or '',
+            plot_no_old=a.get('PLOT_NO_OLD'),
+            lon=g['x'], lat=g['y'],
+            electricity_no=a.get('ELECTRICITY_NO'),
+            water_no=a.get('WATER_NO'),
+            qtel_id=a.get('QTEL_ID'),
+            building_subtype=a.get('BUILDING_NO_SUBTYPE'),
+        )
+
+    def get_plot(self, pin) -> Optional[PlotInfo]:
+        """Fetch full plot info including shape analysis."""
+        params = {
+            'where': f'PIN={pin}',
+            'outFields': '*', 'f': 'json',
+            'returnGeometry': 'true', 'outSR': 4326,
+        }
+        res = _http_get_json(ENDPOINTS['cadastre'], params)
+        feats = res.get('features', [])
+        if not feats:
+            return None
+        f = feats[0]
+        a = f['attributes']
+        g = f['geometry']
+        ring_4326 = g['rings'][0] if g.get('rings') else []
+        ring_2932 = _project_4326_to_2932(ring_4326) if ring_4326 else []
+        lons = [p[0] for p in ring_4326]
+        lats = [p[1] for p in ring_4326]
+        bbox = (min(lons), min(lats), max(lons), max(lats)) if lons else (0, 0, 0, 0)
+        pd_no = str(a.get('PD_NO') or '0')
+        shape = analyze_polygon_shape(ring_2932) if ring_2932 else PolygonShape(0, False, False, 1.0, 1.0, None)
+        return PlotInfo(
+            pin=pin,
+            pdarea=float(a.get('PDAREA') or 0),
+            pd_no=pd_no,
+            cdst_key=a.get('CDST_KEY'),
+            ref_number=a.get('REF_NUMBER'),
+            polygon_4326=ring_4326,
+            polygon_2932=ring_2932,
+            bbox_4326=bbox,
+            is_unsubdivided=(pd_no == '0'),
+            shape=shape,
+        )
+
+    def get_plots_in_bbox(self, min_lon, min_lat, max_lon, max_lat,
+                          min_area=0) -> list:
+        params = {
+            'geometry': f'{min_lon},{min_lat},{max_lon},{max_lat}',
+            'geometryType': 'esriGeometryEnvelope',
+            'inSR': 4326, 'spatialRel': 'esriSpatialRelIntersects',
+            'outFields': 'PIN,PDAREA,PD_NO,CDST_KEY',
+            'returnGeometry': 'false', 'f': 'json',
+        }
+        res = _http_get_json(ENDPOINTS['cadastre'], params)
+        results = []
+        for f in res.get('features', []):
+            a = f['attributes']
+            area = float(a.get('PDAREA') or 0)
+            if area >= min_area:
+                results.append({
+                    'pin': a.get('PIN'),
+                    'pdarea': area,
+                    'pd_no': str(a.get('PD_NO') or '0'),
+                    'cdst_key': a.get('CDST_KEY'),
+                })
+        return results
+
+    # ----- Tier 1.5: districts -----
+
+    def get_district_at_point(self, lon, lat) -> Optional[DistrictInfo]:
+        """
+        Find the administrative district containing a given GPS point.
+
+        Uses Vector/Districts/MapServer/0 — the official GIS boundary layer.
+        This is the sole authority for area name. Market and MoJ may use
+        different names colloquially, but GIS is what we follow.
+        """
+        geom = json.dumps({
+            'x': lon, 'y': lat,
+            'spatialReference': {'wkid': 4326},
+        })
+        params = {
+            'geometry': geom,
+            'geometryType': 'esriGeometryPoint',
+            'inSR': 4326,
+            'spatialRel': 'esriSpatialRelIntersects',
+            'outFields': 'DIST_NO,ANAME,ENAME,CODE',
+            'returnGeometry': 'false',
+            'f': 'json',
+        }
+        res = _http_get_json(ENDPOINTS['districts'], params)
+        feats = res.get('features', [])
+        if not feats:
+            return None
+        a = feats[0]['attributes']
+        return DistrictInfo(
+            dist_no=a.get('DIST_NO'),
+            aname=a.get('ANAME') or '',
+            ename=a.get('ENAME') or '',
+            code=a.get('CODE'),
+        )
+
+    def get_district(self, zone, street, building) -> Optional[DistrictInfo]:
+        """Convenience: address → district lookup."""
+        loc = self.find_property(zone, street, building)
+        if loc is None:
+            return None
+        return self.get_district_at_point(loc.lon, loc.lat)
+
+    # ----- Tier 2: classify and detect extent -----
+
+    def classify(self, pin) -> Optional[AssetClassification]:
+        """Classify a plot by PIN. Convenience wrapper."""
+        plot = self.get_plot(pin)
+        if plot is None:
+            return None
+        return classify_asset(plot)
+
+    def detect_extent(self, seed_pin, force_type=None) -> Optional[AssetExtent]:
+        """
+        Find the full extent of an asset starting from one PIN.
+
+        First classifies the asset, then applies type-specific expansion logic.
+        For single-parcel asset types (villa, raw land), returns just the seed.
+        For multi-parcel types (compound, palace), expands via boundary-sharing.
+
+        force_type: override classification with a specific AssetType (advanced use).
+        """
+        seed = self.get_plot(seed_pin)
+        if seed is None:
+            return None
+
+        classification = classify_asset(seed)
+        asset_type = force_type or classification.asset_type
+        config = EXTENT_CONFIG.get(asset_type, {'expand': False})
+        notes = list(classification.reasons)
+        notes.extend(classification.flags)
+
+        # Single-parcel types: return seed only
+        if not config.get('expand'):
+            notes.append(f'Asset type {asset_type.value} is single-parcel — no expansion needed')
+            return AssetExtent(
+                primary_pin=seed_pin,
+                included_pins=[seed_pin],
+                plots=[seed],
+                total_area_m2=seed.pdarea,
+                combined_bbox_4326=seed.bbox_4326,
+                asset_type=asset_type,
+                detection_confidence=classification.confidence,
+                notes=notes,
+            )
+
+        # Multi-parcel types: expand via boundary search
+        return self._expand_extent(seed, asset_type, config, notes, classification.confidence)
+
+    def _expand_extent(self, seed, asset_type, config, notes, base_confidence):
+        """BFS expansion, type-aware filtering."""
+        radius_m = config.get('search_radius_m', 300)
+        min_neighbor_area = config.get('min_neighbor_area_m2', 200)
+
+        # OPTIMIZATION: Use TWO search boxes:
+        # - Wide box for LARGE candidates (≥10K m²) — these are clearly compound sections
+        # - Tight box (just around seed bbox + small buffer) for SMALL candidates
+        #   (compound annexes are physically attached, no need to search far)
+        # This dramatically cuts the candidate pool for small plots.
+
+        min_lon, min_lat, max_lon, max_lat = seed.bbox_4326
+
+        # Wide search for large plots
+        delta_wide = (radius_m / 111000) * 1.4
+        wide_box = (min_lon - delta_wide, min_lat - delta_wide,
+                    max_lon + delta_wide, max_lat + delta_wide)
+        wide_candidates = self.get_plots_in_bbox(*wide_box, min_area=10000)
+
+        # Tight search for small plots — only ~50m around seed bbox
+        delta_tight = (50 / 111000) * 1.4
+        tight_box = (min_lon - delta_tight, min_lat - delta_tight,
+                     max_lon + delta_tight, max_lat + delta_tight)
+        tight_candidates = self.get_plots_in_bbox(*tight_box, min_area=min_neighbor_area)
+        # Keep only the small ones (large ones already covered by wide search)
+        tight_small = [c for c in tight_candidates if c['pdarea'] < 10000]
+
+        # Merge, deduplicate
+        seen_pins = set()
+        candidates = []
+        for c in wide_candidates + tight_small:
+            if c['pin'] not in seen_pins:
+                seen_pins.add(c['pin'])
+                candidates.append(c)
+
+        notes.append(
+            f'Stage 1: {len(wide_candidates)} large + {len(tight_small)} small candidates'
+        )
+
+        # Type-aware metadata filter
+        eligible = [
+            c for c in candidates
+            if c['pin'] != seed.pin and self._should_include(seed, c, asset_type, config)
+        ]
+        notes.append(f'Stage 2: {len(eligible)} eligible by area/PD_NO rules')
+
+        # BFS expand: fetch polygons and test boundary sharing
+        included = {seed.pin: seed}
+        frontier = [seed]
+        cached_polygons = {}
+
+        while frontier:
+            current = frontier.pop()
+            for cand in eligible:
+                if cand['pin'] in included:
+                    continue
+                if cand['pin'] not in cached_polygons:
+                    cand_plot = self.get_plot(cand['pin'])
+                    cached_polygons[cand['pin']] = cand_plot
+                else:
+                    cand_plot = cached_polygons[cand['pin']]
+                if cand_plot is None:
+                    continue
+                if self._polygons_share_boundary(current.polygon_2932, cand_plot.polygon_2932):
+                    included[cand['pin']] = cand_plot
+                    frontier.append(cand_plot)
+
+        notes.append(f'Stage 3: {len(included)} parcels share boundary')
+
+        plots_list = list(included.values())
+        all_lons = []
+        all_lats = []
+        for p in plots_list:
+            all_lons.extend([pt[0] for pt in p.polygon_4326])
+            all_lats.extend([pt[1] for pt in p.polygon_4326])
+        combined_bbox = (min(all_lons), min(all_lats), max(all_lons), max(all_lats))
+        total_area = sum(p.pdarea for p in plots_list)
+
+        if len(included) == 1:
+            confidence = 'medium'
+            notes.append(
+                f'Only seed parcel detected. Asset is likely single-parcel; '
+                f'visual verification recommended.'
+            )
+        else:
+            confidence = 'medium'
+            notes.append(
+                f'Detected {len(included)} parcels totaling {total_area:,.0f} m². '
+                'Visual verification via render_overlay() strongly recommended.'
+            )
+
+        if seed.shape.irregularity_warning:
+            notes.append(f'Seed shape warning: {seed.shape.irregularity_warning}')
+
+        return AssetExtent(
+            primary_pin=seed.pin,
+            included_pins=sorted(included.keys()),
+            plots=plots_list,
+            total_area_m2=total_area,
+            combined_bbox_4326=combined_bbox,
+            asset_type=asset_type,
+            detection_confidence=confidence,
+            notes=notes,
+        )
+
+    @staticmethod
+    def _should_include(seed, cand, asset_type, config):
+        """
+        Type-aware inclusion rule.
+
+        For compounds, the realistic compound-annex range is 2K-10K m².
+        Plots smaller than 2K m² are nearly always individual residential
+        lots (even when PD_NO=0, which is common for villa lots in Qatar).
+        """
+        cand_area = cand['pdarea']
+        cand_unsubdivided = (cand['pd_no'] == '0')
+
+        if asset_type in (AssetType.COMPOUND_LARGE, AssetType.COMPOUND_SMALL):
+            # 1. Large parcel (≥10K m²) — likely compound section
+            if cand_area >= 10000:
+                return True
+            # 2. Medium unsubdivided parcel (2K-10K m²) — likely compound annex
+            if cand_unsubdivided and 2000 <= cand_area < 10000:
+                return True
+            # Exclude: small subdivided lots, far parcels, individual villa lots
+            return False
+
+        if asset_type == AssetType.PALACE:
+            if config.get('pd_no_must_match') and cand_unsubdivided != seed.is_unsubdivided:
+                return False
+            if 0.1 <= cand_area / seed.pdarea <= 2.0:
+                return True
+            return False
+
+        if asset_type == AssetType.TOWER:
+            if cand_area >= 500 and cand_unsubdivided:
+                return True
+            return False
+
+        return False
+
+    @staticmethod
+    def _polygons_share_boundary(poly_a_2932, poly_b_2932, threshold_m=10):
+        if not poly_a_2932 or not poly_b_2932:
+            return False
+        nearby = 0
+        for a in poly_a_2932:
+            for b in poly_b_2932:
+                if math.hypot(a[0] - b[0], a[1] - b[1]) <= threshold_m:
+                    nearby += 1
+                    if nearby >= 2:
+                        return True
+        return False
+
+    # ----- Tier 3: imagery -----
+
+    def get_tile(self, year, x_2932, y_2932, target_res=DEFAULT_TARGET_RES):
+        if year not in IMAGERY_SERVICES:
+            raise ValueError(f'No imagery service for year {year}')
+        lod = _best_lod(year, target_res)
+        if lod is None:
+            raise ValueError(f'No LOD available for year {year}')
+        col, row = _tile_coord(x_2932, y_2932, lod, year)
+        cache_key = f'{IMAGERY_SERVICES[year]}_{lod}_{row}_{col}.jpg'
+        cache_path = self.cache_dir / cache_key
+        if cache_path.exists():
+            return cache_path.read_bytes(), lod
+        url = f'{GIS_BASE}/Imagery/{IMAGERY_SERVICES[year]}/MapServer/tile/{lod}/{row}/{col}'
+        req = urllib.request.Request(url, headers={'User-Agent': 'qatar-gis-py/2.0'})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            raw = resp.read()
+        cache_path.write_bytes(raw)
+        return raw, lod
+
+    def render_overlay(self, polygons_4326, output_path,
+                       year=2024, target_res=DEFAULT_TARGET_RES, padding_tiles=2,
+                       polygon_colors=None, point=None):
+        try:
+            from PIL import Image, ImageDraw
+            from io import BytesIO
+        except ImportError:
+            raise RuntimeError('render_overlay requires Pillow: pip install Pillow')
+
+        lod = _best_lod(year, target_res)
+        if lod is None:
+            raise ValueError(f'No LOD available for year {year}')
+        info = _service_info(year)
+        ox, oy = info['origin_x'], info['origin_y']
+        res_actual = info['lods'][lod]
+
+        all_pts_2932 = []
+        polys_2932 = []
+        for poly in polygons_4326:
+            poly_2932 = _project_4326_to_2932(poly)
+            polys_2932.append(poly_2932)
+            all_pts_2932.extend(poly_2932)
+
+        point_2932 = None
+        if point:
+            point_2932 = _project_4326_to_2932([[point[0], point[1]]])[0]
+            all_pts_2932.append(point_2932)
+
+        if not all_pts_2932:
+            raise ValueError('No geometry to render')
+
+        cols = [_tile_coord(p[0], p[1], lod, year)[0] for p in all_pts_2932]
+        rows = [_tile_coord(p[0], p[1], lod, year)[1] for p in all_pts_2932]
+        col_min, col_max = min(cols) - padding_tiles, max(cols) + padding_tiles
+        row_min, row_max = min(rows) - padding_tiles, max(rows) + padding_tiles
+        n_cols = col_max - col_min + 1
+        n_rows = row_max - row_min + 1
+
+        mosaic = Image.new('RGB', (n_cols * TILE_SIZE, n_rows * TILE_SIZE), (200, 200, 200))
+        tile_size_meters = res_actual * TILE_SIZE
+
+        for ic, c in enumerate(range(col_min, col_max + 1)):
+            for ir, r in enumerate(range(row_min, row_max + 1)):
+                tcx = ox + (c + 0.5) * tile_size_meters
+                tcy = oy - (r + 0.5) * tile_size_meters
+                try:
+                    raw, _ = self.get_tile(year, tcx, tcy, target_res)
+                    tile = Image.open(BytesIO(raw))
+                    mosaic.paste(tile, (ic * TILE_SIZE, ir * TILE_SIZE))
+                except Exception as e:
+                    self._log(f'tile fetch fail at ({c},{r}): {e}')
+
+        mosaic_tlx = ox + col_min * TILE_SIZE * res_actual
+        mosaic_tly = oy - row_min * TILE_SIZE * res_actual
+
+        def to_pixel(x, y):
+            return ((x - mosaic_tlx) / res_actual, (mosaic_tly - y) / res_actual)
+
+        draw = ImageDraw.Draw(mosaic, 'RGBA')
+        default_colors = [
+            (255, 255, 0), (255, 128, 0), (0, 255, 128),
+            (255, 0, 255), (255, 0, 0), (0, 200, 255),
+            (128, 255, 0), (255, 128, 192),
+        ]
+        for i, poly in enumerate(polys_2932):
+            color = polygon_colors[i] if (polygon_colors and i < len(polygon_colors)) else default_colors[i % len(default_colors)]
+            poly_px = [to_pixel(p[0], p[1]) for p in poly]
+            draw.polygon(poly_px, outline=color + (255,), fill=color + (40,), width=4)
+
+        if point_2932:
+            px, py = to_pixel(point_2932[0], point_2932[1])
+            draw.ellipse([px-12, py-12, px+12, py+12],
+                         fill=(255, 0, 0, 255), outline=(255, 255, 255, 255), width=3)
+
+        margin = 80
+        if all_pts_2932:
+            xs_px, ys_px = zip(*[to_pixel(p[0], p[1]) for p in all_pts_2932])
+            x0 = max(0, int(min(xs_px) - margin))
+            y0 = max(0, int(min(ys_px) - margin))
+            x1 = min(mosaic.width, int(max(xs_px) + margin))
+            y1 = min(mosaic.height, int(max(ys_px) + margin))
+            mosaic = mosaic.crop((x0, y0, x1, y1))
+
+        output_path = Path(output_path)
+        mosaic.save(output_path, quality=88)
+        return output_path
+
+    def estimate_construction_year(self, polygon_4326, threshold_stddev=22,
+                                   years=None) -> Optional[ConstructionYearEstimate]:
+        try:
+            from PIL import Image, ImageDraw
+            import numpy as np
+            from io import BytesIO
+        except ImportError:
+            raise RuntimeError('estimate_construction_year requires Pillow + numpy')
+
+        if years is None:
+            years = sorted(IMAGERY_SERVICES.keys())
+        else:
+            years = sorted(years)
+
+        poly_2932 = _project_4326_to_2932(polygon_4326)
+        if not poly_2932:
+            return None
+
+        results = []
+        for year in years:
+            try:
+                xs = [p[0] for p in poly_2932]
+                ys = [p[1] for p in poly_2932]
+                target_res = 0.529
+                lod_for_year = _best_lod(year, target_res)
+                if lod_for_year is None:
+                    continue
+                info = _service_info(year)
+                ox, oy = info['origin_x'], info['origin_y']
+                res_actual = info['lods'][lod_for_year]
+                col_min, _ = _tile_coord(min(xs), max(ys), lod_for_year, year)
+                col_max, _ = _tile_coord(max(xs), min(ys), lod_for_year, year)
+                _, row_min = _tile_coord(max(xs), max(ys), lod_for_year, year)
+                _, row_max = _tile_coord(min(xs), min(ys), lod_for_year, year)
+                col_min -= 1; col_max += 1; row_min -= 1; row_max += 1
+                n_cols = col_max - col_min + 1
+                n_rows = row_max - row_min + 1
+                if n_cols * n_rows > 36:
+                    continue
+
+                mosaic = Image.new('RGB', (n_cols * TILE_SIZE, n_rows * TILE_SIZE), (128, 128, 128))
+                ok_count = 0
+                tile_size_meters = res_actual * TILE_SIZE
+                for ic, c in enumerate(range(col_min, col_max + 1)):
+                    for ir, r in enumerate(range(row_min, row_max + 1)):
+                        tx = ox + (c + 0.5) * tile_size_meters
+                        ty = oy - (r + 0.5) * tile_size_meters
+                        try:
+                            raw, _ = self.get_tile(year, tx, ty, target_res)
+                            tile = Image.open(BytesIO(raw))
+                            mosaic.paste(tile, (ic * TILE_SIZE, ir * TILE_SIZE))
+                            ok_count += 1
+                        except Exception:
+                            pass
+                if ok_count == 0:
+                    continue
+
+                mosaic_tlx = ox + col_min * TILE_SIZE * res_actual
+                mosaic_tly = oy - row_min * TILE_SIZE * res_actual
+                def to_px(x, y):
+                    return ((x - mosaic_tlx) / res_actual, (mosaic_tly - y) / res_actual)
+                poly_px = [to_px(p[0], p[1]) for p in poly_2932]
+                mask = Image.new('L', mosaic.size, 0)
+                ImageDraw.Draw(mask).polygon(poly_px, fill=255)
+                arr = np.asarray(mosaic.convert('L'))
+                mask_arr = np.asarray(mask)
+                inside = arr[mask_arr > 0]
+                if len(inside) < 100:
+                    continue
+                stddev = float(inside.std())
+                results.append({'year': year, 'stddev': stddev, 'built': stddev >= threshold_stddev})
+            except Exception as e:
+                self._log(f'year {year} failed: {e}')
+
+        if not results:
+            return None
+
+        results.sort(key=lambda r: r['year'])
+        first_built = next((r['year'] for r in results if r['built']), None)
+        if first_built is None:
+            return ConstructionYearEstimate(
+                earliest_built_year=results[-1]['year'] + 5,
+                latest_vacant_year=results[-1]['year'],
+                confidence_years=99,
+                summary='Polygon appears vacant in all sampled years',
+            )
+        latest_vacant = max(
+            (r['year'] for r in results if not r['built'] and r['year'] < first_built),
+            default=None,
+        )
+        if latest_vacant is None:
+            return ConstructionYearEstimate(
+                earliest_built_year=first_built,
+                latest_vacant_year=first_built - 5,
+                confidence_years=5,
+                summary=f'Built in or before {first_built} (no vacant baseline available)',
+            )
+        gap = first_built - latest_vacant
+        return ConstructionYearEstimate(
+            earliest_built_year=first_built,
+            latest_vacant_year=latest_vacant,
+            confidence_years=gap,
+            summary=f'Built between {latest_vacant} and {first_built} (±{gap} years)',
+        )
+
+    # ----- Tier 4: composite -----
+
+    def full_property_lookup(self, zone, street, building,
+                             include_imagery=True, output_dir=None) -> Optional[PropertyReport]:
+        loc = self.find_property(zone, street, building)
+        if loc is None:
+            return None
+
+        # District is cheap and useful even if cadastre/plot lookup fails.
+        try:
+            district = self.get_district_at_point(loc.lon, loc.lat)
+        except Exception:
+            district = None
+
+        plot = self.get_plot(loc.pin)
+        if plot is None:
+            return PropertyReport(
+                location=loc, plot=None,
+                classification=AssetClassification(
+                    AssetType.UNKNOWN, 'low', ['No cadastre plot found'], [], []
+                ),
+                extent=None, construction=None,
+                district=district,
+                flags=['Property location found, but no cadastre plot. May be unsurveyed.'],
+            )
+
+        classification = classify_asset(plot)
+        extent = self.detect_extent(plot.pin)
+
+        construction = None
+        if include_imagery and classification.asset_type not in (AssetType.RAW_LAND, AssetType.UNKNOWN):
+            try:
+                construction = self.estimate_construction_year(plot.polygon_4326)
+            except Exception as e:
+                pass
+
+        flags = list(classification.flags)
+        if plot.shape.irregularity_warning:
+            flags.append(plot.shape.irregularity_warning)
+        if plot.is_unsubdivided and classification.asset_type == AssetType.STANDALONE_VILLA:
+            flags.append(
+                'PD_NO=0 detected on what looks like a villa-sized plot. '
+                'May actually be part of a larger compound — check neighbors.'
+            )
+
+        if include_imagery and output_dir and extent:
+            output_dir = Path(output_dir)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            try:
+                polys = [p.polygon_4326 for p in extent.plots]
+                out = output_dir / f'{classification.asset_type.value}_{loc.pin}.jpg'
+                self.render_overlay(polys, out, point=(loc.lon, loc.lat, f'B{building}'))
+                flags.append(f'Imagery saved to: {out}')
+            except Exception as e:
+                flags.append(f'Imagery render failed: {e}')
+
+        return PropertyReport(
+            location=loc, plot=plot,
+            classification=classification, extent=extent,
+            construction=construction, district=district, flags=flags,
+        )
+
+
+# ============================================================
+# 8. CLI
+# ============================================================
+
+def _print_classification(c):
+    print(f'  Asset type:   {c.asset_type.value.upper()}')
+    print(f'  Confidence:   {c.confidence}')
+    print(f'  Reasons:')
+    for r in c.reasons:
+        print(f'    • {r}')
+    if c.flags:
+        print(f'  Flags:')
+        for f in c.flags:
+            print(f'    ⚠ {f}')
+    if c.alternative_types:
+        alts = ', '.join(t.value for t in c.alternative_types)
+        print(f'  Alternative classifications: {alts}')
+
+
+def _print_extent(e):
+    print(f'  Asset type:           {e.asset_type.value}')
+    print(f'  Detection confidence: {e.detection_confidence}')
+    print(f'  Parcels ({len(e.included_pins)}): {e.included_pins}')
+    print(f'  Total area:           {e.total_area_m2:,.0f} m²')
+    if e.notes:
+        print(f'  Notes:')
+        for n in e.notes:
+            print(f'    • {n}')
+
+
+def _print_property_report(report):
+    if report is None:
+        print('Property not found.')
+        return
+    loc = report.location
+    plot = report.plot
+    print(f'\n{"="*70}')
+    print(f'  {loc.zone} / {loc.street} / {loc.building}    PIN {loc.pin}')
+    print(f'{"="*70}')
+    print(f'  GPS:        {loc.lat:.6f}° N, {loc.lon:.6f}° E')
+    print(f'  QARS code:  {loc.qars}')
+    if plot:
+        print(f'  Plot area:  {plot.pdarea:,.0f} m² (PD_NO={plot.pd_no})')
+        print(f'  Shape:      {plot.shape.vertex_count} vertices, '
+              f'{"rect" if plot.shape.is_rectangular else "irreg" if plot.shape.is_irregular else "ok"}, '
+              f'hull-ratio {plot.shape.convex_hull_ratio}')
+    if getattr(report, 'district', None):
+        d = report.district
+        print(f'  District:   {d.aname} ({d.ename}, DIST_NO={d.dist_no})')
+
+    print(f'\n[Classification]')
+    _print_classification(report.classification)
+    if report.extent:
+        print(f'\n[Asset Extent]')
+        _print_extent(report.extent)
+    if report.construction:
+        print(f'\n[Construction]')
+        print(f'  {report.construction.summary}')
+    if report.flags:
+        print(f'\n[Flags]')
+        for f in report.flags:
+            print(f'  ⚠ {f}')
+
+
+def main():
+    p = argparse.ArgumentParser(description='Qatar GIS classifier and lookup CLI')
+    sub = p.add_subparsers(dest='cmd', required=True)
+
+    sp = sub.add_parser('find', help='Find property by address')
+    sp.add_argument('zone', type=int); sp.add_argument('street', type=int); sp.add_argument('building', type=int)
+
+    sp = sub.add_parser('plot', help='Get plot info by PIN')
+    sp.add_argument('pin', type=int)
+
+    sp = sub.add_parser('classify', help='Classify a plot by PIN')
+    sp.add_argument('pin', type=int)
+
+    sp = sub.add_parser('extent', help='Detect full asset extent by PIN')
+    sp.add_argument('pin', type=int)
+    sp.add_argument('--force-type', help='Override classification (e.g. compound_large)')
+
+    sp = sub.add_parser('report', help='Full end-to-end report by address')
+    sp.add_argument('zone', type=int); sp.add_argument('street', type=int); sp.add_argument('building', type=int)
+    sp.add_argument('--no-imagery', action='store_true')
+    sp.add_argument('--output-dir', type=Path, default=Path('./gis_output'))
+
+    sp = sub.add_parser('imagery', help='Render imagery for a PIN')
+    sp.add_argument('pin', type=int)
+    sp.add_argument('--years', default='1995,2003,2010,2024')
+    sp.add_argument('--output-dir', type=Path, default=Path('./gis_output'))
+
+    sp = sub.add_parser('construction', help='Estimate construction year for a PIN')
+    sp.add_argument('pin', type=int)
+
+    sp = sub.add_parser('district', help='Resolve administrative district for an address')
+    sp.add_argument('zone', type=int); sp.add_argument('street', type=int); sp.add_argument('building', type=int)
+
+    p.add_argument('--verbose', '-v', action='store_true')
+    args = p.parse_args()
+    gis = QatarGIS(verbose=args.verbose)
+
+    if args.cmd == 'find':
+        loc = gis.find_property(args.zone, args.street, args.building)
+        print(json.dumps(asdict(loc) if loc else None, ensure_ascii=False, indent=2))
+
+    elif args.cmd == 'plot':
+        plot = gis.get_plot(args.pin)
+        if plot is None:
+            print('Not found.'); sys.exit(1)
+        d = asdict(plot)
+        d['polygon_4326'] = f'<{len(d["polygon_4326"])} points>'
+        d['polygon_2932'] = f'<{len(d["polygon_2932"])} points>'
+        print(json.dumps(d, ensure_ascii=False, indent=2, default=str))
+
+    elif args.cmd == 'classify':
+        plot = gis.get_plot(args.pin)
+        if plot is None:
+            print('Not found.'); sys.exit(1)
+        c = classify_asset(plot)
+        print(f'PIN {args.pin}: area={plot.pdarea:,.0f} m², PD_NO={plot.pd_no}')
+        _print_classification(c)
+
+    elif args.cmd == 'extent':
+        force_type = AssetType(args.force_type) if args.force_type else None
+        ext = gis.detect_extent(args.pin, force_type=force_type)
+        if ext is None:
+            print('Not found.'); sys.exit(1)
+        _print_extent(ext)
+
+    elif args.cmd == 'report':
+        report = gis.full_property_lookup(
+            args.zone, args.street, args.building,
+            include_imagery=not args.no_imagery,
+            output_dir=args.output_dir if not args.no_imagery else None,
+        )
+        _print_property_report(report)
+
+    elif args.cmd == 'imagery':
+        plot = gis.get_plot(args.pin)
+        if plot is None:
+            print('Not found.'); sys.exit(1)
+        years = [int(y.strip()) for y in args.years.split(',')]
+        args.output_dir.mkdir(parents=True, exist_ok=True)
+        for y in years:
+            out = args.output_dir / f'pin_{args.pin}_{y}.jpg'
+            gis.render_overlay([plot.polygon_4326], out, year=y)
+            print(f'  Saved: {out}')
+
+    elif args.cmd == 'construction':
+        plot = gis.get_plot(args.pin)
+        if plot is None:
+            print('Not found.'); sys.exit(1)
+        est = gis.estimate_construction_year(plot.polygon_4326)
+        if est:
+            print(json.dumps(asdict(est), indent=2))
+        else:
+            print('Could not estimate.')
+
+    elif args.cmd == 'district':
+        d = gis.get_district(args.zone, args.street, args.building)
+        if d is None:
+            print('No district found at this address.'); sys.exit(1)
+        print(f'GIS district:    {d.aname} ({d.ename})')
+        print(f'DIST_NO:         {d.dist_no}')
+
+
+if __name__ == '__main__':
+    main()
