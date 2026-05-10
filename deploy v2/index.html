@@ -11,27 +11,18 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl;-webkit-font-smoothing:antialiased}
 .screen{display:none;min-height:100vh}.screen.active{display:block}
-
-/* ── HOME ── */
 .home{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;text-align:center;position:relative;overflow:hidden}
 .home.active{display:flex}
 .home::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 25% 30%,rgba(18,52,77,.03) 0%,transparent 50%),radial-gradient(circle at 75% 70%,rgba(166,130,82,.04) 0%,transparent 50%);pointer-events:none}
-.hlogo{position:relative;z-index:1;margin-bottom:24px}
-.hlogo img{max-width:340px;width:90%;height:auto}
+.hlogo{position:relative;z-index:1;margin-bottom:24px}.hlogo img{max-width:340px;width:90%;height:auto}
 .htag{font-size:1.1rem;color:var(--muted);margin-bottom:44px;font-weight:400;line-height:1.8;max-width:420px;position:relative;z-index:1}
 .hbtn{background:var(--bronze);color:#fff;border:none;padding:18px 64px;font-family:'Tajawal';font-weight:700;font-size:1.2rem;border-radius:50px;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(166,130,82,.3);position:relative;z-index:1}
 .hbtn:hover{background:var(--bronze-h);box-shadow:0 6px 25px rgba(166,130,82,.4);transform:translateY(-2px)}
 .hfoot{position:absolute;bottom:24px;font-size:.8rem;color:var(--light)}
-
-/* ── TOP BAR ── */
 .tbar{display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
-.tbar-logo{display:flex;align-items:center;gap:8px;cursor:pointer}
-.tbar-logo img{height:36px;width:auto}
+.tbar-logo{display:flex;align-items:center;gap:8px;cursor:pointer}.tbar-logo img{height:36px;width:auto}
 .tbar-st{font-size:.75rem;color:var(--light)}
-.sdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px;vertical-align:middle}
-.sdot.on{background:var(--ok)}.sdot.off{background:var(--bad)}
-
-/* ── FORM ── */
+.sdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px;vertical-align:middle}.sdot.on{background:var(--ok)}.sdot.off{background:var(--bad)}
 .fwrap{max-width:580px;margin:28px auto;padding:0 20px}
 .ftitle{font-weight:700;font-size:1.05rem;color:var(--primary);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .fcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:16px;box-shadow:var(--sh)}
@@ -43,15 +34,11 @@ input,select{background:var(--bg);border:1.5px solid var(--border);border-radius
 input:focus,select:focus{outline:none;border-color:var(--bronze);box-shadow:0 0 0 3px var(--bronze-g)}
 input::placeholder{color:#C4C0B8}
 select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:14px center;padding-left:32px}
-
-/* ── AUDIENCE ── */
 .aud-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .aud-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;font-family:'Tajawal';font-size:.85rem;font-weight:500;color:var(--muted)}
 .aud-btn:hover{border-color:var(--bronze);color:var(--bronze)}
 .aud-btn.sel{border-color:var(--bronze);background:var(--bronze-g);color:var(--primary);font-weight:700}
 .aud-btn .aud-icon{font-size:1.4rem;display:block;margin-bottom:4px}
-
-/* ── TOGGLE ── */
 .trow{display:flex;align-items:center;justify-content:space-between;padding:14px 0 0;border-top:1px solid var(--border);margin-top:16px;cursor:pointer;user-select:none}
 .trow span{font-size:.88rem;color:var(--muted);font-weight:500}
 .tsw{width:42px;height:22px;background:var(--border);border-radius:11px;position:relative;transition:background .3s;cursor:pointer;flex-shrink:0}
@@ -60,15 +47,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .tsw.on::after{transform:translateX(-20px)}
 .det{max-height:0;overflow:hidden;transition:max-height .4s,opacity .3s;opacity:0}
 .det.open{max-height:600px;opacity:1;padding-top:16px}
-
-/* ── SUBMIT ── */
 .sbtn{width:100%;padding:15px;font-family:'Tajawal';font-weight:800;font-size:1.15rem;border:none;border-radius:var(--r);cursor:pointer;background:var(--bronze);color:#fff;box-shadow:0 4px 15px rgba(166,130,82,.3);transition:all .3s;margin-top:6px}
 .sbtn:hover{background:var(--bronze-h);transform:translateY(-1px)}
 .sbtn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
 .sp{display:inline-block;width:16px;height:16px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-left:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── RESULTS ── */
 .rwrap{max-width:580px;margin:24px auto;padding:0 20px}
 .bbtn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 18px;border-radius:8px;font-family:'Tajawal';font-size:.88rem;cursor:pointer;margin-bottom:16px;transition:all .2s}
 .bbtn:hover{border-color:var(--bronze);color:var(--bronze)}
@@ -86,38 +69,34 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .ri .rv.hl{color:var(--bronze)}
 .rn{background:var(--alt);border-radius:8px;padding:14px;font-size:.86rem;color:var(--muted);line-height:1.8;margin-bottom:10px}
 .rn strong{color:var(--text)}
-.unc-banner{border-radius:8px;padding:14px;font-size:.85rem;line-height:1.7;margin-bottom:14px}
-.unc-low{background:var(--ok-bg);color:var(--ok);border:1px solid rgba(4,120,87,.2)}
-.unc-mod{background:rgba(59,130,246,.08);color:#1d4ed8;border:1px solid rgba(59,130,246,.2)}
-.unc-high{background:var(--warn-bg);color:var(--warn);border:1px solid rgba(180,83,9,.2)}
-.unc-crit{background:var(--bad-bg);color:var(--bad);border:1px solid rgba(185,28,28,.2)}
-.blend-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:8px 0 4px}
-.blend-seg{transition:width .5s}
-.blend-labels{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-bottom:12px}
+.trend-row{display:flex;gap:6px;align-items:flex-end;height:60px;margin:12px 0 4px}
+.trend-col{flex:1;background:var(--primary);border-radius:3px 3px 0 0;min-width:0;position:relative;transition:height .5s}
+.trend-col:hover{opacity:.8}
+.trend-labels{display:flex;gap:6px;font-size:.65rem;color:var(--light);text-align:center}
+.trend-labels span{flex:1}
+.loc-tag{display:inline-block;padding:4px 10px;border-radius:6px;font-size:.78rem;margin:3px;font-weight:500}
+.loc-pos{background:var(--ok-bg);color:var(--ok)}
+.loc-neg{background:var(--bad-bg);color:var(--bad)}
+.loc-neu{background:var(--alt);color:var(--muted)}
 .err{background:var(--bad-bg);border:1px solid rgba(185,28,28,.2);border-radius:var(--r);padding:18px;color:var(--bad);text-align:center;animation:fu .5s}
 .disc{text-align:center;padding:20px;font-size:.76rem;color:var(--light);line-height:1.8;border-top:1px solid var(--border);margin-top:28px}
-
 @media(max-width:600px){.hlogo img{max-width:260px}.fr3,.fr2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}.fcard{padding:18px}.aud-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 
-<!-- ═══ SCREEN 1: HOME ═══ -->
+<!-- HOME -->
 <div class="home screen active" id="homeScreen">
-  <div class="hlogo">
-    <img src="logo.png" alt="ثمّن — تقييم العقارات في قطر">
-  </div>
-  <div class="htag">تقييم عقارك في قطر<br>مبني على بيانات وزارة العدل الفعلية<br>تقييم ثلاثي: مقارنة + تكلفة + عائد</div>
+  <div class="hlogo"><img src="logo.png" alt="ثمّن"></div>
+  <div class="htag">تقييم عقارك في قطر<br>مبني على بيانات وزارة العدل الفعلية</div>
   <button class="hbtn" onclick="go('form')">ابدأ التقييم</button>
-  <div class="hfoot">بيانات حقيقية — تُحدَّث أسبوعياً من سجلات البيع والإيجار الرسمية</div>
+  <div class="hfoot">بيانات حقيقية — تُحدَّث أسبوعياً من سجلات البيع الرسمية</div>
 </div>
 
-<!-- ═══ SCREEN 2: FORM ═══ -->
+<!-- FORM -->
 <div class="screen" id="formScreen">
   <div class="tbar">
-    <div class="tbar-logo" onclick="go('home')">
-      <img src="logo.png" alt="ثمّن">
-    </div>
+    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
     <div class="tbar-st" id="statusBar">جاري الاتصال...</div>
   </div>
   <div class="fwrap">
@@ -129,7 +108,6 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         <div class="fg"><label>رقم المبنى</label><input type="number" id="building" placeholder="مثال: 25" min="1"></div>
       </div>
     </div>
-
     <div class="ftitle">👤 نوع التقرير</div>
     <div class="fcard">
       <div class="aud-row">
@@ -139,7 +117,6 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         <div class="aud-btn" onclick="selAud(this,'valuer')"><span class="aud-icon">📋</span>مثمّن</div>
       </div>
     </div>
-
     <div class="fcard">
       <div class="trow" style="margin-top:0;padding-top:0;border-top:none" onclick="tog()">
         <span>إضافة تفاصيل العقار (اختياري)</span>
@@ -160,18 +137,15 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         </div>
       </div>
     </div>
-
     <button class="sbtn" id="sBtn" onclick="run()">ثمّن</button>
     <div id="fRes"></div>
   </div>
 </div>
 
-<!-- ═══ SCREEN 3: RESULTS ═══ -->
+<!-- RESULTS -->
 <div class="screen" id="resultsScreen">
   <div class="tbar">
-    <div class="tbar-logo" onclick="go('home')">
-      <img src="logo.png" alt="ثمّن">
-    </div>
+    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
     <div class="tbar-st">نتيجة التقييم</div>
   </div>
   <div class="rwrap">
@@ -181,7 +155,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       هذا التقييم إرشادي ومبني على بيانات وزارة العدل المتاحة للعموم.<br>
       لا يُعتبر تثميناً رسمياً ولا يحل محل المثمّن المعتمد.<br>
       ننصح بالاستعانة بمثمّن معتمد للمعاملات فوق ٥ مليون ريال.<br><br>
-      <span style="color:var(--bronze)">ثمّن</span> — بيانات وزارة العدل القطرية — تُحدَّث أسبوعياً
+      <span style="color:var(--bronze)">ثمّن</span> — بيانات وزارة العدل القطرية
     </div>
   </div>
 </div>
@@ -190,19 +164,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 const API='https://thammen-app-123-227a7106a67a.herokuapp.com';
 let dOpen=false,audience='buyer';
 
-function go(n){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(n+'Screen').classList.add('active');
-  window.scrollTo(0,0);
-  if(n==='form')chk();
-}
+const ASSET_AR={'standalone_villa':'فيلا منفردة','raw_land':'أرض فضاء','palace':'قصر','compound_small':'مجمع فلل صغير','compound_large':'مجمع فلل كبير','apartment_building':'عمارة سكنية','tower':'برج سكني','commercial':'تجاري','industrial':'صناعي','agricultural':'مزرعة','unknown':'غير محدد'};
 
-async function chk(){
-  const b=document.getElementById('statusBar');
-  try{const r=await fetch(API+'/api/health');const d=await r.json();
-    if(d.status==='ok')b.innerHTML=d.moj_db?'متصل <span class="sdot on"></span>':'متصل — قاعدة البيانات غير جاهزة <span class="sdot off"></span>';
-  }catch(e){b.innerHTML='غير متصل <span class="sdot off"></span>'}
-}
+function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(n+'Screen').classList.add('active');window.scrollTo(0,0);if(n==='form')chk()}
+
+async function chk(){const b=document.getElementById('statusBar');try{const r=await fetch(API+'/api/health');const d=await r.json();if(d.status==='ok')b.innerHTML=d.moj_db?'متصل <span class="sdot on"></span>':'متصل — قاعدة البيانات غير جاهزة <span class="sdot off"></span>'}catch(e){b.innerHTML='غير متصل <span class="sdot off"></span>'}}
 
 function selAud(el,v){audience=v;document.querySelectorAll('.aud-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel')}
 function tog(){dOpen=!dOpen;document.getElementById('dTog').classList.toggle('on',dOpen);document.getElementById('dSec').classList.toggle('open',dOpen)}
@@ -211,74 +177,90 @@ function fmt(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('ar-QA')
 async function run(){
   const z=document.getElementById('zone').value,s=document.getElementById('street').value,b=document.getElementById('building').value;
   if(!z||!s||!b){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">يرجى إدخال رقم المنطقة والشارع والمبنى</div>';return}
-  const btn=document.getElementById('sBtn');
-  btn.disabled=true;btn.innerHTML='جاري التقييم... <span class="sp"></span>';
-  document.getElementById('fRes').innerHTML='';
+  const btn=document.getElementById('sBtn');btn.disabled=true;btn.innerHTML='جاري التقييم... <span class="sp"></span>';document.getElementById('fRes').innerHTML='';
   try{
-    let bd={zone:+z,street:+s,building:+b,audience:audience};
-    if(dOpen){
-      const f=document.getElementById('floors').value,a=document.getElementById('annexes').value,c=document.getElementById('condition').value,p=document.getElementById('askingPrice').value,ri=document.getElementById('rentalIncome').value,pr=document.getElementById('potentialRental').value;
-      if(f)bd.floors=+f;if(a)bd.annexes=+a;if(c)bd.condition=c;if(p)bd.asking_price=+p;if(ri)bd.rental_income=+ri;if(pr)bd.potential_rental=+pr;
-    }
+    let bd={zone:+z,street:+s,building:+b,audience};
+    if(dOpen){const f=document.getElementById('floors').value,a=document.getElementById('annexes').value,c=document.getElementById('condition').value,p=document.getElementById('askingPrice').value,ri=document.getElementById('rentalIncome').value,pr=document.getElementById('potentialRental').value;
+      if(f)bd.floors=+f;if(a)bd.annexes=+a;if(c)bd.condition=c;if(p)bd.asking_price=+p;if(ri)bd.rental_income=+ri;if(pr)bd.potential_rental=+pr}
     const r=await fetch(API+'/api/evaluate/details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
     if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ: '+r.status)}
-    const d=await r.json();show(d);go('results');
-  }catch(e){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">⚠️ '+(e.message||'حدث خطأ')+'</div>';
+    show(await r.json());go('results');
+  }catch(e){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">⚠️ '+(e.message||'حدث خطأ')+'</div>'
   }finally{btn.disabled=false;btn.innerHTML='ثمّن'}
 }
 
 function show(d){
   const o=document.getElementById('rOut');
-  let bc='rb-w',bt='⚠️ يحتاج فحص';
-  if(d.verdict){const v=d.verdict;
-    if(v.includes('bargain')||v.includes('لقطة')||v.includes('💰')){bc='rb-ok';bt='💰 لقطة'}
-    else if(v.includes('reject')||v.includes('مرفوض')||v.includes('❌')){bc='rb-bad';bt='❌ مرفوض'}
-  }
+  const v=d.valuation||{};
+  const acc=d.accuracy||{};
+
+  // Badge from accuracy
+  let bc='rb-w',bt=acc.label||'⚠️ يحتاج فحص';
+  if(acc.score>=70){bc='rb-ok';bt=acc.label||'💰 ثقة عالية'}
+  else if(acc.score<40){bc='rb-bad';bt=acc.label||'❌ ثقة ضعيفة'}
+
   let h='';
-  if(d.uncertainty){const u=d.uncertainty,lvl=u.level||'moderate',cls={low:'unc-low',moderate:'unc-mod',high:'unc-high',critical:'unc-crit'}[lvl]||'unc-mod',labels={low:'منخفض',moderate:'متوسط',high:'مرتفع',critical:'حرج'};
-    h+=`<div class="unc-banner ${cls}"><strong>مستوى التحفظ: ${labels[lvl]||lvl}</strong><br>${u.banner_ar||u.banner||''}</div>`}
+
+  // ── Main info card ──
   h+='<div class="rc"><div class="rh"><div class="rt">نتيجة التقييم</div><div class="rb '+bc+'">'+bt+'</div></div><div class="rg">';
-  if(d.address||d.qars)h+=ri('العنوان',d.address||d.qars,0,1);
-  if(d.area_name||d.district)h+=ri('المنطقة',d.area_name||d.district);
-  if(d.plot_area||d.land_area)h+=ri('مساحة الأرض',fmt(d.plot_area||d.land_area)+' م²');
-  if(d.asset_type)h+=ri('نوع العقار',d.asset_type);
-  if(d.zoning)h+=ri('التصنيف',d.zoning);
+  if(d.address)h+=ri('العنوان',d.address,0,1);
+  if(d.district)h+=ri('المنطقة',d.district);
+  if(d.plot_area_m2)h+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
+  if(d.asset_type)h+=ri('نوع العقار',ASSET_AR[d.asset_type]||d.asset_type);
+  const pi=d.property_info||{};
+  if(pi.zoning)h+=ri('التصنيف',pi.zoning);
+  if(pi.permitted_height)h+=ri('الارتفاع المسموح',pi.permitted_height);
   h+='</div></div>';
 
-  const bv=d.blended_value||d.estimated_value||d.fair_value;
-  if(bv){
-    h+='<div class="rc"><div class="rt" style="margin-bottom:14px">القيمة التقديرية</div>';
-    h+='<div class="ri full" style="margin-bottom:14px"><div class="rl">القيمة المرجّحة</div><div class="rv hl" style="font-size:1.4rem">'+fmt(bv)+' ر.ق</div></div>';
-    const w=d.weights||{};const comp=w.comparison||0,cost=w.cost||0,inc=w.income||0;
-    if(comp||cost||inc){
-      h+='<div class="blend-bar">';
-      if(comp)h+=`<div class="blend-seg" style="width:${comp*100}%;background:var(--primary)"></div>`;
-      if(cost)h+=`<div class="blend-seg" style="width:${cost*100}%;background:var(--bronze)"></div>`;
-      if(inc)h+=`<div class="blend-seg" style="width:${inc*100}%;background:var(--maroon)"></div>`;
-      h+='</div><div class="blend-labels">';
-      if(comp)h+=`<span style="color:var(--primary)">مقارنة ${Math.round(comp*100)}%</span>`;
-      if(cost)h+=`<span style="color:var(--bronze)">تكلفة ${Math.round(cost*100)}%</span>`;
-      if(inc)h+=`<span style="color:var(--maroon)">عائد ${Math.round(inc*100)}%</span>`;
-      h+='</div>'}
-    h+='<div class="rg">';
-    if(d.moj_value||d.moj_median)h+=ri('قيمة المقارنة (وزارة العدل)',fmt(d.moj_value||d.moj_median)+' ر.ق',1);
-    if(d.replacement_value||d.building_value)h+=ri('قيمة الإحلال (تكلفة)',fmt(d.replacement_value||d.building_value)+' ر.ق');
-    if(d.income_value)h+=ri('قيمة العائد (إيجار)',fmt(d.income_value)+' ر.ق');
-    if(d.land_value)h+=ri('قيمة الأرض',fmt(d.land_value)+' ر.ق');
-    if(d.moj_n||d.sample_size)h+=ri('عدد المعاملات المرجعية',(d.moj_n||d.sample_size)+' معاملة');
-    if(d.deviation!=null){const p=(d.deviation*100).toFixed(1),c=d.deviation<0?'var(--ok)':'var(--bad)',sg=d.deviation>0?'+':'';
-      h+='<div class="ri"><div class="rl">الانحراف عن المرجع</div><div class="rv" style="color:'+c+'">'+sg+p+'%</div></div>'}
-    h+='</div></div>'}
+  // ── Valuation card ──
+  if(v.amount){
+    h+='<div class="rc"><div class="rt" style="margin-bottom:14px">التقييم</div>';
+    h+='<div class="ri full" style="margin-bottom:10px"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.amount)+' ر.ق</div></div>';
+    if(v.low&&v.high){
+      h+='<div class="rg"><div class="ri"><div class="rl">الحد الأدنى</div><div class="rv">'+fmt(v.low)+' ر.ق</div></div>';
+      h+='<div class="ri"><div class="rl">الحد الأعلى</div><div class="rv">'+fmt(v.high)+' ر.ق</div></div></div>'}
+    if(d.moj_sample_size)h+='<div class="ri" style="margin-bottom:10px"><div class="rl">عدد المعاملات المرجعية</div><div class="rv">'+d.moj_sample_size+' معاملة ('+v.method+')</div></div>';
+    h+='</div>';
+  }
 
-  if(d.brief&&d.brief.sections){d.brief.sections.forEach(sec=>{
-    h+='<div class="rc"><div class="rt" style="margin-bottom:12px">'+(sec.title_ar||sec.title||'')+'</div>';
-    h+='<div class="rn">'+(sec.content_ar||sec.content||'')+'</div></div>'})}
+  // ── Trend card ──
+  const tr=d.trend;
+  if(tr&&tr.years&&tr.years.length>0){
+    h+='<div class="rc"><div class="rt" style="margin-bottom:6px">اتجاه السوق: '+tr.label;
+    if(tr.slope_pct!=null)h+=' ('+tr.slope_pct.toFixed(1)+'%/سنة)';
+    h+='</div>';
+    const maxM=Math.max(...tr.years.map(y=>y.median_m2||0));
+    h+='<div class="trend-row">';
+    tr.years.forEach(y=>{const pct=maxM>0?((y.median_m2||0)/maxM*100):0;
+      h+=`<div class="trend-col" style="height:${Math.max(pct,5)}%" title="${y.year}: ${fmt(y.median_m2)} ر.ق/م² (${y.n} معاملة)"></div>`});
+    h+='</div><div class="trend-labels">';
+    tr.years.forEach(y=>{h+='<span>'+y.year+'</span>'});
+    h+='</div></div>';
+  }
 
-  if(d.notes||d.reasoning){const n=d.notes||d.reasoning;const t=Array.isArray(n)?n.join('<br>'):n;
-    h+='<div class="rc"><div class="rt" style="margin-bottom:12px">ملاحظات</div><div class="rn">'+t+'</div></div>'}
+  // ── Location features ──
+  const lf=d.location_features;
+  if(lf&&lf.length>0){
+    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">مميزات الموقع</div>';
+    lf.forEach(f=>{const cls=f.positive===true?'loc-pos':f.positive===false?'loc-neg':'loc-neu';
+      const icon=f.positive===true?'✓':f.positive===false?'✗':'—';
+      h+='<span class="loc-tag '+cls+'">'+icon+' '+f.label+'</span>'});
+    h+='</div>';
+  }
 
-  if(!d.area_name&&!d.district&&!bv&&!d.moj_median&&!d.reference_price)
-    h+='<div class="rc"><div class="rn"><strong>البيانات:</strong><br><pre style="direction:ltr;text-align:left;white-space:pre-wrap;font-size:.8rem;color:var(--muted)">'+JSON.stringify(d,null,2)+'</pre></div></div>';
+  // ── Known unknowns ──
+  const rt=d.reasoning_trace;
+  if(rt&&rt.known_unknowns&&rt.known_unknowns.length>0){
+    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">ما لا نعرفه (يحتاج فحص ميداني)</div><div class="rn">';
+    rt.known_unknowns.forEach(u=>{h+='• '+u+'<br>'});
+    h+='</div></div>';
+  }
+
+  // ── Disclaimer ──
+  if(d.disclaimer){
+    h+='<div class="rc" style="border-color:var(--warn-bg)"><div class="rn" style="font-size:.8rem">'+d.disclaimer+'</div></div>';
+  }
+
   o.innerHTML=h;
 }
 
