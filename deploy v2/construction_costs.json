@@ -1,0 +1,165 @@
+{
+  "calibration_date": "2026-05-08",
+  "window_months": 36,
+  "bua_plot_ratio_assumption": 0.6,
+  "exclusions": {
+    "negative_building": 770,
+    "low_ratio": 360,
+    "no_land_ref": 22
+  },
+  "municipalities": {
+    "الريان": {
+      "cost_per_plot_m2": {
+        "n": 786,
+        "p25": 958,
+        "median": 1667,
+        "p75": 2922,
+        "min": 317,
+        "max": 21564
+      },
+      "cost_per_bua_m2_estimated": {
+        "n": 786,
+        "p25": 1597,
+        "median": 2778,
+        "p75": 4870,
+        "min": 528,
+        "max": 35940
+      },
+      "n_transactions": 786
+    },
+    "الدوحة": {
+      "cost_per_plot_m2": {
+        "n": 666,
+        "p25": 1241,
+        "median": 1908,
+        "p75": 3506,
+        "min": 384,
+        "max": 24294
+      },
+      "cost_per_bua_m2_estimated": {
+        "n": 666,
+        "p25": 2069,
+        "median": 3180,
+        "p75": 5843,
+        "min": 640,
+        "max": 40490
+      },
+      "n_transactions": 666
+    },
+    "الظعاين": {
+      "cost_per_plot_m2": {
+        "n": 448,
+        "p25": 1605,
+        "median": 2600,
+        "p75": 3499,
+        "min": 382,
+        "max": 11327
+      },
+      "cost_per_bua_m2_estimated": {
+        "n": 448,
+        "p25": 2675,
+        "median": 4333,
+        "p75": 5832,
+        "min": 636,
+        "max": 18878
+      },
+      "n_transactions": 448
+    },
+    "أم صلال": {
+      "cost_per_plot_m2": {
+        "n": 409,
+        "p25": 1227,
+        "median": 2084,
+        "p75": 2849,
+        "min": 322,
+        "max": 19995
+      },
+      "cost_per_bua_m2_estimated": {
+        "n": 409,
+        "p25": 2045,
+        "median": 3473,
+        "p75": 4748,
+        "min": 537,
+        "max": 33325
+      },
+      "n_transactions": 409
+    },
+    "الوكرة": {
+      "cost_per_plot_m2": {
+        "n": 283,
+        "p25": 1241,
+        "median": 1879,
+        "p75": 3058,
+        "min": 287,
+        "max": 9523
+      },
+      "cost_per_bua_m2_estimated": {
+        "n": 283,
+        "p25": 2068,
+        "median": 3132,
+        "p75": 5097,
+        "min": 478,
+        "max": 15872
+      },
+      "n_transactions": 283
+    },
+    "الخور والذخيرة": {
+      "cost_per_plot_m2": {
+        "n": 192,
+        "p25": 680,
+        "median": 1224,
+        "p75": 1736,
+        "min": 318,
+        "max": 7349
+      },
+      "cost_per_bua_m2_estimated": {
+        "n": 192,
+        "p25": 1133,
+        "median": 2040,
+        "p75": 2894,
+        "min": 530,
+        "max": 12248
+      },
+      "n_transactions": 192
+    },
+    "الشمال": {
+      "cost_per_plot_m2": {
+        "n": 55,
+        "p25": 817,
+        "median": 1338,
+        "p75": 1918,
+        "min": 196,
+        "max": 5528
+      },
+      "cost_per_bua_m2_estimated": {
+        "n": 55,
+        "p25": 1361,
+        "median": 2229,
+        "p75": 3196,
+        "min": 326,
+        "max": 9214
+      },
+      "n_transactions": 55
+    },
+    "الشيحانية": {
+      "cost_per_plot_m2": {
+        "n": 5,
+        "p25": 321,
+        "median": 608,
+        "p75": 704,
+        "min": 239,
+        "max": 951
+      },
+      "cost_per_bua_m2_estimated": {
+        "n": 5,
+        "p25": 536,
+        "median": 1014,
+        "p75": 1173,
+        "min": 398,
+        "max": 1585
+      },
+      "n_transactions": 5
+    }
+  },
+  "total_transactions_used": 2844
+}

@@ -1,0 +1,474 @@
+#!/usr/bin/env python3
+"""
+api.py — FastAPI backend for Thammen (ثمّن)
+
+Endpoints:
+    POST /api/evaluate          → quick evaluation (address only)
+    POST /api/evaluate/details  → improved evaluation (with building details)
+    GET  /api/health            → health check
+
+Run:
+    pip install fastapi uvicorn
+    uvicorn api:app --host 0.0.0.0 --port 8000
+
+Production:
+    uvicorn api:app --host 0.0.0.0 --port 8000 --workers 4
+"""
+
+import json
+import traceback
+from datetime import datetime
+from dataclasses import asdict
+from pathlib import Path
+from typing import Optional
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+# ── Import our engine ──
+from evaluate_property import (
+    evaluate_property, BuaBreakdown, PropertyEvaluation,
+    compute_max_footprint, estimate_footprint_from_imagery,
+)
+from moj_db import open_db, query_reference, query_trend, init_db
+
+# ── Config ──
+MOJ_CSV = Path("moj_weekly.csv")
+MOJ_DB = Path("moj_weekly.db")
+
+# Initialize DB if not exists
+if MOJ_CSV.exists() and not MOJ_DB.exists():
+    print("Initializing MoJ database...")
+    conn = init_db(MOJ_CSV, force=True)
+    conn.close()
+
+# ── App ──
+app = FastAPI(
+    title="Thammen API",
+    description="Qatar Real Estate Valuation — بيانات وزارة العدل",
+    version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production: restrict to your domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ── Request Models ──
+
+class EvaluateRequest(BaseModel):
+    zone: int
+    street: int
+    building: int
+
+
+class EvaluateDetailsRequest(BaseModel):
+    zone: int
+    street: int
+    building: int
+    floors: Optional[int] = None          # 1, 2, 3, 4
+    annexes: Optional[int] = None         # 0, 1, 2, 3
+    condition: Optional[str] = None       # 'new', 'good', 'maintenance', 'renovated'
+    asking_price: Optional[float] = None  # listing price (QAR)
+    rental_income: Optional[float] = None # monthly rental (QAR)
+    potential_rental: Optional[float] = None
+
+
+# ── Helpers ──
+
+FOOTPRINT_RATIOS = {1: 1.0, 2: 1.0, 3: 1.0, 4: 1.0}
+CONDITION_TO_RENOVATION = {
+    'new': (False, False),
+    'good': (False, False),
+    'maintenance': (False, False),
+    'renovated': (True, False),
+}
+# Rough floor areas as fraction of footprint
+UPPER_FLOOR_RATIO = 0.85  # upper floors slightly smaller than ground
+
+
+def _build_bua_breakdown(footprint_m2: float, floors: int, annexes_m2: float) -> BuaBreakdown:
+    """Build BUA breakdown from footprint + floor count."""
+    if floors <= 1:
+        return BuaBreakdown(
+            main_footprint_m2=footprint_m2,
+            basement_m2=0,
+            upper_floors_m2=0, upper_floor_count=0,
+            annexes_m2=annexes_m2, annex_count=max(1, int(annexes_m2 / 50)),
+            external_m2=0,
+        )
+    elif floors == 2:
+        return BuaBreakdown(
+            main_footprint_m2=footprint_m2,
+            basement_m2=0,
+            upper_floors_m2=round(footprint_m2 * UPPER_FLOOR_RATIO),
+            upper_floor_count=1,
+            annexes_m2=annexes_m2, annex_count=max(1, int(annexes_m2 / 50)) if annexes_m2 else 0,
+            external_m2=0,
+        )
+    else:  # 3+ (includes basement as one floor)
+        upper_count = floors - 2  # ground + N upper (one floor assumed basement)
+        return BuaBreakdown(
+            main_footprint_m2=footprint_m2,
+            basement_m2=footprint_m2,  # basement ≈ ground footprint
+            upper_floors_m2=round(footprint_m2 * UPPER_FLOOR_RATIO * upper_count),
+            upper_floor_count=upper_count,
+            annexes_m2=annexes_m2, annex_count=max(1, int(annexes_m2 / 50)) if annexes_m2 else 0,
+            external_m2=0,
+        )
+
+
+def _simplify_evaluation(ev: PropertyEvaluation, detailed: bool = False) -> dict:
+    """Convert evaluation to simplified JSON for the frontend."""
+    result = {
+        'address': ev.address,
+        'valuation_date': ev.valuation_date,
+        'district': ev.gis_district_aname,
+        'municipality': None,
+        'plot_area_m2': ev.plot_area_m2,
+        'asset_type': ev.asset_type,
+    }
+
+    # Valuation
+    if ev.blended:
+        result['valuation'] = {
+            'amount': _round100k(ev.blended.blended_value),
+            'low': _round100k(ev.blended.blended_low),
+            'high': _round100k(ev.blended.blended_high),
+            'method': 'blended',
+        }
+    elif ev.valuation and ev.valuation.moj_median_total:
+        val = ev.valuation.fair_price_total or ev.valuation.moj_median_total
+        result['valuation'] = {
+            'amount': _round100k(val),
+            'low': _round100k(ev.valuation.estimated_value_low),
+            'high': _round100k(ev.valuation.estimated_value_high),
+            'method': 'moj',
+        }
+    else:
+        result['valuation'] = None
+
+    # MoJ reference
+    if ev.valuation:
+        v = ev.valuation
+        # Zoning label
+        zoning = 'غير محدد'
+        if v.factors_detail:
+            for f in v.factors_detail:
+                if f.get('code', '').startswith('zoning'):
+                    zoning = f.get('label_ar', zoning)
+                    break
+
+        result['property_info'] = {
+            'zoning': zoning,
+            'permitted_height': None,  # filled from factors
+        }
+
+        # Extract permitted height from factors
+        if v.factors_detail:
+            for f in v.factors_detail:
+                if 'height' in f.get('code', '') or 'ارتفاع' in f.get('label_ar', ''):
+                    result['property_info']['permitted_height'] = f.get('label_ar', '')
+
+        result['moj_sample_size'] = v.bracket_n
+
+    # Confidence
+    result['accuracy'] = {
+        'score': ev.confidence_score,
+        'label': ev.confidence_label,
+    }
+
+    # Trend
+    if ev.trend:
+        result['trend'] = {
+            'label': ev.trend.get('label'),
+            'slope_pct': ev.trend.get('slope_annual_pct', 0) * 100,
+            'years': ev.trend.get('years', []),
+        }
+
+    # Factors (simplified with user-friendly labels)
+    # Note: "تزوير" was a typo for "تنظيم" (zoning) — corrected here
+    LABEL_FIXES = {
+        'تزوير R1': 'منطقة سكنية خاصة (R1)',
+        'تزوير R2': 'منطقة سكنية (R2)',
+        'تزوير R3': 'منطقة سكنية مكثفة (R3)',
+        'تزوير C': 'منطقة تجارية (C)',
+        'تنظيم R1': 'منطقة سكنية خاصة (R1)',
+        'تنظيم R2': 'منطقة سكنية (R2)',
+        'تنظيم R3': 'منطقة سكنية مكثفة (R3)',
+        'تنظيم C': 'منطقة تجارية (C)',
+    }
+    HEIGHT_FIXES = {
+        'G': 'أرضي فقط',
+        'G+P': 'أرضي + سطح',
+        'G+1': 'أرضي + أول',
+        'G+1+P': 'أرضي + أول + سطح',
+        'G+2': 'أرضي + طابقين',
+        'G+2+P': 'أرضي + طابقين + سطح',
+    }
+
+    result['location_features'] = []
+    if ev.valuation and ev.valuation.factors_detail:
+        for f in ev.valuation.factors_detail:
+            label = f.get('label_ar', '')
+            # Fix zoning labels
+            for old, new in LABEL_FIXES.items():
+                label = label.replace(old, new)
+            # Fix height labels
+            for old, new in HEIGHT_FIXES.items():
+                if old in label:
+                    label = label.replace(old, new)
+            result['location_features'].append({
+                'label': label,
+                'positive': f.get('direction') == 'positive',
+            })
+
+    # Fix property_info labels too
+    if result.get('property_info'):
+        z = result['property_info'].get('zoning', '')
+        for old, new in LABEL_FIXES.items():
+            z = z.replace(old, new)
+        result['property_info']['zoning'] = z
+
+        h = result['property_info'].get('permitted_height', '') or ''
+        for old, new in HEIGHT_FIXES.items():
+            if old in h:
+                h = h.replace(old, new)
+        result['property_info']['permitted_height'] = h
+
+    # ── v2: Market position (descriptive, NOT a verdict) ──
+    # Replaces v1's price_comparison.verdict ('BARGAIN'/'OVERPRICED'/etc.)
+    if ev.market_position:
+        result['market_position'] = {
+            'listing_qar': ev.market_position.get('listing_qar'),
+            'benchmark_qar': ev.market_position.get('benchmark_qar'),
+            'benchmark_source': ev.market_position.get('benchmark_source'),
+            'benchmark_n': ev.market_position.get('benchmark_n'),
+            'gap_pct': ev.market_position.get('gap_pct'),
+            'position_label': ev.market_position.get('position_label'),  # 'above_market' etc.
+            'description_ar': ev.market_position.get('description_ar'),
+            'caveats': ev.market_position.get('caveats', []),
+        }
+    elif ev.listing_comparison:
+        # Fallback for backward compat — but no verdict
+        lc = ev.listing_comparison
+        result['market_position'] = {
+            'gap_pct': getattr(lc, 'gap_pct', None),
+            'description_ar': 'بيانات وصفية غير متوفرة',
+        }
+
+    # Rental (if provided) — now includes itemized cost breakdown in v2
+    result['rental'] = ev.rental_analysis
+
+    # Transaction count (teaser for paywall)
+    result['transaction_count'] = ev.valuation.bracket_n if ev.valuation else 0
+
+    # ── v2: Reasoning trace (transparency layer) ──
+    # هذا ما يميّز ثمّن قانونياً وتجارياً: كل رقم له مصدر، كل حقيقة لها تاريخ.
+    if ev.reasoning_trace:
+        result['reasoning_trace'] = ev.reasoning_trace
+
+    # ── v2: Disclaimer (legal protection — always present) ──
+    result['disclaimer'] = ev.disclaimer
+    result['valuation_id'] = ev.valuation_id
+
+    # ── Note: 'verdict' field is INTENTIONALLY OMITTED in v2 ──
+    # Thammen describes positions and surfaces facts; the user decides.
+
+    # Full transactions (only in detailed/paid mode)
+    if detailed:
+        result['transactions'] = []  # TODO: fill from MoJ
+
+    return result
+
+
+def _round100k(n):
+    if n is None:
+        return None
+    return round(n / 100000) * 100000
+
+
+# ── Endpoints ──
+
+@app.get("/api/health")
+async def health():
+    db_exists = MOJ_DB.exists()
+    return {
+        "status": "ok",
+        "version": "2.0.0",
+        "moj_db": db_exists,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+@app.get("/api/disclaimer")
+async def disclaimer():
+    """إخلاء المسؤولية الموحَّد لثمّن. يُعرض في الـ frontend بشكل دائم."""
+    return {
+        "disclaimer_ar": (
+            "ثمّن يجمع البيانات السوقية من المصادر الحكومية (وزارة العدل، "
+            "وزارة البلدية والبيئة) والإعلانات النشطة (FGRealty، PropertyFinder، "
+            "arady، Mzad). هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً "
+            "معتمداً وفق معايير RICS أو IVS. القرار النهائي ومسؤوليته على "
+            "العميل. للأغراض الرسمية (قروض بنكية، محاكم، تقارير محاسبية) "
+            "يلزم تقييم من مُقيِّم معتمد."
+        ),
+        "disclaimer_en": (
+            "Thammen aggregates market data from government sources (Ministry "
+            "of Justice, Ministry of Municipality) and active listings "
+            "(FGRealty, PropertyFinder, arady, Mzad). This is informational "
+            "analysis to support decisions, NOT a certified property valuation "
+            "per RICS or IVS standards. Final decisions and their consequences "
+            "rest with the client. For formal purposes (bank loans, courts, "
+            "accounting reports), a certified valuer is required."
+        ),
+        "is_certified_valuer": False,
+        "methodology_alignment": {
+            "approaches_used": ["market_comparison", "replacement_cost", "income"],
+            "transparency_level": "full",
+            "comparables_disclosed": True,
+            "sources_cited": True,
+            "uncertainty_disclosed": True,
+        },
+    }
+
+
+@app.get("/api/about")
+async def about():
+    """معلومات عن النظام والمصادر التي يعتمدها."""
+    return {
+        "name": "Thammen — ثمّن",
+        "version": "2.0.0",
+        "tagline_ar": "السوق العقاري بين يديك",
+        "tagline_en": "The real estate market in your hands",
+        "data_sources": {
+            "government": [
+                {"name": "وزارة العدل", "url": "https://www.data.gov.qa",
+                 "description": "صفقات البيع المُسجّلة (فلل، أرض، مباني)"},
+                {"name": "وزارة البلدية والبيئة (MME)",
+                 "url": "https://qrep.aqarat.gov.qa",
+                 "description": "صفقات الشقق والإيجارات"},
+                {"name": "GIS Qatar", "url": "https://gisqatar.org.qa",
+                 "description": "الحدود الإدارية، التنظيم، المعالم"},
+            ],
+            "listings": [
+                {"name": "FGRealty", "url": "https://fgrealty.qa"},
+                {"name": "PropertyFinder Qatar", "url": "https://www.propertyfinder.qa"},
+                {"name": "arady.qa", "url": "https://arady.qa"},
+                {"name": "Mzad Qatar", "url": "https://www.mzadqatar.com"},
+            ],
+        },
+        "what_thammen_does": [
+            "يجمع البيانات الحكومية الفعلية (الصفقات المُسجَّلة)",
+            "يقارنها بإعلانات السوق النشطة",
+            "يُظهر الفجوة بين الحقيقة والطموح",
+            "يحسب العائد الصافي بتكاليف فعلية (رسوم خدمات، شغور، صيانة)",
+            "يعرض كل خطوة منطقية مع مصدرها",
+        ],
+        "what_thammen_does_not": [
+            "لا يُصدر تقييماً عقارياً معتمداً (RICS/IVS)",
+            "لا يُقدّم توصيات شرائية أو بيعية",
+            "لا يحلّ محل المعاينة الميدانية",
+            "لا يصلح كمستند رسمي للبنوك أو المحاكم",
+        ],
+    }
+
+
+@app.post("/api/evaluate")
+async def evaluate_quick(req: EvaluateRequest):
+    """Quick evaluation — address only. Returns free-tier result."""
+    try:
+        ev = evaluate_property(
+            zone=req.zone,
+            street=req.street,
+            building=req.building,
+            moj_csv_path=MOJ_CSV,
+            include_age=True,
+        )
+        return _simplify_evaluation(ev, detailed=False)
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/evaluate/details")
+async def evaluate_with_details(req: EvaluateDetailsRequest):
+    """Improved evaluation with building details from user."""
+    try:
+        # Determine renovation from condition
+        has_reno, full_reno = CONDITION_TO_RENOVATION.get(
+            req.condition or 'good', (False, False)
+        )
+
+        # Estimate building age from imagery
+        building_age = None  # will be auto-detected with include_age=True
+
+        # Build BUA breakdown if floors provided
+        bua_breakdown = None
+        listing_bua = None
+
+        if req.floors:
+            # First get plot info to compute footprint
+            try:
+                from qatar_gis import QatarGIS
+                gis = QatarGIS(verbose=False)
+                loc = gis.find_property(req.zone, req.street, req.building)
+                plot = gis.get_plot(loc['pin'])
+                plot_area = plot.pdarea
+
+                # Compute footprint from setbacks
+                fp_data = compute_max_footprint(plot.polygon_4326, plot_area)
+                main_fp = fp_data['max_footprint_m2'] if fp_data else plot_area * 0.55
+
+                # Try satellite for annex estimation
+                sat_fp = None
+                try:
+                    sat_data = estimate_footprint_from_imagery(plot.polygon_4326)
+                    if sat_data and 'footprint_m2' in sat_data:
+                        sat_fp = sat_data['footprint_m2']
+                except Exception:
+                    pass
+
+                # Annex area = satellite footprint - setback footprint
+                annex_area = 0
+                if req.annexes and req.annexes > 0:
+                    if sat_fp and sat_fp > main_fp:
+                        annex_area = sat_fp - main_fp
+                    else:
+                        annex_area = req.annexes * 50  # fallback: 50m² per annex
+
+                bua_breakdown = _build_bua_breakdown(main_fp, req.floors, annex_area)
+            except Exception:
+                # Fallback: rough estimate
+                if req.floors:
+                    listing_bua = 500 * req.floors  # very rough
+
+        ev = evaluate_property(
+            zone=req.zone,
+            street=req.street,
+            building=req.building,
+            moj_csv_path=MOJ_CSV,
+            listing_price=req.asking_price,
+            bua_breakdown=bua_breakdown,
+            listing_bua_m2=listing_bua,
+            has_renovation=has_reno,
+            full_renovation=full_reno,
+            rental_income=req.rental_income,
+            potential_rental=req.potential_rental,
+            include_age=True,
+        )
+        return _simplify_evaluation(ev, detailed=False)
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Run ──
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
