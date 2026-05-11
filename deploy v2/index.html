@@ -80,6 +80,24 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .loc-neu{background:var(--alt);color:var(--muted)}
 .err{background:var(--bad-bg);border:1px solid rgba(185,28,28,.2);border-radius:var(--r);padding:18px;color:var(--bad);text-align:center;animation:fu .5s}
 .disc{text-align:center;padding:20px;font-size:.76rem;color:var(--light);line-height:1.8;border-top:1px solid var(--border);margin-top:28px}
+.mu-banner{background:rgba(185,28,28,.06);border:2px solid rgba(185,28,28,.25);border-radius:10px;padding:14px 16px;margin:14px 0;font-size:.88rem;line-height:1.8}
+.mu-banner.mu-low{background:rgba(4,120,87,.06);border-color:rgba(4,120,87,.3)}
+.mu-banner.mu-moderate{background:rgba(180,83,9,.06);border-color:rgba(180,83,9,.3)}
+.mu-banner strong{display:block;margin-bottom:6px;color:#B91C1C}
+.mu-banner.mu-low strong{color:#047857}
+.mu-banner.mu-moderate strong{color:#B45309}
+.method-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0}
+.method-card{padding:10px;background:rgba(166,130,82,.08);border-radius:8px;text-align:center;border:1px solid var(--border)}
+.method-card .mc-label{font-size:.78rem;color:var(--muted);margin-bottom:4px}
+.method-card .mc-value{font-size:1.05rem;font-weight:700;color:var(--primary)}
+.method-card .mc-weight{font-size:.72rem;color:var(--bronze);margin-top:2px;font-weight:600}
+.brief-section{margin:14px 0;padding:14px;background:rgba(166,130,82,.05);border-radius:8px;border-right:3px solid var(--bronze)}
+.brief-section .bs-title{font-weight:700;color:var(--primary);margin-bottom:8px;font-size:.95rem}
+.brief-section .bs-content{font-size:.88rem;line-height:1.8;color:var(--text)}
+.brief-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)}
+.brief-row:last-child{border-bottom:none}
+.brief-row .br-label{color:var(--muted);font-size:.85rem}
+.brief-row .br-value{font-weight:600;color:var(--text)}
 @media(max-width:600px){.hlogo img{max-width:260px}.fr3,.fr2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}.fcard{padding:18px}.aud-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -152,10 +170,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <button class="bbtn" onclick="go('form')">→ تقييم جديد</button>
     <div id="rOut"></div>
     <div class="disc">
-      هذا التقييم إرشادي ومبني على بيانات وزارة العدل المتاحة للعموم.<br>
-      لا يُعتبر تثميناً رسمياً ولا يحل محل المثمّن المعتمد.<br>
-      ننصح بالاستعانة بمثمّن معتمد للمعاملات فوق ٥ مليون ريال.<br><br>
-      <span style="color:var(--bronze)">ثمّن</span> — بيانات وزارة العدل القطرية
+      تقدير آلي (AVM) وفق RICS VPS 4 — Sales Comparison Approach مع توفيق ثلاثي الطرق.<br>
+      لا يُعتبر تقييماً معتمداً ولا يحلّ محل مُقيِّم مُرخّص للأغراض الرسمية<br>
+      (قروض بنكية، نزاعات قضائية، تقارير محاسبية).<br><br>
+      <span style="color:var(--bronze)">ثمّن</span> — بيانات وزارة العدل القطرية + نظام عنواني (GIS)
     </div>
   </div>
 </div>
@@ -220,7 +238,107 @@ function show(d){
       h+='<div class="rg"><div class="ri"><div class="rl">الحد الأدنى</div><div class="rv">'+fmt(v.low)+' ر.ق</div></div>';
       h+='<div class="ri"><div class="rl">الحد الأعلى</div><div class="rv">'+fmt(v.high)+' ر.ق</div></div></div>'}
     if(d.moj_sample_size)h+='<div class="ri" style="margin-bottom:10px"><div class="rl">عدد المعاملات المرجعية</div><div class="rv">'+d.moj_sample_size+' معاملة ('+v.method+')</div></div>';
+    // === Sprint 1: Method weights breakdown ===
+    if(v.weights && v.method_values && Object.keys(v.method_values).length>0){
+      h+='<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)"><div class="rl" style="margin-bottom:8px">الطرق المُستخدَمة (RICS)</div>';
+      h+='<div class="method-grid">';
+      const methodLabels={'comparison':'المقارنة (MoJ)','cost':'التكلفة الإحلالية','income':'الدخل (الإيجار)'};
+      ['comparison','cost','income'].forEach(m=>{
+        const mv=v.method_values[m]; const mw=v.weights[m];
+        if(mv && mw>0){
+          h+='<div class="method-card"><div class="mc-label">'+methodLabels[m]+'</div>';
+          h+='<div class="mc-value">'+fmt(mv)+'</div>';
+          h+='<div class="mc-weight">وزن '+Math.round(mw*100)+'%</div></div>';
+        }
+      });
+      h+='</div></div>';
+    }
     h+='</div>';
+  }
+
+  // === Sprint 1.b: Cross-check approaches (cost + income, NOT in primary) ===
+  if(d.cost_approach || d.income_approach){
+    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">الطرق التأكيدية (RICS Three-Approach)</div>';
+    h+='<div class="rn" style="font-size:.8rem;margin-bottom:12px;color:var(--muted)">هذه الطرق تُعرض للشفافية ولا تدخل في القيمة الأساسية</div>';
+    if(d.cost_approach){
+      const c=d.cost_approach;
+      const pct=d.valuation && d.valuation.amount ? ((c.total_replacement_value-d.valuation.amount)/d.valuation.amount*100).toFixed(1) : null;
+      h+='<div style="padding:10px;background:var(--alt);border-radius:8px;margin-bottom:8px">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:baseline">';
+      h+='<div><div style="font-size:.85rem;color:var(--muted)">'+c.method_label_ar+'</div>';
+      h+='<div style="font-size:1.1rem;font-weight:700;color:var(--primary)">'+fmt(c.total_replacement_value)+' ر.ق</div></div>';
+      if(pct!=null)h+='<div style="font-size:.85rem;color:'+(Math.abs(pct)<15?'var(--ok)':'var(--warn)')+';font-weight:600">'+(pct>0?'+':'')+pct+'%</div>';
+      h+='</div></div>';
+    }
+    if(d.income_approach){
+      const i=d.income_approach;
+      const pct=d.valuation && d.valuation.amount ? ((i.income_value-d.valuation.amount)/d.valuation.amount*100).toFixed(1) : null;
+      h+='<div style="padding:10px;background:var(--alt);border-radius:8px">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:baseline">';
+      h+='<div><div style="font-size:.85rem;color:var(--muted)">'+i.method_label_ar+'</div>';
+      h+='<div style="font-size:1.1rem;font-weight:700;color:var(--primary)">'+fmt(i.income_value)+' ر.ق</div></div>';
+      if(pct!=null)h+='<div style="font-size:.85rem;color:'+(Math.abs(pct)<15?'var(--ok)':'var(--warn)')+';font-weight:600">'+(pct>0?'+':'')+pct+'%</div>';
+      h+='</div>';
+      h+='<div style="margin-top:6px;font-size:.78rem;color:var(--muted)">إيجار '+fmt(i.monthly_rent)+'/شهر — '+i.rent_source_ar+' — Cap '+(i.cap_rate*100).toFixed(1)+'%</div>';
+      if(i.net_yield)h+='<div style="font-size:.78rem;color:var(--muted)">صافي العائد: '+(i.net_yield*100).toFixed(2)+'%</div>';
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+
+  // === Sprint 1.b: Reconciliation statement ===
+  if(d.reconciliation && d.reconciliation.label_ar){
+    const rec=d.reconciliation;
+    const cls=rec.status==='strong_convergence'?'mu-low':(rec.status==='divergence'?'':'mu-moderate');
+    h+='<div class="mu-banner '+cls+'">';
+    h+='<strong>'+rec.label_ar+'</strong>';
+    h+='<div>'+rec.message_ar+'</div>';
+    if(rec.spread_pct!=null)h+='<div style="margin-top:6px;font-size:.82rem">التباين بين الطرق: '+rec.spread_pct+'%</div>';
+    h+='</div>';
+  }
+
+  // === Sprint 1: Material Uncertainty banner (RICS VPN 13) ===
+  if(d.material_uncertainty){
+    const mu=d.material_uncertainty;
+    const cls=mu.level==='low'?'mu-low':(mu.level==='moderate'?'mu-moderate':'');
+    h+='<div class="mu-banner '+cls+'">';
+    h+='<strong>⚠️ تحفّظ مادي (Material Valuation Uncertainty — RICS VPN 13)</strong>';
+    h+='<div>'+(mu.banner_ar||'')+'</div>';
+    if(mu.factors && mu.factors.length>0){
+      h+='<div style="margin-top:8px;font-size:.82rem;color:var(--muted)">العوامل: '+mu.factors.slice(0,4).join('، ')+'</div>';
+    }
+    h+='</div>';
+  }
+
+  // === Sprint 1: Audience-specific brief ===
+  if(d.brief && d.brief.sections){
+    d.brief.sections.forEach(sec=>{
+      h+='<div class="brief-section">';
+      h+='<div class="bs-title">'+(sec.title_ar||sec.title||'')+'</div>';
+      h+='<div class="bs-content">';
+      const c=sec.content||{};
+      if(typeof c==='string'){
+        h+=c;
+      } else if(Array.isArray(c)){
+        c.forEach(item=>h+='• '+item+'<br>');
+      } else if(typeof c==='object'){
+        Object.entries(c).forEach(([k,val])=>{
+          if(val==null || val==='') return;
+          const labels={'listing_price':'السعر المطلوب','benchmark':'القيمة المرجعية','gap_pct':'الفارق %',
+            'position':'الموضع','description_ar':'','floor':'الحد الأدنى','ceiling':'الحد الأقصى',
+            'opening_offer':'العرض الافتتاحي','note':'ملاحظة','suggested_listing_price':'السعر المقترح',
+            'walk_away':'سعر الانسحاب','expected_sale_days':'أيام البيع المتوقعة','cap_rate':'معدل الرسملة',
+            'noi':'NOI صافي الدخل','gross_yield':'العائد الإجمالي','net_yield':'العائد الصافي'};
+          const label=labels[k]||k;
+          if(typeof val==='number'){
+            h+='<div class="brief-row"><div class="br-label">'+label+'</div><div class="br-value">'+fmt(val)+(k.includes('yield')||k.includes('pct')||k.includes('rate')?'%':' ر.ق')+'</div></div>';
+          } else if(typeof val==='string' && val.length<200){
+            h+=label?'<div class="brief-row"><div class="br-label">'+label+'</div><div class="br-value">'+val+'</div></div>':'<div>'+val+'</div>';
+          }
+        });
+      }
+      h+='</div></div>';
+    });
   }
 
   // ── Trend card ──

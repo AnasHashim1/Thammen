@@ -103,6 +103,12 @@ AREA_TO_MUNICIPALITY = {
     'المشاف': 'الوكرة',
     'بو هامور': 'الدوحة',
     'جبل ثعيلب': 'الوكرة',
+    # Sprint 1 additions — Marikh + other common Doha areas
+    'امريخ الجنوبي': 'الدوحة', 'المريخ': 'الدوحة', 'مريخ': 'الدوحة',
+    'النصر': 'الدوحة', 'بني هاجر': 'الريان', 'الريان القديم': 'الريان',
+    'النعيجة': 'الدوحة', 'نعيجة': 'الدوحة', 'نعيجة 44': 'الدوحة',
+    'الشحانية': 'الشيحانية',
+    'الخور': 'الخور والذخيرة', 'الذخيرة': 'الخور والذخيرة',
 }
 
 
@@ -119,8 +125,13 @@ def get_municipality(area_name: str, gis_municipality: str = None) -> str:
 
 def asset_to_rental_type(asset_type: str) -> str:
     """Map property asset type to rental unit type for income approach."""
+    if not asset_type:
+        return 'villa'
+    # Normalize case — evaluate_property returns lowercase, but constants here are uppercase
+    at = asset_type.upper()
     mapping = {
         'STANDALONE_VILLA': 'villa',
+        'VILLA': 'villa',
         'PALACE': 'villa',
         'COMPOUND_SMALL': 'villa',
         'COMPOUND_LARGE': 'villa',
@@ -129,7 +140,7 @@ def asset_to_rental_type(asset_type: str) -> str:
         'COMMERCIAL': 'retail',
         'OFFICE': 'office',
     }
-    return mapping.get(asset_type, 'villa')
+    return mapping.get(at, 'villa')
 
 
 def estimate_bedrooms(asset_type: str, plot_area_m2: float) -> int:
@@ -309,13 +320,14 @@ def evaluate_v3(
     if v2_result is not None:
         eval_dict = v2_result if isinstance(v2_result, dict) else asdict(v2_result)
     elif _V2_AVAILABLE and moj_csv:
+        # NOTE: evaluate_property expects moj_csv_path (Path), not moj_csv (str)
+        # and does NOT accept area_name / listing_area_m2 / listing_description here.
+        # Bug fix: only pass the parameters evaluate_property actually accepts.
+        from pathlib import Path as _P
         eval_obj = evaluate_property(
             zone=zone, street=street, building=building,
-            moj_csv=moj_csv,
+            moj_csv_path=_P(moj_csv),
             listing_price=listing_price,
-            listing_area_m2=listing_area_m2,
-            listing_description=listing_description,
-            area_name=area_name,
         )
         eval_dict = asdict(eval_obj) if hasattr(eval_obj, '__dataclass_fields__') else eval_obj.__dict__
     else:
@@ -422,10 +434,11 @@ def evaluate_v3(
     # ── Step 5: Material uncertainty ──
     uncertainty = None
     if _UNC_AVAILABLE:
+        _trend = eval_dict.get('trend') if isinstance(eval_dict.get('trend'), dict) else None
         uncertainty = assess_uncertainty(
             moj_n=moj_n,
             rent_n=rent_data.get('n') if rent_data else None,
-            trend_n_years=len(trend.get('years', [])) if isinstance(eval_dict.get('trend'), dict) else None,
+            trend_n_years=len(_trend.get('years', [])) if _trend else None,
             has_field_inspection=False,
             building_condition_known=False,
             building_age_known=False,

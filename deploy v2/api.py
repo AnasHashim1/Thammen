@@ -119,12 +119,14 @@ class EvaluateRequest(BaseModel):
     zone: int
     street: int
     building: int
+    audience: Optional[str] = 'buyer'  # Sprint 1: now wired to backend
 
 
 class EvaluateDetailsRequest(BaseModel):
     zone: int
     street: int
     building: int
+    audience: Optional[str] = 'buyer'  # Sprint 1: now wired to backend
     floors: Optional[int] = None          # 1, 2, 3, 4
     annexes: Optional[int] = None         # 0, 1, 2, 3
     condition: Optional[str] = None       # 'new', 'good', 'maintenance', 'renovated'
@@ -461,6 +463,7 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
                 street=req.street,
                 building=req.building,
                 moj_csv_path=str(MOJ_CSV),
+                audience=req.audience or 'buyer',
                 use_listings=True,
                 use_geo_v2=True,
             )
@@ -496,6 +499,7 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
                 street=req.street,
                 building=req.building,
                 moj_csv_path=str(MOJ_CSV),
+                audience=req.audience or 'buyer',
                 listing_price=req.asking_price,
                 rental_income=req.rental_income,
                 floors=req.floors,
