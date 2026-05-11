@@ -66,6 +66,21 @@ elif MOJ_DB.exists():
 else:
     log.warning(f"MoJ CSV not found at {MOJ_CSV}")
 
+# ── Sprint 1 Task 7: Preload GIS districts at startup ──
+# This loads 789 Qatar districts from a local JSON file (~167 KB)
+# Replaces network calls to GIS during evaluations → 5-10s saved per request
+try:
+    from gis_preload import load_districts
+    GIS_PATH = Path(os.getenv("GIS_DISTRICTS_PATH", "qatar_districts.json"))
+    if GIS_PATH.exists():
+        districts = load_districts(str(GIS_PATH))
+        log.info(f"GIS preload: {len(districts)} districts ready (in-memory)")
+    else:
+        log.warning(f"GIS districts file not found at {GIS_PATH} — "
+                    "fallback to network queries (slower)")
+except ImportError as e:
+    log.warning(f"GIS preload not available: {e}")
+
 # ── App ──
 app = FastAPI(
     title="Thammen API",
