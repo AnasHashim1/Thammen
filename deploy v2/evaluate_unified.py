@@ -48,20 +48,16 @@ except ImportError:
 
 
 # ============================================================
-# IN-MEMORY MOJ CACHE
+# IN-MEMORY MOJ CACHE (Sprint 1)
 # ============================================================
-# Sprint 1 optimization: read CSV once at first request, reuse for all requests.
-# Reduces /api/evaluate response time by ~200ms per request.
+# Read CSV once at first request, reuse for all requests.
 # Cache keyed by (path, mtime) so file updates are detected automatically.
 
 _MOJ_CACHE: Dict[tuple, list] = {}
 
 
 def _get_moj_rows(csv_path: str) -> list:
-    """Get MoJ rows from cache or load from CSV.
-
-    Returns cached rows if file hasn't changed. Otherwise reads and caches.
-    """
+    """Get MoJ rows from cache or load from CSV."""
     path = Path(csv_path)
     if not path.exists():
         log.error(f"MoJ CSV not found at {csv_path}")
@@ -73,12 +69,11 @@ def _get_moj_rows(csv_path: str) -> list:
     if cache_key in _MOJ_CACHE:
         return _MOJ_CACHE[cache_key]
 
-    # Load fresh
     log.info(f"Loading MoJ CSV into memory: {csv_path}")
     with open(csv_path, 'r', encoding='utf-8-sig') as f:
         rows = list(csv.DictReader(f))
 
-    # Clear old entries (different mtime) to free memory
+    # Clear stale entries for same path
     for old_key in list(_MOJ_CACHE.keys()):
         if old_key[0] == str(path.absolute()):
             del _MOJ_CACHE[old_key]
@@ -166,40 +161,120 @@ def evaluate_thammen(
         print(f"GIS lookup for coords failed: {e}", file=sys.stderr)
 
     # ── Step 3: Enhanced geo reference (v2) ──
+    # NOTE: Hard timeout of 18 seconds to stay within Heroku's 30s limit
+    # (v2 takes ~15s, leaving 12-15s for geo_v2 + listings)
+    import time
+    geo_v2_start = time.time()
+    GEO_V2_TIMEOUT_S = 18
+
     geo_v2_result = None
+    geo_v2_error = None
     if use_geo_v2 and _GEO_OK and lat and lon:
         try:
-            # Sprint 1: use cached MoJ rows instead of re-reading CSV each request
+            # Sprint 1: use cached MoJ rows
             rows = _get_moj_rows(moj_csv_path)
-            if not rows:
-                log.warning("geo_v2 skipped: MoJ rows unavailable")
-                geo_v2_result = None
-            else:
-                zoning = None
-                if ev.valuation and ev.valuation.factors_detail:
-                    for f in ev.valuation.factors_detail:
-                        code = f.get('code', '')
-                        if code.startswith('zoning'):
-                            label = f.get('label_ar', '')
-                            for z in ['R1', 'R2', 'R3', 'C', 'IND']:
-                                if z in label or z in code:
-                                    zoning = z
-                                    break
-                            break
+            print(f"[geo_v2] CSV cached: {len(rows)} rows, lat={lat}, lon={lon}", file=sys.stderr)
 
+            zoning = None
+            if ev.valuation and ev.valuation.factors_detail:
+                for f_factor in ev.valuation.factors_detail:
+                    code = f_factor.get('code', '')
+                    if code.startswith('zoning'):
+                        label = f_factor.get('label_ar', '')
+                        for z in ['R1', 'R2', 'R3', 'C', 'IND']:
+                            if z in label or z in code:
+                                zoning = z
+                                break
+                        break
+            print(f"[geo_v2] zoning detected: {zoning}", file=sys.stderr)
+
+            # Map asset_type to geo_v2 category
+            asset_type_to_category = {
+                'standalone_villa': 'villa',
+                'villa': 'villa',
+                'palace': 'palace',
+                'raw_land': 'land',
+                'land': 'land',
+                'compound_small': 'compound',
+                'compound_large': 'compound',
+            }
+            geo_category = asset_type_to_category.get(
+                ev.asset_type, 'villa'
+            )
+            print(f"[geo_v2] asset_type={ev.asset_type} → category={geo_category}",
+                  file=sys.stderr)
+
+            # Use signal-based timeout (Unix only — Heroku is Linux)
+            import signal
+
+            def _timeout_handler(signum, frame):
+                raise TimeoutError(f'geo_v2 exceeded {GEO_V2_TIMEOUT_S}s limit')
+
+            # Set alarm
+            old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+            signal.alarm(GEO_V2_TIMEOUT_S)
+
+            try:
                 geo_v2_result = build_reference_geo_v2(
                     rows=rows,
                     lat=lat, lon=lon,
-                    category=ev.asset_type or 'villa',
+                    category=geo_category,
                     plot_area_m2=ev.plot_area_m2,
                     target_zoning=zoning,
                 )
+            finally:
+                signal.alarm(0)  # cancel alarm
+                signal.signal(signal.SIGALRM, old_handler)
+
+            elapsed = time.time() - geo_v2_start
+            # Diagnostic logging
+            if geo_v2_result:
+                p = geo_v2_result.get('primary', {})
+                print(f"[geo_v2] result: primary_n={p.get('n')}, "
+                      f"moj_names={p.get('moj_names')}, "
+                      f"decision={geo_v2_result.get('decision')}, "
+                      f"elapsed={elapsed:.1f}s",
+                      file=sys.stderr)
+
+                # Log candidate evaluation outcomes
+                accepted = geo_v2_result.get('accepted_areas', [])
+                rejected = geo_v2_result.get('rejected_areas', [])
+                if accepted:
+                    print(f"[geo_v2] accepted: " +
+                          ", ".join(f"{a['name']}({a['n']},{a['distance_m']}m)"
+                                    for a in accepted),
+                          file=sys.stderr)
+                if rejected:
+                    print(f"[geo_v2] rejected: " +
+                          ", ".join(f"{r['name']}({r['reasons'] if 'reasons' in r else r.get('rejection_reasons',[])})"
+                                    for r in rejected[:5]),
+                          file=sys.stderr)
+                # Final weighted result
+                print(f"[geo_v2] final: total_n={geo_v2_result.get('total_n')}, "
+                      f"value={geo_v2_result.get('estimated_value')}, "
+                      f"confidence={geo_v2_result.get('confidence')}",
+                      file=sys.stderr)
+        except TimeoutError as te:
+            geo_v2_error = str(te)
+            elapsed = time.time() - geo_v2_start
+            print(f"[geo_v2] TIMEOUT after {elapsed:.1f}s — falling back to v2", file=sys.stderr)
+            geo_v2_result = None
         except Exception as e:
-            log.error(f"geo_v2 failed: {e}", exc_info=True)
+            geo_v2_error = str(e)
+            import traceback
+            print(f"[geo_v2] FAILED: {e}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+    else:
+        print(f"[geo_v2] SKIPPED: use_geo_v2={use_geo_v2}, "
+              f"_GEO_OK={_GEO_OK}, lat={lat}, lon={lon}", file=sys.stderr)
 
     # ── Step 4: Active listings cross-reference ──
+    # Check remaining time budget — Heroku timeout is 30s, evaluate_property takes ~15s
+    elapsed_so_far = time.time() - geo_v2_start
+    REMAINING_BUDGET_S = 8  # leave at least 8s for listings + response
+
     listings_result = None
-    if use_listings and _LISTINGS_OK and ev.gis_district_aname:
+    if use_listings and _LISTINGS_OK and ev.gis_district_aname and elapsed_so_far < REMAINING_BUDGET_S:
         try:
             district = ev.gis_district_aname
             min_a = ev.plot_area_m2 * 0.80 if ev.plot_area_m2 else None
@@ -225,6 +300,9 @@ def evaluate_thammen(
                 ]
         except Exception as e:
             print(f"listings failed: {e}", file=sys.stderr)
+    elif elapsed_so_far >= REMAINING_BUDGET_S:
+        print(f"[listings] SKIPPED: time budget exceeded "
+              f"({elapsed_so_far:.1f}s used)", file=sys.stderr)
 
     # ── Step 5: Build unified output ──
     output = _build_unified_output(ev, geo_v2_result, listings_result)
@@ -295,15 +373,31 @@ def _build_unified_output(ev, geo_v2, listings) -> Dict:
             'method': 'moj_only',
         }
 
-    # ── NEW v3.1: Override valuation if geo_v2 has SIGNIFICANTLY better data ──
-    # If geo_v2 found 5x more transactions in the same/adjacent areas, use it.
+    # ── MoJ details (set FIRST so geo_v2 can override) ──
+    if ev.valuation:
+        output['moj_sample_size'] = ev.valuation.bracket_n
+
+    # ── NEW v3.1: Use geo_v2 valuation when it has good confidence ──
+    # geo_v2 applies RICS methodology — prefer it whenever confidence allows
     v2_n = output.get('moj_sample_size', 0) or 0
     geo_n = (geo_v2.get('total_n', 0) if geo_v2 else 0) or 0
+    geo_conf = geo_v2.get('confidence') if geo_v2 else None
 
-    if (geo_v2 and geo_v2.get('status') == 'ok'
-            and geo_v2.get('estimated_value')
-            and geo_n >= max(5, v2_n * 3)):
-        # geo_v2 has substantially more data — use it as primary
+    # Override v2 valuation with geo_v2 when ANY of:
+    #   - geo_v2 has high confidence (n >= 20)
+    #   - geo_v2 has medium confidence and at least equal n
+    #   - geo_v2 has 3x more data than v2 (catches NBSP/naming issues)
+    should_override = (
+        geo_v2 and geo_v2.get('status') == 'ok'
+        and geo_v2.get('estimated_value')
+        and (
+            geo_conf == 'high'
+            or (geo_conf == 'medium' and geo_n >= v2_n)
+            or geo_n >= max(5, v2_n * 3)
+        )
+    )
+
+    if should_override:
         output['valuation'] = {
             'amount': _r100k(geo_v2['estimated_value']),
             'low': _r100k(geo_v2.get('range_low')),
@@ -311,21 +405,28 @@ def _build_unified_output(ev, geo_v2, listings) -> Dict:
             'method': 'geo_v2_hierarchical',
             'n_transactions': geo_n,
             'override_reason': (
-                f'تم استخدام البحث الجغرافي المحسّن (n={geo_n}) '
-                f'بدلاً من البحث المباشر (n={v2_n}) لأنه يوفر بيانات أكثر دقة'
+                f'البحث الجغرافي المحسّن أعطى {geo_n} معاملة بثقة {geo_conf}'
             ),
         }
         output['moj_sample_size'] = geo_n
-
-    # ── MoJ details ──
-    if ev.valuation:
-        output['moj_sample_size'] = ev.valuation.bracket_n
 
     # ── Confidence ──
     output['accuracy'] = {
         'score': getattr(ev, 'confidence_score', None),
         'label': getattr(ev, 'confidence_label', None),
     }
+
+    # NEW v3.1: Override accuracy when geo_v2 provided better data
+    if geo_v2 and geo_v2.get('confidence') == 'high':
+        output['accuracy'] = {
+            'score': 85,
+            'label': 'ثقة عالية 🟢',
+        }
+    elif geo_v2 and geo_v2.get('confidence') == 'medium':
+        output['accuracy'] = {
+            'score': 65,
+            'label': 'ثقة متوسطة 🟡',
+        }
 
     # ── Trend ──
     if getattr(ev, 'trend', None):
@@ -334,6 +435,13 @@ def _build_unified_output(ev, geo_v2, listings) -> Dict:
             'slope_pct': ev.trend.get('slope_annual_pct', 0) * 100,
             'years': ev.trend.get('years', []),
         }
+        # NEW v3.1: cap unrealistic trend slopes
+        # Real estate trends > 8%/year are extreme and shouldn't drive decisions
+        if abs(output['trend']['slope_pct']) > 8:
+            output['trend']['warning'] = (
+                f'⚠️ اتجاه استثنائي ({output["trend"]["slope_pct"]:.1f}%/سنة) — '
+                f'لا يُستخدم للاستقراء المستقبلي. النمو المستدام في قطر 2-4%/سنة.'
+            )
 
     # ── Location features ──
     LABEL_FIXES = {
