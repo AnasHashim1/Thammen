@@ -54,6 +54,13 @@ try:
 except ImportError:
     _LISTINGS_OK = False
 
+try:
+    from geometric_factors import analyze_geometric_factors
+    _GEOMETRIC_OK = True
+except ImportError as e:
+    _GEOMETRIC_OK = False
+    print(f"Warning: geometric_factors not loadable: {e}", file=sys.stderr)
+
 
 # ============================================================
 # Constants — RICS-aligned for Qatar market
@@ -466,6 +473,49 @@ def evaluate_thammen(
 
     eval_dict = asdict(ev) if hasattr(ev, '__dataclass_fields__') else ev.__dict__
 
+    # ── Step 1.5: Sprint 2 — Geometric factors (corner, HBU, named landmarks) ──
+    geometric = None
+    if _GEOMETRIC_OK:
+        try:
+            # Extract PIN and GPS from raw_property_report dict
+            pin = None
+            lat = lon = None
+            rpr = getattr(ev, 'raw_property_report', None)
+            if isinstance(rpr, dict):
+                pin = rpr.get('pin')
+                gps = rpr.get('gps')
+                if gps and isinstance(gps, (list, tuple)) and len(gps) >= 2:
+                    # GPS stored as [lon, lat] per qatar_gis convention
+                    lon, lat = gps[0], gps[1]
+
+            # Extract zoning code from factors_detail
+            zoning_code = None
+            if ev.valuation and ev.valuation.factors_detail:
+                for f in ev.valuation.factors_detail:
+                    if f.get('code') == 'zoning':
+                        ev_str = (f.get('evidence', '') or '') + ' ' + (f.get('label_ar', '') or '')
+                        for code in ['R1', 'R2', 'R3', 'C1', 'C2', 'C', 'MU']:
+                            if code in ev_str:
+                                zoning_code = code
+                                break
+                        break
+
+            if pin and lat and lon:
+                import signal
+                def _handler(signum, frame):
+                    raise TimeoutError('geometric timeout')
+                old = signal.signal(signal.SIGALRM, _handler)
+                signal.alarm(20)
+                try:
+                    geometric = analyze_geometric_factors(int(pin), float(lat), float(lon), zoning_code)
+                finally:
+                    signal.alarm(0)
+                    signal.signal(signal.SIGALRM, old)
+        except Exception as e:
+            print(f"[geometric] failed: {e}", file=sys.stderr)
+            import traceback
+            traceback.print_exc(file=sys.stderr)
+
     # ── Step 2: Geographic widening (the RICS VPS 4 §7 adjustment) ──
     geo_v2_result = _run_geo_v2(ev, moj_csv_path) if (use_geo_v2 and _GEO_OK) else None
 
@@ -541,6 +591,7 @@ def evaluate_thammen(
         v3_result=v3_result,
         geo_v2_result=geo_v2_result,
         listings_result=listings_result,
+        geometric=geometric,
         audience=audience,
         user_inputs={
             'listing_price': listing_price,
@@ -557,10 +608,10 @@ def evaluate_thammen(
 # ============================================================
 
 def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
-                          geo_v2_result, listings_result, audience, user_inputs) -> Dict:
+                          geo_v2_result, listings_result, geometric, audience, user_inputs) -> Dict:
     output = {
         'status': 'ok',
-        'engine_version': 'thammen-sprint1c-fixes',
+        'engine_version': 'thammen-sprint2p1-geometric',
         'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
         'methodology_disclaimer_ar': (
             'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '
@@ -722,6 +773,113 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 elif 'غير منتظم' in label:
                     is_positive = False
             output['location_features'].append({'label': label, 'positive': is_positive})
+
+    # ── NEW Sprint 2: Geometric findings (corner, HBU, named landmarks) ──
+    # Disclosure-only by default — these may already be captured in comparables.
+    # HBU is the exception: it's typically NOT in comparables (R1 surrounded by R1).
+    if geometric:
+        geo_section = {
+            'polygon_available': geometric.get('polygon_available', False),
+            'plot_area_m2_verified': geometric.get('plot_area_m2'),
+            'pd_no': geometric.get('pd_no'),
+        }
+
+        # Corner & main road frontage (disclosure)
+        corner = geometric.get('corner', {})
+        if corner.get('confidence') != 'low':
+            geo_section['corner_analysis'] = {
+                'is_corner': corner.get('is_corner', False),
+                'main_road_adjacent': corner.get('main_road_adjacent', False),
+                'main_streets': corner.get('main_streets', []),
+                'local_streets': corner.get('local_streets', []),
+                'evidence_ar': corner.get('evidence_ar'),
+                'confidence': corner.get('confidence'),
+                'note_ar': (
+                    'هذه الخصائص قد تَفرض علاوة سوقية. النقطة المركزية '
+                    'محافظة (وسيط المقارنات) — الحد الأعلى للنطاق يَعكس الاحتمال.'
+                ),
+            }
+
+        # HBU
+        hbu = geometric.get('hbu', {})
+        if hbu.get('hbu_potential') or hbu.get('industrial_adjacency'):
+            geo_section['hbu_analysis'] = {
+                'potential': hbu.get('hbu_potential', False),
+                'industrial_adjacency': hbu.get('industrial_adjacency', False),
+                'potential_pct': hbu.get('potential_pct', 0),
+                'evidence_ar': hbu.get('evidence_ar'),
+                'adjacent_zones': hbu.get('adjacent_zones', []),
+                'rics_reference': 'RICS VPS 4 §3.4 — Highest and Best Use',
+            }
+
+        # Named landmarks
+        nl = geometric.get('named_landmarks', {})
+        if nl.get('malls') or nl.get('metros'):
+            geo_section['named_landmarks'] = {
+                'malls': nl.get('malls', []),
+                'metros': nl.get('metros', []),
+                'closest_mall_m': nl.get('closest_mall_m'),
+                'closest_metro_m': nl.get('closest_metro_m'),
+                'walkable_mall': any(m.get('walkable') for m in nl.get('malls', [])),
+                'walkable_metro': any(m.get('walkable') for m in nl.get('metros', [])),
+            }
+
+        if geo_section.get('polygon_available'):
+            output['geometric_factors'] = geo_section
+
+        # ── Range expansion based on geometric features (RICS Range Reporting) ──
+        upper_expansion_pct = 0.0
+        upper_expansion_reasons = []
+
+        if corner.get('is_corner'):
+            upper_expansion_pct += 0.10
+            upper_expansion_reasons.append('زاوية (+10%)')
+        if corner.get('main_road_adjacent'):
+            upper_expansion_pct += 0.08
+            upper_expansion_reasons.append('شارع رئيسي (+8%)')
+        # Check walkable mall (within 500m)
+        walking_mall = next((m for m in nl.get('malls', []) if m.get('walkable')), None)
+        if walking_mall:
+            upper_expansion_pct += 0.10
+            upper_expansion_reasons.append(f'{walking_mall["name_ar"]} يُمشى (+10%)')
+        # Check walkable metro
+        walking_metro = next((m for m in nl.get('metros', []) if m.get('walkable')), None)
+        if walking_metro:
+            upper_expansion_pct += 0.08
+            upper_expansion_reasons.append('مترو يُمشى (+8%)')
+
+        upper_expansion_pct = min(upper_expansion_pct, 0.35)
+
+        hbu_central_uplift_pct = 0.0
+        if hbu.get('hbu_potential'):
+            hbu_central_uplift_pct = hbu.get('potential_pct', 0) * 0.5
+        elif hbu.get('industrial_adjacency'):
+            hbu_central_uplift_pct = hbu.get('potential_pct', 0)
+
+        if output.get('valuation') and output['valuation'].get('amount'):
+            base_amount = output['valuation']['amount']
+            base_low = output['valuation'].get('low') or base_amount * 0.85
+            base_high = output['valuation'].get('high') or base_amount * 1.15
+
+            new_amount = base_amount * (1 + hbu_central_uplift_pct)
+            new_high = max(base_high, base_amount * (1 + upper_expansion_pct)) * (1 + hbu_central_uplift_pct)
+            new_low = base_low * (1 + min(0, hbu_central_uplift_pct))
+
+            output['valuation']['amount'] = _r100k(new_amount)
+            output['valuation']['low'] = _r100k(new_low)
+            output['valuation']['high'] = _r100k(new_high)
+
+            output['valuation']['range_expansion'] = {
+                'upper_bound_expanded_pct': round(upper_expansion_pct * 100, 1),
+                'central_value_hbu_adjustment_pct': round(hbu_central_uplift_pct * 100, 1),
+                'reasons_for_upper_expansion': upper_expansion_reasons,
+                'methodology_note_ar': (
+                    'النقطة المركزية تَستخدم وسيط المقارنات (محافظ). الحد الأعلى '
+                    'يَتسع لِيَعكس الخصائص الفريدة المُكتشَفة. '
+                    'HBU (إن وُجد) يُؤثر على النقطة المركزية لأنه قيمة-إضافية '
+                    'غير مُتضمَّنة في عقارات المقارنة.'
+                ),
+            }
 
     # ── Material Uncertainty (RICS VPN 13) ──
     # Sprint 1.c fix: ensure MU reflects the n actually USED in primary value
