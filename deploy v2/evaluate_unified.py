@@ -107,14 +107,18 @@ def evaluate_thammen(
         return {'status': 'evaluation_failed', 'error': str(e)}
 
     # ── Step 2: Get GPS for downstream modules ──
-    lat = getattr(ev, 'lat', None)
-    lon = getattr(ev, 'lon', None)
-
-    # If lat/lon not directly on ev, try to extract from gis_data
-    if not lat or not lon:
-        gis_data = getattr(ev, 'gis_data', None) or {}
-        lat = gis_data.get('lat')
-        lon = gis_data.get('lon')
+    # evaluate_property doesn't expose lat/lon directly, so query GIS
+    lat = None
+    lon = None
+    try:
+        from qatar_gis import QatarGIS
+        gis = QatarGIS(verbose=False)
+        loc = gis.find_property(zone, street, building)
+        if loc:
+            lat = loc.lat
+            lon = loc.lon
+    except Exception as e:
+        print(f"GIS lookup for coords failed: {e}", file=sys.stderr)
 
     # ── Step 3: Enhanced geo reference (v2) ──
     geo_v2_result = None
@@ -245,6 +249,28 @@ def _build_unified_output(ev, geo_v2, listings) -> Dict:
             'method': 'moj_only',
         }
 
+    # ── NEW v3.1: Override valuation if geo_v2 has SIGNIFICANTLY better data ──
+    # If geo_v2 found 5x more transactions in the same/adjacent areas, use it.
+    v2_n = output.get('moj_sample_size', 0) or 0
+    geo_n = (geo_v2.get('total_n', 0) if geo_v2 else 0) or 0
+
+    if (geo_v2 and geo_v2.get('status') == 'ok'
+            and geo_v2.get('estimated_value')
+            and geo_n >= max(5, v2_n * 3)):
+        # geo_v2 has substantially more data — use it as primary
+        output['valuation'] = {
+            'amount': _r100k(geo_v2['estimated_value']),
+            'low': _r100k(geo_v2.get('range_low')),
+            'high': _r100k(geo_v2.get('range_high')),
+            'method': 'geo_v2_hierarchical',
+            'n_transactions': geo_n,
+            'override_reason': (
+                f'تم استخدام البحث الجغرافي المحسّن (n={geo_n}) '
+                f'بدلاً من البحث المباشر (n={v2_n}) لأنه يوفر بيانات أكثر دقة'
+            ),
+        }
+        output['moj_sample_size'] = geo_n
+
     # ── MoJ details ──
     if ev.valuation:
         output['moj_sample_size'] = ev.valuation.bracket_n
@@ -264,12 +290,49 @@ def _build_unified_output(ev, geo_v2, listings) -> Dict:
         }
 
     # ── Location features ──
+    LABEL_FIXES = {
+        'تزوير R1': 'منطقة سكنية خاصة (R1)',
+        'تزوير R2': 'منطقة سكنية (R2)',
+        'تزوير R3': 'منطقة سكنية مكثفة (R3)',
+        'تزوير C': 'منطقة تجارية (C)',
+        'تنظيم R1': 'منطقة سكنية خاصة (R1)',
+        'تنظيم R2': 'منطقة سكنية (R2)',
+        'تنظيم R3': 'منطقة سكنية مكثفة (R3)',
+        'تنظيم C': 'منطقة تجارية (C)',
+    }
+    HEIGHT_FIXES = {
+        'G+1+P': 'أرضي + أول + سطح',
+        'G+2+P': 'أرضي + طابقين + سطح',
+        'G+P': 'أرضي + سطح',
+        'G+1': 'أرضي + أول',
+        'G+2': 'أرضي + طابقين',
+    }
+
     output['location_features'] = []
     if ev.valuation and ev.valuation.factors_detail:
         for f in ev.valuation.factors_detail:
+            label = f.get('label_ar', '')
+            # Apply label fixes
+            for old, new in LABEL_FIXES.items():
+                label = label.replace(old, new)
+            for old, new in HEIGHT_FIXES.items():
+                if old in label:
+                    label = label.replace(old, new)
+
+            # Fix plot_shape direction: regular shape = positive, irregular = negative
+            code = f.get('code', '')
+            direction = f.get('direction', 'neutral')
+            is_positive = direction == 'positive'
+            if code == 'plot_shape':
+                # If label says "منتظمة" (regular), it's positive
+                if 'منتظم' in label and 'غير' not in label:
+                    is_positive = True
+                elif 'غير منتظم' in label:
+                    is_positive = False
+
             output['location_features'].append({
-                'label': f.get('label_ar', ''),
-                'positive': f.get('direction') == 'positive',
+                'label': label,
+                'positive': is_positive,
             })
 
     # ── Disclaimer & ID ──
