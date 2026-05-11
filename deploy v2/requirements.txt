@@ -3,3 +3,4 @@ beautifulsoup4
 tabulate
 fastapi
 uvicorn
+slowapi

@@ -2,30 +2,38 @@
 """
 api.py — FastAPI backend for Thammen (ثمّن)
 
-Endpoints:
-    POST /api/evaluate          → quick evaluation (address only)
-    POST /api/evaluate/details  → improved evaluation (with building details)
-    GET  /api/health            → health check
-
-Run:
-    pip install fastapi uvicorn
-    uvicorn api:app --host 0.0.0.0 --port 8000
-
-Production:
-    uvicorn api:app --host 0.0.0.0 --port 8000 --workers 4
+Sprint 1 hardening applied:
+    - CORS restricted to thammen.qa origins only
+    - Rate limiting via slowapi (10 req/min per IP for evaluate)
+    - Environment variables for sensitive/configurable settings
+    - Centralized logging
 """
 
 import json
+import logging
+import os
 import traceback
 from datetime import datetime
 from dataclasses import asdict
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+# Rate limiting (slowapi)
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+# ── Logging setup ──
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO"),
+    format="%(asctime)s | %(levelname)s | %(message)s",
+)
+log = logging.getLogger("thammen")
 
 # ── Import our engine ──
 from evaluate_property import (
@@ -38,33 +46,55 @@ from moj_db import open_db, query_reference, query_trend, init_db
 try:
     from evaluate_unified import evaluate_thammen
     _UNIFIED_OK = True
-except ImportError:
+    log.info("Unified engine loaded (geo_v2 + listings available)")
+except ImportError as e:
     _UNIFIED_OK = False
-    print("Warning: evaluate_unified not available — using v2 fallback")
+    log.warning(f"Unified engine not available: {e} — using v2 fallback")
 
-# ── Config ──
-MOJ_CSV = Path("moj_weekly.csv")
-MOJ_DB = Path("moj_weekly.db")
+# ── Config (via environment variables) ──
+MOJ_CSV = Path(os.getenv("MOJ_CSV_PATH", "moj_weekly.csv"))
+MOJ_DB = Path(os.getenv("MOJ_DB_PATH", "moj_weekly.db"))
 
 # Initialize DB if not exists
 if MOJ_CSV.exists() and not MOJ_DB.exists():
-    print("Initializing MoJ database...")
+    log.info("Initializing MoJ database...")
     conn = init_db(MOJ_CSV, force=True)
     conn.close()
+    log.info(f"MoJ database ready at {MOJ_DB}")
+elif MOJ_DB.exists():
+    log.info(f"MoJ database already exists at {MOJ_DB}")
+else:
+    log.warning(f"MoJ CSV not found at {MOJ_CSV}")
 
 # ── App ──
 app = FastAPI(
     title="Thammen API",
     description="Qatar Real Estate Valuation — بيانات وزارة العدل",
-    version="1.0.0",
+    version="3.1.0",
 )
+
+# ── Rate Limiting ──
+# Default: 10 evaluations/minute per IP. Override via RATE_LIMIT env var.
+RATE_LIMIT = os.getenv("RATE_LIMIT", "10/minute")
+limiter = Limiter(key_func=get_remote_address, default_limits=[])
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+log.info(f"Rate limit configured: {RATE_LIMIT} for /api/evaluate*")
+
+# ── CORS — restricted via env var ──
+# Default origins for production. Override with ALLOWED_ORIGINS env var
+# (comma-separated). For local dev set ALLOWED_ORIGINS=*
+_default_origins = "https://thammen.qa,https://www.thammen.qa"
+_origins_env = os.getenv("ALLOWED_ORIGINS", _default_origins)
+ALLOWED_ORIGINS = [o.strip() for o in _origins_env.split(",") if o.strip()]
+log.info(f"CORS allowed origins: {ALLOWED_ORIGINS}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production: restrict to your domain
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Accept", "Authorization"],
 )
 
 
@@ -306,15 +336,24 @@ def _round100k(n):
 
 @app.get("/api/health")
 async def health():
+    """Health check endpoint — basic status without sensitive details."""
     db_exists = MOJ_DB.exists()
+    db_size_mb = round(MOJ_DB.stat().st_size / 1024 / 1024, 1) if db_exists else 0
     return {
         "status": "ok",
-        "version": "3.1.0",
+        "version": "3.1.0-sprint1",
         "engine": "unified" if _UNIFIED_OK else "v2_fallback",
-        "moj_db": db_exists,
+        "moj_db": {
+            "available": db_exists,
+            "size_mb": db_size_mb,
+        },
         "modules": {
             "evaluate_property_v2": True,
             "evaluate_unified_v3": _UNIFIED_OK,
+        },
+        "security": {
+            "cors_locked": ALLOWED_ORIGINS != ["*"],
+            "rate_limit": RATE_LIMIT,
         },
         "timestamp": datetime.now().isoformat(),
     }
@@ -394,8 +433,11 @@ async def about():
 
 
 @app.post("/api/evaluate")
-async def evaluate_quick(req: EvaluateRequest):
+@limiter.limit(RATE_LIMIT)
+async def evaluate_quick(req: EvaluateRequest, request: Request):
     """Quick evaluation — address only. Returns free-tier result."""
+    log.info(f"evaluate quick: {req.zone}/{req.street}/{req.building} "
+             f"from {get_remote_address(request)}")
     try:
         # NEW v3.1: Use unified engine if available
         if _UNIFIED_OK:
@@ -417,14 +459,20 @@ async def evaluate_quick(req: EvaluateRequest):
             include_age=True,
         )
         return _simplify_evaluation(ev, detailed=False)
+    except HTTPException:
+        raise
     except Exception as e:
-        traceback.print_exc()
+        log.error(f"evaluate failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/evaluate/details")
-async def evaluate_with_details(req: EvaluateDetailsRequest):
+@limiter.limit(RATE_LIMIT)
+async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
     """Improved evaluation with building details from user."""
+    log.info(f"evaluate details: {req.zone}/{req.street}/{req.building} "
+             f"floors={req.floors} condition={req.condition} "
+             f"from {get_remote_address(request)}")
     try:
         # NEW v3.1: Use unified engine if available
         if _UNIFIED_OK:
@@ -507,8 +555,10 @@ async def evaluate_with_details(req: EvaluateDetailsRequest):
             include_age=True,
         )
         return _simplify_evaluation(ev, detailed=False)
+    except HTTPException:
+        raise
     except Exception as e:
-        traceback.print_exc()
+        log.error(f"evaluate/details fallback failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
