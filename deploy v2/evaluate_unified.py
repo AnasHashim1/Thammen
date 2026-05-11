@@ -281,8 +281,12 @@ def _build_unified_output(ev, geo_v2, listings) -> Dict:
             'method': 'moj_only',
         }
 
+    # ── MoJ details (set FIRST so geo_v2 can override) ──
+    if ev.valuation:
+        output['moj_sample_size'] = ev.valuation.bracket_n
+
     # ── NEW v3.1: Override valuation if geo_v2 has SIGNIFICANTLY better data ──
-    # If geo_v2 found 5x more transactions in the same/adjacent areas, use it.
+    # If geo_v2 found 3x more transactions in the same/adjacent areas, use it.
     v2_n = output.get('moj_sample_size', 0) or 0
     geo_n = (geo_v2.get('total_n', 0) if geo_v2 else 0) or 0
 
@@ -303,15 +307,23 @@ def _build_unified_output(ev, geo_v2, listings) -> Dict:
         }
         output['moj_sample_size'] = geo_n
 
-    # ── MoJ details ──
-    if ev.valuation:
-        output['moj_sample_size'] = ev.valuation.bracket_n
-
     # ── Confidence ──
     output['accuracy'] = {
         'score': getattr(ev, 'confidence_score', None),
         'label': getattr(ev, 'confidence_label', None),
     }
+
+    # NEW v3.1: Override accuracy when geo_v2 provided better data
+    if geo_v2 and geo_v2.get('confidence') == 'high':
+        output['accuracy'] = {
+            'score': 85,
+            'label': 'ثقة عالية 🟢',
+        }
+    elif geo_v2 and geo_v2.get('confidence') == 'medium':
+        output['accuracy'] = {
+            'score': 65,
+            'label': 'ثقة متوسطة 🟡',
+        }
 
     # ── Trend ──
     if getattr(ev, 'trend', None):
@@ -320,6 +332,13 @@ def _build_unified_output(ev, geo_v2, listings) -> Dict:
             'slope_pct': ev.trend.get('slope_annual_pct', 0) * 100,
             'years': ev.trend.get('years', []),
         }
+        # NEW v3.1: cap unrealistic trend slopes
+        # Real estate trends > 8%/year are extreme and shouldn't drive decisions
+        if abs(output['trend']['slope_pct']) > 8:
+            output['trend']['warning'] = (
+                f'⚠️ اتجاه استثنائي ({output["trend"]["slope_pct"]:.1f}%/سنة) — '
+                f'لا يُستخدم للاستقراء المستقبلي. النمو المستدام في قطر 2-4%/سنة.'
+            )
 
     # ── Location features ──
     LABEL_FIXES = {
