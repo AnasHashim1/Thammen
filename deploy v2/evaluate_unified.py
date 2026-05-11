@@ -196,6 +196,25 @@ def evaluate_thammen(
                       f"decision={geo_v2_result.get('decision')}, "
                       f"elapsed={elapsed:.1f}s",
                       file=sys.stderr)
+
+                # Log candidate evaluation outcomes
+                accepted = geo_v2_result.get('accepted_areas', [])
+                rejected = geo_v2_result.get('rejected_areas', [])
+                if accepted:
+                    print(f"[geo_v2] accepted: " +
+                          ", ".join(f"{a['name']}({a['n']},{a['distance_m']}m)"
+                                    for a in accepted),
+                          file=sys.stderr)
+                if rejected:
+                    print(f"[geo_v2] rejected: " +
+                          ", ".join(f"{r['name']}({r['reasons'] if 'reasons' in r else r.get('rejection_reasons',[])})"
+                                    for r in rejected[:5]),
+                          file=sys.stderr)
+                # Final weighted result
+                print(f"[geo_v2] final: total_n={geo_v2_result.get('total_n')}, "
+                      f"value={geo_v2_result.get('estimated_value')}, "
+                      f"confidence={geo_v2_result.get('confidence')}",
+                      file=sys.stderr)
         except TimeoutError as te:
             geo_v2_error = str(te)
             elapsed = time.time() - geo_v2_start
@@ -319,15 +338,27 @@ def _build_unified_output(ev, geo_v2, listings) -> Dict:
     if ev.valuation:
         output['moj_sample_size'] = ev.valuation.bracket_n
 
-    # ── NEW v3.1: Override valuation if geo_v2 has SIGNIFICANTLY better data ──
-    # If geo_v2 found 3x more transactions in the same/adjacent areas, use it.
+    # ── NEW v3.1: Use geo_v2 valuation when it has good confidence ──
+    # geo_v2 applies RICS methodology — prefer it whenever confidence allows
     v2_n = output.get('moj_sample_size', 0) or 0
     geo_n = (geo_v2.get('total_n', 0) if geo_v2 else 0) or 0
+    geo_conf = geo_v2.get('confidence') if geo_v2 else None
 
-    if (geo_v2 and geo_v2.get('status') == 'ok'
-            and geo_v2.get('estimated_value')
-            and geo_n >= max(5, v2_n * 3)):
-        # geo_v2 has substantially more data — use it as primary
+    # Override v2 valuation with geo_v2 when ANY of:
+    #   - geo_v2 has high confidence (n >= 20)
+    #   - geo_v2 has medium confidence and at least equal n
+    #   - geo_v2 has 3x more data than v2 (catches NBSP/naming issues)
+    should_override = (
+        geo_v2 and geo_v2.get('status') == 'ok'
+        and geo_v2.get('estimated_value')
+        and (
+            geo_conf == 'high'
+            or (geo_conf == 'medium' and geo_n >= v2_n)
+            or geo_n >= max(5, v2_n * 3)
+        )
+    )
+
+    if should_override:
         output['valuation'] = {
             'amount': _r100k(geo_v2['estimated_value']),
             'low': _r100k(geo_v2.get('range_low')),
@@ -335,8 +366,7 @@ def _build_unified_output(ev, geo_v2, listings) -> Dict:
             'method': 'geo_v2_hierarchical',
             'n_transactions': geo_n,
             'override_reason': (
-                f'تم استخدام البحث الجغرافي المحسّن (n={geo_n}) '
-                f'بدلاً من البحث المباشر (n={v2_n}) لأنه يوفر بيانات أكثر دقة'
+                f'البحث الجغرافي المحسّن أعطى {geo_n} معاملة بثقة {geo_conf}'
             ),
         }
         output['moj_sample_size'] = geo_n

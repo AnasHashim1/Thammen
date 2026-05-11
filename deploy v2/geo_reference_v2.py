@@ -75,6 +75,15 @@ FALLBACK_WINDOW_DAYS = 1095    # 36 شهر
 
 
 # ============================================================
+# CACHES (in-memory, persists across calls within same process)
+# ============================================================
+
+_CENTROID_CACHE = {}    # dist_no → (lat, lon)
+_ZONING_CACHE = {}      # dist_no → 'R1' | 'R2' | ...
+_DISTRICTS_RADIUS_CACHE = {}  # (lat_rounded, lon_rounded, radius) → list
+
+
+# ============================================================
 # HELPERS
 # ============================================================
 
@@ -163,7 +172,10 @@ def _query_gis_districts_radius(lat: float, lon: float, distance_m: int) -> List
 
 
 def _query_district_centroid(dist_no: int) -> Optional[Tuple[float, float]]:
-    """مركز المنطقة بإحداثيات GPS."""
+    """مركز المنطقة بإحداثيات GPS — مع cache في الذاكرة."""
+    if dist_no in _CENTROID_CACHE:
+        return _CENTROID_CACHE[dist_no]
+
     params = {
         'where': f'DIST_NO={dist_no}',
         'outFields': 'DIST_NO',
@@ -175,25 +187,31 @@ def _query_district_centroid(dist_no: int) -> Optional[Tuple[float, float]]:
     url = DISTRICTS_URL + '?' + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={'User-Agent': 'Thammen/3.0'})
     try:
-        with urllib.request.urlopen(req, timeout=15, context=_ssl_ctx()) as r:
+        with urllib.request.urlopen(req, timeout=10, context=_ssl_ctx()) as r:
             data = json.loads(r.read())
         for f in data.get('features', []):
             geom = f.get('geometry', {})
             if 'rings' in geom and geom['rings']:
-                # حساب مركز التقريبي من أول ring
                 ring = geom['rings'][0]
                 xs = [pt[0] for pt in ring]
                 ys = [pt[1] for pt in ring]
-                return (sum(ys) / len(ys), sum(xs) / len(xs))  # (lat, lon)
+                result = (sum(ys) / len(ys), sum(xs) / len(xs))
+                _CENTROID_CACHE[dist_no] = result
+                return result
     except Exception:
         pass
+    _CENTROID_CACHE[dist_no] = None
     return None
 
 
 def _query_zoning_at_centroid(dist_no: int) -> Optional[str]:
-    """تصنيف Zoning غالب في المنطقة (يأخذ نقطة المركز)."""
+    """تصنيف Zoning غالب في المنطقة — مع cache."""
+    if dist_no in _ZONING_CACHE:
+        return _ZONING_CACHE[dist_no]
+
     centroid = _query_district_centroid(dist_no)
     if not centroid:
+        _ZONING_CACHE[dist_no] = None
         return None
     lat, lon = centroid
 
@@ -210,12 +228,15 @@ def _query_zoning_at_centroid(dist_no: int) -> Optional[str]:
     url = ZONING_URL + '?' + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={'User-Agent': 'Thammen/3.0'})
     try:
-        with urllib.request.urlopen(req, timeout=15, context=_ssl_ctx()) as r:
+        with urllib.request.urlopen(req, timeout=10, context=_ssl_ctx()) as r:
             data = json.loads(r.read())
         for f in data.get('features', []):
-            return _norm(f['attributes'].get('ZONING', ''))
+            zoning = _norm(f['attributes'].get('ZONING', ''))
+            _ZONING_CACHE[dist_no] = zoning
+            return zoning
     except Exception:
         pass
+    _ZONING_CACHE[dist_no] = None
     return None
 
 
@@ -236,7 +257,24 @@ def _haversine_distance_m(lat1: float, lon1: float, lat2: float, lon2: float) ->
 # ============================================================
 
 def _match_gis_to_moj(gis_name: str, moj_area_names: set) -> List[str]:
-    """مطابقة أسماء بين GIS و MoJ مع التعامل مع أداة التعريف."""
+    """مطابقة أسماء بين GIS و MoJ مع التعامل مع أداة التعريف والـ aliases.
+
+    منهج هرمي:
+    1. ابحث في قاعدة بيانات aliases الموثّقة
+    2. إذا لم نجد، طبّق المطابقة الجزئية القديمة (للأمان)
+    """
+    # Try aliases DB first
+    try:
+        from qatar_area_aliases import get_all_aliases
+        # Check if GIS name matches a known alias group
+        aliases = get_all_aliases(gis_name)
+        if len(aliases) > 1:
+            # Found in DB! Return all variants that exist in MoJ
+            return [a for a in aliases if a in moj_area_names]
+    except ImportError:
+        pass
+
+    # Fallback: original matching by definite article + substring
     gn = _norm(gis_name)
     gn_no_al = re.sub(r'^ال', '', gn)
     matches = set()
