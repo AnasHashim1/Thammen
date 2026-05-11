@@ -34,6 +34,14 @@ from evaluate_property import (
 )
 from moj_db import open_db, query_reference, query_trend, init_db
 
+# ── NEW v3.1: Unified engine with geo_v2 + listings ──
+try:
+    from evaluate_unified import evaluate_thammen
+    _UNIFIED_OK = True
+except ImportError:
+    _UNIFIED_OK = False
+    print("Warning: evaluate_unified not available — using v2 fallback")
+
 # ── Config ──
 MOJ_CSV = Path("moj_weekly.csv")
 MOJ_DB = Path("moj_weekly.db")
@@ -301,8 +309,13 @@ async def health():
     db_exists = MOJ_DB.exists()
     return {
         "status": "ok",
-        "version": "2.0.0",
+        "version": "3.1.0",
+        "engine": "unified" if _UNIFIED_OK else "v2_fallback",
         "moj_db": db_exists,
+        "modules": {
+            "evaluate_property_v2": True,
+            "evaluate_unified_v3": _UNIFIED_OK,
+        },
         "timestamp": datetime.now().isoformat(),
     }
 
@@ -384,6 +397,18 @@ async def about():
 async def evaluate_quick(req: EvaluateRequest):
     """Quick evaluation — address only. Returns free-tier result."""
     try:
+        # NEW v3.1: Use unified engine if available
+        if _UNIFIED_OK:
+            result = evaluate_thammen(
+                zone=req.zone,
+                street=req.street,
+                building=req.building,
+                moj_csv_path=str(MOJ_CSV),
+                use_listings=True,
+                use_geo_v2=True,
+            )
+            return result
+        # Fallback: v2 engine
         ev = evaluate_property(
             zone=req.zone,
             street=req.street,
@@ -401,6 +426,24 @@ async def evaluate_quick(req: EvaluateRequest):
 async def evaluate_with_details(req: EvaluateDetailsRequest):
     """Improved evaluation with building details from user."""
     try:
+        # NEW v3.1: Use unified engine if available
+        if _UNIFIED_OK:
+            result = evaluate_thammen(
+                zone=req.zone,
+                street=req.street,
+                building=req.building,
+                moj_csv_path=str(MOJ_CSV),
+                listing_price=req.asking_price,
+                rental_income=req.rental_income,
+                floors=req.floors,
+                condition=req.condition,
+                annexes=req.annexes or 0,
+                use_listings=True,
+                use_geo_v2=True,
+            )
+            return result
+
+        # Fallback: v2 engine path (original code)
         # Determine renovation from condition
         has_reno, full_reno = CONDITION_TO_RENOVATION.get(
             req.condition or 'good', (False, False)

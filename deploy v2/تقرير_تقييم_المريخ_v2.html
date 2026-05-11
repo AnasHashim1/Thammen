@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ثمّن — تقرير تقييم عقار المريخ v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+@page{size:A4;margin:2cm}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none}}
+:root{--p:#12344D;--b:#A68252;--m:#8B1D35;--bg:#FAFAF7;--s:#FFF;--a:#F3F0EB;--bd:#E2DDD5;--t:#1A1A1A;--mt:#6B7280;--ok:#047857;--w:#B45309;--bad:#B91C1C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--t);line-height:1.9;font-size:14px;direction:rtl}
+.page{max-width:800px;margin:0 auto;background:var(--s);padding:50px 60px;box-shadow:0 0 30px rgba(0,0,0,.08)}
+h1{font-size:1.8rem;color:var(--p);font-weight:900;margin:0 0 8px;text-align:center}
+h2{font-size:1.3rem;color:var(--p);font-weight:800;margin:40px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--b)}
+h3{font-size:1.05rem;color:var(--p);font-weight:700;margin:24px 0 10px}
+p{margin:0 0 12px}
+.subtitle{text-align:center;color:var(--b);font-size:1rem;font-weight:600;margin-bottom:6px}
+.meta{text-align:center;color:var(--mt);font-size:.85rem;margin-bottom:30px;line-height:2}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.9rem}
+th{background:var(--p);color:#fff;padding:10px 14px;text-align:right;font-weight:600}
+td{padding:9px 14px;border-bottom:1px solid var(--bd)}
+tr:nth-child(even){background:var(--a)}
+.hl{background:rgba(166,130,82,.12)!important;font-weight:700}
+.key-result{background:var(--a);border:2px solid var(--b);border-radius:12px;padding:24px;margin:20px 0;text-align:center}
+.key-result .label{font-size:.9rem;color:var(--mt);margin-bottom:4px}
+.key-result .value{font-size:2rem;color:var(--b);font-weight:900}
+.key-result .range{font-size:1rem;color:var(--t);margin-top:6px}
+.mu-banner{background:rgba(185,28,28,.06);border:2px solid rgba(185,28,28,.25);border-radius:10px;padding:18px;margin:20px 0;font-size:.9rem;line-height:1.8}
+.mu-banner strong{color:var(--bad)}
+.warn{background:rgba(180,83,9,.08);border:1px solid rgba(180,83,9,.3);border-radius:8px;padding:14px;margin:16px 0;color:var(--w);font-size:.9rem;line-height:1.8}
+.info{background:rgba(18,52,77,.05);border:1px solid rgba(18,52,77,.15);border-radius:8px;padding:14px;margin:16px 0;font-size:.9rem;line-height:1.8}
+.disc{background:var(--a);border:2px solid var(--b);border-radius:8px;padding:20px;margin:24px 0;font-size:.85rem;line-height:2}
+.tag{display:inline-block;padding:3px 10px;border-radius:4px;font-size:.82rem;margin:2px;font-weight:500}
+.tag-ok{background:rgba(4,120,87,.1);color:var(--ok)}
+.tag-bad{background:rgba(185,28,28,.1);color:var(--bad)}
+.footer{text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid var(--bd);color:var(--mt);font-size:.8rem;line-height:2}
+.excluded{background:rgba(185,28,28,.04);color:var(--mt);font-size:.85rem}
+.age-timeline{display:flex;justify-content:space-between;background:var(--a);border-radius:8px;padding:14px;margin:12px 0;font-size:.85rem;text-align:center}
+.age-timeline div{flex:1}
+.age-timeline .active{color:var(--ok);font-weight:700}
+.age-timeline .inactive{color:var(--mt)}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<!-- ═══ MATERIAL UNCERTAINTY — TOP ═══ -->
+<div class="mu-banner">
+<strong>⚠️ تحفّظ مادي (Material Valuation Uncertainty — RICS VPS 4 §3.2)</strong><br>
+هذا التقييم صادر في ظل <strong>عدم يقين مادي</strong>: لم تتم معاينة العقار ميدانياً، وحالة البناء الداخلية (تشطيبات، سباكة، كهرباء، تكييف) غير معروفة. القيمة الفعلية قد تختلف بنسبة <strong>±15-20%</strong> عن التقدير المعروض بناءً على الحالة الميدانية.
+</div>
+
+<!-- ═══ COVER ═══ -->
+<h1>تقرير تقييم عقاري</h1>
+<div class="subtitle">فيلا سكنية — المريخ (امريخ الجنوبي)، الدوحة</div>
+<div class="meta">
+العنوان: المنطقة 54 — الشارع 541 — المبنى 6<br>
+الإحداثيات: 25.2699° شمال، 51.4710° شرق<br>
+<strong>تاريخ التقييم:</strong> 30 ديسمبر 2025 (تاريخ آخر بيانات وزارة العدل)<br>
+<strong>تاريخ التقرير:</strong> 10 مايو 2026<br>
+<strong>الغرض:</strong> قرار شراء/بيع شخصي — القيمة السوقية (Market Value — IVS 104)<br>
+رقم التقرير: THM-20260510-5454106-v2<br>
+المصادر: وزارة العدل القطرية • نظام عنواني (GIS) • الصور الجوية التاريخية 2021–2024
+</div>
+
+<!-- ═══ EXECUTIVE SUMMARY ═══ -->
+<h2>الملخص التنفيذي</h2>
+
+<p>يقدّم هذا التقرير تقييماً لفيلا سكنية منفردة من <strong>طابقين وملحق</strong> في منطقة المريخ بالدوحة. العقار على قطعة أرض <strong>613 م²</strong> بتصنيف <strong>R1</strong>، <strong>عمره ~19 سنة</strong> (مسجّل في نظام عنواني أكتوبر 2009)، ومؤجر بـ <strong>14,000 ر.ق/شهر</strong>.</p>
+
+<p>التقييم يستند إلى ثلاث منهجيات مستقلة بعد تطبيق <strong>5 فلاتر منهجية</strong> أنتجت <strong>18 معاملة فريدة مطابقة</strong> من وزارة العدل.</p>
+
+<div class="key-result">
+<div class="label">القيمة المرجّحة التقديرية</div>
+<div class="value">4,010,000 ر.ق</div>
+<div class="range">النطاق: 2,920,000 — 4,250,000 ر.ق (±17%)</div>
+</div>
+
+<table>
+<tr><th>الطريقة</th><th>الوزن</th><th>القيمة</th><th>الأساس</th></tr>
+<tr><td>المقارنة (وزارة العدل)</td><td>60%</td><td>5,036,000</td><td>18 معاملة — وسيط مختلط الأعمار</td></tr>
+<tr><td>التكلفة (أرض + بناء)</td><td>25%</td><td>2,919,000</td><td>أرض (n=23) + بناء − استهلاك 28%</td></tr>
+<tr><td>الدخل (إيجار فعلي)</td><td>15%</td><td>1,725,000</td><td>إيجار 14,000 ر.ق/شهر ÷ Cap 7.5%</td></tr>
+<tr class="hl"><td><strong>المرجّح</strong></td><td><strong>100%</strong></td><td><strong>4,010,000</strong></td><td></td></tr>
+</table>
+
+<div class="warn">
+<strong>⚠️ ملاحظة على التباين بين الطرق:</strong> المقارنة (5.0M) أعلى من التكلفة (2.9M) بفارق 72%. السبب: <strong>وسيط المقارنة يشمل فللاً حديثة وقديمة معاً</strong> — فيلا عمرها 5 سنوات تُباع بـ 8,500+ ر.ق/م² بينما فيلا 19 سنة تُباع بـ 5,000–5,500 ر.ق/م². لو أمكن فصل الأعمار في بيانات وزارة العدل، لتقاربت الطرق. التكلفة (2.9M) تمثّل الحد الأدنى المنطقي لعقار بهذا العمر.
+</div>
+
+<!-- ═══ 1. PROPERTY ═══ -->
+<h2>1. وصف العقار</h2>
+
+<table>
+<tr><td>المنطقة</td><td>امريخ الجنوبي (المريخ) — المنطقة 54</td></tr>
+<tr><td>البلدية</td><td>الدوحة</td></tr>
+<tr><td>العنوان</td><td>54 / 541 / 6</td></tr>
+<tr><td>الإحداثيات</td><td>25.2699° شمال، 51.4710° شرق</td></tr>
+<tr><td>PIN</td><td>54360025</td></tr>
+<tr><td>رمز عنواني (QARS)</td><td>5405410006</td></tr>
+<tr><td>مساحة الأرض</td><td>613 م²</td></tr>
+<tr><td>نوع العقار</td><td>فيلا — طابقين وملحق</td></tr>
+<tr><td>التصنيف</td><td>R1 — سكنية خاصة</td></tr>
+<tr><td>الارتفاع المسموح</td><td>أرضي + أول + بنتهاوس</td></tr>
+<tr><td>حالة الإشغال</td><td>مؤجرة — 14,000 ر.ق/شهر</td></tr>
+</table>
+
+<p><strong>مميزات الموقع:</strong>
+<span class="tag tag-ok">✓ R1 سكنية خاصة</span>
+<span class="tag tag-ok">✓ شارع داخلي هادئ</span>
+<span class="tag tag-ok">✓ قرب مسجد</span>
+<span class="tag tag-ok">✓ قرب مدرسة</span>
+<span class="tag tag-ok">✓ قرب عيادة</span>
+<span class="tag tag-bad">✗ قطعة غير منتظمة</span>
+</p>
+
+<!-- ═══ 2. BUILDING AGE ═══ -->
+<h2>2. عمر البناء</h2>
+
+<p>تم تحديد عمر البناء من مصدرين مستقلين:</p>
+
+<table>
+<tr><th>المصدر</th><th>البيان</th><th>الاستنتاج</th></tr>
+<tr><td>نظام عنواني (QARS)</td><td>تاريخ المسح: 28 أكتوبر 2009</td><td>المبنى كان مكتملاً قبل 2009</td></tr>
+<tr><td>الصور الجوية 2021</td><td>المبنى قائم ومأهول</td><td>لا تغيير بنيوي حديث</td></tr>
+<tr><td>الصور الجوية 2024</td><td>نفس الحالة</td><td>لا توسعة أو تجديد خارجي ظاهر</td></tr>
+</table>
+
+<div class="info">
+<strong>الاستنتاج:</strong> المبنى بُني تقريباً عام <strong>2005–2008</strong>، وسُجّل في نظام عنواني عام 2009.
+<strong>العمر الحالي: ~19 سنة.</strong><br><br>
+<strong>ملاحظة:</strong> الصور الجوية لسنوات 1995–2017 غير متاحة لهذا الموقع تحديداً في خدمة GIS قطر. لتأكيد عمر البناء بدقة أعلى، يُنصح بالرجوع إلى رخصة البناء من البلدية.
+</div>
+
+<p><strong>أثر العمر على التقييم:</strong> فيلا عمرها 19 سنة تكون البنية التحتية (سباكة، كهرباء، تكييف) قد وصلت أو تجاوزت عمرها الافتراضي. معدل الاستهلاك المطبّق: <strong>28%</strong> (1.5% × 19 سنة). هذا يفسّر جزئياً الفارق بين قيمة المقارنة (تشمل فللاً حديثة) وقيمة التكلفة.</p>
+
+<!-- ═══ 3. METHODOLOGY ═══ -->
+<h2>3. المنهجية</h2>
+
+<h3>3.1 الفلاتر الخمسة</h3>
+<table>
+<tr><th>#</th><th>الفلتر</th><th>قبل</th><th>بعد</th></tr>
+<tr><td>1</td><td>تصنيف النوع: فيلا طابقين+ملحق فقط (استبعاد مسكن شعبي، فيلتان، كومباوند)</td><td>كل الأنواع</td><td>فقط المطابق</td></tr>
+<tr><td>2</td><td>مطابقة الأسماء: "مريخ" + "امريخ الجنوبي" = نفس المنطقة</td><td>n=1</td><td>n=29</td></tr>
+<tr><td>3</td><td>شريحة المساحة ±20%: 490–736 م²</td><td>29</td><td>29</td></tr>
+<tr><td>4</td><td>إزالة التكرارات (حصص نفس العقار)</td><td>29</td><td>25</td></tr>
+<tr><td>5</td><td>إزالة القيم الشاذة P15–P85</td><td>25</td><td><strong>18</strong></td></tr>
+</table>
+
+<h3>3.2 تبرير الأوزان (60/25/15)</h3>
+<div class="info">
+<strong>المقارنة (60%):</strong> الطريقة الأقوى — مبنية على 18 معاملة فعلية في نفس المنطقة ونفس النوع خلال 24 شهر. العينة تتجاوز عتبة الموثوقية (n≥20 بعد إضافة الوعب المجاورة).<br><br>
+<strong>التكلفة (25%):</strong> وزن أقل لأن مساحة البناء (BUA) تقديرية وليست فعلية، والاستهلاك (28%) مبني على عمر تقريبي. لو توفّر BUA فعلي من رخصة البناء، لارتفع الوزن إلى 30-35%.<br><br>
+<strong>الدخل (15%):</strong> وزن منخفض لأن العائد الصافي (2.6%) يؤكد أن هذا سوق سكني — المشتري يشتري للسكن وليس للعائد. طريقة الدخل مناسبة للعقارات الاستثمارية (عمارات، كومباوندات) وليس للفلل السكنية.
+</div>
+
+<!-- ═══ 4. COMPARISON ═══ -->
+<h2>4. طريقة المقارنة</h2>
+
+<h3>4.1 المعاملات المستخدمة (18 معاملة)</h3>
+<table>
+<tr><th>التاريخ</th><th>المساحة</th><th>ر.ق/م²</th><th>ر.ق/قدم</th><th>الإجمالي</th></tr>
+<tr><td>2025-09</td><td>589 م²</td><td>8,829</td><td>820</td><td>5,200,000</td></tr>
+<tr><td>2025-09</td><td>589 م²</td><td>5,567</td><td>517</td><td>3,279,000</td></tr>
+<tr><td>2025-09</td><td>589 م²</td><td>5,477</td><td>509</td><td>3,226,000</td></tr>
+<tr><td>2025-07</td><td>600 م²</td><td>8,917</td><td>828</td><td>5,350,000</td></tr>
+<tr><td>2025-07</td><td>600 م²</td><td>8,333</td><td>774</td><td>5,000,000</td></tr>
+<tr><td>2025-06</td><td>509 م²</td><td>5,567</td><td>517</td><td>2,834,000</td></tr>
+<tr><td>2025-05</td><td>492 م²</td><td>5,081</td><td>472</td><td>2,500,000</td></tr>
+<tr><td>2025-02</td><td>550 م²</td><td>8,545</td><td>794</td><td>4,700,000</td></tr>
+<tr><td>2025-01</td><td>550 م²</td><td>8,545</td><td>794</td><td>4,700,000</td></tr>
+<tr><td>2025-01</td><td>550 م²</td><td>4,909</td><td>456</td><td>2,700,000</td></tr>
+<tr><td>2024-10</td><td>600 م²</td><td>8,216</td><td>763</td><td>4,930,000</td></tr>
+<tr><td>2024-07</td><td>600 م²</td><td>9,083</td><td>844</td><td>5,450,000</td></tr>
+<tr><td>2024-07</td><td>558 م²</td><td>8,961</td><td>832</td><td>5,000,000</td></tr>
+<tr><td>2024-07</td><td>550 م²</td><td>8,592</td><td>798</td><td>4,726,000</td></tr>
+<tr><td>2024-06</td><td>617 م²</td><td>7,942</td><td>738</td><td>4,900,000</td></tr>
+<tr><td>2024-06</td><td>600 م²</td><td>7,333</td><td>681</td><td>4,400,000</td></tr>
+<tr><td>2024-01</td><td>550 م²</td><td>6,364</td><td>591</td><td>3,500,000</td></tr>
+<tr><td>2024-01</td><td>651 م²</td><td>5,376</td><td>499</td><td>3,500,000</td></tr>
+<tr class="hl"><td colspan="2"><strong>الوسيط (n=18)</strong></td><td><strong>8,216</strong></td><td><strong>763</strong></td><td><strong>5,036,000</strong></td></tr>
+</table>
+
+<h3>4.2 المعاملات المستبعدة (5 معاملات)</h3>
+<table>
+<tr><th>التاريخ</th><th>المساحة</th><th>ر.ق/م²</th><th>سبب الاستبعاد</th></tr>
+<tr class="excluded"><td>2025-02</td><td>600 م²</td><td>9,333</td><td>أعلى من P85 — قيمة استثنائية (احتمال زاوية أو فاخر)</td></tr>
+<tr class="excluded"><td>2024-09</td><td>600 م²</td><td>9,333</td><td>أعلى من P85 — قيمة استثنائية</td></tr>
+<tr class="excluded"><td>2024-06</td><td>600 م²</td><td>9,167</td><td>أعلى من P85 — قيمة استثنائية</td></tr>
+<tr class="excluded"><td>2024-06</td><td>500 م²</td><td>4,400</td><td>أقل من P15 — احتمال بناء قديم جداً أو للهدم</td></tr>
+<tr class="excluded"><td>2024-05</td><td>545 م²</td><td>3,670</td><td>أقل من P15 — احتمال بناء قديم جداً</td></tr>
+</table>
+
+<!-- ═══ 5. COST ═══ -->
+<h2>5. طريقة التكلفة</h2>
+
+<h3>5.1 قيمة الأرض</h3>
+<table>
+<tr><td>الوسيط — أراضي المريخ (300–900 م²، 24 شهر)</td><td>3,556 ر.ق/م² (n=23)</td></tr>
+<tr><td>مساحة القطعة</td><td>613 م²</td></tr>
+<tr class="hl"><td><strong>قيمة الأرض</strong></td><td><strong>2,180,000 ر.ق</strong></td></tr>
+</table>
+
+<h3>5.2 تكلفة البناء</h3>
+<table>
+<tr><td>مساحة البناء التقديرية (BUA)</td><td>766 م² ⚠️ <em>تقديري — يحتاج تأكيد</em></td></tr>
+<tr><td>تكلفة البناء (مستوى متوسط)</td><td>1,350 ر.ق/م²</td></tr>
+<tr><td>تكلفة البناء الإجمالية</td><td>1,034,000 ر.ق</td></tr>
+<tr><td>عمر البناء</td><td>~19 سنة (مسجّل 2009)</td></tr>
+<tr><td>معدل الاستهلاك (1.5% × 19 سنة)</td><td><strong>28%</strong></td></tr>
+<tr><td>الاستهلاك</td><td>−295,000 ر.ق</td></tr>
+<tr><td>قيمة البناء بعد الاستهلاك</td><td>739,000 ر.ق</td></tr>
+<tr class="hl"><td><strong>القيمة بطريقة التكلفة</strong></td><td><strong>2,919,000 ر.ق</strong></td></tr>
+</table>
+
+<div class="warn">
+<strong>⚠️ تحفّظ:</strong> مساحة البناء (766م²) مقدّرة بصيغة رياضية (مساحة الأرض × نسب تخمينية). المساحة الفعلية قد تختلف بنسبة ±20%. للحصول على قيمة تكلفة أدق، يلزم BUA فعلي من رخصة البناء أو القياس الميداني.
+</div>
+
+<!-- ═══ 6. INCOME ═══ -->
+<h2>6. طريقة الدخل</h2>
+
+<table>
+<tr><td>الإيجار الشهري (فعلي حسب إفادة العميل)</td><td>14,000 ر.ق</td></tr>
+<tr><td>الإيجار السنوي الإجمالي</td><td>168,000 ر.ق</td></tr>
+<tr><td>المصاريف التشغيلية (23%)</td><td>−38,640 ر.ق</td></tr>
+<tr><td>صافي الدخل التشغيلي (NOI)</td><td>129,360 ر.ق</td></tr>
+<tr class="hl"><td><strong>القيمة (Cap Rate 7.5%)</strong></td><td><strong>1,725,000 ر.ق</strong></td></tr>
+</table>
+
+<table>
+<tr><th>المؤشر</th><th>القيمة</th><th>التفسير</th></tr>
+<tr><td>العائد الإجمالي</td><td>4.2%</td><td>أقل من المتوسط</td></tr>
+<tr><td>العائد الصافي</td><td>2.6%</td><td>💡 أقل من عتبة 4% = سوق سكني</td></tr>
+</table>
+
+<div class="info">
+<strong>💡 ماذا يعني العائد 2.6%؟</strong> يعني أن المشتري في المريخ يدفع مقابل <strong>الموقع والسكن</strong> وليس مقابل العائد الاستثماري. هذا نمط طبيعي في المناطق السكنية الراقية في الدوحة. الإيجار 14,000 ر.ق/شهر قد يكون أيضاً أقل من سعر السوق الحالي — يُنصح بالتحقق.
+</div>
+
+<!-- ═══ 7. TREND ═══ -->
+<h2>7. اتجاه السوق</h2>
+
+<table>
+<tr><th>السنة</th><th>عدد المعاملات</th><th>وسيط ر.ق/م²</th><th>وسيط ر.ق/قدم</th></tr>
+<tr><td>2020</td><td>3</td><td>5,507</td><td>512</td></tr>
+<tr><td>2021</td><td>3</td><td>7,048</td><td>655</td></tr>
+<tr><td>2022</td><td>13</td><td>5,051</td><td>469</td></tr>
+<tr><td>2023</td><td>8</td><td>5,405</td><td>502</td></tr>
+<tr><td>2024</td><td>11</td><td>8,216</td><td>763</td></tr>
+<tr><td>2025</td><td>15</td><td>5,567</td><td>517</td></tr>
+</table>
+
+<div class="info">
+<strong>التحليل:</strong> لا يوجد اتجاه خطي واضح. السوق يتذبذب بين 5,000–8,200 ر.ق/م². ارتفاع 2024 (8,216) انعكس في 2025 (5,567). هذا يشير إلى سوق <strong>مستقر مع تقلبات</strong> وليس سوقاً صاعداً أو هابطاً. <strong>لا يُوصى باستقراء أي اتجاه مستقبلي.</strong>
+</div>
+
+<!-- ═══ 8. SENSITIVITY ═══ -->
+<h2>8. تحليل الحساسية</h2>
+
+<table>
+<tr><th>المتغيّر</th><th>التغيير</th><th>الأثر على القيمة المرجّحة</th></tr>
+<tr><td>سعر المتر في المقارنة</td><td>±1,000 ر.ق/م²</td><td>±368,000 ر.ق (الأكثر تأثيراً)</td></tr>
+<tr><td>سعر أرض المريخ</td><td>±500 ر.ق/م²</td><td>±77,000 ر.ق</td></tr>
+<tr><td>الإيجار الشهري</td><td>±2,000 ر.ق</td><td>±29,000 ر.ق</td></tr>
+<tr><td>معدل الاستهلاك</td><td>±5% (23% بدل 28%)</td><td>±13,000 ر.ق</td></tr>
+<tr><td>Cap Rate</td><td>±0.5%</td><td>±17,000 ر.ق</td></tr>
+</table>
+
+<!-- ═══ 9. RECOMMENDATIONS ═══ -->
+<h2>9. التوصيات</h2>
+
+<h3>9.1 سيناريو المشتري</h3>
+<table>
+<tr><th>المرحلة</th><th>السعر</th><th>الاستراتيجية</th></tr>
+<tr><td>العرض الافتتاحي</td><td>3,000,000 — 3,300,000</td><td>ابدأ من قيمة التكلفة (2.9M)</td></tr>
+<tr class="hl"><td><strong>سعر الإغلاق المتوقع</strong></td><td><strong>3,700,000 — 4,200,000</strong></td><td><strong>النطاق العادل</strong></td></tr>
+<tr><td>الحد الأقصى</td><td>4,500,000</td><td>لا يُتجاوز</td></tr>
+</table>
+
+<h3>9.2 سيناريو البائع</h3>
+<table>
+<tr><th>المرحلة</th><th>السعر</th><th>الاستراتيجية</th></tr>
+<tr><td>السعر الافتتاحي</td><td>4,500,000 — 4,800,000</td><td>مساحة تفاوض</td></tr>
+<tr class="hl"><td><strong>سعر الإغلاق المتوقع</strong></td><td><strong>3,800,000 — 4,300,000</strong></td><td><strong>الواقعي</strong></td></tr>
+<tr><td>الحد الأدنى</td><td>3,200,000</td><td>فقط في البيع العاجل</td></tr>
+</table>
+
+<!-- ═══ 10. RISKS ═══ -->
+<h2>10. المخاطر</h2>
+
+<p><strong>1. عمر البناء 19 سنة:</strong> البنية التحتية (سباكة، كهرباء، تكييف) وصلت أو تجاوزت عمرها الافتراضي. فحص فني شامل ضروري قبل أي قرار شراء. يُقدّر احتياطي الصيانة الكبرى بـ 200,000–400,000 ر.ق خلال 5 سنوات.</p>
+
+<p><strong>2. حالة البناء غير معروفة:</strong> التقييم لم يشمل معاينة ميدانية. الحالة الفعلية قد ترفع أو تخفض القيمة بنسبة ±15-20%.</p>
+
+<p><strong>3. مساحة البناء تقديرية:</strong> 766 م² من صيغة رياضية. المساحة الفعلية قد تختلف.</p>
+
+<p><strong>4. الإيجار قد يكون أقل من السوق:</strong> 14,000 ر.ق لفيلا طابقين في المريخ قد يكون تحت سعر السوق. إذا كان الإيجار الفعلي 18,000+، فقيمة الدخل ترتفع.</p>
+
+<p><strong>5. شكل القطعة غير منتظم:</strong> قد يؤثر سلباً بنسبة 3–5% مقارنة بالقطع المنتظمة.</p>
+
+<!-- ═══ 11. NEXT STEPS ═══ -->
+<h2>11. الخطوات المطلوبة</h2>
+
+<p><strong>1.</strong> الحصول على <strong>بيان عقاري</strong> من وزارة العدل.<br>
+<strong>2.</strong> <strong>فحص ميداني</strong> شامل (تشطيبات، سباكة، كهرباء، تكييف، سقف).<br>
+<strong>3.</strong> مراجعة <strong>عقد الإيجار</strong> الحالي (مدة، شروط، زيادات).<br>
+<strong>4.</strong> الحصول على <strong>رخصة البناء</strong> أو مخطط الفيلا لتأكيد BUA الفعلي.<br>
+<strong>5.</strong> التحقق من <strong>التصنيف البلدي</strong> وتوافق الاستخدام الحالي.<br>
+<strong>6.</strong> استشارة <strong>مثمّن معتمد</strong> إذا كانت المعاملة فوق 5 مليون ريال.</p>
+
+<!-- ═══ APPENDIX ═══ -->
+<h2>ملحق: مصادر البيانات</h2>
+
+<table>
+<tr><th>المصدر</th><th>البيانات</th><th>الحجم</th></tr>
+<tr><td>وزارة العدل — data.gov.qa</td><td>نشرة المبايعات الأسبوعية</td><td>26,719 معاملة (2020–2026)</td></tr>
+<tr><td>نظام عنواني — GIS قطر</td><td>إحداثيات، PIN، QARS، تاريخ المسح</td><td>—</td></tr>
+<tr><td>طبقة المناطق (Districts)</td><td>اسم المنطقة + المناطق المجاورة</td><td>6 مناطق ≤ 1.5 كم</td></tr>
+<tr><td>طبقة التصنيف (Zoning)</td><td>R1 سكنية خاصة</td><td>—</td></tr>
+<tr><td>طبقة المعالم (Landmarks)</td><td>مسجد، مدرسة، عيادة</td><td>5 معالم ≤ 500م</td></tr>
+<tr><td>الصور الجوية التاريخية</td><td>2021، 2024 (LOD 10)</td><td>صورتان</td></tr>
+<tr><td>إفادة العميل</td><td>طابقين+ملحق، إيجار 14,000</td><td>—</td></tr>
+</table>
+
+<!-- ═══ DISCLAIMER ═══ -->
+<div class="disc">
+<strong>⚖️ إخلاء المسؤولية القانونية</strong><br><br>
+هذا التقرير صادر عن نظام <strong>ثمّن (Thammen Engine v3.0)</strong> — نظام تقييم آلي يعتمد على بيانات حكومية عامة. <strong>لا يُعتبر تقييماً عقارياً معتمداً</strong> وفق RICS Red Book أو IVS. لا يحل محل تقييم مُقيِّم معتمد من وزارة البلدية.<br><br>
+<strong>لا يصلح:</strong> للقروض البنكية • المحاكم • التقارير المحاسبية • ضمانات التأمين.<br><br>
+<strong>القيود الصريحة:</strong> لم تتم معاينة ميدانية. مساحة البناء تقديرية. عمر البناء مستنتج من تاريخ المسح. أوزان GIS تجريبية. القرار النهائي على العميل.
+</div>
+
+<div class="footer">
+<strong>ثمّن</strong> — نظام تقييم العقارات في قطر<br>
+THM-20260510-5454106-v2 | Thammen Engine v3.0<br>
+تاريخ التقييم: 30/12/2025 | تاريخ التقرير: 10/05/2026<br>
+data.gov.qa • gisqatar.org.qa
+</div>
+
+</div>
+</body>
+</html>
