@@ -594,8 +594,26 @@ def build_reference_geo_v2(
         candidates_with_dist.sort(key=lambda x: x[2])
 
         # Evaluate each candidate
+        # Track which aliases groups we've already evaluated to avoid double-counting
+        evaluated_alias_groups = set()
+
         for c, c_centroid, dist in candidates_with_dist:
-            c_moj_names = _match_gis_to_moj(c['aname'], all_moj_areas)
+            # NEW: expand candidate name using aliases DB
+            # e.g., "المعمورة 56" → ['المعمورة', 'المعمورة 43', 'المعمورة 56']
+            try:
+                from qatar_area_aliases import get_all_aliases, canonical_name
+                aliases = get_all_aliases(c['aname'])
+                canon = canonical_name(c['aname'])
+                if canon and canon in evaluated_alias_groups:
+                    # We already evaluated this alias group via another district
+                    continue
+                if canon:
+                    evaluated_alias_groups.add(canon)
+                # Filter to aliases that actually exist in MoJ
+                c_moj_names = [a for a in aliases if a in all_moj_areas]
+            except ImportError:
+                c_moj_names = _match_gis_to_moj(c['aname'], all_moj_areas)
+
             if not c_moj_names:
                 continue
 
