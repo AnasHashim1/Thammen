@@ -121,6 +121,12 @@ def evaluate_thammen(
         print(f"GIS lookup for coords failed: {e}", file=sys.stderr)
 
     # ── Step 3: Enhanced geo reference (v2) ──
+    # NOTE: Hard timeout of 18 seconds to stay within Heroku's 30s limit
+    # (v2 takes ~15s, leaving 12-15s for geo_v2 + listings)
+    import time
+    geo_v2_start = time.time()
+    GEO_V2_TIMEOUT_S = 18
+
     geo_v2_result = None
     geo_v2_error = None
     if use_geo_v2 and _GEO_OK and lat and lon:
@@ -159,21 +165,42 @@ def evaluate_thammen(
             print(f"[geo_v2] asset_type={ev.asset_type} → category={geo_category}",
                   file=sys.stderr)
 
-            geo_v2_result = build_reference_geo_v2(
-                rows=rows,
-                lat=lat, lon=lon,
-                category=geo_category,
-                plot_area_m2=ev.plot_area_m2,
-                target_zoning=zoning,
-            )
+            # Use signal-based timeout (Unix only — Heroku is Linux)
+            import signal
 
+            def _timeout_handler(signum, frame):
+                raise TimeoutError(f'geo_v2 exceeded {GEO_V2_TIMEOUT_S}s limit')
+
+            # Set alarm
+            old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+            signal.alarm(GEO_V2_TIMEOUT_S)
+
+            try:
+                geo_v2_result = build_reference_geo_v2(
+                    rows=rows,
+                    lat=lat, lon=lon,
+                    category=geo_category,
+                    plot_area_m2=ev.plot_area_m2,
+                    target_zoning=zoning,
+                )
+            finally:
+                signal.alarm(0)  # cancel alarm
+                signal.signal(signal.SIGALRM, old_handler)
+
+            elapsed = time.time() - geo_v2_start
             # Diagnostic logging
             if geo_v2_result:
                 p = geo_v2_result.get('primary', {})
                 print(f"[geo_v2] result: primary_n={p.get('n')}, "
                       f"moj_names={p.get('moj_names')}, "
-                      f"decision={geo_v2_result.get('decision')}",
+                      f"decision={geo_v2_result.get('decision')}, "
+                      f"elapsed={elapsed:.1f}s",
                       file=sys.stderr)
+        except TimeoutError as te:
+            geo_v2_error = str(te)
+            elapsed = time.time() - geo_v2_start
+            print(f"[geo_v2] TIMEOUT after {elapsed:.1f}s — falling back to v2", file=sys.stderr)
+            geo_v2_result = None
         except Exception as e:
             geo_v2_error = str(e)
             import traceback
@@ -184,8 +211,12 @@ def evaluate_thammen(
               f"_GEO_OK={_GEO_OK}, lat={lat}, lon={lon}", file=sys.stderr)
 
     # ── Step 4: Active listings cross-reference ──
+    # Check remaining time budget — Heroku timeout is 30s, evaluate_property takes ~15s
+    elapsed_so_far = time.time() - geo_v2_start
+    REMAINING_BUDGET_S = 8  # leave at least 8s for listings + response
+
     listings_result = None
-    if use_listings and _LISTINGS_OK and ev.gis_district_aname:
+    if use_listings and _LISTINGS_OK and ev.gis_district_aname and elapsed_so_far < REMAINING_BUDGET_S:
         try:
             district = ev.gis_district_aname
             min_a = ev.plot_area_m2 * 0.80 if ev.plot_area_m2 else None
@@ -211,6 +242,9 @@ def evaluate_thammen(
                 ]
         except Exception as e:
             print(f"listings failed: {e}", file=sys.stderr)
+    elif elapsed_so_far >= REMAINING_BUDGET_S:
+        print(f"[listings] SKIPPED: time budget exceeded "
+              f"({elapsed_so_far:.1f}s used)", file=sys.stderr)
 
     # ── Step 5: Build unified output ──
     output = _build_unified_output(ev, geo_v2_result, listings_result)
