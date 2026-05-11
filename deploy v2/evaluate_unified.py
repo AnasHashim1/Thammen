@@ -122,34 +122,66 @@ def evaluate_thammen(
 
     # ── Step 3: Enhanced geo reference (v2) ──
     geo_v2_result = None
+    geo_v2_error = None
     if use_geo_v2 and _GEO_OK and lat and lon:
         try:
             import csv
             with open(moj_csv_path, 'r', encoding='utf-8-sig') as f:
                 rows = list(csv.DictReader(f))
+            print(f"[geo_v2] CSV loaded: {len(rows)} rows, lat={lat}, lon={lon}", file=sys.stderr)
 
             zoning = None
             if ev.valuation and ev.valuation.factors_detail:
-                for f in ev.valuation.factors_detail:
-                    code = f.get('code', '')
+                for f_factor in ev.valuation.factors_detail:
+                    code = f_factor.get('code', '')
                     if code.startswith('zoning'):
-                        # extract R1/R2/etc from label or code
-                        label = f.get('label_ar', '')
+                        label = f_factor.get('label_ar', '')
                         for z in ['R1', 'R2', 'R3', 'C', 'IND']:
                             if z in label or z in code:
                                 zoning = z
                                 break
                         break
+            print(f"[geo_v2] zoning detected: {zoning}", file=sys.stderr)
+
+            # Map asset_type to geo_v2 category
+            asset_type_to_category = {
+                'standalone_villa': 'villa',
+                'villa': 'villa',
+                'palace': 'palace',
+                'raw_land': 'land',
+                'land': 'land',
+                'compound_small': 'compound',
+                'compound_large': 'compound',
+            }
+            geo_category = asset_type_to_category.get(
+                ev.asset_type, 'villa'
+            )
+            print(f"[geo_v2] asset_type={ev.asset_type} → category={geo_category}",
+                  file=sys.stderr)
 
             geo_v2_result = build_reference_geo_v2(
                 rows=rows,
                 lat=lat, lon=lon,
-                category=ev.asset_type or 'villa',
+                category=geo_category,
                 plot_area_m2=ev.plot_area_m2,
                 target_zoning=zoning,
             )
+
+            # Diagnostic logging
+            if geo_v2_result:
+                p = geo_v2_result.get('primary', {})
+                print(f"[geo_v2] result: primary_n={p.get('n')}, "
+                      f"moj_names={p.get('moj_names')}, "
+                      f"decision={geo_v2_result.get('decision')}",
+                      file=sys.stderr)
         except Exception as e:
-            print(f"geo_v2 failed: {e}", file=sys.stderr)
+            geo_v2_error = str(e)
+            import traceback
+            print(f"[geo_v2] FAILED: {e}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
+    else:
+        print(f"[geo_v2] SKIPPED: use_geo_v2={use_geo_v2}, "
+              f"_GEO_OK={_GEO_OK}, lat={lat}, lon={lon}", file=sys.stderr)
 
     # ── Step 4: Active listings cross-reference ──
     listings_result = None
