@@ -32,7 +32,7 @@ LAYER_URLS = {
     'landmarks':    f'{GIS_BASE}/Vector/Landmarks/MapServer/0/query',
 }
 
-TIMEOUT = 8
+TIMEOUT = 4
 
 
 # ── Qatar Major Mall Whitelist ──
@@ -179,30 +179,29 @@ def fetch_plot_polygon(pin: int) -> Optional[dict]:
 
 # ── Factor 1: Polygon-based corner detection ──
 
-def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0) -> dict:
+def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0,
+                  time_budget_s: float = 12.0) -> dict:
     """
     Detect if plot is a corner property by checking how many distinct road
     segments are adjacent to the plot edges.
 
     Method:
-        For each edge of the polygon, sample multiple points (start, mid, end),
-        check if a road segment runs along it (within `road_search_buffer_m`).
-        Count distinct roads (by OBJECTID).
-        Buffer 15m chosen empirically: typical Qatar plot-to-road offset is
-        2-12m due to sidewalk + setback. 8m was too tight, 25m gives false
-        positives from across-street roads.
+        For each edge of the polygon, check the midpoint (single sample, was 3
+        but reduced for Heroku 30s timeout budget) within `road_search_buffer_m`.
+        Count distinct streets (by STREET_NO+ZONE_NO) — segments of the same
+        street don't count as separate roads.
+
+    Performance:
+        - At most `time_budget_s` seconds spent on road queries
+        - Stops early if running long
+        - Returns partial result if budget exceeded
 
     Returns:
-        {
-            'is_corner': bool,
-            'distinct_roads_adjacent': int,
-            'main_road_adjacent': bool,
-            'edges_with_road': int,
-            'total_edges': int,
-            'evidence_ar': str,
-            'confidence': 'high' | 'medium' | 'low',
-        }
+        dict with is_corner, main_road_adjacent, evidence_ar, confidence
     """
+    import time
+    start_time = time.time()
+
     if not polygon or not polygon.get('rings'):
         return {'is_corner': False, 'confidence': 'low', 'evidence_ar': 'لا polygon متاح'}
 
@@ -210,62 +209,70 @@ def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0) -> dict:
     if not edges:
         return {'is_corner': False, 'confidence': 'low', 'evidence_ar': 'لا حواف'}
 
-    # Only consider edges > 5m (skip tiny corner-cut segments)
-    significant_edges = [e for e in edges if _edge_length_m(e) >= 5.0]
+    # Sort edges by length DESC so we check the most important ones first
+    # (in case we run out of budget on small edges)
+    significant_edges = sorted(
+        [e for e in edges if _edge_length_m(e) >= 5.0],
+        key=lambda e: _edge_length_m(e),
+        reverse=True,
+    )
     if not significant_edges:
         return {'is_corner': False, 'confidence': 'low', 'evidence_ar': 'حواف صغيرة جداً'}
 
-    # For each significant edge, query for adjacent roads
-    # Track STREET_NO (not OBJECTID) to distinguish true corners from split segments
-    main_streets = set()      # set of (STREET_NO, ZONE_NO) tuples
+    # Cap to longest 6 edges (most plots have 4-6 sides)
+    significant_edges = significant_edges[:6]
+
+    main_streets = set()
     local_streets = set()
     edges_with_road = 0
     edges_with_main_road = 0
     edge_evidence = []
+    edges_checked = 0
+    budget_exceeded = False
 
     for edge in significant_edges:
-        # Sample 3 points along the edge: 25%, 50%, 75% to catch roads at corners
-        (lat1, lon1), (lat2, lon2) = edge
-        sample_points = [
-            (lat1 + (lat2-lat1)*0.25, lon1 + (lon2-lon1)*0.25),
-            (lat1 + (lat2-lat1)*0.50, lon1 + (lon2-lon1)*0.50),
-            (lat1 + (lat2-lat1)*0.75, lon1 + (lon2-lon1)*0.75),
-        ]
+        # Time budget check — graceful degradation
+        if time.time() - start_time > time_budget_s:
+            budget_exceeded = True
+            break
+
+        # Single midpoint sample (was 3 — reduced for performance)
+        mid_lat, mid_lon = _edge_midpoint(edge)
+        bbox = _bbox_around_point(mid_lat, mid_lon, road_search_buffer_m)
+        params = {
+            'geometry': json.dumps(bbox),
+            'geometryType': 'esriGeometryEnvelope',
+            'inSR': '4326',
+            'spatialRel': 'esriSpatialRelIntersects',
+            'outFields': 'OBJECTID,STREET_NO,ZONE_NO,ROAD_CLASS',
+            'returnGeometry': 'false',
+            'f': 'json',
+        }
 
         edge_main_streets = set()
         edge_local_streets = set()
 
-        for sp_lat, sp_lon in sample_points:
-            bbox = _bbox_around_point(sp_lat, sp_lon, road_search_buffer_m)
-            params = {
-                'geometry': json.dumps(bbox),
-                'geometryType': 'esriGeometryEnvelope',
-                'inSR': '4326',
-                'spatialRel': 'esriSpatialRelIntersects',
-                'outFields': 'OBJECTID,STREET_NO,ZONE_NO,ROAD_CLASS',
-                'returnGeometry': 'false',
-                'f': 'json',
-            }
-            main = _http_get_json(LAYER_URLS['main_roads'], params)
-            if main and main.get('features'):
-                for f in main['features']:
-                    a = f.get('attributes', {})
-                    sn = a.get('STREET_NO')
-                    zn = a.get('ZONE_NO')
-                    if sn is not None:
-                        edge_main_streets.add((zn, sn))
+        main = _http_get_json(LAYER_URLS['main_roads'], params)
+        if main and main.get('features'):
+            for f in main['features']:
+                a = f.get('attributes', {})
+                sn = a.get('STREET_NO')
+                zn = a.get('ZONE_NO')
+                if sn is not None:
+                    edge_main_streets.add((zn, sn))
 
-            local = _http_get_json(LAYER_URLS['local_roads'], params)
-            if local and local.get('features'):
-                for f in local['features']:
-                    a = f.get('attributes', {})
-                    sn = a.get('STREET_NO')
-                    zn = a.get('ZONE_NO')
-                    if sn is not None:
-                        edge_local_streets.add((zn, sn))
+        local = _http_get_json(LAYER_URLS['local_roads'], params)
+        if local and local.get('features'):
+            for f in local['features']:
+                a = f.get('attributes', {})
+                sn = a.get('STREET_NO')
+                zn = a.get('ZONE_NO')
+                if sn is not None:
+                    edge_local_streets.add((zn, sn))
 
         main_streets.update(edge_main_streets)
         local_streets.update(edge_local_streets)
+        edges_checked += 1
 
         if edge_main_streets or edge_local_streets:
             edges_with_road += 1
@@ -278,7 +285,6 @@ def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0) -> dict:
             })
 
     distinct_streets = len(main_streets) + len(local_streets)
-    # True corner: at least 2 different STREET_NOs on at least 2 edges
     is_corner = distinct_streets >= 2 and edges_with_road >= 2
     main_road_adjacent = len(main_streets) > 0
 
@@ -289,6 +295,9 @@ def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0) -> dict:
         confidence = 'medium'
     else:
         confidence = 'low'
+
+    if budget_exceeded:
+        confidence = 'medium' if confidence == 'high' else confidence
 
     # Evidence string (Arabic)
     main_st_numbers = sorted({s[1] for s in main_streets})
@@ -322,6 +331,9 @@ def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0) -> dict:
         'edges_with_road': edges_with_road,
         'edges_with_main_road': edges_with_main_road,
         'total_edges': len(significant_edges),
+        'edges_checked': edges_checked,
+        'budget_exceeded': budget_exceeded,
+        'time_taken_s': round(time.time() - start_time, 2),
         'evidence_ar': evidence,
         'confidence': confidence,
         'edge_details': edge_evidence[:10],

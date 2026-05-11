@@ -474,6 +474,8 @@ def evaluate_thammen(
     eval_dict = asdict(ev) if hasattr(ev, '__dataclass_fields__') else ev.__dict__
 
     # ── Step 1.5: Sprint 2 — Geometric factors (corner, HBU, named landmarks) ──
+    # NOTE: This block has its own internal time budget (~15s) so total time
+    # stays under Heroku's 30s router timeout. Per-call HTTP timeout is 4s.
     geometric = None
     if _GEOMETRIC_OK:
         try:
@@ -501,16 +503,9 @@ def evaluate_thammen(
                         break
 
             if pin and lat and lon:
-                import signal
-                def _handler(signum, frame):
-                    raise TimeoutError('geometric timeout')
-                old = signal.signal(signal.SIGALRM, _handler)
-                signal.alarm(20)
-                try:
-                    geometric = analyze_geometric_factors(int(pin), float(lat), float(lon), zoning_code)
-                finally:
-                    signal.alarm(0)
-                    signal.signal(signal.SIGALRM, old)
+                # No SIGALRM — does not work in worker threads.
+                # Module has its own internal time budget.
+                geometric = analyze_geometric_factors(int(pin), float(lat), float(lon), zoning_code)
         except Exception as e:
             print(f"[geometric] failed: {e}", file=sys.stderr)
             import traceback
