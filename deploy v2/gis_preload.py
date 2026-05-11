@@ -166,6 +166,59 @@ def find_nearest_district(lat: float, lon: float) -> Optional[Dict]:
     return candidates[0] if candidates else None
 
 
+def _point_in_polygon(lat: float, lon: float, polygon: list) -> bool:
+    """Ray casting algorithm — هل النقطة داخل المضلع؟
+
+    Args:
+        lat, lon: نقطة الاختبار
+        polygon: قائمة [[lon, lat], ...] (تنسيق GeoJSON / GIS)
+    """
+    if not polygon or len(polygon) < 3:
+        return False
+
+    n = len(polygon)
+    inside = False
+    j = n - 1
+    for i in range(n):
+        xi, yi = polygon[i][0], polygon[i][1]
+        xj, yj = polygon[j][0], polygon[j][1]
+        # Ray cast horizontally from (lon, lat)
+        if ((yi > lat) != (yj > lat)) and \
+           (lon < (xj - xi) * (lat - yi) / (yj - yi + 1e-12) + xi):
+            inside = not inside
+        j = i
+    return inside
+
+
+def find_district_containing_point(lat: float, lon: float) -> Optional[Dict]:
+    """ابحث عن المنطقة التي تحتوي هذه النقطة (point-in-polygon فعلي).
+
+    يستخدم polygons المخزّنة. إذا وجد عدة مناطق (تداخل في الحدود)،
+    يُعيد أول واحدة.
+
+    Returns:
+        Dict للمنطقة أو None إذا لم تكن داخل أي منطقة.
+    """
+    if not _DISTRICTS:
+        return None
+
+    # First filter by bbox (fast)
+    candidates = []
+    for d in _DISTRICTS:
+        bbox = d.get('bbox')
+        if not bbox: continue
+        if bbox[0] <= lon <= bbox[2] and bbox[1] <= lat <= bbox[3]:
+            candidates.append(d)
+
+    # Then test point-in-polygon for each candidate
+    for d in candidates:
+        polygon = d.get('polygon')
+        if polygon and _point_in_polygon(lat, lon, polygon):
+            return d
+
+    return None
+
+
 def get_all_districts() -> List[Dict]:
     """احصل على كل المناطق المحمّلة."""
     return list(_DISTRICTS)

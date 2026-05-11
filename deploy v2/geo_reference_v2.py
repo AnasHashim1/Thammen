@@ -143,15 +143,34 @@ except ImportError:
 
 def _query_gis_districts_radius(lat: float, lon: float, distance_m: int) -> List[Dict]:
     """قائمة المناطق ضمن نصف قطر — يستخدم preload إذا متاح، وإلا شبكة."""
+    import sys as _sys
 
     # Fast path: use preloaded districts
     if _PRELOAD_AVAILABLE and _gis_preload_loaded():
         if distance_m == 0:
-            # Special case: find district containing this point
-            # Preload doesn't do point-in-polygon — fall back to network
-            pass
+            # Point-in-district: use real point-in-polygon
+            try:
+                from gis_preload import find_district_containing_point
+
+                chosen = find_district_containing_point(lat, lon)
+                if chosen:
+                    print(f"[preload] point-in-district: '{chosen['aname']}' "
+                          f"(DIST_NO {chosen['dist_no']})", file=_sys.stderr)
+                    return [{
+                        'aname': _norm(chosen['aname']),
+                        'ename': _norm(chosen['ename']),
+                        'dist_no': chosen['dist_no'],
+                    }]
+                print(f"[preload] no district contains ({lat},{lon})",
+                      file=_sys.stderr)
+            except Exception as e:
+                print(f"[preload] point-in-district failed: {e}", file=_sys.stderr)
+            # Fall through to network if preload couldn't help
         else:
+            # Radius query
             results = _preload_radius(lat, lon, distance_m)
+            print(f"[preload] radius {distance_m}m: {len(results)} districts found",
+                  file=_sys.stderr)
             return [
                 {
                     'aname': _norm(d['aname']),
@@ -162,6 +181,8 @@ def _query_gis_districts_radius(lat: float, lon: float, distance_m: int) -> List
             ]
 
     # Slow path: network call to GIS
+    print(f"[preload] falling back to network (lat={lat}, lon={lon}, d={distance_m})",
+          file=_sys.stderr)
     params = {
         'geometry': json.dumps({"x": lon, "y": lat,
                                 "spatialReference": {"wkid": 4326}}),
@@ -189,7 +210,8 @@ def _query_gis_districts_radius(lat: float, lon: float, distance_m: int) -> List
             }
             for f in data.get('features', [])
         ]
-    except Exception:
+    except Exception as e:
+        print(f"[preload] network call failed: {e}", file=_sys.stderr)
         return []
 
 
