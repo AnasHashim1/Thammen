@@ -560,7 +560,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, audience, user_inputs) -> Dict:
     output = {
         'status': 'ok',
-        'engine_version': 'thammen-sprint1b-avm',
+        'engine_version': 'thammen-sprint1c-fixes',
         'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
         'methodology_disclaimer_ar': (
             'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '
@@ -646,19 +646,45 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     else:
         output['accuracy'] = {'score': 0, 'label': 'بيانات غير كافية ❌'}
 
-    # ── Trend ──
+    # ── Trend (only if sample sizes support it — RICS data quality standard) ──
     if getattr(ev, 'trend', None):
         slope_pct = (ev.trend.get('slope_annual_pct') or 0) * 100
-        output['trend'] = {
-            'label': ev.trend.get('label'),
-            'slope_pct': slope_pct,
-            'years': ev.trend.get('years', []),
-        }
-        if abs(slope_pct) > 8:
-            output['trend']['warning'] = (
-                f'⚠️ اتجاه استثنائي ({slope_pct:+.1f}%/سنة) — '
-                f'لا يُستخدم للاستقراء. النمو المستدام في قطر 2-4%/سنة.'
-            )
+        years = ev.trend.get('years', [])
+        # Sprint 1.c fix: hide trend if any year has n<5 or total n<10
+        # Statistical floor — fewer than this can't support a trend line
+        annual_ns = [y.get('n', 0) for y in years]
+        total_n = sum(annual_ns)
+        min_year_n = min(annual_ns) if annual_ns else 0
+        trend_supportable = (
+            len(years) >= 2
+            and min_year_n >= 5      # each year has enough samples
+            and total_n >= 10        # total observations meaningful
+        )
+        if trend_supportable:
+            output['trend'] = {
+                'label': ev.trend.get('label'),
+                'slope_pct': slope_pct,
+                'years': years,
+            }
+            if abs(slope_pct) > 8:
+                output['trend']['warning'] = (
+                    f'⚠️ اتجاه استثنائي ({slope_pct:+.1f}%/سنة) — '
+                    f'لا يُستخدم للاستقراء. النمو المستدام في قطر 2-4%/سنة.'
+                )
+        else:
+            # Show "volatile / undeterminable" indicator instead of a misleading line
+            output['trend'] = {
+                'label': 'غير محدد',
+                'reason_ar': (
+                    f'العينة السنوية صغيرة جداً لاستخراج اتجاه موثوق '
+                    f'(أصغر عينة سنوية: {min_year_n}، الإجمالي: {total_n}). '
+                    f'السوق في هذه المنطقة قد يكون متذبذباً.'
+                ),
+                'years_observed': len(years),
+                'min_year_n': min_year_n,
+                'total_n': total_n,
+                'undeterminable': True,
+            }
 
     # ── Location features ──
     LABEL_FIXES = {
@@ -698,12 +724,73 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             output['location_features'].append({'label': label, 'positive': is_positive})
 
     # ── Material Uncertainty (RICS VPN 13) ──
+    # Sprint 1.c fix: ensure MU reflects the n actually USED in primary value
+    # (not the thin bracket n that geo widening already bypassed)
     if v3_result and v3_result.get('material_uncertainty'):
-        output['material_uncertainty'] = v3_result['material_uncertainty']
+        mu = dict(v3_result['material_uncertainty'])  # shallow copy
+        effective_n = primary['n'] if primary else 0
+        # Replace any "n=1" or "n=X (thin bracket)" misleading factors with the truth
+        if mu.get('factors'):
+            new_factors = []
+            for f in mu['factors']:
+                # The factor that says "n=1 — لا يمكن إنتاج وسيط موثوق" is misleading
+                # when we actually used n=42 from widening
+                if 'صغيرة جداً' in f and 'لا يمكن إنتاج' in f and effective_n >= 20:
+                    new_factors.append(
+                        f'الشريحة المباشرة ضعيفة (n=1) — تم التعويض بالتوسيع الجغرافي '
+                        f'(n={effective_n} معاملة بعد التوسيع، RICS VPS 4 §7)'
+                    )
+                else:
+                    new_factors.append(f)
+            mu['factors'] = new_factors
+
+        # Recompute level based on effective n
+        if effective_n >= 20 and primary and primary['method'] in ('comparison_bracket', 'comparison_widened'):
+            # Strong primary evidence reduces MU from "high" to "moderate"
+            if mu.get('level') == 'high':
+                mu['level'] = 'moderate'
+                mu['banner_ar'] = (
+                    '⚠️ تحفّظ مادي متوسط — عينة المقارنات معقولة (n=' + str(effective_n)
+                    + ') لكن لا يوجد فحص ميداني أو بيانات بناء كاملة. '
+                    + 'يبقى الفحص الميداني موصى به للقرارات الكبرى.'
+                )
+                mu['banner_en'] = (
+                    '⚠️ MODERATE Material Uncertainty — Reasonable comparable sample '
+                    '(n=' + str(effective_n) + ') but no field inspection or full building data. '
+                    'Field inspection recommended for major decisions.'
+                )
+        output['material_uncertainty'] = mu
 
     # ── Audience-specific brief ──
     if v3_result and v3_result.get('brief'):
-        output['brief'] = v3_result['brief']
+        brief = dict(v3_result['brief'])
+        # Sprint 1.c fix: filter out duplicate income/yield sections that use stale v3 cap_rate (6.5%)
+        # contradicting the corrected primary income_approach (4% for residential).
+        # These sections will be regenerated cleanly in Sprint 1.d with consistent data.
+        STALE_SECTION_IDS = {'yield', 'income_value', 'sensitivity', 'rent_reference'}
+        if brief.get('sections'):
+            brief['sections'] = [
+                s for s in brief['sections']
+                if s.get('id') not in STALE_SECTION_IDS
+            ]
+            # If we removed all sections, add a placeholder pointer to the main income_approach
+            if not brief['sections']:
+                brief['sections'] = [{
+                    'id': 'income_pointer',
+                    'title_ar': 'تحليل الدخل والعائد',
+                    'content': {
+                        'note_ar': (
+                            'انظر قسم "طريقة الدخل" أعلاه — يحوي القيمة الصحيحة، '
+                            'مصدر الإيجار، Cap Rate المناسب لنوع الأصل، وصافي العائد.'
+                        ),
+                    },
+                }]
+        # Also fix the brief's top-level valuation_total to match the primary value (was using v3 blend)
+        if primary and primary.get('value'):
+            brief['valuation_total'] = _r100k(primary['value'])
+            brief['valuation_low'] = _r100k(primary.get('low'))
+            brief['valuation_high'] = _r100k(primary.get('high'))
+        output['brief'] = brief
 
     # ── Disclaimer ──
     output['disclaimer'] = getattr(ev, 'disclaimer', None)
