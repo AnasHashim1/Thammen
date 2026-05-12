@@ -638,6 +638,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
         'district': None,
         'plot_area_m2': plot.pdarea,
+        'gps': {'lat': loc.lat, 'lon': loc.lon} if loc else None,
         'asset_type': asset_type,
         'asset_type_ar': asset_label_ar,
         'audience': audience,
@@ -755,6 +756,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
         'district': None,
         'plot_area_m2': plot.pdarea,
+        'gps': {'lat': loc.lat, 'lon': loc.lon} if loc else None,
         'asset_type': asset_type,
         'asset_type_ar': asset_label_ar,
         'audience': audience,
@@ -980,6 +982,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
         'district': None,
         'plot_area_m2': plot.pdarea,
+        'gps': {'lat': loc.lat, 'lon': loc.lon} if loc else None,
         'asset_type': asset_type,
         'asset_type_ar': asset_label_ar,
         'audience': audience,
@@ -1089,6 +1092,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
         'district': None,
         'plot_area_m2': plot.pdarea if plot else None,
+        'gps': {'lat': loc.lat, 'lon': loc.lon} if loc else None,
         'asset_type': asset_type,
         'asset_type_ar': asset_label_ar,
         'audience': audience,
@@ -1621,6 +1625,14 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
         'user_inputs': user_inputs,
     }
 
+    # ── GPS coordinates (for map links) ──
+    rpr = getattr(ev, 'raw_property_report', None)
+    if isinstance(rpr, dict):
+        gps = rpr.get('gps')
+        if gps and isinstance(gps, (list, tuple)) and len(gps) >= 2:
+            # GPS stored as [lon, lat] per qatar_gis convention
+            output['gps'] = {'lon': gps[0], 'lat': gps[1]}
+
     # ── Primary valuation (from comparison approach only) ──
     if primary:
         output['valuation'] = {
@@ -1678,18 +1690,45 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     # ── Reconciliation statement (RICS Red Book) ──
     output['reconciliation'] = reconciliation
 
-    # ── Accuracy (driven by data quality) ──
+    # ── Accuracy (data-quality tier with customer-friendly labels) ──
+    # Labels avoid jargon like "ثقة عالية" alone — instead explain what the
+    # number means in concrete terms a non-technical customer understands.
     n = output.get('moj_sample_size', 0) or 0
     if primary and primary['method'] == 'comparison_bracket' and n >= 20:
-        output['accuracy'] = {'score': 85, 'label': 'ثقة عالية 🟢'}
+        output['accuracy'] = {
+            'score': 85,
+            'label': '🟢 تقدير موثوق',
+            'tier': 'high',
+            'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة في وزارة العدل لعقارات مشابهة بنفس الحجم.',
+        }
     elif primary and primary['method'] in ('comparison_bracket', 'comparison_widened') and n >= 20:
-        output['accuracy'] = {'score': 78, 'label': 'ثقة عالية 🟢'}
+        output['accuracy'] = {
+            'score': 78,
+            'label': '🟢 تقدير موثوق',
+            'tier': 'high',
+            'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة (مع توسيع النطاق الجغرافي للعثور على عدد كافٍ من الصفقات المشابهة).',
+        }
     elif primary and n >= 10:
-        output['accuracy'] = {'score': 60, 'label': 'ثقة متوسطة 🟡'}
+        output['accuracy'] = {
+            'score': 60,
+            'label': '🟡 تقدير إرشادي',
+            'tier': 'medium',
+            'explanation_ar': f'مبني على {n} صفقة فقط — أقل من المعدل الإحصائي المثالي (20). النتيجة قد تنحرف ±10-15% عن السعر الفعلي. يُفضّل التحقق ميدانياً.',
+        }
     elif primary:
-        output['accuracy'] = {'score': 35, 'label': 'ثقة محدودة 🟠'}
+        output['accuracy'] = {
+            'score': 35,
+            'label': '🟠 تقدير تقريبي',
+            'tier': 'low',
+            'explanation_ar': f'مبني على {n} صفقة فقط — عينة صغيرة جداً. النتيجة تقريبية، لا تعتمد عليها لقرار شراء/بيع بدون فحص ميداني أو مُقيِّم معتمد.',
+        }
     else:
-        output['accuracy'] = {'score': 0, 'label': 'بيانات غير كافية ❌'}
+        output['accuracy'] = {
+            'score': 0,
+            'label': '❌ بيانات غير كافية',
+            'tier': 'none',
+            'explanation_ar': 'لا توجد صفقات بيع كافية لعقارات مشابهة في وزارة العدل. لم يتم إنتاج تقييم.',
+        }
 
     # ── Trend (only if sample sizes support it — RICS data quality standard) ──
     if getattr(ev, 'trend', None):
