@@ -288,6 +288,10 @@ function show(d){
         const tag=m.walkable?' (يُمشى)':'';
         items.push({icon:m.walkable?'🏬':'⊙',label:m.name_ar+' — '+m.distance_m+'م'+tag,cls:'loc-pos'});
       });
+      (nl.mixed_use_venues||[]).forEach(m=>{
+        const tag=m.walkable?' (يُمشى)':'';
+        items.push({icon:m.walkable?'🏨':'◇',label:m.name_ar+' (مختلط) — '+m.distance_m+'م'+tag,cls:'loc-pos'});
+      });
       (nl.metros||[]).forEach(m=>{
         const tag=m.walkable?' (يُمشى)':'';
         items.push({icon:'🚇',label:m.name_ar+' — '+m.distance_m+'م'+tag,cls:m.walkable?'loc-pos':'loc-neu'});

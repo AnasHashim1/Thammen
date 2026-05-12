@@ -35,42 +35,14 @@ LAYER_URLS = {
 TIMEOUT = 4
 
 
-# ── Qatar Major Mall Whitelist ──
-# Known major malls/landmarks by GPS — these merit specific landmark premium
-# Coordinates verified via Qatar GIS Landmarks layer search
-# Distance thresholds: walking (<500m), short drive (<2km), area benefit (<5km)
-QATAR_MAJOR_MALLS = {
-    'دار السلام (فندق + سوق)': (25.2447, 51.4917, 'Dar Al Salam (Maamoura area)'),
-    'فستيفال سيتي':         (25.378, 51.522, 'Doha Festival City'),
-    'فيلاجيو':              (25.262, 51.451, 'Villaggio Mall'),
-    'لاند مارك':            (25.327, 51.523, 'Landmark Mall'),
-    'سيتي سنتر':            (25.323, 51.530, 'City Center Doha'),
-    'بليس فاندوم':          (25.382, 51.512, 'Place Vendôme'),
-    'هيات بلازا':           (25.290, 51.467, 'Hyatt Plaza'),
-    'الحزم مول':            (25.350, 51.493, 'Al Hazm'),
-    'تواصيل بلازا':         (25.346, 51.534, 'Tawar Mall'),
-    'ايزدان مول':           (25.244, 51.486, 'Ezdan Mall'),
-    'مول قطر':              (25.276, 51.439, 'Mall of Qatar'),
-    'لولو هايبر ماركت سلوى': (25.290, 51.475, 'LuLu Hypermarket Salwa'),
-}
-
-QATAR_METRO_STATIONS = {
-    # Red Line (north-south)
-    'محطة الجديدة':           (25.276, 51.519),
-    'محطة المطار':            (25.265, 51.566),
-    'محطة لوسيل':             (25.435, 51.487),
-    'محطة قطر الوطنية':       (25.328, 51.527),
-    'محطة مشيرب':             (25.291, 51.530),
-    'محطة سوق واقف':          (25.288, 51.534),
-    'محطة الكورنيش':          (25.297, 51.534),
-    'محطة الدفنة':            (25.331, 51.532),
-    'محطة وادي السيل':        (25.224, 51.494),
-    # Gold Line (east-west)
-    'محطة الواجبة':           (25.270, 51.452),
-    'محطة جامعة قطر':         (25.378, 51.487),
-    'محطة الريان':            (25.291, 51.471),
-    # Add stations as needed
-}
+# ── No hardcoded mall/metro whitelist anymore. ──
+# Earlier versions had QATAR_MAJOR_MALLS and QATAR_METRO_STATIONS dictionaries
+# with hand-entered GPS coordinates. This was wrong: the entries were invented
+# from memory and several pointed to wrong locations (e.g. "ايزدان مول" at
+# (25.244, 51.486) actually points to a residential building called
+# "بيفرلي هيلز جاردن"; the real Ezdan Mall is in Al Wakra, ~13.7 km from
+# Maamoura). The authoritative source is Qatar GIS Landmarks layer with
+# CATEGORY_ANAME and SUBCATEGORY_ANAME. We now query it directly.
 
 
 # ── HTTP helper ──
@@ -469,42 +441,133 @@ def analyze_adjacent_zoning(centroid_lat: float, centroid_lon: float,
     }
 
 
-# ── Factor 3: Named landmark whitelist ──
+# ── Factor 3: Named landmarks (dynamic GIS query) ──
+
+# Patterns that identify a Landmarks-layer entity as a genuine shopping venue
+# Tested against Qatar GIS Landmarks data. Order matters (most specific first).
+MALL_NAME_PATTERNS = [
+    'مول', 'Mall', 'mall',
+    'هايبر', 'Hyper', 'هايبرماركت',
+    'فستيفال', 'Festival',
+    'فيلاجيو', 'Villaggio',
+    'لاند مارك', 'Landmark',
+    'بليس فاندوم', 'Place Vend',
+    'الحزم', 'Hazm',
+]
+
+# Patterns that identify mixed-use venues with shopping/market component
+# (GIS often classifies these as فندقي/سكن even though they have markets)
+MIXED_USE_NAME_PATTERNS = [
+    'دار السلام', 'Dar Al Salam', 'Dar Es Salam',
+    'سوق', 'Souq', 'Suq',
+]
+
+METRO_NAME_PATTERNS = [
+    'محطة', 'مترو', 'Metro', 'metro',
+]
+
 
 def find_named_landmarks(lat: float, lon: float, max_distance_m: float = 2000) -> dict:
     """
-    Find named major landmarks (malls, metros) within distance using whitelist.
+    Find named major landmarks within distance by querying Qatar GIS Landmarks
+    layer directly — no hardcoded whitelist.
 
-    Returns dict with lists of malls and metros sorted by distance.
+    A landmark is considered a "mall" if its name contains identifying tokens
+    (مول, Mall, Hyper, etc.) regardless of GIS CATEGORY (which is too coarse
+    to separate malls from car dealerships).
+
+    Mixed-use venues (Dar Al Salam, named souqs) are caught via a separate
+    pattern list since GIS often classifies them as فندقي.
+
+    Returns dict with malls, mixed_use_venues, metros sorted by distance.
     """
-    malls_nearby = []
-    for ar_name, (m_lat, m_lon, en_name) in QATAR_MAJOR_MALLS.items():
-        d = _haversine_m(lat, lon, m_lat, m_lon)
-        if d <= max_distance_m:
-            malls_nearby.append({
-                'name_ar': ar_name,
-                'name_en': en_name,
-                'distance_m': round(d, 0),
-                'walkable': d <= 500,   # 500m = ~6 min walk
-            })
-    malls_nearby.sort(key=lambda x: x['distance_m'])
+    # Query Landmarks within bbox
+    bbox = _bbox_around_point(lat, lon, max_distance_m)
+    params = {
+        'geometry': json.dumps(bbox),
+        'geometryType': 'esriGeometryEnvelope',
+        'inSR': '4326',
+        'spatialRel': 'esriSpatialRelIntersects',
+        'outFields': 'ANAME,ENAME,CATEGORY_ANAME,SUBCATEGORY_ANAME',
+        'returnGeometry': 'true',
+        'outSR': '4326',
+        'f': 'json',
+        'resultRecordCount': 100,
+    }
+    data = _http_get_json(LAYER_URLS['landmarks'], params)
+    malls = []
+    mixed_use = []
+    metros = []
 
-    metros_nearby = []
-    for ar_name, (m_lat, m_lon) in QATAR_METRO_STATIONS.items():
-        d = _haversine_m(lat, lon, m_lat, m_lon)
-        if d <= max_distance_m:
-            metros_nearby.append({
-                'name_ar': ar_name,
-                'distance_m': round(d, 0),
-                'walkable': d <= 500,
-            })
-    metros_nearby.sort(key=lambda x: x['distance_m'])
+    if not data or not data.get('features'):
+        return {
+            'malls': [],
+            'mixed_use_venues': [],
+            'metros': [],
+            'closest_mall_m': None,
+            'closest_mixed_use_m': None,
+            'closest_metro_m': None,
+        }
+
+    seen_names = set()  # avoid duplicate entries with same name
+    for f in data['features']:
+        a = f.get('attributes', {})
+        g = f.get('geometry', {})
+        if not g.get('y') or not g.get('x'):
+            continue
+        d = _haversine_m(lat, lon, g['y'], g['x'])
+        if d > max_distance_m:
+            continue
+
+        aname = (a.get('ANAME') or '').strip()
+        ename = (a.get('ENAME') or '').strip()
+        cat = (a.get('CATEGORY_ANAME') or '').strip()
+        # Avoid noise: skip if no name
+        if not aname and not ename:
+            continue
+
+        full_name = f"{aname} | {ename}"
+        if full_name in seen_names:
+            continue
+
+        item = {
+            'name_ar': aname or ename,
+            'name_en': ename or aname,
+            'category_ar': cat,
+            'distance_m': round(d, 0),
+            'walkable': d <= 500,
+        }
+
+        # Check mall patterns (must match name; GIS category alone isn't reliable)
+        is_mall = any(p in aname or p in ename for p in MALL_NAME_PATTERNS)
+        # Check mixed-use patterns
+        is_mixed_use = any(p in aname or p in ename for p in MIXED_USE_NAME_PATTERNS)
+        # Check metro patterns (but exclude metro stations of non-Doha Metro context)
+        is_metro = any(p in aname or p in ename for p in METRO_NAME_PATTERNS) and (
+            'مترو' in (aname + ename).lower() or 'Metro' in ename
+        )
+
+        if is_mall:
+            malls.append(item)
+            seen_names.add(full_name)
+        elif is_mixed_use:
+            mixed_use.append(item)
+            seen_names.add(full_name)
+        elif is_metro:
+            metros.append(item)
+            seen_names.add(full_name)
+
+    malls.sort(key=lambda x: x['distance_m'])
+    mixed_use.sort(key=lambda x: x['distance_m'])
+    metros.sort(key=lambda x: x['distance_m'])
 
     return {
-        'malls': malls_nearby,
-        'metros': metros_nearby,
-        'closest_mall_m': malls_nearby[0]['distance_m'] if malls_nearby else None,
-        'closest_metro_m': metros_nearby[0]['distance_m'] if metros_nearby else None,
+        'malls': malls,
+        'mixed_use_venues': mixed_use,
+        'metros': metros,
+        'closest_mall_m': malls[0]['distance_m'] if malls else None,
+        'closest_mixed_use_m': mixed_use[0]['distance_m'] if mixed_use else None,
+        'closest_metro_m': metros[0]['distance_m'] if metros else None,
     }
 
 

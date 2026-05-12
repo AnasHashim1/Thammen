@@ -807,15 +807,18 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 'rics_reference': 'RICS VPS 4 §3.4 — Highest and Best Use',
             }
 
-        # Named landmarks
+        # Named landmarks (from GIS dynamic query — no hardcoded whitelist)
         nl = geometric.get('named_landmarks', {})
-        if nl.get('malls') or nl.get('metros'):
+        if nl.get('malls') or nl.get('metros') or nl.get('mixed_use_venues'):
             geo_section['named_landmarks'] = {
                 'malls': nl.get('malls', []),
+                'mixed_use_venues': nl.get('mixed_use_venues', []),
                 'metros': nl.get('metros', []),
                 'closest_mall_m': nl.get('closest_mall_m'),
+                'closest_mixed_use_m': nl.get('closest_mixed_use_m'),
                 'closest_metro_m': nl.get('closest_metro_m'),
                 'walkable_mall': any(m.get('walkable') for m in nl.get('malls', [])),
+                'walkable_mixed_use': any(m.get('walkable') for m in nl.get('mixed_use_venues', [])),
                 'walkable_metro': any(m.get('walkable') for m in nl.get('metros', [])),
             }
 
@@ -832,12 +835,17 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
         if corner.get('main_road_adjacent'):
             upper_expansion_pct += 0.08
             upper_expansion_reasons.append('شارع رئيسي (+8%)')
-        # Check walkable mall (within 500m)
+        # Check walkable mall (within 500m) — separate from mixed-use
         walking_mall = next((m for m in nl.get('malls', []) if m.get('walkable')), None)
         if walking_mall:
             upper_expansion_pct += 0.10
             upper_expansion_reasons.append(f'{walking_mall["name_ar"]} يُمشى (+10%)')
-        # Check walkable metro
+        # Walkable mixed-use venue (e.g. Dar Al Salam with shopping access) — smaller premium
+        walking_mixed = next((m for m in nl.get('mixed_use_venues', []) if m.get('walkable')), None)
+        if walking_mixed and not walking_mall:  # avoid double-counting if both present
+            upper_expansion_pct += 0.07
+            upper_expansion_reasons.append(f'{walking_mixed["name_ar"]} يُمشى (+7%)')
+        # Walkable metro
         walking_metro = next((m for m in nl.get('metros', []) if m.get('walkable')), None)
         if walking_metro:
             upper_expansion_pct += 0.08
