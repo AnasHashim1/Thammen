@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import sys
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from dataclasses import asdict
 from pathlib import Path
 from typing import Optional, Dict
@@ -277,23 +278,16 @@ def _run_geo_v2(ev, moj_csv_path: str):
     }
     cat = asset_to_cat.get(ev.asset_type, 'villa')
 
+    # Note: signal.SIGALRM was used here but breaks in worker threads.
+    # Timeout is now enforced by the outer ThreadPoolExecutor in evaluate_thammen.
     try:
         rows = _get_moj_rows(moj_csv_path)
-        import signal
-        def _handler(signum, frame):
-            raise TimeoutError('geo_v2 timeout')
-        old = signal.signal(signal.SIGALRM, _handler)
-        signal.alarm(15)
-        try:
-            return build_reference_geo_v2(
-                rows=rows, lat=lat, lon=lon,
-                category=cat,
-                plot_area_m2=ev.plot_area_m2,
-                target_zoning=None,
-            )
-        finally:
-            signal.alarm(0)
-            signal.signal(signal.SIGALRM, old)
+        return build_reference_geo_v2(
+            rows=rows, lat=lat, lon=lon,
+            category=cat,
+            plot_area_m2=ev.plot_area_m2,
+            target_zoning=None,
+        )
     except Exception as e:
         print(f"[geo_v2] failed: {e}", file=sys.stderr)
         return None
@@ -1444,13 +1438,20 @@ def evaluate_thammen(
 
     eval_dict = asdict(ev) if hasattr(ev, '__dataclass_fields__') else ev.__dict__
 
-    # ── Step 1.5: Sprint 2 — Geometric factors (corner, HBU, named landmarks) ──
-    # NOTE: This block has its own internal time budget (~15s) so total time
-    # stays under Heroku's 30s router timeout. Per-call HTTP timeout is 4s.
-    geometric = None
-    if _GEOMETRIC_OK:
+    # ── Steps 1.5 + 2 + 7 — Parallelize 3 independent I/O-bound steps ──
+    # All three consume `ev` but don't modify it or depend on each other:
+    #   - geometric_factors: GIS landmark/HBU analysis (~3s network)
+    #   - geo_v2:            geographic widening (~1.5s)
+    #   - listings:          active listings fetch (~1.5s network)
+    # Sequential total: ~6s. Parallel total: ~3s. Saves ~3 seconds.
+    #
+    # Sprint A.3+ optimization: critical for staying under Heroku's 30s timeout
+    # on cold dyno + network overhead.
+
+    def _run_geometric():
+        if not _GEOMETRIC_OK:
+            return None
         try:
-            # Extract PIN and GPS from raw_property_report dict
             pin = None
             lat = lon = None
             rpr = getattr(ev, 'raw_property_report', None)
@@ -1458,10 +1459,7 @@ def evaluate_thammen(
                 pin = rpr.get('pin')
                 gps = rpr.get('gps')
                 if gps and isinstance(gps, (list, tuple)) and len(gps) >= 2:
-                    # GPS stored as [lon, lat] per qatar_gis convention
                     lon, lat = gps[0], gps[1]
-
-            # Extract zoning code from factors_detail
             zoning_code = None
             if ev.valuation and ev.valuation.factors_detail:
                 for f in ev.valuation.factors_detail:
@@ -1472,18 +1470,64 @@ def evaluate_thammen(
                                 zoning_code = code
                                 break
                         break
-
             if pin and lat and lon:
-                # No SIGALRM — does not work in worker threads.
-                # Module has its own internal time budget.
-                geometric = analyze_geometric_factors(int(pin), float(lat), float(lon), zoning_code)
+                return analyze_geometric_factors(int(pin), float(lat), float(lon), zoning_code)
         except Exception as e:
             print(f"[geometric] failed: {e}", file=sys.stderr)
-            import traceback
-            traceback.print_exc(file=sys.stderr)
+        return None
 
-    # ── Step 2: Geographic widening (the RICS VPS 4 §7 adjustment) ──
-    geo_v2_result = _run_geo_v2(ev, moj_csv_path) if (use_geo_v2 and _GEO_OK) else None
+    def _run_geo_widening():
+        if not (use_geo_v2 and _GEO_OK):
+            return None
+        try:
+            return _run_geo_v2(ev, moj_csv_path)
+        except Exception as e:
+            print(f"[geo_v2] failed: {e}", file=sys.stderr)
+            return None
+
+    def _run_listings_fetch():
+        if not (use_listings and _LISTINGS_OK and ev.gis_district_aname):
+            return None
+        try:
+            district = ev.gis_district_aname
+            min_a = ev.plot_area_m2 * 0.80 if ev.plot_area_m2 else None
+            max_a = ev.plot_area_m2 * 1.20 if ev.plot_area_m2 else None
+            listings = fetch_active_listings(
+                area=district,
+                property_type='villa' if ev.asset_type in ('villa', 'standalone_villa') else 'all',
+                min_area=min_a, max_area=max_a,
+            )
+            if not listings:
+                return None
+            res = weighted_listings_median(listings)
+            res['sample'] = [
+                {'location': l.get('location'), 'area_m2': l.get('area_m2'),
+                 'price_m2': round(l.get('price_m2', 0)),
+                 'age_days': l.get('age_days'), 'url': l.get('url')}
+                for l in listings[:5]
+            ]
+            return res
+        except Exception as e:
+            print(f"[listings] failed: {e}", file=sys.stderr)
+            return None
+
+    # Fire all three in parallel
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        f_geometric = pool.submit(_run_geometric)
+        f_geo_v2 = pool.submit(_run_geo_widening)
+        f_listings = pool.submit(_run_listings_fetch)
+        try:
+            geometric = f_geometric.result(timeout=18)
+        except FutureTimeoutError:
+            geometric = None
+        try:
+            geo_v2_result = f_geo_v2.result(timeout=18)
+        except FutureTimeoutError:
+            geo_v2_result = None
+        try:
+            listings_result = f_listings.result(timeout=18)
+        except FutureTimeoutError:
+            listings_result = None
 
     # ── Step 3: Select PRIMARY comparison value ──
     primary = _select_primary_comparison(ev, geo_v2_result)
@@ -1524,28 +1568,7 @@ def evaluate_thammen(
     # ── Step 6: Reconciliation ──
     reconciliation = _analyze_reconciliation(primary, cost, income)
 
-    # ── Step 7: Active listings — separate market sentiment ──
-    listings_result = None
-    if use_listings and _LISTINGS_OK and ev.gis_district_aname:
-        try:
-            district = ev.gis_district_aname
-            min_a = ev.plot_area_m2 * 0.80 if ev.plot_area_m2 else None
-            max_a = ev.plot_area_m2 * 1.20 if ev.plot_area_m2 else None
-            listings = fetch_active_listings(
-                area=district,
-                property_type='villa' if ev.asset_type in ('villa', 'standalone_villa') else 'all',
-                min_area=min_a, max_area=max_a,
-            )
-            if listings:
-                listings_result = weighted_listings_median(listings)
-                listings_result['sample'] = [
-                    {'location': l.get('location'), 'area_m2': l.get('area_m2'),
-                     'price_m2': round(l.get('price_m2', 0)),
-                     'age_days': l.get('age_days'), 'url': l.get('url')}
-                    for l in listings[:5]
-                ]
-        except Exception as e:
-            print(f"[listings] failed: {e}", file=sys.stderr)
+    # ── Step 7: Active listings — fetched in parallel block above ──
 
     # ── Step 8: Build unified output ──
     output = _build_unified_output(
