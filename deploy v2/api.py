@@ -581,14 +581,18 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ── Run ──
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# ── Static file serving ──
 @app.get("/")
 async def serve_frontend():
     return FileResponse("index.html")
 
+
 @app.get("/logo.png")
 async def serve_logo():
     return FileResponse("logo.png", media_type="image/png")
+
+
+# ── Run (for local dev only; production uses `uvicorn api:app` via Procfile) ──
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

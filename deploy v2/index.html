@@ -168,7 +168,7 @@ const ASSET_AR={'standalone_villa':'فيلا منفردة','raw_land':'أرض ف
 
 function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(n+'Screen').classList.add('active');window.scrollTo(0,0);if(n==='form')chk()}
 
-async function chk(){const b=document.getElementById('statusBar');try{const r=await fetch(API+'/api/health');const d=await r.json();if(d.status==='ok')b.innerHTML=d.moj_db?'متصل <span class="sdot on"></span>':'متصل — قاعدة البيانات غير جاهزة <span class="sdot off"></span>'}catch(e){b.innerHTML='غير متصل <span class="sdot off"></span>'}}
+async function chk(){const b=document.getElementById('statusBar');try{const r=await fetch(API+'/api/health');const d=await r.json();if(d.status==='ok'){const ok=d.moj_db&&(typeof d.moj_db==='object'?d.moj_db.available:d.moj_db);b.innerHTML=ok?'متصل <span class="sdot on"></span>':'متصل — قاعدة البيانات غير جاهزة <span class="sdot off"></span>'}}catch(e){b.innerHTML='غير متصل <span class="sdot off"></span>'}}
 
 function selAud(el,v){audience=v;document.querySelectorAll('.aud-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel')}
 function tog(){dOpen=!dOpen;document.getElementById('dTog').classList.toggle('on',dOpen);document.getElementById('dSec').classList.toggle('open',dOpen)}

@@ -1278,7 +1278,9 @@ def evaluate_property(zone: int, street: int, building: int,
     if asset_type in ASSET_TYPE_TO_MOJ_CATEGORY and ASSET_TYPE_TO_MOJ_CATEGORY[asset_type] is not None:
         try:
             import csv as _csv
-            from datetime import datetime
+            # NOTE: datetime is imported at module level (line 40).
+            # A local import here would shadow it and cause UnboundLocalError
+            # for asset types that skip this branch (compound_large, tower, ...).
             with open(moj_csv_path, 'r', encoding='utf-8-sig') as f:
                 rows = list(_csv.DictReader(f))
             dates = []
@@ -1365,7 +1367,6 @@ def evaluate_property(zone: int, street: int, building: int,
                     try:
                         construction = report.construction
                         if construction and construction.earliest_built_year:
-                            from datetime import datetime
                             age_for_factors = datetime.now().year - construction.earliest_built_year
                     except Exception:
                         pass
@@ -1429,7 +1430,6 @@ def evaluate_property(zone: int, street: int, building: int,
             try:
                 construction = report.construction
                 if construction and construction.earliest_built_year:
-                    from datetime import datetime
                     age = datetime.now().year - construction.earliest_built_year
             except Exception:
                 pass

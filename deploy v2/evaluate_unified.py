@@ -377,6 +377,93 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
 # Reconciliation
 # ============================================================
 
+def _build_investor_sections(income, v3_rent, primary):
+    """Build the 4 investor-specific brief sections from corrected income data.
+
+    Sources used (all consistent with the primary valuation):
+      - `income`: corrected income cross-check (cap_rate matches asset type)
+      - `v3_rent`: rent reference (n, monthly_median, confidence) — if available
+      - `primary`: comparison-led valuation (used for sensitivity baseline)
+    """
+    sections = []
+
+    # ── Section 1: تحليل العائد ──
+    sections.append({
+        'id': 'yield',
+        'title_ar': 'تحليل العائد',
+        'content': {
+            'gross_yield_pct': round((income.get('gross_yield') or 0) * 100, 2),
+            'net_yield_pct': round((income.get('net_yield') or 0) * 100, 2),
+            'noi_annual': income.get('noi'),
+            'annual_rent_gross': income.get('annual_rent'),
+            'cap_rate_pct': round((income.get('cap_rate') or 0) * 100, 2),
+            'cap_rate_label_ar': income.get('cap_rate_label_ar'),
+            'rent_source_ar': income.get('rent_source_ar'),
+        },
+    })
+
+    # ── Section 2: القيمة بمنهج الدخل ──
+    sections.append({
+        'id': 'income_value',
+        'title_ar': 'القيمة بمنهج الدخل',
+        'content': {
+            'income_value': income.get('income_value'),
+            'cap_rate_used': income.get('cap_rate'),
+            'noi': income.get('noi'),
+            'role_ar': income.get('role_ar'),
+            'method_label_ar': income.get('method_label_ar'),
+        },
+    })
+
+    # ── Section 3: تحليل الحساسية ──
+    # Cap rate ±0.5%, ±1% sensitivity on the income value
+    noi = income.get('noi') or 0
+    base_cap = income.get('cap_rate') or 0
+    if noi > 0 and base_cap > 0:
+        sensitivity = []
+        for delta_pct in (-1.0, -0.5, 0, 0.5, 1.0):
+            cap = base_cap + (delta_pct / 100.0)
+            if cap > 0:
+                sensitivity.append({
+                    'cap_rate_pct': round(cap * 100, 2),
+                    'income_value': round(noi / cap, -3),
+                    'delta_label_ar': (
+                        'الأساس' if delta_pct == 0
+                        else f'{"+" if delta_pct > 0 else ""}{delta_pct}%'
+                    ),
+                })
+        sections.append({
+            'id': 'sensitivity',
+            'title_ar': 'تحليل الحساسية — Cap Rate',
+            'content': {
+                'base_cap_rate_pct': round(base_cap * 100, 2),
+                'base_noi': noi,
+                'scenarios': sensitivity,
+                'note_ar': 'حساسية القيمة لتغير Cap Rate ±1% — لأن المعدل يبقى تقديرياً.',
+            },
+        })
+
+    # ── Section 4: مرجع الإيجار ──
+    if v3_rent:
+        sections.append({
+            'id': 'rent_reference',
+            'title_ar': 'مرجع الإيجار',
+            'content': {
+                'monthly_median': v3_rent.get('monthly_median'),
+                'annual_low': v3_rent.get('annual_low'),
+                'annual_high': v3_rent.get('annual_high'),
+                'n': v3_rent.get('n'),
+                'confidence': v3_rent.get('confidence'),
+                'source_ar': v3_rent.get('source_ar', 'qrep.aqarat.gov.qa'),
+                'caveats_ar': v3_rent.get('caveats', []),
+            },
+        })
+
+    return sections
+
+
+# ============================================================
+
 def _analyze_reconciliation(primary, cost, income) -> dict:
     """Compare approaches and produce reconciliation statement (RICS Red Book)."""
     if not primary:
@@ -923,18 +1010,24 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
         output['material_uncertainty'] = mu
 
     # ── Audience-specific brief ──
+    v3_rent = v3_result.get('rent_reference') if v3_result else None
     if v3_result and v3_result.get('brief'):
         brief = dict(v3_result['brief'])
-        # Sprint 1.c fix: filter out duplicate income/yield sections that use stale v3 cap_rate (6.5%)
+        # Sprint A fix: the v3 yield/income/sensitivity sections use stale cap_rate (6.5%)
         # contradicting the corrected primary income_approach (4% for residential).
-        # These sections will be regenerated cleanly in Sprint 1.d with consistent data.
+        # Strategy: filter the stale sections, then rebuild them from `income` (correct).
         STALE_SECTION_IDS = {'yield', 'income_value', 'sensitivity', 'rent_reference'}
         if brief.get('sections'):
             brief['sections'] = [
                 s for s in brief['sections']
                 if s.get('id') not in STALE_SECTION_IDS
             ]
-            # If we removed all sections, add a placeholder pointer to the main income_approach
+            # Rebuild investor sections from the corrected `income` cross-check
+            if audience == 'investor' and income:
+                rebuilt = _build_investor_sections(income, v3_rent, primary)
+                # Insert rebuilt sections BEFORE any existing ones (e.g. market_context)
+                brief['sections'] = rebuilt + brief['sections']
+            # If still no sections (e.g. non-investor), add a placeholder pointer
             if not brief['sections']:
                 brief['sections'] = [{
                     'id': 'income_pointer',
