@@ -407,7 +407,9 @@ def _build_investor_sections(income, v3_rent, primary):
         'id': 'income_value',
         'title_ar': 'القيمة بمنهج الدخل',
         'content': {
-            'income_value': income.get('income_value'),
+            # income.value is what _build_income_crosscheck stores (line 358);
+            # income_value is the same field name used in api.py output
+            'income_value': income.get('value') or income.get('income_value'),
             'cap_rate_used': income.get('cap_rate'),
             'noi': income.get('noi'),
             'role_ar': income.get('role_ar'),

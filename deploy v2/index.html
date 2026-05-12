@@ -80,6 +80,44 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .loc-neu{background:var(--alt);color:var(--muted)}
 .err{background:var(--bad-bg);border:1px solid rgba(185,28,28,.2);border-radius:var(--r);padding:18px;color:var(--bad);text-align:center;animation:fu .5s}
 .disc{text-align:center;padding:20px;font-size:.76rem;color:var(--light);line-height:1.8;border-top:1px solid var(--border);margin-top:28px}
+/* Sprint D: Brief sections */
+.br-sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;animation:fu .5s ease}
+.br-sec h3{font-size:1rem;font-weight:800;color:var(--primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--bronze-g);display:flex;align-items:center;gap:8px}
+.br-sec .br-icon{display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;background:var(--bronze-g);border-radius:50%;font-size:.95rem}
+.br-note{font-size:.86rem;color:var(--muted);line-height:1.7;margin-bottom:12px;padding:10px 14px;background:var(--alt);border-radius:8px}
+.br-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px dashed var(--border);font-size:.92rem}
+.br-row:last-child{border-bottom:none}
+.br-row .br-l{color:var(--muted);font-weight:500}
+.br-row .br-v{font-weight:800;color:var(--text)}
+.br-row .br-v.pos{color:var(--ok)}
+.br-row .br-v.neg{color:var(--bad)}
+.br-row .br-v.hl{color:var(--bronze);font-size:1.05rem}
+.br-opts{list-style:none;padding:0;margin:8px 0 0}
+.br-opts li{padding:10px 14px;background:var(--alt);border-radius:8px;margin-bottom:8px;font-size:.9rem;color:var(--text);border-right:3px solid var(--bronze)}
+.br-sens{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+.br-sens .br-cell{padding:10px 6px;text-align:center;background:var(--alt);border-radius:6px;font-size:.78rem}
+.br-sens .br-cell.base{background:var(--bronze-g);font-weight:700}
+.br-sens .br-cell .br-cap{color:var(--muted);font-size:.7rem;margin-bottom:3px}
+.br-sens .br-cell .br-val{font-weight:700;color:var(--text);font-size:.85rem}
+@media(max-width:600px){.br-sens{grid-template-columns:repeat(3,1fr);font-size:.7rem}}
+/* Insufficient data card */
+.insuf{background:#FFF8EE;border:1.5px dashed var(--bronze);border-radius:var(--r);padding:24px;margin-bottom:14px;text-align:center;animation:fu .5s}
+.insuf-icon{font-size:2.5rem;margin-bottom:10px;color:var(--bronze)}
+.insuf h2{font-size:1.15rem;font-weight:800;color:var(--primary);margin-bottom:10px}
+.insuf p{font-size:.92rem;color:var(--text);line-height:1.7;margin-bottom:16px}
+.insuf-cta{display:inline-block;background:var(--bronze);color:#fff;padding:12px 28px;border-radius:50px;font-weight:700;font-size:1rem;cursor:pointer;border:none;font-family:'Tajawal';transition:all .3s;text-decoration:none}
+.insuf-cta:hover{background:var(--bronze-h);transform:translateY(-1px)}
+/* Loading progress */
+.lprog{margin-top:14px;padding:16px;background:var(--alt);border-radius:var(--r);text-align:center;font-size:.88rem;color:var(--muted);animation:fu .3s}
+.lprog .lstep{margin-bottom:8px;color:var(--primary);font-weight:600}
+.lprog .lelapsed{font-size:.78rem;color:var(--light)}
+.lprog .lbar{height:3px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden;position:relative}
+.lprog .lbar::after{content:'';position:absolute;height:100%;background:var(--bronze);border-radius:2px;animation:lprog-anim 2s ease-in-out infinite}
+@keyframes lprog-anim{0%{width:0;right:0}50%{width:60%;right:20%}100%{width:0;right:100%}}
+/* Copy button */
+.copy-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-family:'Tajawal';font-size:.85rem;cursor:pointer;margin-bottom:14px;transition:all .2s;float:left}
+.copy-btn:hover{border-color:var(--bronze);color:var(--bronze)}
+.copy-btn.copied{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
 @media(max-width:600px){.hlogo img{max-width:260px}.fr3,.fr2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}.fcard{padding:18px}.aud-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -177,48 +215,117 @@ function fmt(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('ar-QA')
 async function run(){
   const z=document.getElementById('zone').value,s=document.getElementById('street').value,b=document.getElementById('building').value;
   if(!z||!s||!b){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">يرجى إدخال رقم المنطقة والشارع والمبنى</div>';return}
-  const btn=document.getElementById('sBtn');btn.disabled=true;btn.innerHTML='جاري التقييم... <span class="sp"></span>';document.getElementById('fRes').innerHTML='';
+  const btn=document.getElementById('sBtn');btn.disabled=true;btn.innerHTML='جاري التقييم... <span class="sp"></span>';
+  // Sprint D: progressive loading with elapsed time
+  const fRes=document.getElementById('fRes');
+  const t0=Date.now();
+  const steps=['نتحقق من العنوان في خرائط GIS...','نبحث في سجل وزارة العدل عن صفقات مماثلة...','نحلّل الموقع والمعالم القريبة...','نُجهّز التقرير...'];
+  let stepIdx=0;
+  const renderLoading=()=>{
+    const el=Math.round((Date.now()-t0)/1000);
+    fRes.innerHTML='<div class="lprog"><div class="lstep">'+steps[Math.min(stepIdx,steps.length-1)]+'</div><div class="lelapsed">منذ '+el+' ثانية</div><div class="lbar"></div></div>';
+  };
+  renderLoading();
+  const stepTimer=setInterval(()=>{stepIdx++;if(stepIdx<steps.length)renderLoading();},6000);
+  const elapsedTimer=setInterval(renderLoading,1000);
   try{
     let bd={zone:+z,street:+s,building:+b,audience};
     if(dOpen){const f=document.getElementById('floors').value,a=document.getElementById('annexes').value,c=document.getElementById('condition').value,p=document.getElementById('askingPrice').value,ri=document.getElementById('rentalIncome').value,pr=document.getElementById('potentialRental').value;
       if(f)bd.floors=+f;if(a)bd.annexes=+a;if(c)bd.condition=c;if(p)bd.asking_price=+p;if(ri)bd.rental_income=+ri;if(pr)bd.potential_rental=+pr}
     const r=await fetch(API+'/api/evaluate/details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
-    if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ: '+r.status)}
-    show(await r.json());go('results');
-  }catch(e){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">⚠️ '+(e.message||'حدث خطأ')+'</div>'
-  }finally{btn.disabled=false;btn.innerHTML='ثمّن'}
+    if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
+    const data=await r.json();
+    window._lastResult=data;
+    show(data);
+    fRes.innerHTML='';
+    go('results');
+  }catch(e){
+    fRes.innerHTML='<div class="err" style="margin-top:14px">⚠️ '+(e.message||'حدث خطأ')+'<br><span style="font-size:.78rem;color:var(--muted);display:block;margin-top:8px">لو استمرت المشكلة، تأكد من الاتصال أو حاول بعد دقيقة.</span></div>';
+  }finally{
+    clearInterval(stepTimer);clearInterval(elapsedTimer);
+    btn.disabled=false;btn.innerHTML='ثمّن';
+  }
+}
+
+function copyResult(){
+  const d=window._lastResult;
+  if(!d){return}
+  const lines=[];
+  lines.push('━━━ تقرير ثمّن ━━━');
+  if(d.address)lines.push('العنوان: '+d.address);
+  if(d.district)lines.push('المنطقة: '+d.district);
+  if(d.asset_type)lines.push('نوع العقار: '+(ASSET_AR[d.asset_type]||d.asset_type));
+  if(d.plot_area_m2)lines.push('مساحة الأرض: '+fmt(d.plot_area_m2)+' م²');
+  const v=d.valuation||{};
+  if(v.amount){
+    lines.push('');lines.push('قيمة التقييم: '+fmt(v.amount)+' ر.ق');
+    if(v.low&&v.high)lines.push('النطاق: '+fmt(v.low)+' – '+fmt(v.high)+' ر.ق');
+  }else if(v.reason_ar){
+    lines.push('');lines.push('ملاحظة: '+v.reason_ar);
+  }
+  if(d.methodology_ar)lines.push('');lines.push('المنهجية: '+d.methodology_ar);
+  lines.push('');lines.push('— مُولَّد من ثمّن (thammen.qa)');
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.innerHTML='✓ نُسخ';btn.classList.add('copied');
+    setTimeout(()=>{btn.innerHTML='📋 نسخ النتيجة';btn.classList.remove('copied')},2000);
+  });
 }
 
 function show(d){
   const o=document.getElementById('rOut');
   const v=d.valuation||{};
   const acc=d.accuracy||{};
-
-  // Badge from accuracy
-  let bc='rb-w',bt=acc.label||'⚠️ يحتاج فحص';
-  if(acc.score>=70){bc='rb-ok';bt=acc.label||'💰 ثقة عالية'}
-  else if(acc.score<40){bc='rb-bad';bt=acc.label||'❌ ثقة ضعيفة'}
+  const hasValuation=v.amount!=null&&v.amount>0;
 
   let h='';
 
-  // ── Main info card ──
-  h+='<div class="rc"><div class="rh"><div class="rt">نتيجة التقييم</div><div class="rb '+bc+'">'+bt+'</div></div><div class="rg">';
-  if(d.address)h+=ri('العنوان',d.address,0,1);
-  if(d.district)h+=ri('المنطقة',d.district);
-  if(d.plot_area_m2)h+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
-  if(d.asset_type)h+=ri('نوع العقار',ASSET_AR[d.asset_type]||d.asset_type);
-  const pi=d.property_info||{};
-  if(pi.zoning)h+=ri('التصنيف',pi.zoning);
-  if(pi.permitted_height)h+=ri('الارتفاع المسموح',pi.permitted_height);
-  h+='</div></div>';
+  // ── Copy button (top, floats right) ──
+  h+='<button id="copyBtn" class="copy-btn" onclick="copyResult()">📋 نسخ النتيجة</button><div style="clear:both"></div>';
 
-  // ── Methodology disclosure (small text) ──
-  if(d.methodology_ar){
-    h+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin-bottom:14px;font-size:.78rem;color:#666;line-height:1.5">'+d.methodology_ar+'</div>';
+  // ── INSUFFICIENT DATA: prominent card with CTA ──
+  if(!hasValuation){
+    const reason=v.reason_ar||'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً.';
+    const assetAr=ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type||'هذا العقار';
+    h+='<div class="insuf">';
+    h+='<div class="insuf-icon">ⓘ</div>';
+    h+='<h2>التقييم يحتاج بيانات إضافية</h2>';
+    h+='<p>'+reason+'</p>';
+    // Show classification facts (what we DO know)
+    if(d.address||d.plot_area_m2){
+      h+='<div style="background:#fff;border-radius:8px;padding:14px;margin-bottom:16px;text-align:right;font-size:.88rem">';
+      if(d.address)h+='<div style="margin-bottom:6px"><strong>العنوان:</strong> '+d.address+'</div>';
+      if(d.asset_type)h+='<div style="margin-bottom:6px"><strong>نوع العقار:</strong> '+assetAr+'</div>';
+      if(d.plot_area_m2)h+='<div><strong>مساحة الأرض:</strong> '+fmt(d.plot_area_m2)+' م²</div>';
+      h+='</div>';
+    }
+    h+='<button class="insuf-cta" onclick="go(\'form\')">→ أضف الإيجار أو سعر الإعلان</button>';
+    h+='</div>';
+    // For unknown/no district, that's where we stop. Don't render the rest.
+    if(d.asset_type==='unknown'||!d.asset_type){o.innerHTML=h;return}
   }
 
-  // ── Valuation card ──
-  if(v.amount){
+  // ── Main info card (only if we have a real valuation) ──
+  if(hasValuation){
+    let bc='rb-w',bt=acc.label||'⚠️ يحتاج فحص';
+    if(acc.score>=70){bc='rb-ok';bt=acc.label||'💰 ثقة عالية'}
+    else if(acc.score<40){bc='rb-bad';bt=acc.label||'❌ ثقة ضعيفة'}
+    h+='<div class="rc"><div class="rh"><div class="rt">نتيجة التقييم</div><div class="rb '+bc+'">'+bt+'</div></div><div class="rg">';
+    if(d.address)h+=ri('العنوان',d.address,0,1);
+    if(d.district)h+=ri('المنطقة',d.district);
+    if(d.plot_area_m2)h+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
+    if(d.asset_type)h+=ri('نوع العقار',ASSET_AR[d.asset_type]||d.asset_type);
+    const pi=d.property_info||{};
+    if(pi.zoning)h+=ri('التصنيف',pi.zoning);
+    if(pi.permitted_height)h+=ri('الارتفاع المسموح',pi.permitted_height);
+    h+='</div></div>';
+
+    // ── Methodology disclosure ──
+    if(d.methodology_ar){
+      h+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin-bottom:14px;font-size:.78rem;color:#666;line-height:1.5">'+d.methodology_ar+'</div>';
+    }
+
+    // ── Valuation card ──
     h+='<div class="rc"><div class="rt" style="margin-bottom:14px">التقييم</div>';
     h+='<div class="ri full" style="margin-bottom:10px"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.amount)+' ر.ق</div></div>';
     if(v.low&&v.high){
@@ -226,36 +333,38 @@ function show(d){
       h+='<div class="ri"><div class="rl">الحد الأعلى</div><div class="rv">'+fmt(v.high)+' ر.ق</div></div></div>'}
     if(d.moj_sample_size)h+='<div class="ri" style="margin-bottom:10px"><div class="rl">عدد المعاملات المرجعية</div><div class="rv">'+d.moj_sample_size+' معاملة ('+v.method+')</div></div>';
     h+='</div>';
+  }
 
-    // ── Range Expansion Explanation (Sprint 2 Phase 1) ──
-    if(v.range_expansion){
-      const re=v.range_expansion;
-      const reasons=re.reasons_for_upper_expansion||[];
-      const hbuAdj=re.central_value_hbu_adjustment_pct||0;
-      if(reasons.length>0||hbuAdj!==0){
-        h+='<div class="rc"><div class="rt" style="margin-bottom:8px">⤴ توسيع النطاق الأعلى (+'+re.upper_bound_expanded_pct.toFixed(0)+'%)</div>';
-        h+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">النقطة المركزية محافظة (وسيط المقارنات). الحد الأعلى يَتسع لِيَعكس خصائص فريدة قد تَفرض علاوة سوقية يَصعب قياسها بدقة من البيانات العامة:</div>';
-        reasons.forEach(r=>{h+='<span class="loc-tag loc-pos">⤴ '+r+'</span>'});
-        if(hbuAdj!==0){
-          const sign=hbuAdj>0?'+':'';
-          const bg=hbuAdj>0?'#e6f7ed':'#fdecec';
-          const color=hbuAdj>0?'#0c7d41':'#a8131c';
-          h+='<div style="margin-top:12px;padding:10px;background:'+bg+';border-radius:6px;font-size:.88rem;color:'+color+'"><strong>HBU (Highest and Best Use):</strong> تعديل النقطة المركزية '+sign+hbuAdj.toFixed(1)+'% — RICS VPS 4 §3.4</div>';
-        }
-        h+='</div>';
+  // ── BRIEF SECTIONS (Sprint D — was missing entirely) ──
+  const br=d.brief;
+  if(br&&br.sections&&br.sections.length>0){
+    h+='<div class="rc" style="background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px"><div class="rt" style="font-size:1.15rem;margin-bottom:0">'+(br.title_ar||'التقرير')+'</div></div>';
+    br.sections.forEach(sec=>{h+=renderSection(sec)});
+  }
+
+  // ── Range Expansion Explanation (when valuation is present) ──
+  if(hasValuation&&v.range_expansion){
+    const re=v.range_expansion;
+    const reasons=re.reasons_for_upper_expansion||[];
+    const hbuAdj=re.central_value_hbu_adjustment_pct||0;
+    if(reasons.length>0||hbuAdj!==0){
+      h+='<div class="rc"><div class="rt" style="margin-bottom:8px">⤴ توسيع النطاق الأعلى (+'+re.upper_bound_expanded_pct.toFixed(0)+'%)</div>';
+      h+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">النقطة المركزية محافظة (وسيط المقارنات). الحد الأعلى يَتسع لِيَعكس خصائص فريدة قد تَفرض علاوة سوقية يَصعب قياسها بدقة من البيانات العامة:</div>';
+      reasons.forEach(r=>{h+='<span class="loc-tag loc-pos">⤴ '+r+'</span>'});
+      if(hbuAdj!==0){
+        const sign=hbuAdj>0?'+':'';
+        const bg=hbuAdj>0?'#e6f7ed':'#fdecec';
+        const color=hbuAdj>0?'#0c7d41':'#a8131c';
+        h+='<div style="margin-top:12px;padding:10px;background:'+bg+';border-radius:6px;font-size:.88rem;color:'+color+'"><strong>HBU:</strong> تعديل النقطة المركزية '+sign+hbuAdj.toFixed(1)+'% — RICS VPS 4 §3.4</div>';
       }
+      h+='</div>';
     }
   }
 
   // ── Trend card ──
   const tr=d.trend;
-  if(tr&&tr.undeterminable){
-    h+='<div class="rc"><div class="rt" style="margin-bottom:6px">اتجاه السوق: غير محدد</div>';
-    h+='<div class="rn" style="font-size:.85rem">'+(tr.reason_ar||'لا يمكن استخراج اتجاه موثوق من العينة المتاحة.')+'</div></div>';
-  } else if(tr&&tr.years&&tr.years.length>0){
-    h+='<div class="rc"><div class="rt" style="margin-bottom:6px">اتجاه السوق: '+tr.label;
-    if(tr.slope_pct!=null)h+=' ('+tr.slope_pct.toFixed(1)+'%/سنة)';
-    h+='</div>';
+  if(tr&&tr.years&&tr.years.length>0){
+    h+='<div class="rc"><div class="rt" style="margin-bottom:6px">اتجاه السوق: '+(tr.label||'')+(tr.slope_pct!=null?' ('+tr.slope_pct.toFixed(1)+'%/سنة)':'')+'</div>';
     const maxM=Math.max(...tr.years.map(y=>y.median_m2||0));
     h+='<div class="trend-row">';
     tr.years.forEach(y=>{const pct=maxM>0?((y.median_m2||0)/maxM*100):0;
@@ -265,16 +374,16 @@ function show(d){
     h+='</div></div>';
   }
 
-  // ── Geometric Findings (NEW Sprint 2 Phase 1) ──
+  // ── Geometric Findings ──
   const gf=d.geometric_factors;
   if(gf){
     const items=[];
-    const c=gf.corner_analysis;
-    if(c){
+    const ca=gf.corner_analysis;
+    if(ca){
       let icon='|',cls='loc-neu';
-      if(c.is_corner){icon='⊿';cls='loc-pos'}
-      else if(c.main_road_adjacent){icon='═';cls='loc-pos'}
-      items.push({icon:icon,label:c.evidence_ar,cls:cls});
+      if(ca.is_corner){icon='⊿';cls='loc-pos'}
+      else if(ca.main_road_adjacent){icon='═';cls='loc-pos'}
+      items.push({icon:icon,label:ca.evidence_ar,cls:cls});
     }
     const hbu=gf.hbu_analysis;
     if(hbu){
@@ -299,7 +408,7 @@ function show(d){
     }
     if(items.length>0){
       h+='<div class="rc"><div class="rt" style="margin-bottom:8px">⚙ ما اكتشفه النظام آلياً</div>';
-      h+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">هذه المعلومات اكتُشفت من تحليل polygon القطعة + قاعدة المعالم — بدون إدخال من المستخدم.</div>';
+      h+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">معلومات اكتُشفت من تحليل polygon القطعة + قاعدة المعالم — بدون إدخال من المستخدم.</div>';
       items.forEach(it=>{h+='<span class="loc-tag '+it.cls+'">'+it.icon+' '+it.label+'</span>'});
       if(gf.plot_area_m2_verified){h+='<div style="margin-top:10px;font-size:.78rem;color:#888">مساحة محقّقة من Cadastre: '+fmt(gf.plot_area_m2_verified)+' م²'+(gf.pd_no?' (PD: '+gf.pd_no+')':'')+'</div>'}
       h+='</div>';
@@ -317,10 +426,10 @@ function show(d){
   }
 
   // ── Known unknowns ──
-  const rt=d.reasoning_trace;
-  if(rt&&rt.known_unknowns&&rt.known_unknowns.length>0){
+  const rtr=d.reasoning_trace;
+  if(rtr&&rtr.known_unknowns&&rtr.known_unknowns.length>0){
     h+='<div class="rc"><div class="rt" style="margin-bottom:10px">ما لا نعرفه (يحتاج فحص ميداني)</div><div class="rn">';
-    rt.known_unknowns.forEach(u=>{h+='• '+u+'<br>'});
+    rtr.known_unknowns.forEach(u=>{h+='• '+u+'<br>'});
     h+='</div></div>';
   }
 
@@ -331,6 +440,191 @@ function show(d){
 
   o.innerHTML=h;
 }
+
+// Sprint D: Section renderer for brief.sections
+const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔'};
+function pctFmt(n){return n==null?'—':Number(n).toFixed(2)+'%'}
+function qarFmt(n){return n==null?'—':fmt(n)+' ر.ق'}
+function renderSection(sec){
+  if(!sec||!sec.title_ar)return '';
+  const c=sec.content||{};
+  const icon=SEC_ICONS[sec.id]||'•';
+  let body='';
+  // Section-specific rendering by id
+  switch(sec.id){
+    case 'yield':
+      body+=row('العائد الإجمالي',pctFmt(c.gross_yield_pct),c.gross_yield_pct>=6?'pos':c.gross_yield_pct<4?'neg':'');
+      body+=row('العائد الصافي',pctFmt(c.net_yield_pct),c.net_yield_pct>=5?'pos':c.net_yield_pct<3?'neg':'');
+      body+=row('صافي الدخل السنوي (NOI)',qarFmt(c.noi_annual));
+      body+=row('الإيجار السنوي الإجمالي',qarFmt(c.annual_rent_gross));
+      body+=row('Cap Rate المستخدم',pctFmt(c.cap_rate_pct));
+      if(c.cap_rate_label_ar)body+='<div class="br-note" style="margin-top:8px">'+c.cap_rate_label_ar+'</div>';
+      if(c.rent_source_ar)body+='<div class="br-note" style="margin-top:8px;font-size:.78rem">مصدر الإيجار: '+c.rent_source_ar+'</div>';
+      break;
+    case 'income_value':
+      body+=row('القيمة بمنهج الدخل',qarFmt(c.income_value),'hl');
+      body+=row('Cap Rate',pctFmt(c.cap_rate_used!=null?c.cap_rate_used*100:null));
+      body+=row('NOI',qarFmt(c.noi));
+      if(c.role_ar)body+='<div class="br-note" style="margin-top:10px">'+c.role_ar+'</div>';
+      break;
+    case 'sensitivity':
+      body+='<div class="br-note">'+(c.note_ar||'حساسية القيمة لتغيّر Cap Rate.')+'</div>';
+      if(c.scenarios&&c.scenarios.length){
+        body+='<div class="br-sens">';
+        c.scenarios.forEach(sc=>{
+          const base=sc.delta_label_ar==='الأساس';
+          body+='<div class="br-cell'+(base?' base':'')+'"><div class="br-cap">'+sc.delta_label_ar+'</div><div class="br-cap">'+pctFmt(sc.cap_rate_pct)+'</div><div class="br-val">'+(sc.income_value?(Math.round(sc.income_value/1000)+'K'):'—')+'</div></div>';
+        });
+        body+='</div>';
+      }
+      break;
+    case 'rent_reference':
+      body+=row('متوسط الإيجار الشهري',qarFmt(c.monthly_median));
+      if(c.annual_low&&c.annual_high)body+=row('النطاق السنوي',qarFmt(c.annual_low)+' – '+qarFmt(c.annual_high));
+      body+=row('عدد المعاملات',(c.n||'—')+(c.n?' معاملة':''));
+      body+=row('الموثوقية',c.confidence==='reliable'?'موثوقة':c.confidence==='indicative'?'إرشادية':c.confidence||'—',c.confidence==='reliable'?'pos':'');
+      if(c.source_ar)body+='<div class="br-note" style="margin-top:8px;font-size:.78rem">المصدر: '+c.source_ar+'</div>';
+      if(c.caveats_ar&&c.caveats_ar.length){
+        body+='<div class="br-note" style="margin-top:8px;background:var(--warn-bg);color:var(--warn)"><strong>تنبيه:</strong> '+c.caveats_ar.join(' • ')+'</div>';
+      }
+      break;
+    case 'market_context':
+      if(c.qatar_benchmark)body+=row('المرجع القطري',c.qatar_benchmark);
+      if(c.above_6_net)body+='<div class="br-note" style="background:var(--ok-bg);color:var(--ok);margin-top:8px">✓ '+c.above_6_net+'</div>';
+      if(c.below_4_net)body+='<div class="br-note" style="background:var(--bad-bg);color:var(--bad);margin-top:8px">✗ '+c.below_4_net+'</div>';
+      break;
+    case 'next_steps':
+      if(c.note_ar)body+='<div class="br-note">'+c.note_ar+'</div>';
+      if(c.options_ar&&c.options_ar.length){
+        body+='<ul class="br-opts">';
+        c.options_ar.forEach(o=>{body+='<li>'+o+'</li>'});
+        body+='</ul>';
+      }
+      break;
+    // ── Buyer brief ──
+    case 'verdict':
+      if(c.listing_price)body+=row('السعر المطلوب',qarFmt(c.listing_price));
+      if(c.benchmark)body+=row('المرجع',qarFmt(c.benchmark));
+      if(c.gap_pct!=null){
+        const g=c.gap_pct*100,cls=g<-5?'pos':g>10?'neg':'';
+        body+=row('الفرق',(g>0?'+':'')+g.toFixed(1)+'%',cls);
+      }
+      const posLabels={'below_market':'أقل من السوق','at_market':'في السوق','above_market':'أعلى من السوق','far_above_market':'أعلى بكثير','far_below_market':'أقل بكثير'};
+      if(c.position)body+=row('الموقع','<span class="loc-tag '+(c.position.includes('below')?'loc-pos':c.position.includes('above')?'loc-neg':'loc-neu')+'">'+(posLabels[c.position]||c.position)+'</span>');
+      if(c.description_ar)body+='<div class="br-note" style="margin-top:10px">'+c.description_ar+'</div>';
+      break;
+    case 'negotiation':
+      if(c.opening_offer)body+=row('عرض الفتح المقترح',qarFmt(c.opening_offer),'hl');
+      if(c.floor)body+=row('السقف الأدنى',qarFmt(c.floor));
+      if(c.ceiling)body+=row('السقف الأعلى',qarFmt(c.ceiling));
+      if(c.note)body+='<div class="br-note" style="margin-top:10px">'+c.note+'</div>';
+      break;
+    case 'flags':
+      const hr=Array.isArray(c.red_flags)?c.red_flags:[];
+      const hg=Array.isArray(c.green_flags)?c.green_flags:[];
+      if(!hr.length&&!hg.length){
+        body+='<div class="br-note">لم يُكتشف أي علم أحمر أو أخضر في وصف الإعلان (لم يُقدَّم وصف).</div>';
+      }else{
+        if(hr.length){
+          body+='<div style="margin-bottom:8px;font-weight:600;color:var(--bad)">العلامات الحمراء:</div>';
+          hr.forEach(f=>{body+='<span class="loc-tag loc-neg">⚠ '+(typeof f==='string'?f:JSON.stringify(f))+'</span>'});
+        }
+        if(hg.length){
+          body+='<div style="margin:10px 0 6px;font-weight:600;color:var(--ok)">العلامات الخضراء:</div>';
+          hg.forEach(f=>{body+='<span class="loc-tag loc-pos">✓ '+(typeof f==='string'?f:JSON.stringify(f))+'</span>'});
+        }
+      }
+      if(c.has_excluding)body+='<div class="br-note" style="background:var(--bad-bg);color:var(--bad);margin-top:10px">⚠ يحتوي على شارة استبعاد حرجة</div>';
+      break;
+    case 'due_diligence':
+      if(c.questions_ar&&c.questions_ar.length){
+        body+='<ul class="br-opts">';c.questions_ar.forEach(q=>{body+='<li>'+q+'</li>'});body+='</ul>';
+      }else if(c.note_ar)body+='<div class="br-note">'+c.note_ar+'</div>';
+      else body+='<div class="br-note">قائمة أسئلة الفحص متاحة في تقرير PDF كامل.</div>';
+      break;
+    // ── Seller brief ──
+    case 'valuation':
+      if(c.estimated_value)body+=row('القيمة التقديرية',qarFmt(c.estimated_value),'hl');
+      if(c.range_low&&c.range_high)body+=row('النطاق',qarFmt(c.range_low)+' – '+qarFmt(c.range_high));
+      if(c.note)body+='<div class="br-note" style="margin-top:10px">'+c.note+'</div>';
+      break;
+    case 'pricing':
+      if(c.aggressive_price)body+=row('سعر طموح',qarFmt(c.aggressive_price));
+      if(c.realistic_price)body+=row('سعر واقعي',qarFmt(c.realistic_price),'hl');
+      if(c.quick_sale_price)body+=row('سعر بيع سريع',qarFmt(c.quick_sale_price));
+      if(c.market_ceiling)body+=row('السقف السوقي',qarFmt(c.market_ceiling),'neg');
+      if(c.note)body+='<div class="br-note" style="margin-top:10px">'+c.note+'</div>';
+      break;
+    case 'trend':
+      if(c.area)body+=row('المنطقة',c.area);
+      if(c.label)body+=row('الاتجاه',c.label,c.slope_annual_pct>0.02?'pos':c.slope_annual_pct<-0.02?'neg':'');
+      if(c.slope_annual_pct!=null)body+=row('معدل النمو السنوي',pctFmt(c.slope_annual_pct*100));
+      if(c.latest_vs_peak_pct!=null)body+=row('الحالي مقابل الذروة',pctFmt(c.latest_vs_peak_pct*100));
+      break;
+    case 'tips':
+      if(c.tips_ar&&c.tips_ar.length){
+        body+='<ul class="br-opts">';c.tips_ar.forEach(t=>{body+='<li>'+t+'</li>'});body+='</ul>';
+      }else body+='<div class="br-note">نصائح البيع متاحة في تقرير PDF كامل.</div>';
+      break;
+    // ── Valuer brief ──
+    case 'methodology':
+      if(c.blended_value)body+=row('القيمة المُوفَّقة',qarFmt(c.blended_value),'hl');
+      if(c.blend_reason)body+='<div class="br-note" style="margin-top:10px"><strong>سبب الترجيح:</strong> '+c.blend_reason+'</div>';
+      if(c.methods&&c.methods.length){
+        body+='<div style="margin-top:10px;font-weight:600">الطرق المُطبَّقة:</div>';
+        c.methods.forEach(m=>{
+          if(typeof m==='string')body+='<span class="loc-tag loc-neu">'+m+'</span>';
+          else if(m.name)body+='<span class="loc-tag '+(m.weight>0?'loc-pos':'loc-neu')+'">'+m.name+(m.weight!=null?' ('+(m.weight*100).toFixed(0)+'%)':'')+'</span>';
+        });
+      }
+      break;
+    case 'material_uncertainty':
+      const levelLabels={'low':'منخفض','moderate':'متوسط','high':'مرتفع','critical':'حرج'};
+      const levelCls={'low':'pos','moderate':'','high':'neg','critical':'neg'};
+      if(c.level)body+=row('مستوى التحفظ',levelLabels[c.level]||c.level,levelCls[c.level]||'');
+      if(c.factors&&c.factors.length){
+        body+='<div style="margin-top:10px;font-weight:600">العوامل:</div><ul class="br-opts">';
+        c.factors.forEach(f=>{body+='<li>'+f+'</li>'});body+='</ul>';
+      }
+      if(c.recommendations&&c.recommendations.length){
+        body+='<div style="margin-top:10px;font-weight:600;color:var(--ok)">التوصيات:</div><ul class="br-opts">';
+        c.recommendations.forEach(r=>{body+='<li>'+r+'</li>'});body+='</ul>';
+      }
+      break;
+    case 'sources':
+    case 'gaps':
+    case 'reasoning_trace':
+      // Generic dump for these
+      Object.keys(c).forEach(k=>{
+        const val=c[k];
+        if(val==null||k==='disclaimer')return;
+        if(typeof val==='string'&&val.length<200)body+=row(prettify(k),val);
+        else if(typeof val==='number')body+=row(prettify(k),fmt(val));
+        else if(Array.isArray(val)&&val.length>0&&typeof val[0]==='string'){
+          body+='<div style="margin-top:8px;font-weight:600">'+prettify(k)+':</div><ul class="br-opts">';
+          val.forEach(it=>{body+='<li>'+it+'</li>'});body+='</ul>';
+        }
+      });
+      break;
+    default:
+      // Fallback: generic key/value dump
+      Object.keys(c).forEach(k=>{
+        const val=c[k];
+        if(val==null)return;
+        if(typeof val==='string')body+=row(prettify(k),val);
+        else if(typeof val==='number')body+=row(prettify(k),fmt(val));
+        else if(Array.isArray(val)&&val.length>0&&typeof val[0]==='string'){
+          body+='<ul class="br-opts">';val.forEach(it=>{body+='<li>'+it+'</li>'});body+='</ul>';
+        }
+      });
+      if(!body&&c.note_ar)body='<div class="br-note">'+c.note_ar+'</div>';
+  }
+  if(sec.note&&!body.includes(sec.note))body+='<div class="br-note" style="margin-top:10px;font-size:.78rem">'+sec.note+'</div>';
+  if(!body)body='<div class="br-note">لا توجد بيانات لعرضها في هذا القسم.</div>';
+  return '<div class="br-sec"><h3><span class="br-icon">'+icon+'</span>'+sec.title_ar+'</h3>'+body+'</div>';
+}
+function row(l,v,cls){return '<div class="br-row"><div class="br-l">'+l+'</div><div class="br-v '+(cls||'')+'">'+v+'</div></div>'}
+function prettify(k){return k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}
 
 function ri(l,v,hl,fl){return'<div class="ri'+(fl?' full':'')+'"><div class="rl">'+l+'</div><div class="rv'+(hl?' hl':'')+'">'+v+'</div></div>'}
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('formScreen').classList.contains('active'))run()});
