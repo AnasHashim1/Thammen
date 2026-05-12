@@ -125,6 +125,20 @@ YIELD_FLAG_MAX   = 0.12   # > 12% → "implausible, check rent"
 LISTING_GAP_OVERPRICED_WARN = 0.30   # +30% = market ceiling
 LISTING_GAP_UNDERPRICED_WARN = -0.30 # -30% = check for issues
 
+# Asset type → MoJ "نوع العقار" categories for sample availability check
+# (some categories appear with NBSP \xa0 vs regular space — handled by normalize)
+ASSET_TO_MOJ_CATEGORIES = {
+    'standalone_villa':  ('فيلا', 'فيلا من طابقين وملحق', 'فيلتان متلاصقتان', 'فيلا واحدة'),
+    'villa':             ('فيلا', 'فيلا من طابقين وملحق', 'فيلتان متلاصقتان', 'فيلا واحدة'),
+    'raw_land':          ('أرض فضاء', 'ارض فضاء'),
+    'land':              ('أرض فضاء', 'ارض فضاء'),
+    'palace':            ('قصر',),
+    'compound_small':    ('مجمع فلل', 'مجمع فلل وملحقاتها'),
+}
+MIN_MOJ_SAMPLES_FOR_FULL_PIPELINE = 1  # below this → use fast paths instead
+# (only blocks when ZERO direct comparables exist — full pipeline can still
+# widen the search to find indirect samples for n>=1 cases)
+
 
 # ============================================================
 # Caches
@@ -143,6 +157,44 @@ def _get_moj_rows(csv_path: str) -> list:
         rows = list(csv.DictReader(f))
     _MOJ_CACHE[key] = rows
     return rows
+
+
+def _count_moj_comparables(csv_path: str, district_ar: Optional[str],
+                           asset_type: str) -> int:
+    """Sprint A.3+: Fast count of MoJ comparables for this asset+district.
+
+    Used before launching the full pipeline (19+ seconds) to detect cases
+    where the pipeline would just produce insufficient_data anyway. If this
+    returns 0 or very few samples, route to fast paths instead.
+
+    Returns: count of MoJ transactions matching this asset class in this district.
+    """
+    import re
+    categories = ASSET_TO_MOJ_CATEGORIES.get(asset_type)
+    if not categories or not district_ar:
+        return 999  # unknown asset or district → don't block full pipeline
+    try:
+        rows = _get_moj_rows(csv_path)
+    except Exception:
+        return 999  # CSV missing → defensive, let full pipeline handle it
+
+    def norm(s):
+        return re.sub(r'\s+', ' ', s or '').strip()
+
+    district_norm = norm(district_ar)
+    cat_set = {norm(c) for c in categories}
+    # Match by district + asset category. Match district prefix (e.g., 'الدفنة 61'
+    # should match 'الدفنة' rows). Use prefix or exact match.
+    count = 0
+    for r in rows:
+        d = norm(r.get('اسم المنطقة', ''))
+        if d != district_norm and not (d.startswith(district_norm + ' ')
+                                       or district_norm.startswith(d + ' ')):
+            continue
+        nt = norm(r.get('نوع العقار', ''))
+        if nt in cat_set:
+            count += 1
+    return count
 
 
 def _get_rent_ref(json_path: Optional[str]) -> Optional[dict]:
@@ -1322,6 +1374,49 @@ def evaluate_thammen(
                         )
                         result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
                         return result
+
+                # ── Sprint A.3+ GATE 3: MoJ data-availability check ──
+                # Even for in-scope assets (villa, palace, land, compound_small),
+                # if MoJ has no comparable in this district, the full 19s pipeline
+                # would just produce insufficient_data. This catches edge cases:
+                #   - Misclassified towers (as palace) in West Bay → no MoJ palaces there
+                #   - Real palaces in remote districts → no MoJ comparable
+                #   - Any asset in a district MoJ doesn't cover well
+                # Routes to fast paths instead, saving 15-25 seconds.
+                try:
+                    _dist_obj = _gis_lite.get_district_at_point(_loc.lon, _loc.lat)
+                    _district_ar = _dist_obj.aname if _dist_obj else None
+                except Exception:
+                    _district_ar = None
+
+                _moj_n = _count_moj_comparables(moj_csv_path, _district_ar, _qtype)
+                if _moj_n < MIN_MOJ_SAMPLES_FOR_FULL_PIPELINE:
+                    # No useful MoJ data → route to fast paths
+                    if rental_income:
+                        result = _build_fast_income_only_response(
+                            zone, street, building, _loc, _plot, _qtype, audience,
+                            rental_income, listing_price,
+                        )
+                    elif listing_price:
+                        result = _build_fast_listing_only_response(
+                            zone, street, building, _loc, _plot, _qtype, audience,
+                            listing_price,
+                        )
+                    else:
+                        result = _build_fast_insufficient_data_response(
+                            zone, street, building, _loc, _plot, _qtype, audience,
+                        )
+                    # Add a warning explaining the routing decision
+                    _sanity_warnings.append(
+                        f'لا توجد مقارنة كافية في وزارة العدل لـ "{ASSET_TYPE_AR.get(_qtype, _qtype)}" '
+                        f'في {_district_ar or "هذه المنطقة"} (عدد المعاملات المتاحة: {_moj_n}). '
+                        'استُخدم المسار السريع بدلاً من المسار الكامل لتفادي الانتظار الطويل دون فائدة. '
+                        'قد يكون تصنيف العقار غير دقيق — تحقق من نوع العقار في النتيجة.'
+                    )
+                    result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
+                    if rental_income or listing_price:
+                        _check_output_sanity(result, listing_price)
+                    return result
     except Exception as e:
         # Lite path failed — fall through to full pipeline (defensive)
         print(f"[fast-classify] failed: {e}", file=sys.stderr)
