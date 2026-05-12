@@ -97,6 +97,36 @@ OPEX_RATIO_RESIDENTIAL = 0.23   # maintenance + vacancy + management
 
 
 # ============================================================
+# Sprint A.3: v1 scope and sanity check thresholds
+# ============================================================
+
+# v1 supports: villas, lands, palaces, small compounds + DCF fallback for large income assets.
+# Politely refuses: commercial / industrial / agricultural (no usable data in MoJ).
+V1_IN_SCOPE_FULL = {
+    'standalone_villa', 'villa', 'raw_land', 'land',
+    'palace', 'compound_small',
+}
+V1_IN_SCOPE_DCF_ONLY = {
+    'compound_large', 'tower', 'apartment_building',
+}
+V1_OUT_OF_SCOPE = {
+    'commercial', 'industrial', 'agricultural',
+}
+
+# Yield sanity ranges (RICS-aligned Qatar empirical norms)
+# Below 3% net = property way overpriced relative to its rent
+# Above 10% net = either underpriced, distressed, or rent is wrong
+YIELD_NORMAL_MIN = 0.03   # 3%
+YIELD_NORMAL_MAX = 0.10   # 10%
+YIELD_FLAG_MIN   = 0.02   # < 2% → "very weak"
+YIELD_FLAG_MAX   = 0.12   # > 12% → "implausible, check rent"
+
+# Listing price vs reference gap thresholds (% above/below)
+LISTING_GAP_OVERPRICED_WARN = 0.30   # +30% = market ceiling
+LISTING_GAP_UNDERPRICED_WARN = -0.30 # -30% = check for issues
+
+
+# ============================================================
 # Caches
 # ============================================================
 
@@ -843,6 +873,233 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
     }
 
 
+def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, audience):
+    """Sprint A.3: Polite rejection for asset types outside v1 scope.
+
+    v1 supports: villas, lands, small compounds, palaces (full pipeline) +
+    DCF fallback for large income-producing assets. v1 does NOT support:
+    individual apartments, commercial shops, offices, industrial, agricultural.
+
+    The reason: MoJ data and our rent reference don't cover these classes with
+    enough density to produce defensible valuations. Better to refuse cleanly
+    than to produce confidently-wrong numbers.
+    """
+    from datetime import datetime
+    asset_label_ar = ASSET_TYPE_AR.get(asset_type, asset_type)
+    suggestions = {
+        'commercial': 'للمحلات التجارية، يُوصى بمُقيِّم متخصص في العقارات التجارية.',
+        'industrial': 'للعقارات الصناعية، يُوصى بمُقيِّم متخصص ومسح ميداني للمنطقة الصناعية.',
+        'agricultural': 'للمزارع، يلزم تقييم مخصص يشمل الرخصة الزراعية وموارد الماء.',
+    }
+    return {
+        'status': 'ok',
+        'engine_version': 'thammen-sprint-a3-scope-filter',
+        'methodology_ar': f'الإصدار الأول من ثمّن لا يدعم فئة "{asset_label_ar}"',
+        'methodology_disclaimer_ar': (
+            'ثمّن في إصداره الأول مُصمَّم خصيصاً للفلل والأراضي والقصور والكومباوندات. '
+            'هذه الفئات تملك بيانات MoJ كافية لإنتاج تقييم موثوق. '
+            'فئات أخرى (تجاري، صناعي، مزرعة، شقق فردية) تحتاج بيانات ومنهجية مختلفة، '
+            'وسيتم دعمها في إصدارات لاحقة.'
+        ),
+        'address': f'{zone}/{street}/{building}',
+        'valuation_date': datetime.now().strftime('%Y-%m-%d'),
+        'district': None,
+        'plot_area_m2': plot.pdarea if plot else None,
+        'asset_type': asset_type,
+        'asset_type_ar': asset_label_ar,
+        'audience': audience,
+        'user_inputs': {},
+        'valuation': {
+            'amount': None, 'low': None, 'high': None,
+            'method': 'out_of_scope_v1',
+            'reason_ar': (
+                f'هذا العقار من فئة "{asset_label_ar}" — خارج نطاق ثمّن الإصدار الأول. '
+                + suggestions.get(asset_type, 'يُوصى بمُقيِّم متخصص في هذه الفئة.')
+            ),
+        },
+        'moj_sample_size': 0,
+        'cost_approach': None,
+        'income_approach': None,
+        'reconciliation': {
+            'status': 'out_of_scope',
+            'message_ar': 'فئة العقار خارج نطاق الإصدار الحالي',
+        },
+        'accuracy': {'score': 0, 'label': '— خارج النطاق'},
+        'trend': None, 'location_features': None, 'geometric_factors': None,
+        'material_uncertainty': {
+            'level': 'critical',
+            'banner_ar': 'لا يمكن إنتاج تقييم موثوق لهذه الفئة في الإصدار الحالي',
+            'known_unknowns_ar': [
+                'بيانات بيع MoJ شحيحة لهذه الفئة',
+                'مرجع إيجار غير كافٍ',
+                'منهجية متخصصة مطلوبة',
+            ],
+            'rics_compliant': False,
+        },
+        'brief': {
+            'audience': audience,
+            'title_ar': f'تقرير {asset_label_ar} — خارج النطاق',
+            'sections': [{
+                'id': 'out_of_scope',
+                'title_ar': 'الإصدار الأول من ثمّن لا يدعم هذه الفئة',
+                'content': {
+                    'note_ar': (
+                        f'العنوان {zone}/{street}/{building} تابع لـ "{asset_label_ar}" '
+                        f'بمساحة {plot.pdarea if plot else "—"} م². '
+                        'ثمّن مُصمَّم حالياً للفلل والأراضي والقصور والكومباوندات. '
+                        + suggestions.get(asset_type, '')
+                    ),
+                    'options_ar': [
+                        'استشارة مُقيِّم متخصص في هذه الفئة',
+                        'العودة إلى ثمّن لاحقاً بعد إصدار النسخة الموسّعة',
+                        'البحث عن عقار من الفئات المدعومة حالياً',
+                    ],
+                },
+            }],
+        },
+        'sanity_warnings': [],
+        'disclaimer': (
+            'ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. '
+            'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
+        ),
+        'active_listings': {'available': False, 'reason': 'خارج نطاق الإصدار'},
+    }
+
+
+def _check_input_sanity(asset_type, listing_price, rental_income, plot_area):
+    """Sprint A.3: Pre-evaluation input validation.
+
+    Returns dict with:
+        - warnings_ar: list of human-readable warning strings
+        - rental_income_adjusted: rental to use (may be cleared if nonsensical)
+
+    Does NOT block evaluation — only adds warnings. Out-of-scope rejection
+    is handled separately via _build_out_of_scope_response.
+    """
+    warnings = []
+    rental_use = rental_income
+
+    # Raw land: no rent is possible (vacant land doesn't produce income)
+    if asset_type in ('raw_land', 'land') and rental_income:
+        warnings.append(
+            f'تم تجاهل الإيجار المُدخَل ({rental_income:,.0f} ر.ق) — الأراضي '
+            'الفضاء لا تُنتج دخلاً إيجارياً. التقييم على أساس قيمة الأرض من MoJ فقط.'
+        )
+        rental_use = None
+
+    # Palace: rental approach is unusual but not impossible
+    if asset_type == 'palace' and rental_income:
+        warnings.append(
+            'القصور نادراً ما تُؤجَّر — تحقق أن الإيجار المُقدَّم واقعي '
+            'لأصل بهذه القيمة.'
+        )
+
+    # Sanity: zero or negative inputs
+    if listing_price is not None and listing_price <= 0:
+        warnings.append('سعر الإعلان يجب أن يكون أكبر من صفر.')
+    if rental_income is not None and rental_income <= 0:
+        warnings.append('الإيجار الشهري يجب أن يكون أكبر من صفر.')
+
+    # Wild ranges (catch typos like 5,000,000 instead of 5,000)
+    if rental_income and rental_income > 5_000_000:
+        warnings.append(
+            f'الإيجار الشهري {rental_income:,.0f} ر.ق مرتفع جداً — '
+            'تأكد من العدد (هل أدخلت بدون فواصل، أو سنوي بدل شهري؟).'
+        )
+    if listing_price and listing_price > 5_000_000_000:
+        warnings.append(
+            f'سعر الإعلان {listing_price:,.0f} ر.ق مرتفع جداً — '
+            'تأكد من العدد.'
+        )
+
+    # For DCF assets with rental: rent/m² sanity vs plot area
+    if (asset_type in ('compound_large', 'compound_small', 'tower', 'apartment_building')
+            and rental_income and plot_area and plot_area > 0):
+        rent_per_m2 = (rental_income * 12) / plot_area  # annual rent per m² of plot
+        # Typical compound: 80-400 QAR/m²/year. Below 60 = likely partial/single-unit rent.
+        # Above 800 = unrealistic for plot of that size (probably wrong input).
+        if rent_per_m2 < 60:
+            warnings.append(
+                f'الإيجار يعادل ~{rent_per_m2:.0f} ر.ق/م² سنوياً للأرض ({plot_area:,.0f} م²) — '
+                'منخفض جداً لكومباوند بهذا الحجم. '
+                'هل أدخلت إيجار وحدة واحدة بدل المجمع كاملاً؟ '
+                'الإيجار المتوقع لأصل بهذا الحجم: 100-300 ر.ق/م² سنوياً.'
+            )
+        elif rent_per_m2 > 800:
+            warnings.append(
+                f'الإيجار يعادل ~{rent_per_m2:.0f} ر.ق/م² سنوياً للأرض ({plot_area:,.0f} م²) — '
+                'مرتفع جداً لأصل بهذا الحجم. تحقق من الرقم.'
+            )
+
+    return {'warnings_ar': warnings, 'rental_income_adjusted': rental_use}
+
+
+def _check_output_sanity(result, listing_price):
+    """Sprint A.3: Post-valuation cross-checks.
+
+    Looks at the produced valuation and yields, warns on implausible results.
+    Modifies result in-place by appending to sanity_warnings.
+
+    Yield norms differ by asset class:
+      - Residential (villa, palace): 2-5% net is typical
+        (location/lifestyle dominate, low yield is normal)
+      - Investment-grade (compound, tower, commercial): 5-10% net is typical
+        (yield must compensate for management + depreciation)
+    """
+    warnings = result.get('sanity_warnings', [])
+    asset_type = result.get('asset_type', '')
+
+    # Yield bounds by asset class
+    if asset_type in ('standalone_villa', 'villa', 'palace'):
+        y_normal_min, y_normal_max = 0.02, 0.05
+        y_flag_min, y_flag_max = 0.01, 0.08
+    else:  # investment-grade
+        y_normal_min, y_normal_max = 0.05, 0.10
+        y_flag_min, y_flag_max = 0.03, 0.12
+
+    # Net yield sanity (from income_approach if present)
+    inc = result.get('income_approach') or {}
+    ny = inc.get('net_yield')
+    if ny is not None:
+        if ny < y_flag_min:
+            warnings.append(
+                f'صافي العائد ({ny*100:.1f}%) منخفض جداً — أقل من '
+                f'{y_flag_min*100:.0f}%. تأكد من الإيجار المُدخَل أو راجع السعر.'
+            )
+        elif ny > y_flag_max:
+            warnings.append(
+                f'صافي العائد ({ny*100:.1f}%) مرتفع جداً — أعلى من '
+                f'{y_flag_max*100:.0f}%. الإيجار قد يكون مبالغاً فيه، '
+                'أو القيمة منخفضة بشدة.'
+            )
+        elif ny > y_normal_max:
+            warnings.append(
+                f'صافي العائد ({ny*100:.1f}%) أعلى من النطاق الطبيعي لهذه الفئة '
+                f'({y_normal_min*100:.0f}%-{y_normal_max*100:.0f}%) — '
+                'فرصة تستحق الفحص.'
+            )
+        # NOTE: yields just below y_normal_min are common for residential and
+        # don't warrant a warning (would just create alert fatigue).
+
+    # Listing vs benchmark gap
+    val = result.get('valuation') or {}
+    benchmark = val.get('amount')
+    if listing_price and benchmark:
+        gap = (listing_price - benchmark) / benchmark
+        if gap > LISTING_GAP_OVERPRICED_WARN:
+            warnings.append(
+                f'السعر المطلوب ({listing_price:,.0f}) أعلى بـ {gap*100:.0f}% '
+                'من المرجع — السوق غالباً يرفض السعر بهذا المستوى.'
+            )
+        elif gap < LISTING_GAP_UNDERPRICED_WARN:
+            warnings.append(
+                f'السعر المطلوب ({listing_price:,.0f}) أقل بـ {abs(gap)*100:.0f}% '
+                'من المرجع — تحقق من السبب (تنازل، أقساط، خلاف، حالة المبنى).'
+            )
+
+    result['sanity_warnings'] = warnings
+
+
 # ============================================================
 # Unified entry point
 # ============================================================
@@ -866,20 +1123,18 @@ def evaluate_thammen(
     if not _V2_OK:
         return {'status': 'engine_unavailable', 'error': 'evaluate_property not loaded'}
 
-    # ── Sprint A.1/A.2: Fast pre-classification short-circuit ──
-    # For DCF-only asset types (compound_large, tower, etc.) the full pipeline
-    # takes 30-90s and produces no useful comparison (no MoJ comparable for
-    # this class). We always do a lite GIS lookup (~0.7s) to classify, then:
-    #
-    #   - No user inputs       → return insufficient_data (Sprint A.1)
-    #   - With rental_income   → return income-only valuation (Sprint A.2)
-    #
-    # Both paths avoid the 30s GIS extent detection + geometric_factors that
-    # consume time without producing value for these asset classes.
-    DCF_ONLY = {
-        'compound_large', 'tower', 'apartment_building',
-        'commercial', 'industrial', 'agricultural',
-    }
+    # ── Sprint A.1/A.2/A.3: Fast pre-classification + scope filter + sanity checks ──
+    # 1. Quick GIS lookup classifies the asset (~0.7s)
+    # 2. Sprint A.3: if asset is out of v1 scope → polite rejection
+    # 3. Sprint A.3: input sanity checks (rental for land? wild numbers?)
+    # 4. DCF-only assets get fast paths (A.1 with no inputs, A.2 with rental)
+    # 5. In-scope assets continue to full pipeline below
+    DCF_ONLY = {'compound_large', 'tower', 'apartment_building'}
+    _qtype = None
+    _plot = None
+    _loc = None
+    _sanity_warnings = []
+
     try:
         from qatar_gis import QatarGIS, classify_asset
         _gis_lite = QatarGIS(verbose=False)
@@ -889,18 +1144,38 @@ def evaluate_thammen(
             if _plot:
                 _quick = classify_asset(_plot, None)
                 _qtype = _quick.asset_type.value
+
+                # ── Sprint A.3 GATE 1: out-of-scope rejection ──
+                if _qtype in V1_OUT_OF_SCOPE:
+                    return _build_out_of_scope_response(
+                        zone, street, building, _loc, _plot, _qtype, audience,
+                    )
+
+                # ── Sprint A.3 GATE 2: input sanity (modifies rental_income if needed) ──
+                _sanity = _check_input_sanity(_qtype, listing_price, rental_income,
+                                              _plot.pdarea if _plot else None)
+                _sanity_warnings = _sanity['warnings_ar']
+                rental_income = _sanity['rental_income_adjusted']
+
+                # ── Sprint A.1/A.2: DCF fast paths ──
                 if _qtype in DCF_ONLY:
                     if rental_income:
                         # Sprint A.2: income-only valuation (fast)
-                        return _build_fast_income_only_response(
+                        result = _build_fast_income_only_response(
                             zone, street, building, _loc, _plot, _qtype, audience,
                             rental_income, listing_price,
                         )
+                        # Apply post-valuation sanity + accumulate pre-warnings
+                        result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
+                        _check_output_sanity(result, listing_price)
+                        return result
                     elif listing_price is None:
                         # Sprint A.1: classification only (no inputs)
-                        return _build_fast_insufficient_data_response(
+                        result = _build_fast_insufficient_data_response(
                             zone, street, building, _loc, _plot, _qtype, audience,
                         )
+                        result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
+                        return result
                     # else: listing_price provided but no rental_income —
                     # fall through to full pipeline (user wants comparison check)
     except Exception as e:
@@ -1034,7 +1309,7 @@ def evaluate_thammen(
             print(f"[listings] failed: {e}", file=sys.stderr)
 
     # ── Step 8: Build unified output ──
-    return _build_unified_output(
+    output = _build_unified_output(
         ev=ev,
         primary=primary,
         cost=cost,
@@ -1053,6 +1328,11 @@ def evaluate_thammen(
             'annexes': annexes,
         },
     )
+
+    # ── Sprint A.3: append accumulated sanity warnings + post-valuation checks ──
+    output['sanity_warnings'] = _sanity_warnings + (output.get('sanity_warnings') or [])
+    _check_output_sanity(output, listing_price)
+    return output
 
 
 # ============================================================

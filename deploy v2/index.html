@@ -118,6 +118,14 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .copy-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-family:'Tajawal';font-size:.85rem;cursor:pointer;margin-bottom:14px;transition:all .2s;float:left}
 .copy-btn:hover{border-color:var(--bronze);color:var(--bronze)}
 .copy-btn.copied{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
+/* Sprint A.3: Sanity warnings — yellow card, high visibility */
+.sanity-warn{background:#FFF7E6;border:1.5px solid #F4B400;border-radius:var(--r);padding:18px 20px;margin-bottom:14px;animation:fu .5s}
+.sanity-warn h3{font-size:1rem;font-weight:800;color:#7A4F00;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sanity-warn h3::before{content:'⚠️';font-size:1.15rem}
+.sanity-warn ul{list-style:none;padding:0;margin:0}
+.sanity-warn li{padding:8px 0;border-bottom:1px dashed #F4D88A;font-size:.9rem;color:#5C3A00;line-height:1.7}
+.sanity-warn li:last-child{border-bottom:none}
+.sanity-warn li::before{content:'•';color:#F4B400;font-weight:800;margin-left:8px}
 @media(max-width:600px){.hlogo img{max-width:260px}.fr3,.fr2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}.fcard{padding:18px}.aud-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -282,6 +290,14 @@ function show(d){
 
   // ── Copy button (top, floats right) ──
   h+='<button id="copyBtn" class="copy-btn" onclick="copyResult()">📋 نسخ النتيجة</button><div style="clear:both"></div>';
+
+  // ── Sprint A.3: Sanity warnings — prominent yellow card ──
+  const sw=d.sanity_warnings||[];
+  if(sw.length>0){
+    h+='<div class="sanity-warn"><h3>تنبيهات مهمة قبل قراءة النتيجة</h3><ul>';
+    sw.forEach(w=>{h+='<li>'+w+'</li>'});
+    h+='</ul></div>';
+  }
 
   // ── INSUFFICIENT DATA: prominent card with CTA ──
   if(!hasValuation){
