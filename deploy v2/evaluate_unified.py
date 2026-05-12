@@ -1795,6 +1795,82 @@ def evaluate_thammen(
         },
     )
 
+    # ── Sprint 2.2: Building Substantiality Adjustment ──
+    # Sales comparison implicitly assumes a "typical" villa (ground floor +
+    # 1 upper, no basement, no major add-ons). When the user reports
+    # substantially more building (basement, multiple floors, annexes,
+    # external majlis), MoJ-based comp value under-estimates true market
+    # value because MoJ records the LAND transaction price but cannot
+    # capture building specs.
+    #
+    # We apply a measured uplift only on POSITIVE evidence. We never apply
+    # a downward adjustment — if user didn't provide details, the value is
+    # reported as-is and the MU layer flags the unknown.
+    if (bua_breakdown is not None
+            and output.get('valuation') and output['valuation'].get('amount')):
+        try:
+            substantiality = _building_substantiality(bua_breakdown, _plot_area_for_bua)
+            adj_pct = max(0.0, substantiality.get('adjustment_pct', 0.0))
+
+            if adj_pct > 0:
+                base_amount = output['valuation']['amount']
+                base_low = output['valuation'].get('low') or base_amount * 0.85
+                base_high = output['valuation'].get('high') or base_amount * 1.15
+
+                output['valuation']['amount'] = _r100k(base_amount * (1 + adj_pct))
+                output['valuation']['low'] = _r100k(base_low * (1 + adj_pct * 0.7))
+                output['valuation']['high'] = _r100k(base_high * (1 + adj_pct * 1.1))
+
+            output['valuation']['building_substantiality'] = {
+                'index': substantiality['index'],
+                'typical_bua_m2': substantiality['typical_bua'],
+                'actual_bua_m2': substantiality['actual_bua'],
+                'adjustment_pct': round(adj_pct * 100, 1),
+                'rationale_ar': substantiality['rationale'],
+                'methodology_note_ar': (
+                    'وزارة العدل تسجّل ثمن الصفقة لكن لا تسجّل تفاصيل البناء '
+                    '(عدد الطوابق، السرداب، التشطيب). عندما يكون البناء الفعلي '
+                    'أكبر من النموذجي، نطبّق تعديلاً صعودياً معتدلاً على القيمة. '
+                    'لا نطبّق تعديلاً نزولياً تلقائياً — إن لم تقدّم تفاصيل البناء '
+                    'يبقى التقييم على افتراض بناء نموذجي مع تنبيه عدم اليقين.'
+                ) if adj_pct > 0 else (
+                    'البناء ضمن النطاق النموذجي — لا حاجة لتعديل.'
+                ),
+            }
+        except Exception as e:
+            import sys
+            print(f'[substantiality warning] {e}', file=sys.stderr)
+
+    # ── Sprint 2.2: Flag missing building details in Material Uncertainty ──
+    if bua_breakdown is None and output.get('material_uncertainty'):
+        try:
+            mu = output['material_uncertainty']
+            building_unknown_factor = (
+                'تفاصيل البناء غير مُقدَّمة (الطوابق، السرداب، الترميم، الملاحق) — '
+                'التقييم يفترض بناءً نموذجياً وقد يختلف عن الواقع بـ ±20-40% '
+                'إذا كان للعقار سرداب أو طوابق متعددة أو ملاحق مهمة.'
+            )
+            building_unknown_unknown = (
+                'مكوّنات البناء الفعلية (سرداب، طوابق، مجلس خارجي، حالة التشطيب)'
+            )
+            mu_factors = list(mu.get('factors') or [])
+            if not any('تفاصيل البناء غير' in f for f in mu_factors):
+                mu_factors.insert(0, building_unknown_factor)
+                mu['factors'] = mu_factors
+            mu_unknowns = list(mu.get('known_unknowns') or [])
+            if not any('مكوّنات البناء' in u for u in mu_unknowns):
+                mu_unknowns.insert(0, building_unknown_unknown)
+                mu['known_unknowns'] = mu_unknowns
+            mu_recs = list(mu.get('recommendations') or [])
+            rec_text = 'أدخل تفاصيل العقار (طوابق، سرداب، حالة) للحصول على تقييم أدق'
+            if not any('تفاصيل العقار' in r for r in mu_recs):
+                mu_recs.insert(0, rec_text)
+                mu['recommendations'] = mu_recs
+            output['material_uncertainty'] = mu
+        except Exception as e:
+            import sys
+            print(f'[MU enhancement warning] {e}', file=sys.stderr)
+
     # ── Sprint 2.2: Benchmark Consistency Fix ──
     # The v2 baseline (evaluate_property.py) builds market_position using
     # `comparison.benchmark_total` which is the DIRECT-MATCH fair price
@@ -2165,52 +2241,6 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
 
     # ── Sprint 2.2: Building Substantiality Adjustment ──
     # Sales comparison implicitly assumes a "typical" villa (ground floor, no
-    # basement, no major add-ons). When the user reports substantially more
-    # building (basement, multiple floors, annexes, external majlis), the
-    # MoJ-based comp value under-estimates true market value because MoJ
-    # records the LAND transaction price but cannot capture building specs.
-    #
-    # We apply a measured uplift only on POSITIVE evidence (basement + extra
-    # floors / annexes). We never apply a downward adjustment from this block
-    # — if user didn't provide details, the value is reported as-is and the
-    # MU layer flags the unknown.
-    if (output.get('valuation') and output['valuation'].get('amount')
-            and bua_breakdown is not None):
-        plot_area_for_sub = _plot_area_for_bua
-        substantiality = _building_substantiality(bua_breakdown, plot_area_for_sub)
-
-        # Apply only positive adjustments (conservative — never silently lower
-        # value below the comp-based estimate).
-        adj_pct = max(0.0, substantiality.get('adjustment_pct', 0.0))
-
-        if adj_pct > 0:
-            base_amount = output['valuation']['amount']
-            base_low = output['valuation'].get('low') or base_amount * 0.85
-            base_high = output['valuation'].get('high') or base_amount * 1.15
-
-            # Apply adjustment to amount AND range
-            output['valuation']['amount'] = _r100k(base_amount * (1 + adj_pct))
-            output['valuation']['low'] = _r100k(base_low * (1 + adj_pct * 0.7))  # range widens asymmetrically
-            output['valuation']['high'] = _r100k(base_high * (1 + adj_pct * 1.1))
-
-        # Always attach substantiality info to output, even when adj=0
-        output['valuation']['building_substantiality'] = {
-            'index': substantiality['index'],
-            'typical_bua_m2': substantiality['typical_bua'],
-            'actual_bua_m2': substantiality['actual_bua'],
-            'adjustment_pct': round(adj_pct * 100, 1),
-            'rationale_ar': substantiality['rationale'],
-            'methodology_note_ar': (
-                'وزارة العدل تسجّل ثمن الصفقة لكن لا تسجّل تفاصيل البناء '
-                '(عدد الطوابق، السرداب، التشطيب). عندما يكون البناء الفعلي '
-                'أكبر من النموذجي، نطبّق تعديلاً صعودياً معتدلاً على القيمة. '
-                'لا نطبّق تعديلاً نزولياً تلقائياً — إن لم تقدّم تفاصيل البناء '
-                'يبقى التقييم على افتراض بناء نموذجي مع تنبيه عدم اليقين.'
-            ) if adj_pct > 0 else (
-                'البناء ضمن النطاق النموذجي — لا حاجة لتعديل.'
-            ),
-        }
-
     # ── Material Uncertainty (RICS VPN 13) ──
     # Sprint 1.c fix: ensure MU reflects the n actually USED in primary value
     # (not the thin bracket n that geo widening already bypassed)
@@ -2247,30 +2277,6 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                     '(n=' + str(effective_n) + ') but no field inspection or full building data. '
                     'Field inspection recommended for major decisions.'
                 )
-
-        # Sprint 2.2: explicitly flag missing building details
-        if bua_breakdown is None:
-            building_unknown_factor = (
-                'تفاصيل البناء غير مُقدَّمة (الطوابق، السرداب، الترميم، الملاحق) — '
-                'التقييم يفترض بناءً نموذجياً وقد يختلف عن الواقع بـ ±20-40% '
-                'إذا كان للعقار سرداب أو طوابق متعددة أو ملاحق مهمة.'
-            )
-            building_unknown_unknown = (
-                'مكوّنات البناء الفعلية (سرداب، طوابق، مجلس خارجي، حالة التشطيب)'
-            )
-            mu_factors = list(mu.get('factors') or [])
-            if not any('تفاصيل البناء غير' in f for f in mu_factors):
-                mu_factors.insert(0, building_unknown_factor)
-                mu['factors'] = mu_factors
-            mu_unknowns = list(mu.get('known_unknowns') or [])
-            if not any('مكوّنات البناء' in u for u in mu_unknowns):
-                mu_unknowns.insert(0, building_unknown_unknown)
-                mu['known_unknowns'] = mu_unknowns
-            mu_recs = list(mu.get('recommendations') or [])
-            rec_text = 'أدخل تفاصيل العقار (طوابق، سرداب، حالة) للحصول على تقييم أدق'
-            if not any('تفاصيل العقار' in r for r in mu_recs):
-                mu_recs.insert(0, rec_text)
-                mu['recommendations'] = mu_recs
 
         output['material_uncertainty'] = mu
 
