@@ -118,11 +118,18 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .copy-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-family:'Tajawal';font-size:.85rem;cursor:pointer;margin-bottom:14px;transition:all .2s;float:left}
 .copy-btn:hover{border-color:var(--bronze);color:var(--bronze)}
 .copy-btn.copied{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
-/* Map links — Google Maps / Waze / Apple Maps */
-.map-links{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;padding-top:14px;border-top:1px solid var(--border)}
-.map-btn{flex:1;min-width:100px;text-align:center;text-decoration:none;padding:9px 12px;background:var(--alt);border:1px solid var(--border);border-radius:8px;font-size:.85rem;color:var(--text);font-weight:600;transition:all .2s;font-family:'Tajawal'}
-.map-btn:hover{border-color:var(--bronze);color:var(--bronze);background:#fff}
-@media(max-width:600px){.map-btn{font-size:.78rem;padding:8px 6px}}
+/* Map links — single button + popup picker (WhatsApp-style) */
+.map-links{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.map-btn-main{display:block;width:100%;text-align:center;text-decoration:none;padding:11px 14px;background:var(--alt);border:1px solid var(--border);border-radius:10px;font-size:.9rem;color:var(--text);font-weight:700;transition:all .2s;font-family:'Tajawal';cursor:pointer}
+.map-btn-main:hover{border-color:var(--bronze);color:var(--bronze);background:#fff}
+.map-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fu .2s ease}
+.map-modal-content{background:#fff;border-radius:16px;max-width:380px;width:100%;overflow:hidden;animation:fu .25s ease}
+.map-modal-header{padding:18px 20px;font-weight:800;font-size:1rem;color:var(--primary);border-bottom:1px solid var(--border);text-align:center}
+.map-modal-list a{display:block;padding:16px 20px;font-size:1rem;color:var(--text);text-decoration:none;border-bottom:1px solid var(--border);font-family:'Tajawal';transition:background .15s}
+.map-modal-list a:hover{background:var(--alt)}
+.map-modal-list a:last-child{border-bottom:none}
+.map-modal-close{padding:14px;background:var(--alt);text-align:center;font-size:.95rem;color:var(--muted);cursor:pointer;border:none;width:100%;font-family:'Tajawal';font-weight:600}
+.map-modal-close:hover{color:var(--bad)}
 .sanity-warn{background:#FFF7E6;border:1.5px solid #F4B400;border-radius:var(--r);padding:18px 20px;margin-bottom:14px;animation:fu .5s}
 .sanity-warn h3{font-size:1rem;font-weight:800;color:#7A4F00;margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .sanity-warn h3::before{content:'⚠️';font-size:1.15rem}
@@ -259,6 +266,25 @@ async function run(){
   }
 }
 
+function openMapPicker(lat,lon){
+  // Build the picker modal — same UX as WhatsApp's location share dialog.
+  // Each link uses its native URL scheme; on mobile the OS routes to the app.
+  const m=document.createElement('div');
+  m.className='map-modal';
+  m.onclick=e=>{if(e.target===m)m.remove()};
+  const label=encodeURIComponent('موقع العقار');
+  m.innerHTML='<div class="map-modal-content">'+
+    '<div class="map-modal-header">اختر التطبيق</div>'+
+    '<div class="map-modal-list">'+
+      '<a href="https://maps.apple.com/?ll='+lat+','+lon+'&q='+label+'" target="_blank" rel="noopener">Apple Maps</a>'+
+      '<a href="https://www.google.com/maps?q='+lat+','+lon+'" target="_blank" rel="noopener">Google Maps</a>'+
+      '<a href="https://waze.com/ul?ll='+lat+','+lon+'&navigate=yes" target="_blank" rel="noopener">Waze</a>'+
+    '</div>'+
+    '<button class="map-modal-close" onclick="this.closest(\'.map-modal\').remove()">إلغاء</button>'+
+    '</div>';
+  document.body.appendChild(m);
+}
+
 function copyResult(){
   const d=window._lastResult;
   if(!d){return}
@@ -317,13 +343,11 @@ function show(d){
       if(d.address)h+='<div style="margin-bottom:6px"><strong>العنوان:</strong> '+d.address+'</div>';
       if(d.asset_type)h+='<div style="margin-bottom:6px"><strong>نوع العقار:</strong> '+assetAr+'</div>';
       if(d.plot_area_m2)h+='<div style="margin-bottom:6px"><strong>مساحة الأرض:</strong> '+fmt(d.plot_area_m2)+' م²</div>';
-      // Map links inside insufficient card
+      // Map button inside insufficient card
       if(d.gps&&d.gps.lat&&d.gps.lon){
         const lat=d.gps.lat,lon=d.gps.lon;
         h+='<div class="map-links" style="margin-top:10px;padding-top:10px">';
-        h+='<a href="https://www.google.com/maps?q='+lat+','+lon+'" target="_blank" rel="noopener" class="map-btn">📍 Google Maps</a>';
-        h+='<a href="https://waze.com/ul?ll='+lat+','+lon+'&navigate=yes" target="_blank" rel="noopener" class="map-btn">🚗 Waze</a>';
-        h+='<a href="https://maps.apple.com/?ll='+lat+','+lon+'&z=18" target="_blank" rel="noopener" class="map-btn"> Apple Maps</a>';
+        h+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')">📍 افتح موقع العقار في الخريطة</button>';
         h+='</div>';
       }
       h+='</div>';
@@ -348,13 +372,11 @@ function show(d){
     if(pi.zoning)h+=ri('التصنيف',pi.zoning);
     if(pi.permitted_height)h+=ri('الارتفاع المسموح',pi.permitted_height);
     h+='</div>';
-    // ── Map links (Google Maps + Waze + Apple Maps) ──
+    // ── Map picker (single button — opens app chooser like WhatsApp) ──
     if(d.gps&&d.gps.lat&&d.gps.lon){
       const lat=d.gps.lat,lon=d.gps.lon;
       h+='<div class="map-links">';
-      h+='<a href="https://www.google.com/maps?q='+lat+','+lon+'" target="_blank" rel="noopener" class="map-btn">📍 Google Maps</a>';
-      h+='<a href="https://waze.com/ul?ll='+lat+','+lon+'&navigate=yes" target="_blank" rel="noopener" class="map-btn">🚗 Waze</a>';
-      h+='<a href="https://maps.apple.com/?ll='+lat+','+lon+'&z=18" target="_blank" rel="noopener" class="map-btn"> Apple Maps</a>';
+      h+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')">📍 افتح موقع العقار في الخريطة</button>';
       h+='</div>';
     }
     h+='</div>';

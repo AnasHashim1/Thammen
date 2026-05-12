@@ -120,18 +120,21 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
 
     sections = []
 
-    # Section 1: VERDICT
-    sections.append({
-        'id': 'verdict',
-        'title_ar': 'هل السعر معقول؟',
-        'content': {
-            'listing_price': listing.get('listing_price'),
-            'benchmark': listing.get('benchmark_total') or base['valuation_total'],
-            'gap_pct': listing.get('gap_pct'),
-            'position': market_pos.get('position_label', 'no_benchmark'),
-            'description_ar': market_pos.get('description_ar', ''),
-        },
-    })
+    # Section 1: VERDICT — only meaningful when user provided a listing_price.
+    # Without it, there's no benchmark to evaluate. Skip the section entirely
+    # rather than rendering "position: no_benchmark" raw text.
+    if listing.get('listing_price'):
+        sections.append({
+            'id': 'verdict',
+            'title_ar': 'هل السعر معقول؟',
+            'content': {
+                'listing_price': listing.get('listing_price'),
+                'benchmark': listing.get('benchmark_total') or base['valuation_total'],
+                'gap_pct': listing.get('gap_pct'),
+                'position': market_pos.get('position_label', 'at_market'),
+                'description_ar': market_pos.get('description_ar', ''),
+            },
+        })
 
     # Section 2: NEGOTIATION RANGE
     buyer_ceiling = round(base['valuation_total'] * 1.10) if base['valuation_total'] else None
