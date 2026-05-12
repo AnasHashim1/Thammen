@@ -231,18 +231,193 @@ def _condition_to_reno(condition: Optional[str]) -> tuple:
     return mapping.get(condition or 'good', (False, False))
 
 
-def _build_simple_bua(floors: int, annexes: int) -> Optional['BuaBreakdown']:
-    if not _V2_OK or not floors:
+UPPER_FLOOR_RATIO_v2 = 0.85   # upper floors typically slightly smaller than ground
+TYPICAL_COVERAGE = 0.55       # typical Qatari villa ground-floor coverage (R1)
+MAX_COVERAGE = 0.80           # municipal max coverage ratio
+DEFAULT_ANNEX_M2 = 50         # typical annex BUA
+EXTERNAL_MAJLIS_M2 = 80       # typical external majlis BUA
+
+
+def _typical_footprint(plot_area_m2: Optional[float]) -> float:
+    """Estimate typical ground-floor footprint when user doesn't provide one.
+
+    Replaces the legacy hardcoded 300m² assumption. Scales with plot size:
+      < 350m² plot   → ~60% coverage (small plots build dense)
+      350-800m² plot → ~55% coverage (typical R1 villa)
+      > 800m² plot   → ~45% coverage (large plots have more garden)
+    """
+    if not plot_area_m2 or plot_area_m2 <= 0:
+        return 300.0  # safe fallback when plot unknown
+    a = float(plot_area_m2)
+    if a < 350:
+        return round(a * 0.60)
+    elif a < 800:
+        return round(a * 0.55)
+    else:
+        return round(a * 0.45)
+
+
+def _typical_bua_for_plot(plot_area_m2: Optional[float]) -> float:
+    """Typical TOTAL BUA for a Qatari villa on this plot size.
+
+    Baseline: ground floor + 1 upper floor (the de-facto norm in Qatar R1
+    zones for the past 15+ years). Basement, additional floors, annexes,
+    and external majlis are TREATED AS EXTRAS that earn upward adjustment.
+    """
+    fp = _typical_footprint(plot_area_m2)
+    # Ground (fp) + 1 upper floor (fp × 0.85)
+    return fp + fp * UPPER_FLOOR_RATIO_v2
+
+
+def _build_smart_bua(
+    plot_area_m2: Optional[float],
+    floors: Optional[int],
+    annexes: Optional[int],
+    basement: Optional[bool] = None,
+    footprint_m2: Optional[float] = None,
+    external_majlis: Optional[bool] = None,
+) -> Optional['BuaBreakdown']:
+    """Build a BUA breakdown that respects plot size, basement, and add-ons.
+
+    Replaces the legacy _build_simple_bua. Key differences:
+    - Footprint scales with plot area (legacy used fixed 300m² regardless)
+    - Explicit basement support (legacy always set basement_m2=0)
+    - `floors` is ABOVE-GROUND floor count (1=ground only, 2=ground+1st, etc.)
+    - User can override footprint via footprint_m2
+    - Optional external majlis adds ~80m²
+
+    Returns None if no building info provided at all (caller decides whether
+    to fall back to a "typical building" assumption or skip cost approach).
+    """
+    if not _V2_OK:
         return None
+
+    # If user provided nothing at all about the building, signal that to caller
+    any_input = any([
+        floors and floors > 0,
+        annexes and annexes > 0,
+        basement is True,
+        footprint_m2 and footprint_m2 > 0,
+        external_majlis is True,
+    ])
+    if not any_input:
+        return None
+
+    # Effective above-ground floors (default 1 = ground only)
+    above_floors = max(1, int(floors) if floors else 1)
+
+    # Footprint: user-provided override, else plot-proportional default
+    if footprint_m2 and footprint_m2 > 0:
+        fp = float(footprint_m2)
+    else:
+        fp = _typical_footprint(plot_area_m2)
+
+    # Cap footprint at plot * MAX_COVERAGE if plot known (sanity)
+    if plot_area_m2 and plot_area_m2 > 0:
+        fp = min(fp, plot_area_m2 * MAX_COVERAGE)
+
+    upper_count = max(0, above_floors - 1)
+    upper_area = round(fp * UPPER_FLOOR_RATIO_v2 * upper_count) if upper_count else 0
+
+    # Basement: only when explicitly indicated, sized at footprint
+    bsmt = round(fp) if basement else 0
+
+    n_annexes = int(annexes) if annexes else 0
+    annex_area = n_annexes * DEFAULT_ANNEX_M2
+
+    ext_area = EXTERNAL_MAJLIS_M2 if external_majlis else 0
+
     return BuaBreakdown(
-        main_footprint_m2=300,
-        basement_m2=0,
-        upper_floors_m2=300 * 0.85 * (floors - 1) if floors >= 2 else 0,
-        upper_floor_count=max(0, floors - 1),
-        annexes_m2=annexes * 50 if annexes else 0,
-        annex_count=annexes,
-        external_m2=0,
+        main_footprint_m2=round(fp),
+        basement_m2=bsmt,
+        upper_floors_m2=upper_area,
+        upper_floor_count=upper_count,
+        annexes_m2=annex_area,
+        annex_count=n_annexes,
+        external_m2=ext_area,
     )
+
+
+# Backward-compatibility shim — old callers (CLI tests) still use the simple form
+def _build_simple_bua(floors: int, annexes: int) -> Optional['BuaBreakdown']:
+    """DEPRECATED: kept for CLI backward compatibility. Use _build_smart_bua."""
+    return _build_smart_bua(
+        plot_area_m2=None, floors=floors, annexes=annexes,
+        basement=None, footprint_m2=None, external_majlis=None,
+    )
+
+
+def _building_substantiality(
+    bua: Optional['BuaBreakdown'],
+    plot_area_m2: Optional[float],
+) -> dict:
+    """Compute how 'substantial' the building is relative to a typical villa.
+
+    BASELINE = typical Qatari villa: ground + 1 upper floor on the same plot.
+    Anything BEYOND this (basement, additional floors, annexes, external
+    majlis) is an EXTRA that earns measured upward adjustment.
+
+    Returns:
+      {
+        'index': float,         # 1.0 = typical, >1.0 = larger, <1.0 = smaller
+        'typical_bua': float,   # ground + 1 upper for this plot size
+        'actual_bua': float,    # what the user's property has (per inputs)
+        'adjustment_pct': float,# sales-comp adjustment in fraction (e.g. 0.15)
+        'rationale': str,
+      }
+
+    Adjustment tiers (proportional, capped to keep results sane):
+      index >= 2.00 → +25% (very substantial: large basement + 3+ floors + annexes)
+      index >= 1.70 → +20% (substantial: basement + 2 floors + annexes)
+      index >= 1.45 → +15% (notably above typical)
+      index >= 1.25 → +10% (moderately above typical)
+      index >= 1.10 → +5%  (slightly above typical)
+      0.85 - 1.10  → 0%  (typical, no adjustment)
+      < 0.85       → -6% (below typical — only applied conservatively)
+      < 0.65       → -12%
+    Downward adjustments are NOT applied in the unified pipeline (only
+    upward) — the substantiality function still reports them so callers
+    can choose.
+    """
+    if not bua or not plot_area_m2 or plot_area_m2 <= 0:
+        return {
+            'index': 1.0, 'typical_bua': 0, 'actual_bua': 0,
+            'adjustment_pct': 0.0, 'rationale': 'building details not provided',
+        }
+
+    actual = bua.total_bua
+    typical = _typical_bua_for_plot(plot_area_m2)
+    if typical <= 0:
+        return {'index': 1.0, 'typical_bua': 0, 'actual_bua': actual,
+                'adjustment_pct': 0.0, 'rationale': 'cannot compute typical baseline'}
+
+    idx = actual / typical
+
+    # Apply tiered adjustment
+    if idx >= 2.00:
+        adj, label = 0.25, 'بناء استثنائي (سرداب كبير + طوابق متعددة + ملاحق)'
+    elif idx >= 1.70:
+        adj, label = 0.20, 'بناء كبير جداً (سرداب + إضافات متعددة)'
+    elif idx >= 1.45:
+        adj, label = 0.15, 'بناء أكبر من النموذجي بشكل واضح'
+    elif idx >= 1.25:
+        adj, label = 0.10, 'بناء أكبر من النموذجي'
+    elif idx >= 1.10:
+        adj, label = 0.05, 'بناء أكبر قليلاً من النموذجي'
+    elif idx > 0.85:
+        adj, label = 0.0, 'بناء ضمن النطاق النموذجي'
+    elif idx > 0.65:
+        adj, label = -0.06, 'بناء أصغر من النموذجي'
+    else:
+        adj, label = -0.12, 'بناء صغير جداً'
+
+    return {
+        'index': round(idx, 2),
+        'typical_bua': round(typical),
+        'actual_bua': round(actual),
+        'adjustment_pct': adj,
+        'rationale': label,
+    }
 
 
 def _r100k(n):
@@ -1304,6 +1479,10 @@ def evaluate_thammen(
     condition: Optional[str] = None,
     annexes: int = 0,
     bua_breakdown: Optional['BuaBreakdown'] = None,
+    # Sprint 2.2 — explicit building-improvements inputs (BUA awareness)
+    basement: Optional[bool] = None,
+    footprint_m2: Optional[float] = None,
+    external_majlis: Optional[bool] = None,
     audience: str = 'buyer',
     use_listings: bool = True,
     use_geo_v2: bool = True,
@@ -1421,8 +1600,26 @@ def evaluate_thammen(
 
     # ── Step 1: v2 baseline ──
     has_reno, full_reno = _condition_to_reno(condition)
-    if bua_breakdown is None and floors:
-        bua_breakdown = _build_simple_bua(floors, annexes)
+
+    # Sprint 2.2 — use plot-aware smart BUA builder.
+    # Replaces the legacy fixed-300m² assumption.
+    _plot_area_for_bua = _plot.pdarea if (_plot and getattr(_plot, 'pdarea', None)) else None
+    _any_building_input = any([
+        floors and floors > 0,
+        annexes and annexes > 0,
+        basement is True,
+        footprint_m2 and footprint_m2 > 0,
+        external_majlis is True,
+    ])
+    if bua_breakdown is None and _any_building_input:
+        bua_breakdown = _build_smart_bua(
+            plot_area_m2=_plot_area_for_bua,
+            floors=floors,
+            annexes=annexes,
+            basement=basement,
+            footprint_m2=footprint_m2,
+            external_majlis=external_majlis,
+        )
 
     try:
         ev = evaluate_property(
@@ -1592,8 +1789,52 @@ def evaluate_thammen(
             'floors': floors,
             'condition': condition,
             'annexes': annexes,
+            'basement': basement,
+            'footprint_m2': footprint_m2,
+            'external_majlis': external_majlis,
         },
     )
+
+    # ── Sprint 2.2: Benchmark Consistency Fix ──
+    # The v2 baseline (evaluate_property.py) builds market_position using
+    # `comparison.benchmark_total` which is the DIRECT-MATCH fair price
+    # (MoJ n=1 × factors). But the unified output reports the WIDENED
+    # valuation as `valuation.amount` (e.g. 4.5M instead of 3.0M).
+    #
+    # When listing_price equals our own valuation, the verdict was saying
+    # "50% above market" — comparing to the wrong reference. The fix is
+    # to recompute market_position using `valuation.amount` (what we
+    # actually claim is the value) as the benchmark whenever widening or
+    # building-substantiality adjustments have moved the headline away
+    # from the v2 fair_price.
+    if listing_price and output.get('valuation') and output['valuation'].get('amount'):
+        try:
+            from market_position import compute_position
+            new_benchmark = output['valuation']['amount']
+            new_n = primary.get('n') if primary else None
+            new_source = (
+                f"تقييم ثمّن المُوحَّد ({primary.get('method_label_ar', 'مقارنة')})"
+                if primary else 'تقييم ثمّن'
+            )
+            pos = compute_position(
+                listing_price=listing_price,
+                benchmark_price=new_benchmark,
+                benchmark_source=new_source,
+                benchmark_n=new_n,
+                listing_caveats=[],
+            )
+            output['market_position'] = pos.to_dict()
+            # Also expose under listing_comparison for output_briefs compatibility
+            output['listing_comparison'] = {
+                'listing_price': listing_price,
+                'benchmark_total': new_benchmark,
+                'benchmark_label': new_source,
+                'gap_qar': listing_price - new_benchmark,
+                'gap_pct': (listing_price - new_benchmark) / new_benchmark if new_benchmark else 0,
+            }
+        except Exception as e:
+            import sys
+            print(f'[market_position rebuild warning] {e}', file=sys.stderr)
 
     # ── Sprint A.3: append accumulated sanity warnings + post-valuation checks ──
     output['sanity_warnings'] = _sanity_warnings + (output.get('sanity_warnings') or [])
@@ -1609,7 +1850,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, geometric, audience, user_inputs) -> Dict:
     output = {
         'status': 'ok',
-        'engine_version': 'thammen-sprint2p1-geometric',
+        'engine_version': 'thammen-sprint2p2-bua-aware',
         'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
         'methodology_disclaimer_ar': (
             'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '
@@ -1922,6 +2163,54 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 ),
             }
 
+    # ── Sprint 2.2: Building Substantiality Adjustment ──
+    # Sales comparison implicitly assumes a "typical" villa (ground floor, no
+    # basement, no major add-ons). When the user reports substantially more
+    # building (basement, multiple floors, annexes, external majlis), the
+    # MoJ-based comp value under-estimates true market value because MoJ
+    # records the LAND transaction price but cannot capture building specs.
+    #
+    # We apply a measured uplift only on POSITIVE evidence (basement + extra
+    # floors / annexes). We never apply a downward adjustment from this block
+    # — if user didn't provide details, the value is reported as-is and the
+    # MU layer flags the unknown.
+    if (output.get('valuation') and output['valuation'].get('amount')
+            and bua_breakdown is not None):
+        plot_area_for_sub = _plot_area_for_bua
+        substantiality = _building_substantiality(bua_breakdown, plot_area_for_sub)
+
+        # Apply only positive adjustments (conservative — never silently lower
+        # value below the comp-based estimate).
+        adj_pct = max(0.0, substantiality.get('adjustment_pct', 0.0))
+
+        if adj_pct > 0:
+            base_amount = output['valuation']['amount']
+            base_low = output['valuation'].get('low') or base_amount * 0.85
+            base_high = output['valuation'].get('high') or base_amount * 1.15
+
+            # Apply adjustment to amount AND range
+            output['valuation']['amount'] = _r100k(base_amount * (1 + adj_pct))
+            output['valuation']['low'] = _r100k(base_low * (1 + adj_pct * 0.7))  # range widens asymmetrically
+            output['valuation']['high'] = _r100k(base_high * (1 + adj_pct * 1.1))
+
+        # Always attach substantiality info to output, even when adj=0
+        output['valuation']['building_substantiality'] = {
+            'index': substantiality['index'],
+            'typical_bua_m2': substantiality['typical_bua'],
+            'actual_bua_m2': substantiality['actual_bua'],
+            'adjustment_pct': round(adj_pct * 100, 1),
+            'rationale_ar': substantiality['rationale'],
+            'methodology_note_ar': (
+                'وزارة العدل تسجّل ثمن الصفقة لكن لا تسجّل تفاصيل البناء '
+                '(عدد الطوابق، السرداب، التشطيب). عندما يكون البناء الفعلي '
+                'أكبر من النموذجي، نطبّق تعديلاً صعودياً معتدلاً على القيمة. '
+                'لا نطبّق تعديلاً نزولياً تلقائياً — إن لم تقدّم تفاصيل البناء '
+                'يبقى التقييم على افتراض بناء نموذجي مع تنبيه عدم اليقين.'
+            ) if adj_pct > 0 else (
+                'البناء ضمن النطاق النموذجي — لا حاجة لتعديل.'
+            ),
+        }
+
     # ── Material Uncertainty (RICS VPN 13) ──
     # Sprint 1.c fix: ensure MU reflects the n actually USED in primary value
     # (not the thin bracket n that geo widening already bypassed)
@@ -1958,6 +2247,31 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                     '(n=' + str(effective_n) + ') but no field inspection or full building data. '
                     'Field inspection recommended for major decisions.'
                 )
+
+        # Sprint 2.2: explicitly flag missing building details
+        if bua_breakdown is None:
+            building_unknown_factor = (
+                'تفاصيل البناء غير مُقدَّمة (الطوابق، السرداب، الترميم، الملاحق) — '
+                'التقييم يفترض بناءً نموذجياً وقد يختلف عن الواقع بـ ±20-40% '
+                'إذا كان للعقار سرداب أو طوابق متعددة أو ملاحق مهمة.'
+            )
+            building_unknown_unknown = (
+                'مكوّنات البناء الفعلية (سرداب، طوابق، مجلس خارجي، حالة التشطيب)'
+            )
+            mu_factors = list(mu.get('factors') or [])
+            if not any('تفاصيل البناء غير' in f for f in mu_factors):
+                mu_factors.insert(0, building_unknown_factor)
+                mu['factors'] = mu_factors
+            mu_unknowns = list(mu.get('known_unknowns') or [])
+            if not any('مكوّنات البناء' in u for u in mu_unknowns):
+                mu_unknowns.insert(0, building_unknown_unknown)
+                mu['known_unknowns'] = mu_unknowns
+            mu_recs = list(mu.get('recommendations') or [])
+            rec_text = 'أدخل تفاصيل العقار (طوابق، سرداب، حالة) للحصول على تقييم أدق'
+            if not any('تفاصيل العقار' in r for r in mu_recs):
+                mu_recs.insert(0, rec_text)
+                mu['recommendations'] = mu_recs
+
         output['material_uncertainty'] = mu
 
     # ── Audience-specific brief ──

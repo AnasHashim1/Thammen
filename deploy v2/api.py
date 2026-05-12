@@ -127,12 +127,16 @@ class EvaluateDetailsRequest(BaseModel):
     street: int
     building: int
     audience: Optional[str] = 'buyer'  # Sprint 1: now wired to backend
-    floors: Optional[int] = None          # 1, 2, 3, 4
+    floors: Optional[int] = None          # ABOVE-GROUND floors: 1, 2, 3, 4 (basement is separate)
     annexes: Optional[int] = None         # 0, 1, 2, 3
     condition: Optional[str] = None       # 'new', 'good', 'maintenance', 'renovated'
     asking_price: Optional[float] = None  # listing price (QAR)
     rental_income: Optional[float] = None # monthly rental (QAR)
     potential_rental: Optional[float] = None
+    # Sprint 2.2 — explicit building improvements (RICS Red Book "subject property" specs)
+    basement: Optional[bool] = None       # سرداب — adds significant unrecorded value
+    footprint_m2: Optional[float] = None  # ground-floor footprint estimate (overrides default)
+    external_majlis: Optional[bool] = None  # مجلس خارجي منفصل
 
 
 # ── Helpers ──
@@ -490,6 +494,7 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
     """Improved evaluation with building details from user."""
     log.info(f"evaluate details: {req.zone}/{req.street}/{req.building} "
              f"floors={req.floors} condition={req.condition} "
+             f"basement={req.basement} footprint={req.footprint_m2} "
              f"from {get_remote_address(request)}")
     try:
         # NEW v3.1: Use unified engine if available
@@ -505,6 +510,10 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
                 floors=req.floors,
                 condition=req.condition,
                 annexes=req.annexes or 0,
+                # Sprint 2.2 — building improvements
+                basement=req.basement,
+                footprint_m2=req.footprint_m2,
+                external_majlis=req.external_majlis,
                 use_listings=True,
                 use_geo_v2=True,
             )

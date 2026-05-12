@@ -181,16 +181,24 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       </div>
       <div class="det" id="dSec">
         <div class="fr2">
-          <div class="fg"><label>عدد الطوابق</label><select id="floors"><option value="">— اختر —</option><option value="1">طابق واحد</option><option value="2">طابقين</option><option value="3">ثلاثة</option><option value="4">أربعة</option></select></div>
+          <div class="fg"><label>عدد الطوابق فوق الأرض</label><select id="floors"><option value="">— اختر —</option><option value="1">طابق واحد (أرضي)</option><option value="2">طابقين (أرضي + أول)</option><option value="3">ثلاثة (أرضي + أول + ثاني)</option><option value="4">أربعة</option></select></div>
+          <div class="fg"><label>سرداب (تحت الأرض)</label><select id="basement"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد سرداب</option></select></div>
+        </div>
+        <div class="fr2">
           <div class="fg"><label>عدد الملاحق</label><select id="annexes"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">ملحق واحد</option><option value="2">ملحقين</option><option value="3">ثلاثة</option></select></div>
+          <div class="fg"><label>مجلس خارجي منفصل</label><select id="externalMajlis"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد</option></select></div>
         </div>
         <div class="fr2">
           <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option></select></div>
-          <div class="fg"><label>السعر المطلوب (ر.ق)</label><input type="number" id="askingPrice" placeholder="اختياري" min="0"></div>
+          <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — تقدير الـ footprint" min="0"></div>
         </div>
         <div class="fr2">
+          <div class="fg"><label>السعر المطلوب (ر.ق)</label><input type="number" id="askingPrice" placeholder="اختياري" min="0"></div>
           <div class="fg"><label>الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"></div>
+        </div>
+        <div class="fr2">
           <div class="fg"><label>الإيجار الشهري المتوقع (ر.ق)</label><input type="number" id="potentialRental" placeholder="تقدير" min="0"></div>
+          <div class="fg"></div>
         </div>
       </div>
     </div>
@@ -249,8 +257,26 @@ async function run(){
   const elapsedTimer=setInterval(renderLoading,1000);
   try{
     let bd={zone:+z,street:+s,building:+b,audience};
-    if(dOpen){const f=document.getElementById('floors').value,a=document.getElementById('annexes').value,c=document.getElementById('condition').value,p=document.getElementById('askingPrice').value,ri=document.getElementById('rentalIncome').value,pr=document.getElementById('potentialRental').value;
-      if(f)bd.floors=+f;if(a)bd.annexes=+a;if(c)bd.condition=c;if(p)bd.asking_price=+p;if(ri)bd.rental_income=+ri;if(pr)bd.potential_rental=+pr}
+    if(dOpen){
+      const f=document.getElementById('floors').value,
+            a=document.getElementById('annexes').value,
+            c=document.getElementById('condition').value,
+            p=document.getElementById('askingPrice').value,
+            ri=document.getElementById('rentalIncome').value,
+            pr=document.getElementById('potentialRental').value,
+            bsmt=document.getElementById('basement').value,
+            fp=document.getElementById('footprintM2').value,
+            em=document.getElementById('externalMajlis').value;
+      if(f)bd.floors=+f;
+      if(a)bd.annexes=+a;
+      if(c)bd.condition=c;
+      if(p)bd.asking_price=+p;
+      if(ri)bd.rental_income=+ri;
+      if(pr)bd.potential_rental=+pr;
+      if(bsmt!=='')bd.basement=(bsmt==='1');
+      if(fp)bd.footprint_m2=+fp;
+      if(em!=='')bd.external_majlis=(em==='1');
+    }
     const r=await fetch(API+'/api/evaluate/details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
     if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
     const data=await r.json();
@@ -410,6 +436,34 @@ function show(d){
   if(br&&br.sections&&br.sections.length>0){
     h+='<div class="rc" style="background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px"><div class="rt" style="font-size:1.15rem;margin-bottom:0">'+(br.title_ar||'التقرير')+'</div></div>';
     br.sections.forEach(sec=>{h+=renderSection(sec)});
+  }
+
+  // ── Building Substantiality (Sprint 2.2) ──
+  if(hasValuation&&v.building_substantiality){
+    const bs=v.building_substantiality;
+    const adj=bs.adjustment_pct||0;
+    if(adj>0){
+      h+='<div class="rc"><div class="rt" style="margin-bottom:8px">🏗️ تعديل البناء (+'+adj.toFixed(1)+'%)</div>';
+      h+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">'+(bs.rationale_ar||'')+' (مؤشر '+bs.index+')</div>';
+      h+='<div style="display:flex;gap:12px;font-size:.85rem;color:#666">';
+      h+='<span>البناء النموذجي: <strong>'+bs.typical_bua_m2+' م²</strong></span>';
+      h+='<span>البناء الفعلي: <strong>'+bs.actual_bua_m2+' م²</strong></span>';
+      h+='</div>';
+      h+='<div style="margin-top:10px;padding:10px;background:#e6f7ed;border-radius:6px;font-size:.85rem;color:#0c7d41">'+(bs.methodology_note_ar||'')+'</div>';
+      h+='</div>';
+    }
+  }
+
+  // ── Building details missing notice (Sprint 2.2) ──
+  if(hasValuation&&!v.building_substantiality){
+    const ui=d.user_inputs||{};
+    const noDetails=!ui.floors&&!ui.basement&&!ui.footprint_m2&&!ui.external_majlis&&!ui.annexes;
+    if(noDetails){
+      h+='<div class="rc" style="border-color:#f4d03f;background:#fffdf3">';
+      h+='<div class="rt" style="margin-bottom:6px;color:#a87000">ℹ️ التقييم يفترض بناءً نموذجياً</div>';
+      h+='<div class="rn" style="font-size:.85rem;color:#666">لم تُدخل تفاصيل البناء. إذا كان عقارك يحتوي على سرداب، طوابق إضافية، أو ملاحق، أعِد التقييم بعد إدخال هذه التفاصيل للحصول على قيمة أدق (قد تختلف القيمة الفعلية بـ ±20-40%).</div>';
+      h+='</div>';
+    }
   }
 
   // ── Range Expansion Explanation (when valuation is present) ──
