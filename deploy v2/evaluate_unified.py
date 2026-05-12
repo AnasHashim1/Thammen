@@ -665,6 +665,144 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
     }
 
 
+def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_type,
+                                       audience, listing_price):
+    """Sprint A.3 fix: Fast response for DCF asset with listing_price but no rental.
+
+    The full pipeline would burn 30-40s on GIS extent detection that produces no
+    usable comparison (no MoJ comparable for compound_large/tower/etc.). Instead,
+    we reverse-engineer: at typical Cap Rate, what rent would this listing price
+    require? Returns in ~1s with an actionable question for the user.
+    """
+    from datetime import datetime
+    asset_label_ar = ASSET_TYPE_AR.get(asset_type, asset_type)
+
+    # Reverse-engineer implied rent from listing price
+    cap_rate = CAP_RATES_BY_ASSET.get(asset_type) or 0.075
+    opex_ratio = OPEX_RATIO_RESIDENTIAL
+    implied_annual_noi = listing_price * cap_rate
+    implied_annual_rent = implied_annual_noi / (1 - opex_ratio)
+    implied_monthly_rent = implied_annual_rent / 12
+
+    # Sanity context: implied rent per m² of plot
+    rent_per_m2_year = implied_annual_rent / plot.pdarea if plot.pdarea else 0
+
+    plausibility_ar = (
+        'في النطاق المعقول' if 60 <= rent_per_m2_year <= 400
+        else 'مرتفع — السعر قد يكون مبالغاً فيه' if rent_per_m2_year > 400
+        else 'منخفض — السعر قد يكون رخيصاً'
+    )
+
+    return {
+        'status': 'ok',
+        'engine_version': 'thammen-sprint-a3-implied-rent',
+        'methodology_ar': (
+            f'تحليل سعر الإعلان لـ "{asset_label_ar}" — تقدير الإيجار الضمني المطلوب '
+            'لجعل السعر منطقياً وفق Cap Rate نموذجي.'
+        ),
+        'methodology_disclaimer_ar': (
+            'هذا ليس تقييماً نهائياً، بل أداة فحص: نحسب الإيجار الذي يجب أن يُنتجه '
+            'العقار لتبرير السعر المطلوب. إذا كان الإيجار الفعلي أقل بكثير من '
+            'المُقدَّر، السعر مرتفع. للتقييم الكامل، أعد الطلب مع الإيجار الشهري الفعلي.'
+        ),
+        'address': f'{zone}/{street}/{building}',
+        'valuation_date': datetime.now().strftime('%Y-%m-%d'),
+        'district': None,
+        'plot_area_m2': plot.pdarea,
+        'asset_type': asset_type,
+        'asset_type_ar': asset_label_ar,
+        'audience': audience,
+        'user_inputs': {
+            'listing_price': listing_price,
+            'rental_income': None,
+        },
+        'valuation': {
+            'amount': None,
+            'low': None,
+            'high': None,
+            'method': 'listing_only_implied_rent',
+            'reason_ar': (
+                f'لا توجد مقارنة MoJ مباشرة لـ "{asset_label_ar}". '
+                f'بدلاً من تقييم بدون مرجع، نحسب الإيجار الضمني: '
+                f'لتبرير سعر {listing_price:,.0f} ر.ق، يجب أن يُنتج هذا العقار '
+                f'~{implied_monthly_rent:,.0f} ر.ق شهرياً. '
+                'قارن هذا بالإيجار الفعلي للحكم على معقولية السعر.'
+            ),
+        },
+        'moj_sample_size': 0,
+        'cost_approach': None,
+        'income_approach': None,
+        'reconciliation': {
+            'status': 'implied_rent_check',
+            'message_ar': 'فحص ضمني — أعد الطلب مع الإيجار الفعلي للتقييم الكامل',
+        },
+        'accuracy': {
+            'score': 30,
+            'label': '⚠️ فحص ضمني فقط',
+        },
+        'trend': None,
+        'location_features': None,
+        'geometric_factors': None,
+        'material_uncertainty': {
+            'level': 'high',
+            'banner_ar': 'لا يوجد تقييم حقيقي — فقط فحص ضمني للسعر المطلوب',
+            'known_unknowns_ar': [
+                'الإيجار الشهري الفعلي للعقار',
+                'مستوى الإشغال الحقيقي',
+                'حالة المبنى والصيانة',
+            ],
+            'rics_compliant': False,
+        },
+        'brief': {
+            'audience': audience,
+            'title_ar': f'فحص ضمني — {asset_label_ar}',
+            'sections': [
+                {
+                    'id': 'implied_rent',
+                    'title_ar': 'الإيجار الضمني المطلوب',
+                    'content': {
+                        'listing_price': listing_price,
+                        'implied_monthly_rent': round(implied_monthly_rent),
+                        'implied_annual_rent': round(implied_annual_rent),
+                        'implied_noi': round(implied_annual_noi),
+                        'cap_rate_used_pct': round(cap_rate * 100, 2),
+                        'rent_per_m2_year': round(rent_per_m2_year, 1),
+                        'plausibility_ar': plausibility_ar,
+                        'note_ar': (
+                            f'لجعل سعر {listing_price:,.0f} ر.ق منطقياً وفق Cap Rate '
+                            f'نموذجي ({cap_rate*100:.1f}% لـ {asset_label_ar})، يجب أن '
+                            f'يُنتج هذا العقار إيجاراً شهرياً قدره '
+                            f'~{implied_monthly_rent:,.0f} ر.ق.'
+                        ),
+                    },
+                },
+                {
+                    'id': 'next_steps',
+                    'title_ar': 'الخطوات المقترحة',
+                    'content': {
+                        'note_ar': 'لتقييم نهائي وموثوق:',
+                        'options_ar': [
+                            f'أكّد أو انفِ: هل الإيجار الفعلي قريب من {implied_monthly_rent:,.0f} ر.ق/شهر؟',
+                            'إذا كان الإيجار الفعلي أقل بكثير → السعر مرتفع',
+                            'إذا كان الإيجار الفعلي أعلى أو مساوياً → السعر منطقي',
+                            'أعد الطلب مع الإيجار الشهري للتقييم الكامل',
+                        ],
+                    },
+                },
+            ],
+        },
+        'sanity_warnings': [],
+        'disclaimer': (
+            'ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. '
+            'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
+        ),
+        'active_listings': {
+            'available': False,
+            'reason': 'فحص ضمني — لم يُجرَ بحث إعلانات',
+        },
+    }
+
+
 def _build_fast_income_only_response(zone, street, building, loc, plot, asset_type,
                                       audience, rental_income, listing_price):
     """Sprint A.2: Fast income-only valuation for DCF-only assets.
@@ -1157,7 +1295,7 @@ def evaluate_thammen(
                 _sanity_warnings = _sanity['warnings_ar']
                 rental_income = _sanity['rental_income_adjusted']
 
-                # ── Sprint A.1/A.2: DCF fast paths ──
+                # ── Sprint A.1/A.2/A.3: DCF fast paths ──
                 if _qtype in DCF_ONLY:
                     if rental_income:
                         # Sprint A.2: income-only valuation (fast)
@@ -1169,15 +1307,21 @@ def evaluate_thammen(
                         result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
                         _check_output_sanity(result, listing_price)
                         return result
-                    elif listing_price is None:
+                    elif listing_price:
+                        # Sprint A.3 fix: reverse-engineer implied rent (fast)
+                        result = _build_fast_listing_only_response(
+                            zone, street, building, _loc, _plot, _qtype, audience,
+                            listing_price,
+                        )
+                        result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
+                        return result
+                    else:
                         # Sprint A.1: classification only (no inputs)
                         result = _build_fast_insufficient_data_response(
                             zone, street, building, _loc, _plot, _qtype, audience,
                         )
                         result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
                         return result
-                    # else: listing_price provided but no rental_income —
-                    # fall through to full pipeline (user wants comparison check)
     except Exception as e:
         # Lite path failed — fall through to full pipeline (defensive)
         print(f"[fast-classify] failed: {e}", file=sys.stderr)

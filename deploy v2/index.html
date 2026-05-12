@@ -458,7 +458,7 @@ function show(d){
 }
 
 // Sprint D: Section renderer for brief.sections
-const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔'};
+const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘'};
 function pctFmt(n){return n==null?'—':Number(n).toFixed(2)+'%'}
 function qarFmt(n){return n==null?'—':fmt(n)+' ر.ق'}
 function renderSection(sec){
@@ -516,6 +516,19 @@ function renderSection(sec){
         c.options_ar.forEach(o=>{body+='<li>'+o+'</li>'});
         body+='</ul>';
       }
+      break;
+    case 'implied_rent':
+      if(c.listing_price)body+=row('سعر الإعلان',qarFmt(c.listing_price));
+      if(c.implied_monthly_rent)body+=row('الإيجار الشهري الضمني المطلوب',qarFmt(c.implied_monthly_rent),'hl');
+      if(c.implied_annual_rent)body+=row('الإيجار السنوي الضمني',qarFmt(c.implied_annual_rent));
+      if(c.implied_noi)body+=row('NOI الضمني',qarFmt(c.implied_noi));
+      if(c.cap_rate_used_pct)body+=row('Cap Rate المستخدم',c.cap_rate_used_pct.toFixed(2)+'%');
+      if(c.rent_per_m2_year)body+=row('الإيجار/م² سنوياً',c.rent_per_m2_year.toFixed(0)+' ر.ق');
+      if(c.plausibility_ar){
+        const cls=c.plausibility_ar.includes('المعقول')?'pos':c.plausibility_ar.includes('مرتفع')?'neg':'';
+        body+=row('التقدير',c.plausibility_ar,cls);
+      }
+      if(c.note_ar)body+='<div class="br-note" style="margin-top:10px">'+c.note_ar+'</div>';
       break;
     // ── Buyer brief ──
     case 'verdict':
