@@ -635,6 +635,214 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
     }
 
 
+def _build_fast_income_only_response(zone, street, building, loc, plot, asset_type,
+                                      audience, rental_income, listing_price):
+    """Sprint A.2: Fast income-only valuation for DCF-only assets.
+
+    For compound_large / tower / commercial / apartment_building with rental_income,
+    the full pipeline takes 30-90s producing comparison data that has no MoJ
+    comparable anyway. The Income Approach is the ONLY valid method for these
+    assets, and it needs just 4 inputs: rental, OPEX ratio, cap rate, asset size.
+    All available in ~1s without GIS extent detection or geometric factors.
+
+    The valuation produced is RICS-compliant Income Approach output. Comparison
+    and Cost approaches are explicitly absent (correctly).
+    """
+    from datetime import datetime
+    asset_label_ar = ASSET_TYPE_AR.get(asset_type, asset_type)
+
+    # ── Income Approach computation ──
+    annual_rent = (rental_income or 0) * 12
+    opex_ratio = OPEX_RATIO_RESIDENTIAL
+    noi = annual_rent * (1 - opex_ratio)
+    cap_rate = CAP_RATES_BY_ASSET.get(asset_type) or 0.075
+    income_value = round(noi / cap_rate) if cap_rate > 0 else None
+    gross_yield = (annual_rent / income_value) if income_value else None
+    net_yield = (noi / income_value) if income_value else None
+
+    # Range: ±15% reflecting Cap Rate uncertainty
+    value_low = round(income_value * 0.85, -4) if income_value else None
+    value_high = round(income_value * 1.15, -4) if income_value else None
+
+    # ── Listing comparison if provided ──
+    listing_gap_pct = None
+    if listing_price and income_value:
+        listing_gap_pct = (listing_price - income_value) / income_value
+
+    # ── Sensitivity scenarios ──
+    sensitivity = []
+    for delta in (-1.0, -0.5, 0, 0.5, 1.0):
+        c = cap_rate + (delta / 100.0)
+        if c > 0:
+            sensitivity.append({
+                'cap_rate_pct': round(c * 100, 2),
+                'income_value': round(noi / c, -3),
+                'delta_label_ar': 'الأساس' if delta == 0 else ('+' if delta > 0 else '') + f'{delta}%',
+            })
+
+    # ── Investor brief sections (rebuilt locally) ──
+    sections = [
+        {
+            'id': 'yield',
+            'title_ar': 'تحليل العائد',
+            'content': {
+                'gross_yield_pct': round((gross_yield or 0) * 100, 2),
+                'net_yield_pct': round((net_yield or 0) * 100, 2),
+                'noi_annual': noi,
+                'annual_rent_gross': annual_rent,
+                'cap_rate_pct': round(cap_rate * 100, 2),
+                'cap_rate_label_ar': f'معدل رسملة {cap_rate*100:.1f}% (نموذجي لـ {asset_label_ar})',
+                'rent_source_ar': 'إفادة العميل (الإيجار الفعلي)',
+            },
+        },
+        {
+            'id': 'income_value',
+            'title_ar': 'القيمة بمنهج الدخل',
+            'content': {
+                'income_value': income_value,
+                'cap_rate_used': cap_rate,
+                'noi': noi,
+                'role_ar': (
+                    f'القيمة الأساسية المعتمدة لـ "{asset_label_ar}" (طريقة الدخل '
+                    'هي الطريقة الأنسب لهذه الفئة وفق RICS Income Approach)'
+                ),
+                'method_label_ar': 'طريقة الدخل (RICS Income Approach)',
+            },
+        },
+        {
+            'id': 'sensitivity',
+            'title_ar': 'تحليل الحساسية — Cap Rate',
+            'content': {
+                'base_cap_rate_pct': round(cap_rate * 100, 2),
+                'base_noi': noi,
+                'scenarios': sensitivity,
+                'note_ar': 'حساسية القيمة لتغير Cap Rate ±1% — لأن المعدل تقديري ويتأثر بحالة السوق.',
+            },
+        },
+        {
+            'id': 'market_context',
+            'title_ar': 'السياق السوقي',
+            'content': {
+                'qatar_benchmark': f'7-8% Cap Rate للكومباوندات الكبيرة في قطر = طبيعي',
+                'above_6_net': 'صافي عائد > 6% = جذاب للمستثمرين',
+                'below_4_net': 'صافي عائد < 4% = ضعيف، أعد التفاوض',
+            },
+        },
+    ]
+
+    # If listing_price provided, add comparison section
+    if listing_price and income_value:
+        gap_pct = listing_gap_pct * 100
+        position_ar = (
+            'أقل من قيمة الدخل' if gap_pct < -5
+            else 'أعلى من قيمة الدخل' if gap_pct > 5
+            else 'مطابق لقيمة الدخل'
+        )
+        sections.insert(0, {
+            'id': 'verdict',
+            'title_ar': 'مقارنة السعر بقيمة الدخل',
+            'content': {
+                'listing_price': listing_price,
+                'benchmark': income_value,
+                'gap_pct': listing_gap_pct,
+                'position': 'above_market' if gap_pct > 5 else 'below_market' if gap_pct < -5 else 'at_market',
+                'description_ar': f'السعر {position_ar} بـ {abs(gap_pct):.1f}%. القيمة محسوبة من الإيجار المُقدَّم بطريقة الدخل.',
+            },
+        })
+
+    return {
+        'status': 'ok',
+        'engine_version': 'thammen-sprint-a2-fast-income',
+        'methodology_ar': (
+            f'تقدير سريع بطريقة الدخل (RICS Income Approach) لـ "{asset_label_ar}". '
+            'لا توجد مقارنة MoJ مباشرة لهذه الفئة في قطر — الدخل هو الطريقة المعيارية.'
+        ),
+        'methodology_disclaimer_ar': (
+            'تقدير آلي مبني على الإيجار المُقدَّم من العميل و Cap Rate نموذجي للفئة. '
+            'للأغراض الرسمية يلزم تقييم من مُقيِّم معتمد بعد فحص ميداني وتحقق من الإيجار '
+            'الفعلي عبر فترة طويلة.'
+        ),
+        'address': f'{zone}/{street}/{building}',
+        'valuation_date': datetime.now().strftime('%Y-%m-%d'),
+        'district': None,
+        'plot_area_m2': plot.pdarea,
+        'asset_type': asset_type,
+        'asset_type_ar': asset_label_ar,
+        'audience': audience,
+        'user_inputs': {
+            'listing_price': listing_price,
+            'rental_income': rental_income,
+        },
+        'valuation': {
+            'amount': income_value,
+            'low': value_low,
+            'high': value_high,
+            'method': 'income_approach_only',
+            'method_ar': 'طريقة الدخل (الطريقة المعيارية لهذه الفئة)',
+        },
+        'moj_sample_size': 0,
+        'cost_approach': None,
+        'income_approach': {
+            'income_value': income_value,
+            'annual_rent': annual_rent,
+            'monthly_rent': rental_income,
+            'rent_source_ar': 'إفادة العميل',
+            'noi': noi,
+            'opex_ratio': opex_ratio,
+            'cap_rate': cap_rate,
+            'cap_rate_label_ar': f'معدل رسملة {cap_rate*100:.1f}% (نموذجي لـ {asset_label_ar})',
+            'gross_yield': gross_yield,
+            'net_yield': net_yield,
+            'method_label_ar': 'طريقة الدخل (RICS Income Approach)',
+            'role_ar': 'القيمة الأساسية المعتمدة',
+        },
+        'reconciliation': {
+            'status': 'income_only',
+            'message_ar': (
+                f'طريقة واحدة معتمدة: الدخل. للأصول من فئة "{asset_label_ar}" '
+                'لا توجد مقارنة MoJ كافية، ومنهج التكلفة لا يعكس قيمة الاستثمار.'
+            ),
+        },
+        'accuracy': {
+            'score': 55,
+            'label': '⚠️ تقدير بطريقة واحدة',
+        },
+        'trend': None,
+        'location_features': None,
+        'geometric_factors': None,
+        'material_uncertainty': {
+            'level': 'high',
+            'banner_ar': (
+                'تحفظ مادي مرتفع: التقدير مبني على Cap Rate نموذجي + إيجار مُقدَّم من '
+                'العميل. للقرارات الكبيرة، يُنصح بفحص ميداني وتحقق من الإيجار التاريخي.'
+            ),
+            'known_unknowns_ar': [
+                'مدى استقرار الإيجار التاريخي (هل الرقم المُقدَّم ثابت أم متذبذب؟)',
+                'تكاليف التشغيل الفعلية (قد تختلف عن 23% النموذجي)',
+                'حالة المباني والإنشاءات (تؤثر على Cap Rate الفعلي)',
+                'مستوى الإشغال الفعلي',
+            ],
+            'rics_compliant': False,
+        },
+        'brief': {
+            'audience': audience,
+            'title_ar': (
+                f'تقرير المستثمر — {asset_label_ar}' if audience == 'investor'
+                else f'تقدير {asset_label_ar} بطريقة الدخل'
+            ),
+            'sections': sections,
+        },
+        'disclaimer': (
+            'ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. '
+            'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
+        ),
+        'active_listings': {
+            'available': False,
+            'reason': 'تقدير سريع بطريقة الدخل — لم يُجرَ بحث إعلانات',
+        },
+    }
+
+
 # ============================================================
 # Unified entry point
 # ============================================================
@@ -658,34 +866,46 @@ def evaluate_thammen(
     if not _V2_OK:
         return {'status': 'engine_unavailable', 'error': 'evaluate_property not loaded'}
 
-    # ── Sprint A.1: Fast pre-classification short-circuit ──
-    # For DCF-only asset types (compound_large, tower, etc.) with NO user inputs,
-    # the full pipeline takes 30-90s but produces only `insufficient_data`.
-    # A lite GIS lookup (~0.7s) is enough to classify the asset and return early.
-    # If the user provides listing_price or rental_income, we DO need the full
-    # pipeline (income approach can produce a value), so we don't short-circuit.
-    if listing_price is None and rental_income is None:
-        try:
-            from qatar_gis import QatarGIS, classify_asset
-            _gis_lite = QatarGIS(verbose=False)
-            _loc = _gis_lite.find_property(zone, street, building)
-            if _loc:
-                _plot = _gis_lite.get_plot(_loc.pin)
-                if _plot:
-                    _quick = classify_asset(_plot, None)
-                    _qtype = _quick.asset_type.value
-                    # DCF-only types that cannot produce a value without user inputs
-                    DCF_ONLY = {
-                        'compound_large', 'tower', 'apartment_building',
-                        'commercial', 'industrial', 'agricultural',
-                    }
-                    if _qtype in DCF_ONLY:
+    # ── Sprint A.1/A.2: Fast pre-classification short-circuit ──
+    # For DCF-only asset types (compound_large, tower, etc.) the full pipeline
+    # takes 30-90s and produces no useful comparison (no MoJ comparable for
+    # this class). We always do a lite GIS lookup (~0.7s) to classify, then:
+    #
+    #   - No user inputs       → return insufficient_data (Sprint A.1)
+    #   - With rental_income   → return income-only valuation (Sprint A.2)
+    #
+    # Both paths avoid the 30s GIS extent detection + geometric_factors that
+    # consume time without producing value for these asset classes.
+    DCF_ONLY = {
+        'compound_large', 'tower', 'apartment_building',
+        'commercial', 'industrial', 'agricultural',
+    }
+    try:
+        from qatar_gis import QatarGIS, classify_asset
+        _gis_lite = QatarGIS(verbose=False)
+        _loc = _gis_lite.find_property(zone, street, building)
+        if _loc:
+            _plot = _gis_lite.get_plot(_loc.pin)
+            if _plot:
+                _quick = classify_asset(_plot, None)
+                _qtype = _quick.asset_type.value
+                if _qtype in DCF_ONLY:
+                    if rental_income:
+                        # Sprint A.2: income-only valuation (fast)
+                        return _build_fast_income_only_response(
+                            zone, street, building, _loc, _plot, _qtype, audience,
+                            rental_income, listing_price,
+                        )
+                    elif listing_price is None:
+                        # Sprint A.1: classification only (no inputs)
                         return _build_fast_insufficient_data_response(
                             zone, street, building, _loc, _plot, _qtype, audience,
                         )
-        except Exception as e:
-            # Lite path failed — fall through to full pipeline (defensive)
-            print(f"[fast-classify] failed: {e}", file=sys.stderr)
+                    # else: listing_price provided but no rental_income —
+                    # fall through to full pipeline (user wants comparison check)
+    except Exception as e:
+        # Lite path failed — fall through to full pipeline (defensive)
+        print(f"[fast-classify] failed: {e}", file=sys.stderr)
 
     # ── Step 1: v2 baseline ──
     has_reno, full_reno = _condition_to_reno(condition)
