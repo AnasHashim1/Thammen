@@ -515,6 +515,125 @@ def _analyze_reconciliation(primary, cost, income) -> dict:
 
 
 # ============================================================
+# Sprint A.1: Fast short-circuit for DCF-only assets
+# ============================================================
+
+ASSET_TYPE_AR = {
+    'standalone_villa':   'فيلا منفردة',
+    'compound_small':     'مجمع فلل صغير',
+    'compound_large':     'مجمع فلل كبير',
+    'apartment_building': 'عمارة سكنية',
+    'tower':              'برج سكني',
+    'palace':             'قصر',
+    'raw_land':           'أرض فضاء',
+    'commercial':         'تجاري',
+    'industrial':         'صناعي',
+    'agricultural':       'مزرعة',
+    'unknown':            'غير محدد',
+}
+
+
+def _build_fast_insufficient_data_response(zone, street, building, loc, plot, asset_type, audience):
+    """Fast response for DCF-only assets when user provided no inputs.
+
+    The full pipeline would take 30-90s on these (compound extent detection,
+    GIS factor analysis, v3 enrichment) but always produces insufficient_data
+    because there's no MoJ comparable for the asset class. Returns the
+    classification facts in ~1s so the user can resubmit with rental_income
+    or listing_price.
+    """
+    from datetime import datetime
+    asset_label_ar = ASSET_TYPE_AR.get(asset_type, asset_type)
+    return {
+        'status': 'ok',
+        'engine_version': 'thammen-sprint-a1-fast-classify',
+        'methodology_ar': (
+            'تصنيف سريع مبني على بيانات GIS — لا توجد مقارنة MoJ '
+            f'مباشرة لفئة "{asset_label_ar}" في قطر'
+        ),
+        'methodology_disclaimer_ar': (
+            'تقدير الأصول من هذه الفئة يحتاج طريقة الدخل (Income Approach) أو سعر '
+            'إعلان قابل للمقارنة. يرجى إعادة الطلب مع إفادة بالإيجار الشهري أو سعر '
+            'الإعلان للحصول على تقييم كامل.'
+        ),
+        'address': f'{zone}/{street}/{building}',
+        'valuation_date': datetime.now().strftime('%Y-%m-%d'),
+        'district': None,
+        'plot_area_m2': plot.pdarea,
+        'asset_type': asset_type,
+        'asset_type_ar': asset_label_ar,
+        'audience': audience,
+        'user_inputs': {
+            'listing_price': None,
+            'rental_income': None,
+        },
+        'valuation': {
+            'amount': None,
+            'low': None,
+            'high': None,
+            'method': 'insufficient_data',
+            'reason_ar': (
+                f'هذا الأصل من نوع "{asset_label_ar}" — لا توجد عينة مقارنة في سجلات '
+                'وزارة العدل لهذه الفئة (الكومباوندات الكبيرة والأبراج تُسجَّل بأرقام '
+                'مرجعية موحَّدة بدلاً من مقارنات سعر/م²). '
+                'لتقييم دقيق، أضف الإيجار الشهري الفعلي أو سعر الإعلان وأعد الطلب.'
+            ),
+        },
+        'moj_sample_size': 0,
+        'cost_approach': None,
+        'income_approach': None,
+        'reconciliation': {
+            'status': 'no_primary',
+            'message_ar': 'تصنيف فقط — التقييم يحتاج إفادة الإيجار أو سعر الإعلان',
+        },
+        'accuracy': {
+            'score': 0,
+            'label': '⚠️ بيانات غير كافية',
+        },
+        'trend': None,
+        'location_features': None,
+        'geometric_factors': None,
+        'material_uncertainty': {
+            'level': 'critical',
+            'banner_ar': 'تحفظ مادي حرج: لا توجد بيانات بيع مقارنة لهذه الفئة',
+            'known_unknowns_ar': [
+                'الإيجار الشهري للوحدات',
+                'حالة المبنى والعمر',
+                'مساحة البناء الإجمالية',
+                'عدد الوحدات الفعلي',
+            ],
+            'rics_compliant': False,
+        },
+        'brief': {
+            'audience': audience,
+            'title_ar': f'تقرير {asset_label_ar} — تحتاج بيانات إضافية',
+            'sections': [{
+                'id': 'next_steps',
+                'title_ar': 'الخطوات المقترحة',
+                'content': {
+                    'note_ar': (
+                        f'العنوان {zone}/{street}/{building} تابع لمساحة {plot.pdarea:,.0f} م² '
+                        f'مُصنَّف كـ "{asset_label_ar}". لتقييم كامل يرجى تزويدنا بأحد التاليين:'
+                    ),
+                    'options_ar': [
+                        'إفادة الإيجار الشهري الفعلي (لتقييم بطريقة الدخل)',
+                        'سعر الإعلان أو سعر المالك (لمقارنة سوقية)',
+                    ],
+                },
+            }],
+        },
+        'disclaimer': (
+            'ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. '
+            'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
+        ),
+        'active_listings': {
+            'available': False,
+            'reason': 'تصنيف سريع — لم يُجرَ بحث إعلانات',
+        },
+    }
+
+
+# ============================================================
 # Unified entry point
 # ============================================================
 
@@ -536,6 +655,35 @@ def evaluate_thammen(
 ) -> Dict:
     if not _V2_OK:
         return {'status': 'engine_unavailable', 'error': 'evaluate_property not loaded'}
+
+    # ── Sprint A.1: Fast pre-classification short-circuit ──
+    # For DCF-only asset types (compound_large, tower, etc.) with NO user inputs,
+    # the full pipeline takes 30-90s but produces only `insufficient_data`.
+    # A lite GIS lookup (~0.7s) is enough to classify the asset and return early.
+    # If the user provides listing_price or rental_income, we DO need the full
+    # pipeline (income approach can produce a value), so we don't short-circuit.
+    if listing_price is None and rental_income is None:
+        try:
+            from qatar_gis import QatarGIS, classify_asset
+            _gis_lite = QatarGIS(verbose=False)
+            _loc = _gis_lite.find_property(zone, street, building)
+            if _loc:
+                _plot = _gis_lite.get_plot(_loc.pin)
+                if _plot:
+                    _quick = classify_asset(_plot, None)
+                    _qtype = _quick.asset_type.value
+                    # DCF-only types that cannot produce a value without user inputs
+                    DCF_ONLY = {
+                        'compound_large', 'tower', 'apartment_building',
+                        'commercial', 'industrial', 'agricultural',
+                    }
+                    if _qtype in DCF_ONLY:
+                        return _build_fast_insufficient_data_response(
+                            zone, street, building, _loc, _plot, _qtype, audience,
+                        )
+        except Exception as e:
+            # Lite path failed — fall through to full pipeline (defensive)
+            print(f"[fast-classify] failed: {e}", file=sys.stderr)
 
     # ── Step 1: v2 baseline ──
     has_reno, full_reno = _condition_to_reno(condition)
