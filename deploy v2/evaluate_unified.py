@@ -1984,6 +1984,37 @@ def evaluate_thammen(
         traceback.print_exc()
         return {'status': 'evaluation_failed', 'error': str(e)}
 
+    # ── Sprint 2.5: Auto-detect building age from GIS imagery ──
+    # When the user didn't provide building_age_years, the v2 baseline may have
+    # auto-detected it from historical satellite imagery (qatar_gis.py imagery
+    # analysis via report.construction.earliest_built_year). Surface it here so:
+    #   1. The Sprint 2.3 age-aware substantiality multiplier uses it
+    #   2. The cost_approach already benefited from it via evaluate_property
+    #   3. The UI can show a "detected from satellite imagery" badge
+    age_source = 'user' if building_age_years is not None else 'unknown'
+    age_confidence_years = None
+    if building_age_years is None:
+        # The v2 baseline already wrote the auto-detected age into
+        # ev.replacement_cost.building_age_years if include_age=True succeeded.
+        rc = getattr(ev, 'replacement_cost', None)
+        if rc:
+            auto_age = getattr(rc, 'building_age_years', None)
+            if auto_age and auto_age > 0:
+                building_age_years = int(auto_age)
+                age_source = 'gis_imagery'
+                # Try to extract confidence from the construction report
+                try:
+                    report = getattr(ev, 'raw_property_report', None)
+                    if isinstance(report, dict):
+                        constr = report.get('construction') or {}
+                        age_confidence_years = constr.get('confidence_years')
+                    elif report is not None:
+                        constr = getattr(report, 'construction', None)
+                        if constr:
+                            age_confidence_years = getattr(constr, 'confidence_years', None)
+                except Exception:
+                    pass
+
     eval_dict = asdict(ev) if hasattr(ev, '__dataclass_fields__') else ev.__dict__
 
     # ── Steps 1.5 + 2 + 7 — Parallelize 3 independent I/O-bound steps ──
@@ -2140,6 +2171,7 @@ def evaluate_thammen(
             'footprint_m2': footprint_m2,
             'external_majlis': external_majlis,
             'building_age_years': building_age_years,
+            'age_source': age_source,  # Sprint 2.5: shows if age came from user or GIS imagery
             'is_luxury': is_luxury,
         },
     )
@@ -2206,6 +2238,18 @@ def evaluate_thammen(
                 ) if raw_adj_pct > 0 else 'البناء ضمن النطاق النموذجي.'
                 regime_label_ar = 'عمر غير معروف — تطبيق افتراضي'
 
+            # Sprint 2.5: append auto-detection note when age came from GIS
+            if age_source == 'gis_imagery':
+                conf_part = (
+                    f' (دقة ±{age_confidence_years} سنة)'
+                    if age_confidence_years else ''
+                )
+                method_note += (
+                    f'\n\n📡 ملاحظة: عمر البناء ({building_age_years} سنة) تم استخراجه '
+                    f'تلقائياً من تحليل صور الأقمار الصناعية التاريخية{conf_part}. '
+                    f'لو كنت تعرف العمر الفعلي، أدخله يدوياً للحصول على دقة أعلى.'
+                )
+
             output['valuation']['building_substantiality'] = {
                 'index': substantiality['index'],
                 'typical_bua_m2': substantiality['typical_bua'],
@@ -2216,6 +2260,8 @@ def evaluate_thammen(
                 'age_regime': regime,
                 'age_regime_label_ar': regime_label_ar,
                 'building_age_years': building_age_years,
+                'age_source': age_source,                    # Sprint 2.5: 'user' | 'gis_imagery' | 'unknown'
+                'age_confidence_years': age_confidence_years, # Sprint 2.5: ± years (from satellite imagery)
                 'is_luxury': is_luxury,
                 'rationale_ar': substantiality['rationale'],
                 'methodology_note_ar': method_note,
@@ -2336,7 +2382,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, geometric, audience, user_inputs) -> Dict:
     output = {
         'status': 'ok',
-        'engine_version': 'thammen-sprint2p4b-audience-fixes',
+        'engine_version': 'thammen-sprint2p5-auto-age',
         'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
         'methodology_disclaimer_ar': (
             'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '

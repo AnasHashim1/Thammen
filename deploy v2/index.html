@@ -138,6 +138,37 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .sanity-warn li:last-child{border-bottom:none}
 .sanity-warn li::before{content:'•';color:#F4B400;font-weight:800;margin-left:8px}
 @media(max-width:600px){.hlogo img{max-width:260px}.fr3,.fr2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}.fcard{padding:18px}.aud-row{grid-template-columns:1fr 1fr}}
+
+/* Sprint 2.4d: Print / Save-as-PDF styles */
+@media print {
+  /* Hide everything not part of the report */
+  .hero, .fcard, .sbtn, .bbtn, .copy-btn, .map-btn-main, .map-popup, .aud-row,
+  #loading, #error, .skiph, .hbtn,
+  button, .toggle-details, .map-buttons-row {
+    display: none !important;
+  }
+  /* Clean background */
+  body { background: #fff !important; color: #000 !important; padding: 0 !important; margin: 0 !important; }
+  .container, .main, .results-container { max-width: 100% !important; padding: 0 12mm !important; margin: 0 !important; box-shadow: none !important; }
+  /* Card visuals get simplified for paper */
+  .rc, .br-card, .sanity-warn {
+    border: 1px solid #888 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 10px !important;
+  }
+  /* Keep readable color contrast */
+  .loc-tag, .loc-pos, .loc-neg, .loc-neu { background: #fff !important; border: 1px solid #888 !important; color: #000 !important; }
+  /* Section headers should be visible */
+  .rt, .br-title, h2, h3 { color: #000 !important; }
+  /* Avoid orphan headings */
+  h2, h3 { page-break-after: avoid; }
+  /* Compress trace block — long lists waste paper */
+  .reasoning-trace { font-size: 0.78rem; }
+  /* Hide audience switcher artifacts */
+  .aud-btn { display: none !important; }
+}
 </style>
 </head>
 <body>
@@ -193,7 +224,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
           <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — تقدير الـ footprint" min="0"></div>
         </div>
         <div class="fr2">
-          <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — يكفي تقدير ±5 سنوات" min="0" max="100"></div>
+          <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — سيُكتشف تلقائياً من صور الأقمار إن تُرك فارغاً" min="0" max="100"></div>
           <div class="fg"><label>تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="">— اختر —</option><option value="0">لا</option><option value="1">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
         </div>
         <div class="fr2">
@@ -344,6 +375,18 @@ function copyResult(){
   });
 }
 
+// Sprint 2.4d: Print/Save-as-PDF support
+function printReport(){
+  // Add a class to body so @media print can hide non-report elements
+  document.body.classList.add('printing');
+  // Use setTimeout to give the browser a chance to apply the class first
+  setTimeout(()=>{
+    window.print();
+    // Remove the class after print dialog closes
+    setTimeout(()=>document.body.classList.remove('printing'),500);
+  },50);
+}
+
 function show(d){
   const o=document.getElementById('rOut');
   const v=d.valuation||{};
@@ -353,7 +396,9 @@ function show(d){
   let h='';
 
   // ── Copy button (top, floats right) ──
-  h+='<button id="copyBtn" class="copy-btn" onclick="copyResult()">📋 نسخ النتيجة</button><div style="clear:both"></div>';
+  h+='<button id="copyBtn" class="copy-btn" onclick="copyResult()">📋 نسخ النتيجة</button>';
+  h+='<button class="copy-btn print-btn" onclick="printReport()" style="margin-right:8px">🖨️ طباعة / حفظ PDF</button>';
+  h+='<div style="clear:both"></div>';
 
   // ── Sprint A.3: Sanity warnings — prominent yellow card ──
   const sw=d.sanity_warnings||[];
@@ -476,6 +521,11 @@ function show(d){
       if(age!==null && age!==undefined){
         h+='<div class="rn" style="font-size:.82rem;margin-bottom:6px;color:#555">عمر البناء: <strong>'+age+' سنة</strong>';
         if(bs.is_luxury===true) h+=' · <span style="color:#6b00a0">تشطيب فاخر ✓</span>';
+        // Sprint 2.5: show source badge when age was auto-detected from GIS imagery
+        if(bs.age_source==='gis_imagery'){
+          const confTxt = bs.age_confidence_years ? ' (±'+bs.age_confidence_years+' سنة)' : '';
+          h+=' · <span style="color:#0066b8;background:#e8f3fc;padding:2px 8px;border-radius:10px;font-size:.75rem">📡 مكتشف من صور الأقمار الصناعية'+confTxt+'</span>';
+        }
         h+='</div>';
       }
       h+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">'+(bs.rationale_ar||'')+' (مؤشر '+bs.index+')</div>';
