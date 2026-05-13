@@ -2382,7 +2382,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, geometric, audience, user_inputs) -> Dict:
     output = {
         'status': 'ok',
-        'engine_version': 'thammen-sprint2p5-auto-age',
+        'engine_version': 'thammen-sprint2p5b-honest-placeholder',
         'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
         'methodology_disclaimer_ar': (
             'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '
