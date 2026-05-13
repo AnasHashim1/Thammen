@@ -53,11 +53,14 @@ from data_freshness import (
 
 # ── NEW v3.1: Unified engine with geo_v2 + listings ──
 try:
-    from evaluate_unified import evaluate_thammen
+    from evaluate_unified import evaluate_thammen, ENGINE_VERSION, SPRINT_TAG
     _UNIFIED_OK = True
-    log.info("Unified engine loaded (geo_v2 + listings available)")
+    log.info(f"Unified engine loaded: {ENGINE_VERSION}")
 except ImportError as e:
     _UNIFIED_OK = False
+    # Sprint 2.10: graceful fallback values so /api/health stays informative
+    ENGINE_VERSION = 'thammen-v2-fallback'
+    SPRINT_TAG = 'fallback'
     log.warning(f"Unified engine not available: {e} — using v2 fallback")
 
 # ── Config (via environment variables) ──
@@ -448,8 +451,9 @@ async def health():
 
     return {
         "status": "ok",
-        "version": "3.1.0-sprint2.7",
+        "version": f"3.1.0-sprint{SPRINT_TAG}",
         "engine": "unified" if _UNIFIED_OK else "v2_fallback",
+        "engine_version": ENGINE_VERSION,
         "moj_db": {
             "available": db_exists,
             "size_mb": db_size_mb,

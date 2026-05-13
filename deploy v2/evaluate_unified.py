@@ -29,6 +29,15 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Optional, Dict
 
+
+# ════════════════════════════════════════════════════════════════════
+# Sprint 2.10: single source of truth for engine version.
+# Bump this ONE constant when shipping a new Sprint. All response
+# paths and /api/health surface the same string — no more drift.
+# ════════════════════════════════════════════════════════════════════
+ENGINE_VERSION = 'thammen-sprint2p10-version-unified'
+SPRINT_TAG = '2.10'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
     _V2_OK = True
@@ -1273,7 +1282,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
     asset_label_ar = ASSET_TYPE_AR.get(asset_type, asset_type)
     return {
         'status': 'ok',
-        'engine_version': 'thammen-sprint-a1-fast-classify',
+        'engine_version': ENGINE_VERSION,
         'methodology_ar': (
             'تصنيف سريع مبني على بيانات GIS — لا توجد مقارنة MoJ '
             f'مباشرة لفئة "{asset_label_ar}" في قطر'
@@ -1391,7 +1400,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
 
     return {
         'status': 'ok',
-        'engine_version': 'thammen-sprint-a3-implied-rent',
+        'engine_version': ENGINE_VERSION,
         'methodology_ar': (
             f'تحليل سعر الإعلان لـ "{asset_label_ar}" — تقدير الإيجار الضمني المطلوب '
             'لجعل السعر منطقياً وفق Cap Rate نموذجي.'
@@ -1617,7 +1626,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
 
     return {
         'status': 'ok',
-        'engine_version': 'thammen-sprint-a2-fast-income',
+        'engine_version': ENGINE_VERSION,
         'methodology_ar': (
             f'تقدير سريع بطريقة الدخل (RICS Income Approach) لـ "{asset_label_ar}". '
             'لا توجد مقارنة MoJ مباشرة لهذه الفئة في قطر — الدخل هو الطريقة المعيارية.'
@@ -1729,7 +1738,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
     }
     return {
         'status': 'ok',
-        'engine_version': 'thammen-sprint-a3-scope-filter',
+        'engine_version': ENGINE_VERSION,
         'methodology_ar': f'الإصدار الأول من ثمّن لا يدعم فئة "{asset_label_ar}"',
         'methodology_disclaimer_ar': (
             'ثمّن في إصداره الأول مُصمَّم خصيصاً للفلل والأراضي والقصور والكومباوندات. '
@@ -2571,7 +2580,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, geometric, audience, user_inputs) -> Dict:
     output = {
         'status': 'ok',
-        'engine_version': 'thammen-sprint2p6-land-building-split',
+        'engine_version': ENGINE_VERSION,
         'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
         'methodology_disclaimer_ar': (
             'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '
