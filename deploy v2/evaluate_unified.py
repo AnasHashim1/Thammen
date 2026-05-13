@@ -787,6 +787,46 @@ def _rewrite_brief_anchored_sections(
             content['market_ceiling']    = _r100k(final_amount * 1.20)
             sec['content'] = content
 
+        # Sprint 2.4b: trend section — convert slope from decimal to percentage.
+        # The v2 baseline stores slope_annual_pct as raw decimal (e.g. -0.0207
+        # meaning -2.07%/year). UI displays it as a percent and was showing
+        # -0.02% by mistake. Normalize here so consumers always get percent.
+        elif sid == 'trend':
+            content = sec.get('content') or {}
+            sa = content.get('slope_annual_pct')
+            if sa is not None and -1.0 < sa < 1.0 and sa != 0:
+                content['slope_annual_pct'] = round(sa * 100, 2)
+            lvp = content.get('latest_vs_peak_pct')
+            if lvp is not None and -1.0 < lvp < 1.0 and lvp != 0:
+                content['latest_vs_peak_pct'] = round(lvp * 100, 2)
+            sec['content'] = content
+
+
+def _normalize_audience(audience: Optional[str]) -> str:
+    """Normalize audience aliases to canonical names.
+
+    Canonical names: 'buyer', 'seller', 'investor', 'valuer'.
+    Accepted aliases:
+      buyer:    buyer, مشتري
+      seller:   seller, بائع
+      investor: investor, مستثمر
+      valuer:   valuer, valuator, مثمن, مقيم, مقيّم, مثمّن
+    Unknown values fall back to 'buyer' (preserves legacy behavior).
+    """
+    if not audience:
+        return 'buyer'
+    a = str(audience).strip().lower()
+    valuer_aliases = {'valuer', 'valuator', 'مثمن', 'مثمّن', 'مقيم', 'مقيّم', 'مُقيِّم', 'مُثمِّن'}
+    if a in valuer_aliases or audience in valuer_aliases:
+        return 'valuer'
+    if a in ('buyer', 'مشتري'):
+        return 'buyer'
+    if a in ('seller', 'بائع'):
+        return 'seller'
+    if a in ('investor', 'مستثمر'):
+        return 'investor'
+    return 'buyer'  # safe default
+
 
 def _build_investor_sections(income, v3_rent, primary):
     """Build the 4 investor-specific brief sections from corrected income data.
@@ -869,6 +909,137 @@ def _build_investor_sections(income, v3_rent, primary):
                 'confidence': v3_rent.get('confidence'),
                 'source_ar': v3_rent.get('source_ar', 'qrep.aqarat.gov.qa'),
                 'caveats_ar': v3_rent.get('caveats', []),
+            },
+        })
+
+    return sections
+
+
+# Sprint 2.4b: Default cap rates per asset type for fallback yield estimation
+# when no rental data is available. These align with the Qatar market norms
+# used in _build_income_crosscheck.
+_DEFAULT_CAP_RATES = {
+    'standalone_villa': 0.04,    # 4.0% — residential villa
+    'palace': 0.035,             # 3.5% — palace/luxury
+    'compound_small': 0.06,      # 6.0%
+    'compound_large': 0.075,     # 7.5%
+    'apartment_building': 0.065, # 6.5%
+}
+
+
+def _build_investor_sections_fallback(asset_type, primary, plot_area_m2, v3_rent):
+    """Sprint 2.4b: When `income` cross-check is None (no user rent, no
+    rent_reference for area), still produce a meaningful investor brief.
+
+    Strategy:
+      - Estimate annual rent from typical Qatar yield band for the asset type
+      - Show the value-implied rent the property would need to be a 4-7% asset
+      - Sensitivity scenarios using cap rate ±1%
+      - Explicit caveat about no actual rent data
+    """
+    sections = []
+    if not primary or not primary.get('value'):
+        return sections
+
+    val = primary['value']
+    cap_rate = _DEFAULT_CAP_RATES.get(asset_type, 0.04)
+
+    # If v3_rent exists with at least a median, use that as the rent estimate
+    estimated_monthly = None
+    if v3_rent and v3_rent.get('monthly_median'):
+        estimated_monthly = v3_rent['monthly_median']
+        rent_source = (
+            f"وسيط الإيجار للمنطقة (n={v3_rent.get('n', '?')}, "
+            f"ثقة={v3_rent.get('confidence', '?')})"
+        )
+    else:
+        # Estimate from cap rate × value
+        annual_implied = val * cap_rate / (1 - 0.23)  # add back OPEX to get gross
+        estimated_monthly = round(annual_implied / 12, -2)
+        rent_source = (
+            f'تقدير من Cap Rate نموذجي ({cap_rate*100:.1f}%) — '
+            f'لا توجد بيانات إيجار فعلية للمنطقة'
+        )
+
+    annual_gross = estimated_monthly * 12 if estimated_monthly else 0
+    annual_net = annual_gross * (1 - 0.23)  # 23% OPEX standard
+    actual_cap = annual_net / val if val > 0 else 0
+    gross_yield = annual_gross / val if val > 0 else 0
+    net_yield = annual_net / val if val > 0 else 0
+
+    # ── Section 1: تحليل العائد التقديري ──
+    sections.append({
+        'id': 'yield_estimated',
+        'title_ar': 'تحليل العائد التقديري',
+        'content': {
+            'value_basis': val,
+            'estimated_monthly_rent': estimated_monthly,
+            'annual_gross_rent': annual_gross,
+            'noi_annual_estimated': round(annual_net),
+            'gross_yield_pct': round(gross_yield * 100, 2),
+            'net_yield_pct': round(net_yield * 100, 2),
+            'cap_rate_pct': round(actual_cap * 100, 2),
+            'rent_source_ar': rent_source,
+            'opex_ratio': 0.23,
+            'caveat_ar': (
+                'لم تقدّم إيجاراً فعلياً ولم تتوفر بيانات إيجار موثوقة للمنطقة. '
+                'الأرقام أعلاه تقديرية مبنية على معايير Qatar نموذجية. '
+                'للحصول على تحليل دقيق، أدخل الإيجار الشهري الفعلي وأعد التقييم.'
+            ),
+        },
+    })
+
+    # ── Section 2: سيناريوهات الاستثمار ──
+    # Different acquisition prices vs the estimated yield
+    if annual_net > 0:
+        scenarios = []
+        for discount in (-0.10, -0.05, 0, 0.05, 0.10):
+            scenario_price = round(val * (1 + discount))
+            scenario_cap = annual_net / scenario_price if scenario_price > 0 else 0
+            scenarios.append({
+                'price_qar': scenario_price,
+                'price_vs_value_pct': round(discount * 100, 1),
+                'net_yield_pct': round(scenario_cap * 100, 2),
+                'label_ar': (
+                    'القيمة المُقدَّرة' if discount == 0
+                    else (f'صفقة خاصة (-{abs(discount)*100:.0f}%)' if discount < 0
+                          else f'دفع علاوة (+{discount*100:.0f}%)')
+                ),
+            })
+        sections.append({
+            'id': 'investment_scenarios',
+            'title_ar': 'سيناريوهات الاستثمار',
+            'content': {
+                'note_ar': (
+                    'كيف يتأثر العائد السنوي بسعر الشراء؟ النطاق ±10% حول القيمة المُقدَّرة.'
+                ),
+                'scenarios': scenarios,
+            },
+        })
+
+    # ── Section 3: تحليل الحساسية ──
+    sensitivity = []
+    for delta in (-1.0, -0.5, 0, 0.5, 1.0):
+        scen_cap = cap_rate + (delta / 100.0)
+        if scen_cap > 0:
+            implied_value = round(annual_net / scen_cap, -3) if annual_net > 0 else val
+            sensitivity.append({
+                'cap_rate_pct': round(scen_cap * 100, 2),
+                'implied_value': implied_value,
+                'delta_label_ar': (
+                    'الأساس' if delta == 0
+                    else f'{"+" if delta > 0 else ""}{delta}%'
+                ),
+            })
+    if sensitivity:
+        sections.append({
+            'id': 'sensitivity',
+            'title_ar': 'تحليل الحساسية — Cap Rate',
+            'content': {
+                'base_cap_rate_pct': round(cap_rate * 100, 2),
+                'base_noi': round(annual_net),
+                'scenarios': sensitivity,
+                'note_ar': 'القيمة الضمنية لمستويات Cap Rate مختلفة (±1%).',
             },
         })
 
@@ -1653,6 +1824,11 @@ def evaluate_thammen(
     if not _V2_OK:
         return {'status': 'engine_unavailable', 'error': 'evaluate_property not loaded'}
 
+    # Sprint 2.4b: normalize audience aliases (valuator/valuer/مثمن/مقيم → 'valuer')
+    # so brief generation routes correctly. The frontend now sends 'valuer' but
+    # the API used to silently fall back to buyer for any unrecognized value.
+    audience = _normalize_audience(audience)
+
     # ── Sprint A.1/A.2/A.3: Fast pre-classification + scope filter + sanity checks ──
     # 1. Quick GIS lookup classifies the asset (~0.7s)
     # 2. Sprint A.3: if asset is out of v1 scope → polite rejection
@@ -2160,7 +2336,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, geometric, audience, user_inputs) -> Dict:
     output = {
         'status': 'ok',
-        'engine_version': 'thammen-sprint2p4a-methodology-fixes',
+        'engine_version': 'thammen-sprint2p4b-audience-fixes',
         'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
         'methodology_disclaimer_ar': (
             'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '
@@ -2526,8 +2702,20 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 if s.get('id') not in STALE_SECTION_IDS
             ]
             # Rebuild investor sections from the corrected `income` cross-check
-            if audience == 'investor' and income:
-                rebuilt = _build_investor_sections(income, v3_rent, primary)
+            if audience == 'investor':
+                if income:
+                    # Normal path: full income-based analysis
+                    rebuilt = _build_investor_sections(income, v3_rent, primary)
+                else:
+                    # Sprint 2.4b: income data absent (no user rent, no rent_ref).
+                    # Still build a meaningful investor brief from cap-rate
+                    # fallback + sensitivity scenarios.
+                    rebuilt = _build_investor_sections_fallback(
+                        asset_type=getattr(ev, 'asset_type', None) or 'standalone_villa',
+                        primary=primary,
+                        plot_area_m2=getattr(ev, 'plot_area_m2', None),
+                        v3_rent=v3_rent,
+                    )
                 # Insert rebuilt sections BEFORE any existing ones (e.g. market_context)
                 brief['sections'] = rebuilt + brief['sections']
             # If still no sections (e.g. non-investor), add a placeholder pointer
