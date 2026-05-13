@@ -1,0 +1,7 @@
+zone,street,building,sale_date,sale_price_qar,actual_asset_type,rental_income,asking_price,floors,building_age_years,basement,evidence_source,notes
+52,903,90,,,standalone_villa,,,,,,thammen_audit_2026_05_13,"Al-Luqta R2 villa, ref from Sprint 2.9 audit. Pipeline test only — no confirmed sale price."
+51,835,17,,,compound_large,,,,,,thammen_audit_2026_05_13,"Al-Gharafa large compound, PD_NO=0. Tests DCF fast path. Pipeline test only."
+70,1278,34,,,standalone_villa,,,,,,thammen_audit_2026_05_13,"Roudat Al Hamama villa. Pipeline test for sparse-MoJ district."
+27,220,53,,,commercial,,,,,,thammen_audit_2026_05_13,"Umm Ghuwailina, CF zoning. Tests out_of_scope path."
+69,305,201,,,palace,,,,,,thammen_audit_2026_05_13,"Lusail B201 — KNOWN classifier issue (Sprint 2.15 target). Probably apt tower mislabelled as palace."
+55,290,10,,,standalone_villa,,,,,,thammen_audit_2026_05_13,"Al-Maradh / Al-Aziziya area. Standard villa pipeline test."

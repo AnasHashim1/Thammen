@@ -1,0 +1,4 @@
+# Individual backtest reports stay local (they may contain real transaction data)
+reports/*.csv
+reports/*.md
+!reports/.gitkeep
