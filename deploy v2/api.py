@@ -137,6 +137,9 @@ class EvaluateDetailsRequest(BaseModel):
     basement: Optional[bool] = None       # سرداب — adds significant unrecorded value
     footprint_m2: Optional[float] = None  # ground-floor footprint estimate (overrides default)
     external_majlis: Optional[bool] = None  # مجلس خارجي منفصل
+    # Sprint 2.3 — Qatar 10-Year Rule (age-aware adjustment)
+    building_age_years: Optional[int] = None  # عمر البناء التقديري بالسنوات
+    is_luxury: Optional[bool] = None          # تشطيب فاخر (للاستثناء من قاعدة الـ 10 سنوات)
 
 
 # ── Helpers ──
@@ -495,6 +498,7 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
     log.info(f"evaluate details: {req.zone}/{req.street}/{req.building} "
              f"floors={req.floors} condition={req.condition} "
              f"basement={req.basement} footprint={req.footprint_m2} "
+             f"age={req.building_age_years} luxury={req.is_luxury} "
              f"from {get_remote_address(request)}")
     try:
         # NEW v3.1: Use unified engine if available
@@ -514,6 +518,9 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
                 basement=req.basement,
                 footprint_m2=req.footprint_m2,
                 external_majlis=req.external_majlis,
+                # Sprint 2.3 — Qatar 10-Year Rule
+                building_age_years=req.building_age_years,
+                is_luxury=req.is_luxury,
                 use_listings=True,
                 use_geo_v2=True,
             )

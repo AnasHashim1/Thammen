@@ -420,6 +420,75 @@ def _building_substantiality(
     }
 
 
+# ============================================================
+# Sprint 2.3 — Qatar 10-Year Rule (age-aware adjustment)
+# ============================================================
+#
+# Empirical market observation: in the Qatari residential market, a villa
+# older than ~10 years typically trades close to bare-land value. The
+# building's structural presence adds little premium because buyers prefer
+# to demolish and rebuild rather than renovate older layouts/MEP.
+#
+# Exception: luxury construction (high-end finishing + recent full
+# renovation + desirable area) may retain 15-25% building value.
+#
+# This module modulates Sprint 2.2's BUA substantiality adjustment based
+# on building age and luxury status, so we don't add +20% to a building
+# that the market would value at land + 5%.
+
+def _age_aware_substantiality_multiplier(
+    age_years: Optional[int],
+    is_luxury: Optional[bool],
+) -> tuple:
+    """Return (multiplier, regime_label_ar) for substantiality adjustment.
+
+    multiplier:
+      1.0  → apply Sprint 2.2 adjustment in full (new building)
+      0.85 → apply with mild dampening (5-10 years)
+      0.50 → apply at half (≥10 years AND luxury)
+      0.0  → suppress entirely (Qatar 10-Year Rule: ≥10 years, non-luxury)
+      None → age unknown — keep current behavior but flag MU
+
+    regime_label_ar describes the regime applied (for UI disclosure).
+    """
+    if age_years is None:
+        return 1.0, 'unknown_age'
+
+    a = int(age_years)
+    if a < 5:
+        return 1.0, 'new_building'
+    if a < 10:
+        return 0.85, 'mid_age_building'
+    # a >= 10
+    if is_luxury:
+        return 0.50, 'old_luxury_building'
+    return 0.0, 'qatar_10_year_rule'
+
+
+def _ten_year_rule_disclosure_ar(age_years: int, n: Optional[int]) -> str:
+    """Generate the user-facing disclosure when 10-Year Rule activates."""
+    n_part = f' بناءً على {n} صفقة مماثلة في وزارة العدل.' if n else '.'
+    return (
+        f'هذا العقار يزيد عمره عن 10 سنوات (تقديرياً {age_years} سنة). '
+        'في السوق القطري، المباني من هذا العمر تتداول عادةً قرب قيمة الأرض '
+        'لأن المشترين يفضّلون الهدم وإعادة البناء على ترميم التصاميم القديمة '
+        'وأنظمة الكهرباء والسباكة والتكييف. التقييم أعلاه يعكس هذا السلوك '
+        f'السوقي ولا يضيف علاوة لكثافة البناء{n_part} '
+        'إذا كان العقار يحتوي على تشطيب فاخر فعلي، اختر "بناء فاخر" '
+        'وأعد التقييم.'
+    )
+
+
+def _luxury_old_disclosure_ar(age_years: int) -> str:
+    """Disclosure when old building flagged as luxury — partial adjustment."""
+    return (
+        f'العقار قديم ({age_years} سنة) لكنك أشرت إلى تشطيب فاخر. '
+        'في السوق القطري، الفلل القديمة الفاخرة تحتفظ بـ 15-25% من قيمة بنائها '
+        'فقط عند توفر: تشطيب راقٍ + ترميم كامل خلال 3-5 سنوات + موقع مميز. '
+        'تم تطبيق نصف التعديل المعتاد لكثافة البناء.'
+    )
+
+
 def _r100k(n):
     if n is None:
         return None
@@ -1483,6 +1552,9 @@ def evaluate_thammen(
     basement: Optional[bool] = None,
     footprint_m2: Optional[float] = None,
     external_majlis: Optional[bool] = None,
+    # Sprint 2.3 — Qatar 10-Year Rule (age-aware adjustment)
+    building_age_years: Optional[int] = None,
+    is_luxury: Optional[bool] = None,
     audience: str = 'buyer',
     use_listings: bool = True,
     use_geo_v2: bool = True,
@@ -1792,25 +1864,35 @@ def evaluate_thammen(
             'basement': basement,
             'footprint_m2': footprint_m2,
             'external_majlis': external_majlis,
+            'building_age_years': building_age_years,
+            'is_luxury': is_luxury,
         },
     )
 
-    # ── Sprint 2.2: Building Substantiality Adjustment ──
-    # Sales comparison implicitly assumes a "typical" villa (ground floor +
-    # 1 upper, no basement, no major add-ons). When the user reports
-    # substantially more building (basement, multiple floors, annexes,
-    # external majlis), MoJ-based comp value under-estimates true market
-    # value because MoJ records the LAND transaction price but cannot
-    # capture building specs.
+    # ── Sprint 2.2 + 2.3: Age-Aware Building Substantiality Adjustment ──
+    # Sprint 2.2 added a BUA-based substantiality adjustment (+20% for big
+    # buildings, etc.). Sprint 2.3 makes it age-aware per the Qatar 10-Year
+    # Rule (Sprint 2.3 strategic doc, section 4): old non-luxury villas
+    # in Qatar trade close to land value regardless of BUA size, because
+    # the market prefers demolish-and-rebuild over renovation.
     #
-    # We apply a measured uplift only on POSITIVE evidence. We never apply
-    # a downward adjustment — if user didn't provide details, the value is
-    # reported as-is and the MU layer flags the unknown.
+    # Multiplier matrix:
+    #   age < 5         → 1.00 × Sprint 2.2 (new building, full uplift)
+    #   age 5-10        → 0.85 × Sprint 2.2 (mid-age, mild dampening)
+    #   age ≥ 10, lux   → 0.50 × Sprint 2.2 (old luxury, partial)
+    #   age ≥ 10, std   → 0.00 × Sprint 2.2 (10-Year Rule: suppress)
+    #   age unknown     → 1.00 × Sprint 2.2 + MU flag (caller's discretion)
     if (bua_breakdown is not None
             and output.get('valuation') and output['valuation'].get('amount')):
         try:
             substantiality = _building_substantiality(bua_breakdown, _plot_area_for_bua)
-            adj_pct = max(0.0, substantiality.get('adjustment_pct', 0.0))
+            raw_adj_pct = max(0.0, substantiality.get('adjustment_pct', 0.0))
+
+            # Sprint 2.3: modulate by age regime
+            age_mult, regime = _age_aware_substantiality_multiplier(
+                building_age_years, is_luxury
+            )
+            adj_pct = raw_adj_pct * age_mult
 
             if adj_pct > 0:
                 base_amount = output['valuation']['amount']
@@ -1821,21 +1903,47 @@ def evaluate_thammen(
                 output['valuation']['low'] = _r100k(base_low * (1 + adj_pct * 0.7))
                 output['valuation']['high'] = _r100k(base_high * (1 + adj_pct * 1.1))
 
+            # Build regime-aware methodology note
+            if regime == 'qatar_10_year_rule':
+                method_note = _ten_year_rule_disclosure_ar(building_age_years, primary.get('n') if primary else None)
+                regime_label_ar = 'قاعدة الـ 10 سنوات (السوق القطري)'
+            elif regime == 'old_luxury_building':
+                method_note = _luxury_old_disclosure_ar(building_age_years)
+                regime_label_ar = 'بناء قديم فاخر — تعديل جزئي'
+            elif regime == 'mid_age_building':
+                method_note = (
+                    f'العقار متوسط العمر ({building_age_years} سنة). تم تطبيق '
+                    f'85% من التعديل المعتاد لكثافة البناء لمراعاة استهلاك المبنى.'
+                )
+                regime_label_ar = 'بناء متوسط العمر — تعديل مخفّض'
+            elif regime == 'new_building':
+                method_note = (
+                    f'العقار جديد ({building_age_years} سنة). تم تطبيق التعديل '
+                    f'الكامل لكثافة البناء لأن البناء يضيف قيمة سوقية واضحة.'
+                )
+                regime_label_ar = 'بناء جديد — تعديل كامل'
+            else:  # unknown_age
+                method_note = (
+                    'وزارة العدل تسجّل ثمن الصفقة لكن لا تسجّل تفاصيل البناء. '
+                    'عمر البناء غير مُقدَّم — تم تطبيق التعديل افتراضياً لكن قد '
+                    'يكون مبالغاً فيه للمباني الأقدم من 10 سنوات. أدخل العمر '
+                    'التقديري لتقييم أدق.'
+                ) if raw_adj_pct > 0 else 'البناء ضمن النطاق النموذجي.'
+                regime_label_ar = 'عمر غير معروف — تطبيق افتراضي'
+
             output['valuation']['building_substantiality'] = {
                 'index': substantiality['index'],
                 'typical_bua_m2': substantiality['typical_bua'],
                 'actual_bua_m2': substantiality['actual_bua'],
+                'raw_adjustment_pct': round(raw_adj_pct * 100, 1),
+                'age_multiplier': age_mult,
                 'adjustment_pct': round(adj_pct * 100, 1),
+                'age_regime': regime,
+                'age_regime_label_ar': regime_label_ar,
+                'building_age_years': building_age_years,
+                'is_luxury': is_luxury,
                 'rationale_ar': substantiality['rationale'],
-                'methodology_note_ar': (
-                    'وزارة العدل تسجّل ثمن الصفقة لكن لا تسجّل تفاصيل البناء '
-                    '(عدد الطوابق، السرداب، التشطيب). عندما يكون البناء الفعلي '
-                    'أكبر من النموذجي، نطبّق تعديلاً صعودياً معتدلاً على القيمة. '
-                    'لا نطبّق تعديلاً نزولياً تلقائياً — إن لم تقدّم تفاصيل البناء '
-                    'يبقى التقييم على افتراض بناء نموذجي مع تنبيه عدم اليقين.'
-                ) if adj_pct > 0 else (
-                    'البناء ضمن النطاق النموذجي — لا حاجة لتعديل.'
-                ),
+                'methodology_note_ar': method_note,
             }
         except Exception as e:
             import sys
@@ -1926,7 +2034,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, geometric, audience, user_inputs) -> Dict:
     output = {
         'status': 'ok',
-        'engine_version': 'thammen-sprint2p2-bua-aware',
+        'engine_version': 'thammen-sprint2p3-age-aware',
         'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
         'methodology_disclaimer_ar': (
             'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '
@@ -2239,8 +2347,6 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 ),
             }
 
-    # ── Sprint 2.2: Building Substantiality Adjustment ──
-    # Sales comparison implicitly assumes a "typical" villa (ground floor, no
     # ── Material Uncertainty (RICS VPN 13) ──
     # Sprint 1.c fix: ensure MU reflects the n actually USED in primary value
     # (not the thin bracket n that geo widening already bypassed)

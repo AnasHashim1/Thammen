@@ -193,6 +193,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
           <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — تقدير الـ footprint" min="0"></div>
         </div>
         <div class="fr2">
+          <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — يكفي تقدير ±5 سنوات" min="0" max="100"></div>
+          <div class="fg"><label>تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="">— اختر —</option><option value="0">لا</option><option value="1">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
+        </div>
+        <div class="fr2">
           <div class="fg"><label>السعر المطلوب (ر.ق)</label><input type="number" id="askingPrice" placeholder="اختياري" min="0"></div>
           <div class="fg"><label>الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"></div>
         </div>
@@ -266,7 +270,9 @@ async function run(){
             pr=document.getElementById('potentialRental').value,
             bsmt=document.getElementById('basement').value,
             fp=document.getElementById('footprintM2').value,
-            em=document.getElementById('externalMajlis').value;
+            em=document.getElementById('externalMajlis').value,
+            ba=document.getElementById('buildingAge').value,
+            lx=document.getElementById('isLuxury').value;
       if(f)bd.floors=+f;
       if(a)bd.annexes=+a;
       if(c)bd.condition=c;
@@ -276,6 +282,8 @@ async function run(){
       if(bsmt!=='')bd.basement=(bsmt==='1');
       if(fp)bd.footprint_m2=+fp;
       if(em!=='')bd.external_majlis=(em==='1');
+      if(ba)bd.building_age_years=+ba;
+      if(lx!=='')bd.is_luxury=(lx==='1');
     }
     const r=await fetch(API+'/api/evaluate/details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
     if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
@@ -438,30 +446,59 @@ function show(d){
     br.sections.forEach(sec=>{h+=renderSection(sec)});
   }
 
-  // ── Building Substantiality (Sprint 2.2) ──
+  // ── Building Substantiality + Age Regime (Sprint 2.2 + 2.3) ──
   if(hasValuation&&v.building_substantiality){
     const bs=v.building_substantiality;
     const adj=bs.adjustment_pct||0;
-    if(adj>0){
-      h+='<div class="rc"><div class="rt" style="margin-bottom:8px">🏗️ تعديل البناء (+'+adj.toFixed(1)+'%)</div>';
+    const rawAdj=bs.raw_adjustment_pct||0;
+    const regime=bs.age_regime||'unknown_age';
+    const age=bs.building_age_years;
+
+    // Determine card color/icon by regime
+    let bgCol='#e6f7ed', textCol='#0c7d41', icon='🏗️', titleTxt='';
+    if(regime==='qatar_10_year_rule'){
+      bgCol='#fff4e6'; textCol='#a05a00'; icon='⏳';
+      titleTxt='قاعدة الـ 10 سنوات (السوق القطري)';
+    } else if(regime==='old_luxury_building'){
+      bgCol='#f5e8ff'; textCol='#6b00a0'; icon='💎';
+      titleTxt='بناء قديم فاخر — تعديل جزئي ('+adj.toFixed(1)+'%)';
+    } else if(regime==='mid_age_building'){
+      icon='🏠'; titleTxt='بناء متوسط العمر — تعديل '+adj.toFixed(1)+'%';
+    } else if(regime==='new_building'){
+      titleTxt='بناء جديد — تعديل +'+adj.toFixed(1)+'%';
+    } else {
+      titleTxt='تعديل البناء +'+adj.toFixed(1)+'%';
+    }
+
+    // Show the card whenever we have BUA data + any regime indicator (even if adj=0, the 10-Year Rule is informative)
+    if(rawAdj>0 || regime==='qatar_10_year_rule'){
+      h+='<div class="rc"><div class="rt" style="margin-bottom:8px">'+icon+' '+titleTxt+'</div>';
+      if(age!==null && age!==undefined){
+        h+='<div class="rn" style="font-size:.82rem;margin-bottom:6px;color:#555">عمر البناء: <strong>'+age+' سنة</strong>';
+        if(bs.is_luxury===true) h+=' · <span style="color:#6b00a0">تشطيب فاخر ✓</span>';
+        h+='</div>';
+      }
       h+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">'+(bs.rationale_ar||'')+' (مؤشر '+bs.index+')</div>';
-      h+='<div style="display:flex;gap:12px;font-size:.85rem;color:#666">';
+      h+='<div style="display:flex;gap:12px;font-size:.85rem;color:#666;flex-wrap:wrap">';
       h+='<span>البناء النموذجي: <strong>'+bs.typical_bua_m2+' م²</strong></span>';
       h+='<span>البناء الفعلي: <strong>'+bs.actual_bua_m2+' م²</strong></span>';
+      if(rawAdj>0 && rawAdj!==adj){
+        h+='<span>التعديل الأصلي: <strong>+'+rawAdj.toFixed(1)+'%</strong> × معامل العمر '+bs.age_multiplier+'</span>';
+      }
       h+='</div>';
-      h+='<div style="margin-top:10px;padding:10px;background:#e6f7ed;border-radius:6px;font-size:.85rem;color:#0c7d41">'+(bs.methodology_note_ar||'')+'</div>';
+      h+='<div style="margin-top:10px;padding:10px;background:'+bgCol+';border-radius:6px;font-size:.85rem;color:'+textCol+'">'+(bs.methodology_note_ar||'')+'</div>';
       h+='</div>';
     }
   }
 
-  // ── Building details missing notice (Sprint 2.2) ──
+  // ── Building details missing notice (Sprint 2.2 + 2.3) ──
   if(hasValuation&&!v.building_substantiality){
     const ui=d.user_inputs||{};
     const noDetails=!ui.floors&&!ui.basement&&!ui.footprint_m2&&!ui.external_majlis&&!ui.annexes;
     if(noDetails){
       h+='<div class="rc" style="border-color:#f4d03f;background:#fffdf3">';
       h+='<div class="rt" style="margin-bottom:6px;color:#a87000">ℹ️ التقييم يفترض بناءً نموذجياً</div>';
-      h+='<div class="rn" style="font-size:.85rem;color:#666">لم تُدخل تفاصيل البناء. إذا كان عقارك يحتوي على سرداب، طوابق إضافية، أو ملاحق، أعِد التقييم بعد إدخال هذه التفاصيل للحصول على قيمة أدق (قد تختلف القيمة الفعلية بـ ±20-40%).</div>';
+      h+='<div class="rn" style="font-size:.85rem;color:#666">لم تُدخل تفاصيل البناء (الطوابق، السرداب، الملاحق، العمر). إذا كان عقارك يختلف عن النموذجي، أعِد التقييم بعد إدخال التفاصيل للحصول على قيمة أدق. الفرق قد يكون ±20-40%.</div>';
       h+='</div>';
     }
   }
