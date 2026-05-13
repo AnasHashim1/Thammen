@@ -353,9 +353,20 @@ def _simplify_evaluation(ev: PropertyEvaluation, detailed: bool = False) -> dict
             for old, new in HEIGHT_FIXES.items():
                 if old in label:
                     label = label.replace(old, new)
+            # Sprint 2.9: 3-state direction (positive | negative | neutral=null).
+            # Was: `f.get('direction') == 'positive'` which collapsed neutral
+            # to False and made the UI render R2 zoning (and other neutral
+            # factors) with the red-error palette.
+            direction = f.get('direction', 'neutral')
+            if direction == 'positive':
+                positive = True
+            elif direction == 'negative':
+                positive = False
+            else:
+                positive = None
             result['location_features'].append({
                 'label': label,
-                'positive': f.get('direction') == 'positive',
+                'positive': positive,
             })
 
     # Fix property_info labels too

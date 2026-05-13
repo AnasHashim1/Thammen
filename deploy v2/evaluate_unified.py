@@ -2761,7 +2761,18 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                     label = label.replace(old, new)
             code = f.get('code', '')
             direction = f.get('direction', 'neutral')
-            is_positive = direction == 'positive'
+            # Sprint 2.9: 3-state direction.
+            # Previously `is_positive = direction == 'positive'` collapsed
+            # 'neutral' to False, which the UI rendered with the red-error
+            # palette (loc-neg). For ~13% of Qatar (R2 zones), this made
+            # standard residential zoning look like a defect. The frontend
+            # already handles `null` correctly (falls through to `loc-neu`).
+            if direction == 'positive':
+                is_positive = True
+            elif direction == 'negative':
+                is_positive = False
+            else:  # 'neutral' / missing / unknown
+                is_positive = None
             if code == 'plot_shape':
                 if 'منتظم' in label and 'غير' not in label:
                     is_positive = True
