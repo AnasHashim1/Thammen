@@ -606,6 +606,27 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
             'source_ar': f'عينة ضعيفة جداً (n={bracket_n}) — اعتبر هذا تقديراً مبدئياً',
         }
 
+    # Case 5 (Sprint 2.4a): Preliminary estimate from very thin bracket (n=3-4).
+    # MIN_N_BOUND_ONLY is 5; below that we historically returned None and
+    # the user saw "insufficient_data" with no headline number. But the
+    # brief downstream still computed values from cost approach / blended,
+    # creating a confidence mismatch ("we don't know" + "negotiate at 3M").
+    # When 3-4 transactions exist AND they yield a reasonable median, it's
+    # better to surface this with a strong caveat than to hide it entirely.
+    if bracket_value and bracket_n >= 3:
+        return {
+            'value': bracket_value,
+            'low':   ev.valuation.estimated_value_low if ev.valuation else round(bracket_value * 0.80),
+            'high':  ev.valuation.estimated_value_high if ev.valuation else round(bracket_value * 1.20),
+            'method': 'comparison_preliminary',
+            'method_label_ar': f'تقدير مبدئي (n={bracket_n})',
+            'n': bracket_n,
+            'source_ar': (
+                f'عينة محدودة جداً (n={bracket_n} صفقات في 24 شهراً). '
+                f'هذا تقدير مبدئي قابل للتعديل عند توفر بيانات إضافية.'
+            ),
+        }
+
     return None
 
 
@@ -617,13 +638,27 @@ def _build_cost_crosscheck(ev) -> Optional[dict]:
     rc = getattr(ev, 'replacement_cost', None)
     if not rc:
         return None
+    # Sprint 2.4a: field name mapping fix. The dataclass uses
+    # `depreciation_pct` and `depreciated_building_value`; the output
+    # was looking for `depreciation_rate_pct` and `building_value_depreciated`
+    # → silent miss → fields always None. Use the real names with the legacy
+    # names as fallback in case other code does set them.
+    dep_pct_val = getattr(rc, 'depreciation_pct', None)
+    if dep_pct_val is None:
+        dep_pct_val = getattr(rc, 'depreciation_rate_pct', None)
+    bld_dep_val = getattr(rc, 'depreciated_building_value', None)
+    if bld_dep_val is None:
+        bld_dep_val = getattr(rc, 'building_value_depreciated', None)
+    bld_new_val = getattr(rc, 'construction_cost_new', None)
+    if bld_new_val is None:
+        bld_new_val = getattr(rc, 'building_value_new', None)
     return {
         'value': rc.total_replacement_value,
         'land_value': getattr(rc, 'land_value', None),
-        'building_value_new': getattr(rc, 'building_value_new', None),
-        'building_value_depreciated': getattr(rc, 'building_value_depreciated', None),
+        'building_value_new': bld_new_val,
+        'building_value_depreciated': bld_dep_val,
         'building_age_years': getattr(rc, 'building_age_years', None),
-        'depreciation_rate_pct': getattr(rc, 'depreciation_rate_pct', None),
+        'depreciation_rate_pct': dep_pct_val,
         'bua_m2': getattr(rc, 'bua_m2', None),
         'tier': getattr(rc, 'construction_tier', None),
         'method_label_ar': 'طريقة التكلفة الإحلالية (RICS Cost Approach)',
@@ -696,6 +731,62 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
 # ============================================================
 # Reconciliation
 # ============================================================
+
+def _rewrite_brief_anchored_sections(
+    brief: dict,
+    final_amount: float,
+    final_low: float,
+    final_high: float,
+    audience: str,
+    moj_direct: Optional[float] = None,
+) -> None:
+    """Sprint 2.4a: Mutate `brief` in place to rewrite audience-specific anchor
+    sections so they use the FINAL valuation amount instead of the stale
+    blended/synthesis value from output_briefs.
+
+    Sections rewritten:
+      - buyer 'negotiation'  → floor/opening/ceiling derived from final_amount
+      - seller 'valuation'   → estimated_value / range_low / range_high
+      - seller 'pricing'     → aggressive/realistic/quick_sale / market_ceiling
+    Other sections (flags, due_diligence, trend, market_context, etc.)
+    are left untouched.
+    """
+    if not brief or not brief.get('sections'):
+        return
+
+    final_amount = float(final_amount)
+    final_low = float(final_low)
+    final_high = float(final_high)
+
+    for sec in brief['sections']:
+        sid = sec.get('id')
+
+        # Buyer negotiation: floor 5% below valuation, opening 10% below, ceiling 10% above
+        if sid == 'negotiation' and audience == 'buyer':
+            content = sec.get('content') or {}
+            content['floor'] = _r100k(final_amount * 0.95)
+            content['opening_offer'] = _r100k(final_amount * 0.90)
+            content['ceiling'] = _r100k(final_amount * 1.10)
+            # Note already exists; leave it
+            sec['content'] = content
+
+        # Seller's "your property value" section
+        elif sid == 'valuation' and audience == 'seller':
+            content = sec.get('content') or {}
+            content['estimated_value'] = _r100k(final_amount)
+            content['range_low']  = _r100k(final_low)
+            content['range_high'] = _r100k(final_high)
+            sec['content'] = content
+
+        # Seller pricing strategy
+        elif sid == 'pricing' and audience == 'seller':
+            content = sec.get('content') or {}
+            content['realistic_price']   = _r100k(final_amount * 1.05)
+            content['aggressive_price']  = _r100k(final_amount * 1.10)
+            content['quick_sale_price']  = _r100k(final_amount * 0.95)
+            content['market_ceiling']    = _r100k(final_amount * 1.20)
+            sec['content'] = content
+
 
 def _build_investor_sections(income, v3_rent, primary):
     """Build the 4 investor-specific brief sections from corrected income data.
@@ -1694,11 +1785,19 @@ def evaluate_thammen(
         )
 
     try:
+        # Sprint 2.4a: pass age + luxury into v2 baseline so cost_approach
+        # applies proper depreciation (DRC) and the brief's negotiation
+        # sections anchor on age-appropriate values.
+        # construction_tier upgrades to 'high' for declared luxury so the
+        # cost_approach uses higher per-m² construction cost.
+        _tier = 'high' if is_luxury else 'mid'
         ev = evaluate_property(
             zone=zone, street=street, building=building,
             moj_csv_path=Path(moj_csv_path),
             listing_price=listing_price,
             bua_breakdown=bua_breakdown,
+            building_age_years=building_age_years,
+            construction_tier=_tier,
             has_renovation=has_reno,
             full_renovation=full_reno,
             rental_income=rental_income,
@@ -1979,6 +2078,33 @@ def evaluate_thammen(
             import sys
             print(f'[MU enhancement warning] {e}', file=sys.stderr)
 
+    # ── Sprint 2.4a: Final Brief Sync ──
+    # The brief was first finalized inside _build_unified_output using the
+    # raw primary value. But substantiality (Sprint 2.2 + 2.3) may have
+    # since adjusted output.valuation.amount. Re-sync brief headlines and
+    # anchored sections so the user never sees a contradiction between
+    # the main headline number and the brief's "your property value" /
+    # negotiation range.
+    if output.get('brief') and output.get('valuation') and output['valuation'].get('amount'):
+        try:
+            brief = output['brief']
+            final_amount = output['valuation']['amount']
+            final_low = output['valuation'].get('low') or final_amount * 0.85
+            final_high = output['valuation'].get('high') or final_amount * 1.15
+
+            brief['valuation_total'] = _r100k(final_amount)
+            brief['valuation_low']   = _r100k(final_low)
+            brief['valuation_high']  = _r100k(final_high)
+
+            _rewrite_brief_anchored_sections(
+                brief, final_amount, final_low, final_high,
+                audience=audience,
+                moj_direct=None,
+            )
+        except Exception as e:
+            import sys
+            print(f'[final brief sync warning] {e}', file=sys.stderr)
+
     # ── Sprint 2.2: Benchmark Consistency Fix ──
     # The v2 baseline (evaluate_property.py) builds market_position using
     # `comparison.benchmark_total` which is the DIRECT-MATCH fair price
@@ -2034,7 +2160,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, geometric, audience, user_inputs) -> Dict:
     output = {
         'status': 'ok',
-        'engine_version': 'thammen-sprint2p3-age-aware',
+        'engine_version': 'thammen-sprint2p4a-methodology-fixes',
         'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
         'methodology_disclaimer_ar': (
             'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '
@@ -2418,9 +2544,29 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 }]
         # Also fix the brief's top-level valuation_total to match the primary value (was using v3 blend)
         if primary and primary.get('value'):
-            brief['valuation_total'] = _r100k(primary['value'])
-            brief['valuation_low'] = _r100k(primary.get('low'))
-            brief['valuation_high'] = _r100k(primary.get('high'))
+            # Sprint 2.4a: use the ACTUAL valuation.amount (which may include
+            # substantiality + age adjustments) — not raw primary — for the brief
+            # so brief headlines never contradict the headline number.
+            final_amount = output.get('valuation', {}).get('amount') or primary['value']
+            final_low = output.get('valuation', {}).get('low') or primary.get('low') or final_amount * 0.85
+            final_high = output.get('valuation', {}).get('high') or primary.get('high') or final_amount * 1.15
+
+            brief['valuation_total'] = _r100k(final_amount)
+            brief['valuation_low']   = _r100k(final_low)
+            brief['valuation_high']  = _r100k(final_high)
+
+            # Sprint 2.4a: also rebuild audience-specific anchor sections
+            # (negotiation, pricing, valuation) so they don't show the OLD
+            # blended-cost-inflated numbers from output_briefs.
+            try:
+                _rewrite_brief_anchored_sections(
+                    brief, final_amount, final_low, final_high,
+                    audience=audience,
+                    moj_direct=getattr(ev.valuation, 'fair_price_total', None) if getattr(ev, 'valuation', None) else None,
+                )
+            except Exception as e:
+                import sys
+                print(f'[brief rewrite warning] {e}', file=sys.stderr)
         output['brief'] = brief
 
     # ── Disclaimer ──

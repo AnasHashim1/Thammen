@@ -823,6 +823,7 @@ def blend_valuations(
     repl_val: Optional[ReplacementCostValuation],
     bua_plot_ratio: float,
     bracket_n: Optional[int],
+    listing_price: Optional[float] = None,
 ) -> Optional[BlendedValuation]:
     """
     Blend MoJ comparable and replacement cost approaches.
@@ -833,6 +834,11 @@ def blend_valuations(
       - High BUA ratio (>1.0) + any MoJ: MoJ 30%, Repl 70%
       - High BUA ratio + weak MoJ: MoJ 20%, Repl 80%
       - No MoJ available: Repl 100%
+
+    Sprint 2.4a — listing_price market-signal override: when listing
+    price matches MoJ within ±10%, MoJ is force-promoted to 80% weight
+    regardless of BUA ratio (the market itself is confirming MoJ is
+    accurate for this property).
       - No Repl available: MoJ 100%
     """
     moj_total = None
@@ -892,6 +898,23 @@ def blend_valuations(
     else:
         moj_w, repl_w = 0.80, 0.20
         reason = 'Normal BUA ratio + reliable MoJ → MoJ dominant with replacement sanity check'
+
+    # Sprint 2.4a: Market-signal override.
+    # If a listing price is available AND it closely matches MoJ direct
+    # (within ±10%), then the market itself is confirming MoJ is accurate
+    # for this property — regardless of what cost approach says.
+    # This catches cases where cost approach is inflated (e.g. ignoring
+    # building age) but MoJ + market agree on a lower value.
+    if listing_price and moj_total:
+        listing_vs_moj = abs(listing_price - moj_total) / moj_total
+        if listing_vs_moj <= 0.10:
+            # Strong market confirmation of MoJ. Flip weights.
+            moj_w, repl_w = 0.80, 0.20
+            reason = (
+                f'Market signal override: listing price ({listing_price:,.0f}) '
+                f'matches MoJ ({moj_total:,.0f}) within {listing_vs_moj*100:.1f}% '
+                f'→ MoJ confirmed accurate; cost approach demoted to sanity check.'
+            )
 
     blended = moj_w * moj_total + repl_w * repl_total
     # Range: min/max of the two approaches, with 5% buffer
@@ -1465,6 +1488,7 @@ def evaluate_property(zone: int, street: int, building: int,
             repl_val=replacement_cost_val,
             bua_plot_ratio=replacement_cost_val.bua_plot_ratio,
             bracket_n=valuation.bracket_n if valuation else None,
+            listing_price=listing_price,
         )
 
         if blended_val:
