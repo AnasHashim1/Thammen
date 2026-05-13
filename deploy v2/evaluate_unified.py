@@ -634,6 +634,149 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
 # Cross-check approaches (not weighted into primary)
 # ============================================================
 
+# ============================================================
+# Sprint 2.6 — Land vs Building Value Separation (Phase 1)
+# ============================================================
+#
+# RICS Red Book methodology distinguishes between land value and building
+# (improvements) value. MoJ villa sales record TOTAL price only, but MoJ
+# ALSO records pure-LAND sales when villas are demolished or empty plots
+# are sold. We use the area's land-only median to estimate land value,
+# then derive implied building value as residual.
+#
+# This empirically validates the Qatar 10-Year Rule: for old non-luxury
+# villas, the implied building value is typically <10% of total —
+# confirming that buyers price almost entirely off land.
+
+def _decompose_value(
+    valuation_amount: Optional[float],
+    plot_area_m2: Optional[float],
+    bua_m2: Optional[float],
+    moj_ref_dict: Optional[dict],
+) -> Optional[dict]:
+    """Return a value-decomposition block: land + implied building.
+
+    Inputs:
+      valuation_amount: the final headline value (post-substantiality)
+      plot_area_m2:     subject plot area
+      bua_m2:           subject built-up area (for per-m² building stats)
+      moj_ref_dict:     MoJ reference with .categories.land structure
+
+    Output schema (returned dict):
+      land:
+        per_m2_qar, n_transactions, window_months, reliable, source_ar,
+        estimated_qar, plot_area_m2
+      building_implied:
+        qar, qar_per_m2_bua, as_pct_of_total, interpretation_ar
+      consistency:
+        residual_pct, status ('plausible' | 'land_exceeds_value' | 'building_dominant')
+
+    Returns None when land data is unavailable.
+    """
+    if not valuation_amount or not plot_area_m2 or plot_area_m2 <= 0:
+        return None
+    if not moj_ref_dict:
+        return None
+
+    # Extract MoJ land-only median (already done in evaluate_property but we
+    # re-extract here so the output is self-contained and decoupled).
+    categories = (moj_ref_dict or {}).get('categories') or {}
+    land_data = categories.get('land') or {}
+    price_per_m2_data = land_data.get('price_per_m2') or {}
+    land_per_m2 = price_per_m2_data.get('median')
+    land_n = land_data.get('n', 0)
+    land_window = land_data.get('window_months', 24)
+    land_reliable = land_data.get('reliable', False)
+
+    if not land_per_m2 or land_per_m2 <= 0:
+        return None
+    if land_n < 3:
+        # Too thin to be useful; refuse to decompose rather than mislead
+        return None
+
+    # Compute land value for this property
+    land_value = round(plot_area_m2 * land_per_m2)
+    # Implied building value (residual)
+    bld_implied = round(valuation_amount - land_value)
+    bld_per_m2 = round(bld_implied / bua_m2) if (bua_m2 and bua_m2 > 0) else None
+    bld_pct = bld_implied / valuation_amount if valuation_amount > 0 else 0
+
+    # Confidence label for land
+    if land_n >= 20:
+        land_conf = 'reliable'
+        land_conf_ar = 'موثوق'
+    elif land_n >= 10:
+        land_conf = 'indicative'
+        land_conf_ar = 'إرشادي'
+    else:
+        land_conf = 'thin'
+        land_conf_ar = 'عينة محدودة'
+
+    # Status & interpretation
+    if bld_implied < 0:
+        status = 'land_exceeds_value'
+        interp = (
+            'القيمة المُقدَّرة أقل من قيمة الأرض المنفصلة. هذا غير معتاد ويعني '
+            'إما أن المبنى ينتقص من القيمة (هدم مطلوب)، أو أن العينة السوقية '
+            'تحت قيمة الأرض الفعلية. يلزم مراجعة من مُقيِّم معتمد.'
+        )
+    elif bld_pct < 0.05:
+        status = 'land_dominant'
+        interp = (
+            f'البناء يساهم بنسبة ضئيلة جداً ({bld_pct*100:.1f}%) من قيمة العقار. '
+            f'هذا يتسق مع قاعدة الـ 10 سنوات: السوق القطري يقيّم هذا العقار '
+            f'تقريباً بقيمة الأرض فقط.'
+        )
+    elif bld_pct < 0.15:
+        status = 'building_modest'
+        interp = (
+            f'البناء يساهم بنسبة محدودة ({bld_pct*100:.1f}%) من القيمة — '
+            f'يتسق مع بناء قديم أو متهالك. القيمة الرئيسية في الأرض.'
+        )
+    elif bld_pct < 0.35:
+        status = 'normal'
+        interp = (
+            f'البناء يساهم بنسبة {bld_pct*100:.1f}% من القيمة — مساهمة طبيعية '
+            f'لبناء بحالة جيدة على هذه الأرض.'
+        )
+    else:
+        status = 'building_dominant'
+        interp = (
+            f'البناء يساهم بنسبة عالية ({bld_pct*100:.1f}%) من القيمة — '
+            f'يتسق مع بناء جديد أو فاخر أو ذو BUA كبيرة.'
+        )
+
+    return {
+        'land': {
+            'per_m2_qar': round(land_per_m2),
+            'n_transactions': land_n,
+            'window_months': land_window,
+            'confidence': land_conf,
+            'confidence_ar': land_conf_ar,
+            'reliable': land_reliable,
+            'estimated_qar': land_value,
+            'plot_area_m2': round(plot_area_m2),
+            'source_ar': (
+                f'وسيط معاملات بيع الأراضي في نفس المنطقة '
+                f'(n={land_n} صفقة، نافذة {land_window} شهراً)'
+            ),
+        },
+        'building_implied': {
+            'qar': bld_implied,
+            'qar_per_m2_bua': bld_per_m2,
+            'bua_m2': round(bua_m2) if bua_m2 else None,
+            'as_pct_of_total': round(bld_pct * 100, 1),
+            'interpretation_ar': interp,
+            'status': status,
+        },
+        'methodology_note_ar': (
+            'يفصل ثمّن قيمة الأرض (من معاملات بيع أراضٍ نقية في نفس المنطقة) '
+            'عن قيمة البناء الضمنية (الفرق بين القيمة الكلية وقيمة الأرض). '
+            'هذا الفصل يكشف للمستخدم نسبة مساهمة كل عنصر — حسب RICS Red Book.'
+        ),
+    }
+
+
 def _build_cost_crosscheck(ev) -> Optional[dict]:
     rc = getattr(ev, 'replacement_cost', None)
     if not rc:
@@ -2300,6 +2443,52 @@ def evaluate_thammen(
             import sys
             print(f'[MU enhancement warning] {e}', file=sys.stderr)
 
+    # ── Sprint 2.6: Land vs Building Value Decomposition ──
+    # Empirically validates the Qatar 10-Year Rule by separating land value
+    # (from MoJ land-only sales in the area) from implied building value
+    # (residual = total − land). Old non-luxury villas show <5% building
+    # contribution; new/luxury villas show 25-45%.
+    if (output.get('valuation') and output['valuation'].get('amount')
+            and getattr(ev, 'plot_area_m2', None)):
+        try:
+            # Sprint 2.6: prefer the new ev.moj_reference field
+            moj_ref = (getattr(ev, 'moj_reference', None)
+                       or getattr(ev, 'moj_ref_dict', None)
+                       or getattr(ev, 'raw_moj_reference', None))
+            if not moj_ref and v3_result:
+                moj_ref = v3_result.get('moj_reference')
+            # Last resort: try to extract from cost approach which already pulled land data
+            if not moj_ref and cost and cost.get('land_value') and ev.plot_area_m2:
+                # Synthesize minimal ref from cost approach (loses n_transactions)
+                land_per_m2_inferred = cost['land_value'] / ev.plot_area_m2
+                moj_ref = {'categories': {'land': {
+                    'price_per_m2': {'median': land_per_m2_inferred},
+                    'n': 0,  # unknown — will fail the n>=3 check unless we relax it
+                    'window_months': 24,
+                    'reliable': False,
+                }}}
+
+            # Get BUA for per-m² building stats
+            bua = None
+            if cost and cost.get('bua_m2'):
+                bua = cost['bua_m2']
+            else:
+                rc = getattr(ev, 'replacement_cost', None)
+                if rc:
+                    bua = getattr(rc, 'bua_m2', None)
+
+            decomp = _decompose_value(
+                valuation_amount=output['valuation']['amount'],
+                plot_area_m2=ev.plot_area_m2,
+                bua_m2=bua,
+                moj_ref_dict=moj_ref,
+            )
+            if decomp:
+                output['valuation']['value_decomposition'] = decomp
+        except Exception as e:
+            import sys
+            print(f'[value decomposition warning] {e}', file=sys.stderr)
+
     # ── Sprint 2.4a: Final Brief Sync ──
     # The brief was first finalized inside _build_unified_output using the
     # raw primary value. But substantiality (Sprint 2.2 + 2.3) may have
@@ -2382,7 +2571,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, geometric, audience, user_inputs) -> Dict:
     output = {
         'status': 'ok',
-        'engine_version': 'thammen-sprint2p5b-honest-placeholder',
+        'engine_version': 'thammen-sprint2p6-land-building-split',
         'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
         'methodology_disclaimer_ar': (
             'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '

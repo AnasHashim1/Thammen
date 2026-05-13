@@ -491,6 +491,54 @@ function show(d){
     br.sections.forEach(sec=>{h+=renderSection(sec)});
   }
 
+  // ── Value Decomposition: Land vs Building (Sprint 2.6) ──
+  if(hasValuation && v.value_decomposition){
+    const vd=v.value_decomposition;
+    const ld=vd.land||{};
+    const bd=vd.building_implied||{};
+    const total=v.amount||1;
+    const landPct=Math.round((ld.estimated_qar||0)/total*100);
+    const bldPct=bd.as_pct_of_total||0;
+    // Status-based color
+    const statusBg={
+      'land_dominant':'#fff4e6',
+      'land_exceeds_value':'#fdebec',
+      'building_modest':'#fdf6e3',
+      'normal':'#e6f7ed',
+      'building_dominant':'#e8f0ff'
+    }[bd.status]||'#f5f5f5';
+    const statusFg={
+      'land_dominant':'#a05a00',
+      'land_exceeds_value':'#9b1c1c',
+      'building_modest':'#806600',
+      'normal':'#0c7d41',
+      'building_dominant':'#1f4d8a'
+    }[bd.status]||'#444';
+    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">💎 تفكيك القيمة (أرض + بناء)</div>';
+    // Bar visualization
+    h+='<div style="display:flex;height:36px;border-radius:8px;overflow:hidden;margin-bottom:14px;border:1px solid #ddd">';
+    h+='<div style="flex:'+landPct+';background:linear-gradient(135deg,#a68252,#8b6e44);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700">🏞️ أرض '+landPct+'%</div>';
+    if(bldPct>0){
+      h+='<div style="flex:'+bldPct+';background:linear-gradient(135deg,#5a7a52,#456040);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700">🏠 بناء '+bldPct+'%</div>';
+    }
+    h+='</div>';
+    // Rows
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
+    h+='<div style="padding:10px;background:#faf7f1;border-radius:6px"><div style="font-size:.78rem;color:#666;margin-bottom:4px">🏞️ قيمة الأرض</div><div style="font-size:1.05rem;font-weight:700;color:#8b6e44">'+fmt(ld.estimated_qar)+' ر.ق</div><div style="font-size:.72rem;color:#888;margin-top:3px">'+fmt(ld.per_m2_qar)+' ر.ق/م² × '+ld.plot_area_m2+' م²</div><div style="font-size:.7rem;color:#999;margin-top:2px">n='+ld.n_transactions+' · '+ld.confidence_ar+'</div></div>';
+    if(bd.qar!=null){
+      h+='<div style="padding:10px;background:#f5f8f3;border-radius:6px"><div style="font-size:.78rem;color:#666;margin-bottom:4px">🏠 قيمة البناء الضمنية</div><div style="font-size:1.05rem;font-weight:700;color:#456040">'+(bd.qar<0?'−':'')+fmt(Math.abs(bd.qar))+' ر.ق</div>';
+      if(bd.qar_per_m2_bua)h+='<div style="font-size:.72rem;color:#888;margin-top:3px">'+fmt(bd.qar_per_m2_bua)+' ر.ق/م² BUA × '+bd.bua_m2+' م²</div>';
+      h+='<div style="font-size:.7rem;color:#999;margin-top:2px">'+bd.as_pct_of_total+'% من القيمة الكلية</div></div>';
+    }
+    h+='</div>';
+    // Interpretation banner
+    if(bd.interpretation_ar){
+      h+='<div style="padding:10px;background:'+statusBg+';color:'+statusFg+';border-radius:6px;font-size:.85rem;line-height:1.6">'+bd.interpretation_ar+'</div>';
+    }
+    h+='<div style="font-size:.72rem;color:#999;margin-top:8px;font-style:italic">'+(vd.methodology_note_ar||'')+'</div>';
+    h+='</div>';
+  }
+
   // ── Building Substantiality + Age Regime (Sprint 2.2 + 2.3) ──
   if(hasValuation&&v.building_substantiality){
     const bs=v.building_substantiality;

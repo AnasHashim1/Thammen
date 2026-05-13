@@ -475,6 +475,9 @@ class PropertyEvaluation:
     reasons: list = field(default_factory=list)
     warnings: list = field(default_factory=list)
     raw_property_report: Optional[dict] = None
+    # Sprint 2.6: expose the MoJ reference dict (categories.land, etc.) for
+    # consumers like the value-decomposition module in evaluate_unified.
+    moj_reference: Optional[dict] = None
 
 
 # ============================================================
@@ -1658,6 +1661,7 @@ def evaluate_property(zone: int, street: int, building: int,
         reasons=reasons,
         warnings=warnings,
         raw_property_report=raw_report,
+        moj_reference=moj_ref_dict,  # Sprint 2.6: expose for value decomposition
     )
 
     # === Step 7c: Confidence score ===
