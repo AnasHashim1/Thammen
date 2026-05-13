@@ -35,8 +35,8 @@ from typing import Optional, Dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p10-version-unified'
-SPRINT_TAG = '2.10'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p11-context-preservation'
+SPRINT_TAG = '2.11'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -1269,6 +1269,58 @@ ASSET_TYPE_AR = {
 }
 
 
+# ── Sprint 2.11: GIS context preservation for fast/out-of-scope paths ──
+# Historically the 4 _build_fast_*_response + _build_out_of_scope_response
+# builders hardcoded district=None and geometric_factors=None, hiding GIS
+# data we already had (district name is one cheap lookup; plot facts are
+# already in memory). This helper surfaces that data uniformly.
+#
+# Costs ~200ms (one Districts spatial query). Wrapped in try/except so the
+# fast path stays fast even if GIS is slow — if the call fails, we degrade
+# gracefully to the pre-2.11 behavior (district=None).
+_DCF_ASSETS_FOR_REASON = frozenset({'compound_large', 'tower', 'apartment_building'})
+
+
+def _enrich_fast_context(loc, plot):
+    """Return cheap GIS context for fast-path response builders.
+
+    Args:
+        loc: PropertyLocation (provides lon/lat)
+        plot: PlotInfo (provides pdarea, pd_no — already in memory, free)
+
+    Returns:
+        dict with 'district' (str|None) and 'geometric_factors' (dict|None).
+        Never raises — degrades to (None, None) on any failure.
+    """
+    district_ar = None
+    try:
+        if loc is not None and loc.lon is not None and loc.lat is not None:
+            from qatar_gis import QatarGIS
+            _gis = QatarGIS(verbose=False)
+            _d = _gis.get_district_at_point(loc.lon, loc.lat)
+            district_ar = _d.aname if _d else None
+    except Exception as _e:
+        # Non-fatal — fast path continues without district
+        print(f"[sprint2.11] district lookup failed: {_e}", file=sys.stderr)
+
+    gf = None
+    if plot is not None:
+        # PD_NO=0 is the unsubdivided-parcel sentinel; show only real PD refs
+        pd_display = None
+        try:
+            if plot.pd_no and str(plot.pd_no) != '0':
+                pd_display = str(plot.pd_no)
+        except Exception:
+            pd_display = None
+        gf = {
+            'polygon_available': True,
+            'plot_area_m2_verified': plot.pdarea,
+            'pd_no': pd_display,
+        }
+
+    return {'district': district_ar, 'geometric_factors': gf}
+
+
 def _build_fast_insufficient_data_response(zone, street, building, loc, plot, asset_type, audience):
     """Fast response for DCF-only assets when user provided no inputs.
 
@@ -1280,6 +1332,16 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
     """
     from datetime import datetime
     asset_label_ar = ASSET_TYPE_AR.get(asset_type, asset_type)
+    # Sprint 2.11: surface district + plot geometry (cheap, always available)
+    _ctx = _enrich_fast_context(loc, plot)
+    # Sprint 2.11: parenthetical applies only to DCF assets (compounds/towers);
+    # palace and other in-scope assets routed here via MoJ-empty district shouldn't
+    # see the "compounds and towers register by reference numbers" explanation.
+    _reason_paren = (
+        ' (الكومباوندات الكبيرة والأبراج تُسجَّل بأرقام مرجعية موحَّدة بدلاً من مقارنات سعر/م²)'
+        if asset_type in _DCF_ASSETS_FOR_REASON
+        else (f' في {_ctx["district"]}' if _ctx.get('district') else '')
+    )
     return {
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
@@ -1294,7 +1356,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         ),
         'address': f'{zone}/{street}/{building}',
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
-        'district': None,
+        'district': _ctx['district'],
         'plot_area_m2': plot.pdarea,
         'gps': {'lat': loc.lat, 'lon': loc.lon} if loc else None,
         'asset_type': asset_type,
@@ -1311,8 +1373,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
             'method': 'insufficient_data',
             'reason_ar': (
                 f'هذا الأصل من نوع "{asset_label_ar}" — لا توجد عينة مقارنة في سجلات '
-                'وزارة العدل لهذه الفئة (الكومباوندات الكبيرة والأبراج تُسجَّل بأرقام '
-                'مرجعية موحَّدة بدلاً من مقارنات سعر/م²). '
+                f'وزارة العدل لهذه الفئة{_reason_paren}. '
                 'لتقييم دقيق، أضف الإيجار الشهري الفعلي أو سعر الإعلان وأعد الطلب.'
             ),
         },
@@ -1329,7 +1390,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         },
         'trend': None,
         'location_features': None,
-        'geometric_factors': None,
+        'geometric_factors': _ctx['geometric_factors'],
         'material_uncertainty': {
             'level': 'critical',
             'banner_ar': 'تحفظ مادي حرج: لا توجد بيانات بيع مقارنة لهذه الفئة',
@@ -1398,6 +1459,9 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
         else 'منخفض — السعر قد يكون رخيصاً'
     )
 
+    # Sprint 2.11: surface district + plot geometry
+    _ctx = _enrich_fast_context(loc, plot)
+
     return {
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
@@ -1412,7 +1476,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
         ),
         'address': f'{zone}/{street}/{building}',
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
-        'district': None,
+        'district': _ctx['district'],
         'plot_area_m2': plot.pdarea,
         'gps': {'lat': loc.lat, 'lon': loc.lon} if loc else None,
         'asset_type': asset_type,
@@ -1448,7 +1512,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
         },
         'trend': None,
         'location_features': None,
-        'geometric_factors': None,
+        'geometric_factors': _ctx['geometric_factors'],
         'material_uncertainty': {
             'level': 'high',
             'banner_ar': 'لا يوجد تقييم حقيقي — فقط فحص ضمني للسعر المطلوب',
@@ -1624,6 +1688,9 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
             },
         })
 
+    # Sprint 2.11: surface district + plot geometry
+    _ctx = _enrich_fast_context(loc, plot)
+
     return {
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
@@ -1638,7 +1705,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         ),
         'address': f'{zone}/{street}/{building}',
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
-        'district': None,
+        'district': _ctx['district'],
         'plot_area_m2': plot.pdarea,
         'gps': {'lat': loc.lat, 'lon': loc.lon} if loc else None,
         'asset_type': asset_type,
@@ -1684,7 +1751,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         },
         'trend': None,
         'location_features': None,
-        'geometric_factors': None,
+        'geometric_factors': _ctx['geometric_factors'],
         'material_uncertainty': {
             'level': 'high',
             'banner_ar': (
@@ -1736,6 +1803,8 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
         'industrial': 'للعقارات الصناعية، يُوصى بمُقيِّم متخصص ومسح ميداني للمنطقة الصناعية.',
         'agricultural': 'للمزارع، يلزم تقييم مخصص يشمل الرخصة الزراعية وموارد الماء.',
     }
+    # Sprint 2.11: surface district + plot geometry even when refusing valuation
+    _ctx = _enrich_fast_context(loc, plot)
     return {
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
@@ -1748,7 +1817,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
         ),
         'address': f'{zone}/{street}/{building}',
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
-        'district': None,
+        'district': _ctx['district'],
         'plot_area_m2': plot.pdarea if plot else None,
         'gps': {'lat': loc.lat, 'lon': loc.lon} if loc else None,
         'asset_type': asset_type,
@@ -1771,7 +1840,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
             'message_ar': 'فئة العقار خارج نطاق الإصدار الحالي',
         },
         'accuracy': {'score': 0, 'label': '— خارج النطاق'},
-        'trend': None, 'location_features': None, 'geometric_factors': None,
+        'trend': None, 'location_features': None, 'geometric_factors': _ctx['geometric_factors'],
         'material_uncertainty': {
             'level': 'critical',
             'banner_ar': 'لا يمكن إنتاج تقييم موثوق لهذه الفئة في الإصدار الحالي',
