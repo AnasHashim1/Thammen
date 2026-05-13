@@ -675,6 +675,31 @@ function renderSection(sec){
       }
       if(c.note_ar)body+='<div class="br-note" style="margin-top:10px">'+c.note_ar+'</div>';
       break;
+    case 'yield_estimated':
+      // Sprint 2.4b: fallback investor yield analysis when no rent data available
+      body+=row('القيمة الأساس',qarFmt(c.value_basis));
+      body+=row('الإيجار الشهري التقديري',qarFmt(c.estimated_monthly_rent),'hl');
+      body+=row('الإيجار السنوي الإجمالي',qarFmt(c.annual_gross_rent));
+      body+=row('NOI السنوي المُقدَّر',qarFmt(c.noi_annual_estimated));
+      body+=row('العائد الإجمالي',pctFmt(c.gross_yield_pct),c.gross_yield_pct>=6?'pos':c.gross_yield_pct<4?'neg':'');
+      body+=row('العائد الصافي',pctFmt(c.net_yield_pct),c.net_yield_pct>=5?'pos':c.net_yield_pct<3?'neg':'');
+      body+=row('Cap Rate',pctFmt(c.cap_rate_pct));
+      if(c.rent_source_ar)body+='<div class="br-note" style="margin-top:8px;font-size:.78rem">مصدر الإيجار: '+c.rent_source_ar+'</div>';
+      if(c.caveat_ar)body+='<div class="br-note" style="margin-top:10px;background:var(--warn-bg);color:var(--warn)"><strong>تنبيه:</strong> '+c.caveat_ar+'</div>';
+      break;
+    case 'investment_scenarios':
+      // Sprint 2.4b: acquisition price sensitivity
+      if(c.note_ar)body+='<div class="br-note" style="margin-bottom:10px">'+c.note_ar+'</div>';
+      if(c.scenarios&&c.scenarios.length){
+        body+='<div class="br-sens">';
+        c.scenarios.forEach(sc=>{
+          const isBase = sc.price_vs_value_pct === 0;
+          const cls = sc.price_vs_value_pct < 0 ? 'pos' : sc.price_vs_value_pct > 0 ? 'neg' : '';
+          body+='<div class="br-cell'+(isBase?' base':'')+'"><div class="br-cap">'+sc.label_ar+'</div><div class="br-cap">'+(sc.price_qar?fmt(Math.round(sc.price_qar/1000))+'K':'—')+'</div><div class="br-val'+(cls?' '+cls:'')+'">'+pctFmt(sc.net_yield_pct)+'</div></div>';
+        });
+        body+='</div>';
+      }
+      break;
     // ── Buyer brief ──
     case 'verdict':
       if(c.listing_price)body+=row('السعر المطلوب',qarFmt(c.listing_price));
@@ -711,8 +736,12 @@ function renderSection(sec){
       if(c.has_excluding)body+='<div class="br-note" style="background:var(--bad-bg);color:var(--bad);margin-top:10px">⚠ يحتوي على شارة استبعاد حرجة</div>';
       break;
     case 'due_diligence':
-      if(c.questions_ar&&c.questions_ar.length){
-        body+='<ul class="br-opts">';c.questions_ar.forEach(q=>{body+='<li>'+q+'</li>'});body+='</ul>';
+      // Sprint 2.4c: backend sends content as array directly, not c.questions_ar
+      const ddItems = Array.isArray(c) ? c : (c.questions_ar || []);
+      if(ddItems.length){
+        body+='<ul class="br-opts">';
+        ddItems.forEach(q=>{body+='<li>'+q+'</li>'});
+        body+='</ul>';
       }else if(c.note_ar)body+='<div class="br-note">'+c.note_ar+'</div>';
       else body+='<div class="br-note">قائمة أسئلة الفحص متاحة في تقرير PDF كامل.</div>';
       break;
@@ -731,13 +760,23 @@ function renderSection(sec){
       break;
     case 'trend':
       if(c.area)body+=row('المنطقة',c.area);
-      if(c.label)body+=row('الاتجاه',c.label,c.slope_annual_pct>0.02?'pos':c.slope_annual_pct<-0.02?'neg':'');
-      if(c.slope_annual_pct!=null)body+=row('معدل النمو السنوي',pctFmt(c.slope_annual_pct*100));
-      if(c.latest_vs_peak_pct!=null)body+=row('الحالي مقابل الذروة',pctFmt(c.latest_vs_peak_pct*100));
+      // Sprint 2.4b backend sends slope as percentage already (e.g. -2.07).
+      // Tolerate either form: if abs < 1 it's still raw decimal; otherwise it's percent.
+      const slope=c.slope_annual_pct;
+      const slopeAsPct = (slope!=null && Math.abs(slope) < 1 && slope !== 0) ? slope*100 : slope;
+      if(c.label)body+=row('الاتجاه',c.label,slopeAsPct>2?'pos':slopeAsPct<-2?'neg':'');
+      if(slope!=null)body+=row('معدل النمو السنوي',pctFmt(slopeAsPct));
+      const lvp=c.latest_vs_peak_pct;
+      const lvpAsPct = (lvp!=null && Math.abs(lvp) < 1 && lvp !== 0) ? lvp*100 : lvp;
+      if(lvp!=null)body+=row('الحالي مقابل الذروة',pctFmt(lvpAsPct));
       break;
     case 'tips':
-      if(c.tips_ar&&c.tips_ar.length){
-        body+='<ul class="br-opts">';c.tips_ar.forEach(t=>{body+='<li>'+t+'</li>'});body+='</ul>';
+      // Sprint 2.4c: backend sends content as array directly, not c.tips_ar
+      const tipsItems = Array.isArray(c) ? c : (c.tips_ar || []);
+      if(tipsItems.length){
+        body+='<ul class="br-opts">';
+        tipsItems.forEach(t=>{body+='<li>'+t+'</li>'});
+        body+='</ul>';
       }else body+='<div class="br-note">نصائح البيع متاحة في تقرير PDF كامل.</div>';
       break;
     // ── Valuer brief ──
