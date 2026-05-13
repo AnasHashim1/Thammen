@@ -19,6 +19,17 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .hbtn{background:var(--bronze);color:#fff;border:none;padding:18px 64px;font-family:'Tajawal';font-weight:700;font-size:1.2rem;border-radius:50px;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(166,130,82,.3);position:relative;z-index:1}
 .hbtn:hover{background:var(--bronze-h);box-shadow:0 6px 25px rgba(166,130,82,.4);transform:translateY(-2px)}
 .hfoot{position:absolute;bottom:24px;font-size:.8rem;color:var(--light)}
+/* Sprint 2.7: Data freshness banner + result caveat */
+.dfb{position:fixed;top:0;left:0;right:0;z-index:1000;padding:8px 16px;font-size:.78rem;text-align:center;direction:rtl;border-bottom:1px solid rgba(0,0,0,.08);font-family:'Tajawal',sans-serif;line-height:1.5}
+.dfb.s-info{background:var(--alt);color:var(--primary)}
+.dfb.s-warning{background:var(--warn-bg);color:var(--warn)}
+.dfb.s-alert{background:var(--bad-bg);color:var(--bad);font-weight:500}
+.dfb[hidden]{display:none}
+body.has-dfb .home,body.has-dfb .screen{padding-top:34px}
+.dfc{margin-top:14px;padding:10px 14px;font-size:.78rem;line-height:1.7;border-radius:8px;direction:rtl;text-align:right}
+.dfc.s-info{background:var(--alt);color:var(--muted);border-right:3px solid var(--border)}
+.dfc.s-warning{background:var(--warn-bg);color:var(--warn);border-right:3px solid var(--warn)}
+.dfc.s-alert{background:var(--bad-bg);color:var(--bad);border-right:3px solid var(--bad);font-weight:500}
 .tbar{display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
 .tbar-logo{display:flex;align-items:center;gap:8px;cursor:pointer}.tbar-logo img{height:36px;width:auto}
 .tbar-st{font-size:.75rem;color:var(--light)}
@@ -173,12 +184,15 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 </head>
 <body>
 
+<!-- Sprint 2.7: Data Freshness sticky banner — populated by JS on page load -->
+<div class="dfb" id="dfBanner" role="status" aria-live="polite" hidden></div>
+
 <!-- HOME -->
 <div class="home screen active" id="homeScreen">
   <div class="hlogo"><img src="logo.png" alt="ثمّن"></div>
   <div class="htag">تقييم عقارك في قطر<br>مبني على بيانات وزارة العدل الفعلية</div>
   <button class="hbtn" onclick="go('form')">ابدأ التقييم</button>
-  <div class="hfoot">بيانات حقيقية — تُحدَّث أسبوعياً من سجلات البيع الرسمية</div>
+  <div class="hfoot" id="dfSubtitle">بيانات وزارة العدل القطرية الرسمية</div>
 </div>
 
 <!-- FORM -->
@@ -269,6 +283,25 @@ const ASSET_AR={'standalone_villa':'فيلا منفردة','raw_land':'أرض ف
 function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(n+'Screen').classList.add('active');window.scrollTo(0,0);if(n==='form')chk()}
 
 async function chk(){const b=document.getElementById('statusBar');try{const r=await fetch(API+'/api/health');const d=await r.json();if(d.status==='ok'){const ok=d.moj_db&&(typeof d.moj_db==='object'?d.moj_db.available:d.moj_db);b.innerHTML=ok?'متصل <span class="sdot on"></span>':'متصل — قاعدة البيانات غير جاهزة <span class="sdot off"></span>'}}catch(e){b.innerHTML='غير متصل <span class="sdot off"></span>'}}
+
+// Sprint 2.7: Load data-freshness state and render sticky banner + subtitle
+async function loadFreshness(){
+  try{
+    const r=await fetch(API+'/api/freshness');
+    if(!r.ok)return;
+    const d=await r.json();
+    const bn=document.getElementById('dfBanner');
+    if(bn && d.banner_ar){
+      bn.textContent=d.banner_ar;
+      bn.className='dfb s-'+(d.severity||'info');
+      bn.hidden=false;
+      document.body.classList.add('has-dfb');
+    }
+    const sub=document.getElementById('dfSubtitle');
+    if(sub && d.subtitle_ar){sub.textContent=d.subtitle_ar}
+  }catch(e){/* silent: keep defaults */}
+}
+document.addEventListener('DOMContentLoaded',loadFreshness);
 
 function selAud(el,v){audience=v;document.querySelectorAll('.aud-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel')}
 function tog(){dOpen=!dOpen;document.getElementById('dTog').classList.toggle('on',dOpen);document.getElementById('dSec').classList.toggle('open',dOpen)}
@@ -690,6 +723,12 @@ function show(d){
     h+='<div class="rc"><div class="rt" style="margin-bottom:10px">ما لا نعرفه (يحتاج فحص ميداني)</div><div class="rn">';
     rtr.known_unknowns.forEach(u=>{h+='• '+u+'<br>'});
     h+='</div></div>';
+  }
+
+  // ── Sprint 2.7: Data freshness caveat (under valuation, before disclaimer) ──
+  if(d.data_freshness && d.data_freshness.caveat_ar){
+    const sev=d.data_freshness.severity||'info';
+    h+='<div class="dfc s-'+sev+'">'+d.data_freshness.caveat_ar+'</div>';
   }
 
   // ── Disclaimer ──

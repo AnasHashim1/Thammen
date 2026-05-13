@@ -42,6 +42,15 @@ from evaluate_property import (
 )
 from moj_db import open_db, query_reference, query_trend, init_db
 
+# ── Sprint 2.7: Data Freshness Transparency ──
+from data_freshness import (
+    compute_freshness,
+    freshness_for_response,
+    freshness_for_homepage,
+    freshness_for_health,
+    FreshnessReport,
+)
+
 # ── NEW v3.1: Unified engine with geo_v2 + listings ──
 try:
     from evaluate_unified import evaluate_thammen
@@ -111,6 +120,64 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Accept", "Authorization"],
 )
+
+
+# ── Sprint 2.7: Data Freshness — cache + helpers ──
+# Computed once at startup; refreshed via /api/health hits so a CSV
+# replacement on disk is picked up without restarting the dyno.
+_freshness_cache: Optional[FreshnessReport] = None
+
+
+def get_freshness() -> Optional[FreshnessReport]:
+    """Return the cached freshness, computing it lazily if missing.
+
+    Returns None on failure (missing CSV, parse error). Callers must
+    handle the None case — never crash the request on a freshness fault.
+    """
+    global _freshness_cache
+    if _freshness_cache is not None:
+        return _freshness_cache
+    try:
+        _freshness_cache = compute_freshness(MOJ_CSV)
+        log.info(
+            f"Freshness: latest={_freshness_cache.latest_record} "
+            f"days_old={_freshness_cache.days_old} "
+            f"tier={_freshness_cache.tier}"
+        )
+        return _freshness_cache
+    except Exception as e:
+        log.warning(f"Freshness computation failed: {e}")
+        return None
+
+
+def refresh_freshness() -> Optional[FreshnessReport]:
+    """Force a recompute. Call after the cron job replaces the CSV."""
+    global _freshness_cache
+    _freshness_cache = None
+    return get_freshness()
+
+
+def _attach_freshness(result):
+    """Mutate the result dict (or simplified eval) to include the
+    `data_freshness` field. Tolerates non-dict results (returns
+    unchanged). Never raises — freshness is best-effort.
+    """
+    try:
+        if not isinstance(result, dict):
+            return result
+        fresh = get_freshness()
+        if fresh is not None:
+            result["data_freshness"] = freshness_for_response(fresh)
+    except Exception:
+        pass
+    return result
+
+
+# Warm the cache at startup
+try:
+    get_freshness()
+except Exception:
+    pass
 
 
 # ── Request Models ──
@@ -363,14 +430,20 @@ async def health():
     """Health check endpoint — basic status without sensitive details."""
     db_exists = MOJ_DB.exists()
     db_size_mb = round(MOJ_DB.stat().st_size / 1024 / 1024, 1) if db_exists else 0
+
+    # Sprint 2.7: refresh freshness cache on health-check hits so a daily
+    # cron pinging /api/health keeps the banner up to date.
+    fresh = refresh_freshness()
+
     return {
         "status": "ok",
-        "version": "3.1.0-sprint1",
+        "version": "3.1.0-sprint2.7",
         "engine": "unified" if _UNIFIED_OK else "v2_fallback",
         "moj_db": {
             "available": db_exists,
             "size_mb": db_size_mb,
         },
+        "moj_freshness": freshness_for_health(fresh) if fresh else None,
         "modules": {
             "evaluate_property_v2": True,
             "evaluate_unified_v3": _UNIFIED_OK,
@@ -381,6 +454,28 @@ async def health():
         },
         "timestamp": datetime.now().isoformat(),
     }
+
+
+@app.get("/api/freshness")
+async def freshness():
+    """Sprint 2.7: public freshness state for the home-page banner.
+
+    Returns banner_ar (sticky banner text), subtitle_ar (hero replacement
+    for the legacy 'تُحدَّث أسبوعياً' line), severity (info|warning|alert),
+    tier, and days_old. Frontend fetches this on page load.
+    """
+    fresh = get_freshness()
+    if fresh is None:
+        # Graceful fallback — frontend hides the banner if banner_ar is empty
+        return {
+            "banner_ar": "",
+            "subtitle_ar": "بيانات وزارة العدل القطرية الرسمية",
+            "tier": "unknown",
+            "severity": "info",
+            "days_old": None,
+            "latest_record": None,
+        }
+    return freshness_for_homepage(fresh)
 
 
 @app.get("/api/disclaimer")
@@ -474,7 +569,7 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
                 use_listings=True,
                 use_geo_v2=True,
             )
-            return result
+            return _attach_freshness(result)
         # Fallback: v2 engine
         ev = evaluate_property(
             zone=req.zone,
@@ -483,7 +578,7 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
             moj_csv_path=MOJ_CSV,
             include_age=True,
         )
-        return _simplify_evaluation(ev, detailed=False)
+        return _attach_freshness(_simplify_evaluation(ev, detailed=False))
     except HTTPException:
         raise
     except Exception as e:
@@ -524,7 +619,7 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
                 use_listings=True,
                 use_geo_v2=True,
             )
-            return result
+            return _attach_freshness(result)
 
         # Fallback: v2 engine path (original code)
         # Determine renovation from condition
@@ -589,7 +684,7 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
             potential_rental=req.potential_rental,
             include_age=True,
         )
-        return _simplify_evaluation(ev, detailed=False)
+        return _attach_freshness(_simplify_evaluation(ev, detailed=False))
     except HTTPException:
         raise
     except Exception as e:
