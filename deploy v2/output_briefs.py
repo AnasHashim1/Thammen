@@ -175,6 +175,30 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
         ],
     })
 
+    # Section 5: MATERIAL UNCERTAINTY (Sprint 2.14.0)
+    # Adds the RICS VPS 5 MUC clause and per-property uncertainty.
+    # Was previously only in valuer brief — now in buyer brief too because
+    # the index.html MUC banner reads from this section.
+    if uncertainty:
+        unc = uncertainty if isinstance(uncertainty, dict) else asdict(uncertainty)
+        sections.append({
+            'id': 'material_uncertainty',
+            'title_ar': 'تحفظات مادية وفق RICS VPS 4/5',
+            'title_en': 'Material Uncertainty Declaration (RICS VPS 4 §3.2 + VPS 5)',
+            'content': {
+                'level': unc.get('level'),
+                'factors': unc.get('factors', []),
+                'known_unknowns': unc.get('known_unknowns', []),
+                'recommendations': unc.get('recommendations', []),
+                'rics_compliant': unc.get('rics_compliant', False),
+                # RICS VPS 5 MUC fields — market-wide uncertainty
+                'muc_clause_ar': unc.get('muc_clause_ar'),
+                'muc_clause_en': unc.get('muc_clause_en'),
+                'muc_basis_ar': unc.get('muc_basis_ar'),
+                'muc_review_recommendation_ar': unc.get('muc_review_recommendation_ar'),
+            },
+        })
+
     return {
         'audience': 'buyer',
         'title_ar': 'تقرير المشتري',

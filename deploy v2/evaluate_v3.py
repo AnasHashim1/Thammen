@@ -453,6 +453,11 @@ def evaluate_v3(
             'known_unknowns': uncertainty.known_unknowns,
             'recommendations': uncertainty.recommendations,
             'rics_compliant': uncertainty.rics_compliant,
+            # Sprint 2.14.0 hotfix — propagate RICS VPS 5 MUC fields
+            'muc_clause_ar': uncertainty.muc_clause_ar,
+            'muc_clause_en': uncertainty.muc_clause_en,
+            'muc_basis_ar': uncertainty.muc_basis_ar,
+            'muc_review_recommendation_ar': uncertainty.muc_review_recommendation_ar,
         }
 
     # ── Step 6: Generate brief ──
