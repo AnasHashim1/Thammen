@@ -429,13 +429,18 @@ def _valuer_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
         sections.append({
             'id': 'material_uncertainty',
             'title_ar': 'تحفظات مادية',
-            'title_en': 'Material Uncertainty Declaration (RICS VPS 4 §3.2)',
+            'title_en': 'Material Uncertainty Declaration (RICS VPS 4 §3.2 + VPS 5)',
             'content': {
                 'level': unc.get('level'),
                 'factors': unc.get('factors', []),
                 'known_unknowns': unc.get('known_unknowns', []),
                 'recommendations': unc.get('recommendations', []),
                 'rics_compliant': unc.get('rics_compliant', False),
+                # Sprint 2.14.0 — RICS VPS 5 MUC fields (market-wide uncertainty)
+                'muc_clause_ar': unc.get('muc_clause_ar'),
+                'muc_clause_en': unc.get('muc_clause_en'),
+                'muc_basis_ar': unc.get('muc_basis_ar'),
+                'muc_review_recommendation_ar': unc.get('muc_review_recommendation_ar'),
             },
         })
 

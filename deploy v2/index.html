@@ -193,6 +193,23 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   <div class="htag">تقييم عقارك في قطر<br>مبني على بيانات وزارة العدل الفعلية</div>
   <button class="hbtn" onclick="go('form')">ابدأ التقييم</button>
   <div class="hfoot" id="dfSubtitle">بيانات وزارة العدل القطرية الرسمية</div>
+  <!-- Sprint 2.14.0 — RICS VPS 2 Scope link -->
+  <div style="margin-top:14px;font-size:.85rem;color:var(--muted);position:relative;z-index:1">
+    <a href="#" onclick="openScope();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer">
+      ما يدعمه ثمّن وما لا يدعمه ↓
+    </a>
+  </div>
+</div>
+
+<!-- Sprint 2.14.0 — Scope modal -->
+<div id="scopeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeScope()">
+  <div style="background:#fff;max-width:680px;max-height:85vh;overflow-y:auto;border-radius:12px;padding:28px;direction:rtl">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--alt);padding-bottom:12px">
+      <h2 style="margin:0;color:var(--primary)">نطاق خدمة ثمّن</h2>
+      <button onclick="closeScope()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted)">×</button>
+    </div>
+    <div id="scopeContent">جارٍ التحميل...</div>
+  </div>
 </div>
 
 <!-- FORM -->
@@ -281,6 +298,25 @@ let dOpen=false,audience='buyer';
 const ASSET_AR={'standalone_villa':'فيلا منفردة','raw_land':'أرض فضاء','palace':'قصر','compound_small':'مجمع فلل صغير','compound_large':'مجمع فلل كبير','apartment_building':'عمارة سكنية','tower':'برج سكني','commercial':'تجاري','industrial':'صناعي','agricultural':'مزرعة','unknown':'غير محدد'};
 
 function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(n+'Screen').classList.add('active');window.scrollTo(0,0);if(n==='form')chk()}
+
+// Sprint 2.14.0 — Scope of Service modal
+function openScope(){
+  document.getElementById('scopeModal').style.display='flex';
+  const c=document.getElementById('scopeContent');
+  if(c.dataset.loaded)return;
+  fetch('/api/scope').then(r=>r.json()).then(d=>{
+    let h='<div style="background:var(--alt);padding:12px;border-radius:6px;font-size:.9rem;line-height:1.7;margin-bottom:18px;color:var(--primary)">'+(d.service_level_ar||'')+'</div>';
+    h+='<div style="margin-bottom:18px"><div style="font-weight:700;color:var(--ok);margin-bottom:8px">✅ مدعوم بالكامل</div>';
+    (d.supported||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--ok);background:var(--ok-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+s.label_ar+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">'+s.reason_ar+'</div></div>'});
+    h+='</div><div style="margin-bottom:18px"><div style="font-weight:700;color:var(--warn);margin-bottom:8px">⚠️ مدعوم بشروط (يحتاج إفادة منك)</div>';
+    (d.limited||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--warn);background:var(--warn-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+s.label_ar+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">يتطلب: '+(s.requires||'')+'</div></div>'});
+    h+='</div><div><div style="font-weight:700;color:var(--bad);margin-bottom:8px">❌ خارج النطاق</div>';
+    (d.unsupported||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--bad);background:var(--bad-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+s.label_ar+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">'+s.reason_ar+'</div></div>'});
+    h+='</div>';
+    c.innerHTML=h;c.dataset.loaded='1';
+  }).catch(e=>{c.innerHTML='<div style="color:var(--bad)">تعذّر تحميل نطاق الخدمة</div>'});
+}
+function closeScope(){document.getElementById('scopeModal').style.display='none'}
 
 async function chk(){const b=document.getElementById('statusBar');try{const r=await fetch(API+'/api/health');const d=await r.json();if(d.status==='ok'){const ok=d.moj_db&&(typeof d.moj_db==='object'?d.moj_db.available:d.moj_db);b.innerHTML=ok?'متصل <span class="sdot on"></span>':'متصل — قاعدة البيانات غير جاهزة <span class="sdot off"></span>'}}catch(e){b.innerHTML='غير متصل <span class="sdot off"></span>'}}
 
@@ -432,6 +468,44 @@ function show(d){
   h+='<button id="copyBtn" class="copy-btn" onclick="copyResult()">📋 نسخ النتيجة</button>';
   h+='<button class="copy-btn print-btn" onclick="printReport()" style="margin-right:8px">🖨️ طباعة / حفظ PDF</button>';
   h+='<div style="clear:both"></div>';
+
+  // ── Sprint 2.14.0: RICS VPS 5 Material Uncertainty Clause (FIRST, most prominent) ──
+  // Pulled from d.material_uncertainty if engine attached it (we'll look in
+  // brief sections or check engine-level field — for now check sections)
+  let muc_ar=null, muc_basis=null, muc_review=null;
+  if(d.brief&&Array.isArray(d.brief.sections)){
+    const muSec=d.brief.sections.find(s=>s.id==='material_uncertainty');
+    if(muSec&&muSec.content){
+      muc_ar=muSec.content.muc_clause_ar;
+      muc_basis=muSec.content.muc_basis_ar;
+      muc_review=muSec.content.muc_review_recommendation_ar;
+    }
+  }
+  if(muc_ar){
+    h+='<div style="background:var(--bad-bg);border:2px solid var(--bad);border-radius:8px;padding:16px;margin-bottom:14px">';
+    h+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem">⚠️ تحفظ مادي وفق RICS VPS 5</div>';
+    h+='<div style="white-space:pre-line;line-height:1.7;font-size:.92rem">'+muc_ar.replace(/^⚠️[^\n]*\n+/,'')+'</div>';
+    if(muc_basis)h+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--bad);font-size:.85rem;color:var(--muted)"><strong>الأساس:</strong> '+muc_basis+'</div>';
+    if(muc_review)h+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+muc_review+'</div>';
+    h+='</div>';
+  }
+
+  // ── Sprint 2.14.0: Service Scope tier badge ──
+  const ss=d.service_scope;
+  if(ss){
+    let scopeBg,scopeColor,scopeIcon,scopeLabel;
+    if(ss.tier==='supported'){scopeBg='var(--ok-bg)';scopeColor='var(--ok)';scopeIcon='✅';scopeLabel='تقييم كامل';}
+    else if(ss.tier==='limited'){scopeBg='var(--warn-bg)';scopeColor='var(--warn)';scopeIcon='⚠️';scopeLabel='تقييم مشروط';}
+    else{scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='❌';scopeLabel='خارج النطاق';}
+    h+='<div style="background:'+scopeBg+';border-right:4px solid '+scopeColor+';padding:12px 14px;margin-bottom:14px;border-radius:0 6px 6px 0">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
+    h+='<div><strong style="color:'+scopeColor+'">'+scopeIcon+' '+scopeLabel+'</strong> — '+ss.label_ar+'</div>';
+    h+='<div style="font-size:.82rem;color:var(--muted)">'+ss.methodology_ar+'</div>';
+    h+='</div>';
+    if(ss.requires_user_input_ar)h+='<div style="margin-top:8px;font-size:.88rem;color:var(--warn)"><strong>يتطلب:</strong> '+ss.requires_user_input_ar+'</div>';
+    h+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted);line-height:1.6">'+ss.disclaimer_ar+'</div>';
+    h+='</div>';
+  }
 
   // ── Sprint A.3: Sanity warnings — prominent yellow card ──
   const sw=d.sanity_warnings||[];

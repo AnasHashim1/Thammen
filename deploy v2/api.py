@@ -566,6 +566,22 @@ async def about():
     }
 
 
+@app.get("/api/scope")
+async def scope():
+    """Sprint 2.14.0 — RICS VPS 2 Scope of Service declaration.
+
+    Returns the formal scope statement: which asset types Thammen supports
+    fully, which require user-provided inputs, and which are explicitly out
+    of scope. Used by the homepage scope card and by anyone wanting to
+    understand the engine's boundaries before submitting an evaluation.
+    """
+    try:
+        from scope_of_service import service_scope_summary
+        return service_scope_summary()
+    except Exception as e:
+        return {"error": str(e), "available": False}
+
+
 @app.post("/api/evaluate")
 @limiter.limit(RATE_LIMIT)
 async def evaluate_quick(req: EvaluateRequest, request: Request):

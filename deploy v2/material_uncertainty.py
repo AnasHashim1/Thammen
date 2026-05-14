@@ -37,6 +37,112 @@ class UncertaintyLevel:
     rics_compliant: bool          # whether RICS Red Book would accept this
     known_unknowns: List[str]     # what we explicitly don't know
     recommendations: List[str]    # what should be done to reduce uncertainty
+    # Sprint 2.14.0 — formal RICS VPS 5 Material Uncertainty Clause text.
+    # Set by regime_muc() when the market regime is non-normal. None means
+    # no market-wide MUC applies (normal market conditions).
+    muc_clause_ar: Optional[str] = None
+    muc_clause_en: Optional[str] = None
+    muc_basis_ar: Optional[str] = None    # what makes the MUC applicable
+    muc_review_recommendation_ar: Optional[str] = None
+
+
+def regime_muc(regime=None) -> dict:
+    """Generate the RICS VPS 5 Material Uncertainty Clause for the
+    current market regime.
+
+    RICS Red Book VPS 5 requires a formal MUC declaration when market
+    conditions during the valuation period are materially disrupted. The
+    declaration must:
+      1. Identify the cause of uncertainty
+      2. State that less certainty applies — and higher caution is needed
+      3. Recommend frequent review of the valuation
+
+    The wording below follows the recognised VPS 5 format (as used by
+    Cushman & Wakefield, Knight Frank, JLL during the COVID-19 outbreak
+    and other regional crises). We do not copy any single firm's exact
+    text; the structure and key phrases are the RICS-recognised standard.
+
+    Args:
+        regime: a MarketRegime instance. If None, imports the active one
+            from market_regime.current_regime.
+
+    Returns:
+        dict with muc_clause_ar/en, muc_basis_ar, muc_review_recommendation_ar.
+        For NORMAL_REGIME, returns all-None (no MUC needed).
+    """
+    if regime is None:
+        try:
+            from market_regime import current_regime as regime
+        except ImportError:
+            return {
+                'muc_clause_ar': None,
+                'muc_clause_en': None,
+                'muc_basis_ar': None,
+                'muc_review_recommendation_ar': None,
+            }
+
+    # Normal regime → no MUC
+    if getattr(regime, 'label_en', None) == 'normal':
+        return {
+            'muc_clause_ar': None,
+            'muc_clause_en': None,
+            'muc_basis_ar': None,
+            'muc_review_recommendation_ar': None,
+        }
+
+    # Build the formal MUC text
+    shock_summary_ar = '، '.join(
+        s.name_ar for s in getattr(regime, 'shock_layers', ())
+    )
+    active_since = getattr(regime, 'active_since', None)
+    moj_last = getattr(regime, 'moj_last_known_date', None)
+
+    muc_clause_ar = (
+        f'⚠️ تحفظ مادي وفق RICS VPS 5 (Material Uncertainty Clause)\n\n'
+        f'تواجه السوق العقاري القطري في تاريخ هذا التقدير '
+        f'({active_since.isoformat() if active_since else "؟"} وما بعده) '
+        f'اضطراباً جوهرياً نشطاً: {shock_summary_ar}.\n\n'
+        f'بناءً عليه — ووفق المعيار المعترف به في RICS VPS 5 — '
+        f'يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، '
+        f'وتطبيق درجة حذر أعلى عند الاعتماد عليه. '
+        f'يُوصى بمراجعة هذا التقدير على فترات متقاربة.'
+    )
+
+    muc_clause_en = (
+        f'⚠️ Material Valuation Uncertainty (RICS VPS 5)\n\n'
+        f'The Qatari real estate market is experiencing material disruption '
+        f'at the valuation date '
+        f'({active_since.isoformat() if active_since else "?"} onwards). '
+        f'Accordingly — and in line with RICS VPS 5 — less certainty, and '
+        f'a consequently higher degree of caution, should be attached to '
+        f'this estimate than would normally be the case. The valuation '
+        f'should be kept under frequent review.'
+    )
+
+    # MoJ lag specifically — explain WHY the uncertainty bites
+    muc_basis_ar = (
+        f'بيانات وزارة العدل المسجَّلة تنتهي عند '
+        f'{moj_last.isoformat() if moj_last else "؟"}'
+        + (
+            f' — أي قبل بدء الاضطراب الحالي بـ '
+            f'{(active_since - moj_last).days if active_since and moj_last else "؟"} يوماً. '
+            if active_since and moj_last else '. '
+        )
+        + 'بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.'
+    )
+
+    muc_review_recommendation_ar = (
+        'هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، '
+        'أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، '
+        'أيهما أسبق.'
+    )
+
+    return {
+        'muc_clause_ar': muc_clause_ar,
+        'muc_clause_en': muc_clause_en,
+        'muc_basis_ar': muc_basis_ar,
+        'muc_review_recommendation_ar': muc_review_recommendation_ar,
+    }
 
 
 def assess_uncertainty(
@@ -161,6 +267,12 @@ def assess_uncertainty(
             'تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement.'
         )
 
+    # Sprint 2.14.0 — automatically attach RICS VPS 5 MUC if active regime
+    # is non-normal. This is INDEPENDENT of per-property uncertainty above:
+    # even a well-supported valuation (low per-property uncertainty) carries
+    # market-wide MUC during the current regime.
+    muc = regime_muc()
+
     return UncertaintyLevel(
         level=level,
         banner_ar=banner_ar,
@@ -169,4 +281,8 @@ def assess_uncertainty(
         rics_compliant=rics_compliant,
         known_unknowns=unknowns,
         recommendations=recommendations,
+        muc_clause_ar=muc['muc_clause_ar'],
+        muc_clause_en=muc['muc_clause_en'],
+        muc_basis_ar=muc['muc_basis_ar'],
+        muc_review_recommendation_ar=muc['muc_review_recommendation_ar'],
     )

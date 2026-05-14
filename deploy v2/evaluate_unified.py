@@ -29,14 +29,18 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Optional, Dict
 
+# Sprint 2.14.0 — RICS-aligned scope + MUC declaration. These modules are
+# fully decoupled from engine logic; safe to import unconditionally.
+from scope_of_service import classify_asset_scope, scope_to_dict
+
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.10: single source of truth for engine version.
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p11-context-preservation'
-SPRINT_TAG = '2.11'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p14p0-scope-and-muc'
+SPRINT_TAG = '2.14.0'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -1281,6 +1285,27 @@ ASSET_TYPE_AR = {
 _DCF_ASSETS_FOR_REASON = frozenset({'compound_large', 'tower', 'apartment_building'})
 
 
+def _attach_scope(response: dict) -> dict:
+    """Sprint 2.14.0 — attach RICS VPS 2 scope assessment to every response.
+
+    Mutates and returns the response dict. Always safe — falls back to
+    'unknown' scope if asset_type missing. Adds the field `service_scope`
+    at top level. Pure addition; no existing field renamed or removed.
+
+    The frontend uses this to show users WHAT level of valuation they're
+    getting (supported = full Sales Comparison; limited = requires user
+    input; unsupported = explicitly declined).
+    """
+    try:
+        asset_type = response.get('asset_type') or 'unknown'
+        scope = classify_asset_scope(asset_type)
+        response['service_scope'] = scope_to_dict(scope)
+    except Exception:
+        # Never break the response if scope module errors.
+        pass
+    return response
+
+
 def _enrich_fast_context(loc, plot):
     """Return cheap GIS context for fast-path response builders.
 
@@ -1342,7 +1367,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         if asset_type in _DCF_ASSETS_FOR_REASON
         else (f' في {_ctx["district"]}' if _ctx.get('district') else '')
     )
-    return {
+    return _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
         'methodology_ar': (
@@ -1428,7 +1453,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
             'available': False,
             'reason': 'تصنيف سريع — لم يُجرَ بحث إعلانات',
         },
-    }
+    })
 
 
 def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_type,
@@ -1462,7 +1487,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
     # Sprint 2.11: surface district + plot geometry
     _ctx = _enrich_fast_context(loc, plot)
 
-    return {
+    return _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
         'methodology_ar': (
@@ -1570,7 +1595,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
             'available': False,
             'reason': 'فحص ضمني — لم يُجرَ بحث إعلانات',
         },
-    }
+    })
 
 
 def _build_fast_income_only_response(zone, street, building, loc, plot, asset_type,
@@ -1691,7 +1716,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
     # Sprint 2.11: surface district + plot geometry
     _ctx = _enrich_fast_context(loc, plot)
 
-    return {
+    return _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
         'methodology_ar': (
@@ -1782,7 +1807,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
             'available': False,
             'reason': 'تقدير سريع بطريقة الدخل — لم يُجرَ بحث إعلانات',
         },
-    }
+    })
 
 
 def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, audience):
@@ -1805,7 +1830,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
     }
     # Sprint 2.11: surface district + plot geometry even when refusing valuation
     _ctx = _enrich_fast_context(loc, plot)
-    return {
+    return _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
         'methodology_ar': f'الإصدار الأول من ثمّن لا يدعم فئة "{asset_label_ar}"',
@@ -1878,7 +1903,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
             'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
         ),
         'active_listings': {'available': False, 'reason': 'خارج نطاق الإصدار'},
-    }
+    })
 
 
 def _check_input_sanity(asset_type, listing_price, rental_income, plot_area):
@@ -3101,6 +3126,8 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
         output['active_listings'] = {'available': False,
                                       'reason': 'لا توجد إعلانات نشطة مطابقة'}
 
+    # Sprint 2.14.0 — attach RICS VPS 2 scope assessment
+    _attach_scope(output)
     return output
 
 
