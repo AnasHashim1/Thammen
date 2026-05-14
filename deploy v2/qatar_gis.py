@@ -1143,6 +1143,116 @@ class QatarGIS:
             summary=f'Built between {latest_vacant} and {first_built} (±{gap} years)',
         )
 
+    def estimate_construction_year_smart(self, polygon_4326, pin=None,
+                                          time_budget_s=20.0,
+                                          threshold_stddev=22):
+        """Sprint 2.15 (L4) — smart, time-budgeted, cached variant.
+
+        Designed to fit within Heroku's 30s request budget while still
+        producing a useful age estimate for any Qatar parcel.
+
+        Strategy:
+          1. Cache lookup by PIN → instant return on hit.
+          2. Fast probe: analyse just 1995 + 2024 (~10s).
+             Covers two common cases definitively:
+               - 1995 already built → 'built ≤1995' (most old Qatar villas)
+               - 2024 still vacant → 'no building exists' (raw land)
+          3. If the fast probe leaves a wide bracket (e.g. 1995 vacant +
+             2024 built → 29-year uncertainty), refine with two middle
+             years (2010, 2017) — adds ~10-15s but uses the same disk
+             tile cache so years already fetched are reused.
+          4. Cache the final result by PIN so subsequent requests for
+             the same parcel are instant.
+
+        Args:
+            polygon_4326: list of [lon, lat] points (the plot polygon)
+            pin: cadastral PIN (used as cache key — required for caching)
+            time_budget_s: maximum wall-clock seconds to spend on imagery
+            threshold_stddev: pixel stddev cutoff (same as parent method)
+
+        Returns:
+            ConstructionYearEstimate or None if computation failed entirely.
+
+        Cache write-through is best-effort; cache errors never raise.
+        """
+        import time
+        from building_age_cache import get_default_cache
+
+        # ── Step 1: cache lookup ──
+        cache = None
+        if pin is not None:
+            try:
+                cache = get_default_cache()
+                cached = cache.get(pin)
+                if cached and cached.get('earliest_built_year') is not None:
+                    return ConstructionYearEstimate(
+                        earliest_built_year=cached['earliest_built_year'],
+                        latest_vacant_year=cached['latest_vacant_year'],
+                        confidence_years=cached['confidence_years'],
+                        summary=cached['summary'] or '',
+                    )
+            except Exception:
+                # Cache failure must not break valuation
+                cache = None
+
+        t_start = time.time()
+
+        # ── Step 2: fast probe — 1995 + 2024 ──
+        # This single call handles the two "easy" cases:
+        #   - Built ≤1995 (very old)            → confidence_years=5, done
+        #   - Vacant in 2024 (no building)      → confidence_years=99, done
+        # And produces a wide bracket for the "middle" case that needs refining.
+        try:
+            result = self.estimate_construction_year(
+                polygon_4326,
+                threshold_stddev=threshold_stddev,
+                years=[1995, 2024],
+            )
+        except Exception:
+            return None
+        method = 'fast_probe'
+
+        # ── Step 3: refine if bracket is wide AND budget allows ──
+        if result is not None and result.confidence_years > 7:
+            elapsed = time.time() - t_start
+            remaining = time_budget_s - elapsed
+            # Need ~12s for a refinement pass: 1995 and 2024 are cached
+            # (fast), 2010 and 2017 are fresh (~5s each).
+            if remaining > 12:
+                try:
+                    refined = self.estimate_construction_year(
+                        polygon_4326,
+                        threshold_stddev=threshold_stddev,
+                        years=[1995, 2010, 2017, 2024],
+                    )
+                    if refined is not None and \
+                       refined.confidence_years < result.confidence_years:
+                        result = refined
+                        method = 'binary_search_4y'
+                except Exception:
+                    # Keep the fast_probe result on refinement failure
+                    pass
+
+        # ── Step 4: write-through cache ──
+        if cache is not None and result is not None:
+            try:
+                cache.set(
+                    pin=pin,
+                    earliest_built_year=result.earliest_built_year,
+                    latest_vacant_year=result.latest_vacant_year,
+                    confidence_years=result.confidence_years,
+                    summary=result.summary,
+                    method=method,
+                    source_data={
+                        'elapsed_s': round(time.time() - t_start, 1),
+                        'threshold_stddev': threshold_stddev,
+                    },
+                )
+            except Exception:
+                pass
+
+        return result
+
     # ----- Tier 4: composite -----
 
     def full_property_lookup(self, zone, street, building,

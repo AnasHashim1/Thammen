@@ -39,8 +39,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p14p0-scope-and-muc'
-SPRINT_TAG = '2.14.0'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p15-building-age-imagery'
+SPRINT_TAG = '2.15'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -2240,8 +2240,7 @@ def evaluate_thammen(
     age_source = 'user' if building_age_years is not None else 'unknown'
     age_confidence_years = None
     if building_age_years is None:
-        # The v2 baseline already wrote the auto-detected age into
-        # ev.replacement_cost.building_age_years if include_age=True succeeded.
+        # Path A: replacement_cost wrote the auto-detected age (requires BUA).
         rc = getattr(ev, 'replacement_cost', None)
         if rc:
             auto_age = getattr(rc, 'building_age_years', None)
@@ -2260,6 +2259,36 @@ def evaluate_thammen(
                             age_confidence_years = getattr(constr, 'confidence_years', None)
                 except Exception:
                     pass
+
+    # Sprint 2.15 (L4) — Path B fallback: when no BUA was provided,
+    # replacement_cost is absent, but the smart imagery wrapper in
+    # evaluate_property.py still populated report.construction. Surface
+    # that to the response so the UI can show the "📡 detected from
+    # satellite imagery" badge and the age-aware adjustments still apply.
+    if building_age_years is None:
+        try:
+            from datetime import datetime as _dt
+            report = getattr(ev, 'raw_property_report', None)
+            constr = None
+            if isinstance(report, dict):
+                constr = report.get('construction')
+            elif report is not None:
+                constr = getattr(report, 'construction', None)
+            if constr:
+                ebt = (constr.get('earliest_built_year')
+                       if isinstance(constr, dict)
+                       else getattr(constr, 'earliest_built_year', None))
+                ecy = (constr.get('confidence_years')
+                       if isinstance(constr, dict)
+                       else getattr(constr, 'confidence_years', None))
+                if ebt:
+                    derived_age = _dt.now().year - int(ebt)
+                    if derived_age >= 0:
+                        building_age_years = derived_age
+                        age_source = 'gis_imagery'
+                        age_confidence_years = ecy
+        except Exception:
+            pass
 
     eval_dict = asdict(ev) if hasattr(ev, '__dataclass_fields__') else ev.__dict__
 

@@ -1274,7 +1274,7 @@ def evaluate_property(zone: int, street: int, building: int,
         gis = QatarGIS()
     report = gis.full_property_lookup(
         zone, street, building,
-        include_imagery=False,  # imagery is optional; skip for speed
+        include_imagery=False,  # full 9-year imagery is too slow; use smart variant below
         output_dir=None,
     )
 
@@ -1289,6 +1289,41 @@ def evaluate_property(zone: int, street: int, building: int,
             reasons=[f'No property at zone {zone}, street {street}, building {building}'],
             warnings=[], raw_property_report=None,
         )
+
+    # ── Sprint 2.15 (L4) — Smart construction-year detection ──
+    # Replaces the disabled full-iteration imagery analysis.
+    #
+    # Strategy:
+    #   1. SQLite cache lookup by PIN (instant if hit).
+    #   2. Fast probe of 1995 + 2024 (~6s) — definitive for old buildings
+    #      and vacant plots.
+    #   3. Refine with 2010 + 2017 if bracket is wide AND budget allows.
+    #   4. Cache the result by PIN — subsequent requests are instant.
+    #
+    # We trigger this AFTER full_property_lookup so we have plot.polygon_4326
+    # and location.pin. Downstream age-detection blocks (lines ~1394 and 1457)
+    # read `report.construction.earliest_built_year` unchanged.
+    #
+    # Skipped when the user already provided building_age_years (their input
+    # always overrides imagery) or when include_age is False.
+    if (building_age_years is None
+            and include_age
+            and report.plot
+            and getattr(report.plot, 'polygon_4326', None)
+            and report.location):
+        try:
+            smart_estimate = gis.estimate_construction_year_smart(
+                polygon_4326=report.plot.polygon_4326,
+                pin=report.location.pin,
+                time_budget_s=15.0,
+            )
+            if smart_estimate is not None:
+                # Populate report.construction so existing code paths
+                # (cost approach + property_factors) pick it up.
+                report.construction = smart_estimate
+        except Exception:
+            # Imagery failure must never break valuation
+            pass
 
     asset_type = report.classification.asset_type.value
     confidence = report.classification.confidence
