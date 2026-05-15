@@ -52,6 +52,23 @@ from typing import Optional
 
 GIS_BASE = "https://services.gisqatar.org.qa/server/rest/services"
 
+# ─── Sprint 2.15.1: Feature flag for inline imagery ───────────────────────
+# When False (default): smart() only reads from SQLite cache, never runs
+# imagery analysis inline. This protects the Heroku 30s request budget.
+# The cache is populated OFFLINE by prefill_cache.py and committed to git.
+#
+# When True: smart() runs full imagery analysis on cache miss.
+# Used ONLY by:
+#   - prefill_cache.py (offline batch population)
+#   - CLI tools / local development
+#
+# This flag can also be enabled via env var: THAMMEN_ENABLE_INLINE_IMAGERY=1
+# Production Heroku app should NEVER set this env var.
+import os as _os
+ENABLE_INLINE_IMAGERY = _os.environ.get(
+    'THAMMEN_ENABLE_INLINE_IMAGERY', '0'
+) == '1'
+
 ENDPOINTS = {
     'qars': f'{GIS_BASE}/Vector/QARS_Search/MapServer/0/query',
     'cadastre': f'{GIS_BASE}/Vector/CadastrePlots/MapServer/0/query',
@@ -1148,37 +1165,35 @@ class QatarGIS:
                                           threshold_stddev=22):
         """Sprint 2.15 (L4) — smart, time-budgeted, cached variant.
 
-        Designed to fit within Heroku's 30s request budget while still
-        producing a useful age estimate for any Qatar parcel.
+        Sprint 2.15.1 update: respects ENABLE_INLINE_IMAGERY module flag.
 
-        Strategy:
-          1. Cache lookup by PIN → instant return on hit.
-          2. Fast probe: analyse just 1995 + 2024 (~10s).
-             Covers two common cases definitively:
-               - 1995 already built → 'built ≤1995' (most old Qatar villas)
-               - 2024 still vacant → 'no building exists' (raw land)
-          3. If the fast probe leaves a wide bracket (e.g. 1995 vacant +
-             2024 built → 29-year uncertainty), refine with two middle
-             years (2010, 2017) — adds ~10-15s but uses the same disk
-             tile cache so years already fetched are reused.
-          4. Cache the final result by PIN so subsequent requests for
-             the same parcel are instant.
+        Two operating modes:
+          1. CACHE-ONLY (production default, flag=False):
+             Only reads from the SQLite cache. Returns None on miss. Never
+             runs imagery analysis. This guarantees the function completes
+             in <10ms regardless of network conditions, protecting Heroku's
+             30s request budget.
+
+          2. FULL (prefill / CLI, flag=True):
+             Cache miss → runs fast probe (1995 + 2024) → optionally refines
+             with 2010 + 2017 → caches the result for next time.
 
         Args:
             polygon_4326: list of [lon, lat] points (the plot polygon)
             pin: cadastral PIN (used as cache key — required for caching)
-            time_budget_s: maximum wall-clock seconds to spend on imagery
-            threshold_stddev: pixel stddev cutoff (same as parent method)
+            time_budget_s: maximum wall-clock seconds (FULL mode only)
+            threshold_stddev: pixel stddev cutoff (FULL mode only)
 
         Returns:
-            ConstructionYearEstimate or None if computation failed entirely.
+            ConstructionYearEstimate, or None on cache miss in CACHE-ONLY mode,
+            or None on computation failure in FULL mode.
 
         Cache write-through is best-effort; cache errors never raise.
         """
         import time
         from building_age_cache import get_default_cache
 
-        # ── Step 1: cache lookup ──
+        # ── Step 1: cache lookup (both modes) ──
         cache = None
         if pin is not None:
             try:
@@ -1195,13 +1210,15 @@ class QatarGIS:
                 # Cache failure must not break valuation
                 cache = None
 
+        # ── CACHE-ONLY mode: return immediately on miss ──
+        # This is the production path on Heroku — no imagery analysis inline.
+        if not ENABLE_INLINE_IMAGERY:
+            return None
+
+        # ── FULL mode (prefill / CLI): run imagery analysis ──
         t_start = time.time()
 
-        # ── Step 2: fast probe — 1995 + 2024 ──
-        # This single call handles the two "easy" cases:
-        #   - Built ≤1995 (very old)            → confidence_years=5, done
-        #   - Vacant in 2024 (no building)      → confidence_years=99, done
-        # And produces a wide bracket for the "middle" case that needs refining.
+        # Step 2: fast probe — 1995 + 2024
         try:
             result = self.estimate_construction_year(
                 polygon_4326,
@@ -1212,12 +1229,10 @@ class QatarGIS:
             return None
         method = 'fast_probe'
 
-        # ── Step 3: refine if bracket is wide AND budget allows ──
+        # Step 3: refine if bracket is wide AND budget allows
         if result is not None and result.confidence_years > 7:
             elapsed = time.time() - t_start
             remaining = time_budget_s - elapsed
-            # Need ~12s for a refinement pass: 1995 and 2024 are cached
-            # (fast), 2010 and 2017 are fresh (~5s each).
             if remaining > 12:
                 try:
                     refined = self.estimate_construction_year(
@@ -1230,10 +1245,9 @@ class QatarGIS:
                         result = refined
                         method = 'binary_search_4y'
                 except Exception:
-                    # Keep the fast_probe result on refinement failure
                     pass
 
-        # ── Step 4: write-through cache ──
+        # Step 4: write-through cache
         if cache is not None and result is not None:
             try:
                 cache.set(
