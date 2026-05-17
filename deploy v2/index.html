@@ -73,7 +73,14 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .tsw::after{content:'';width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:3px;right:3px;transition:transform .3s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .tsw.on::after{transform:translateX(-20px)}
 .det{max-height:0;overflow:hidden;transition:max-height .4s,opacity .3s;opacity:0}
-.det.open{max-height:600px;opacity:1;padding-top:16px}
+/* Sprint 2.16.4: removed `max-height:600px` cap that was clipping the last
+   3 form fields (askingPrice, rentalIncome, potentialRental) on mobile.
+   On desktop, the .fr2 grid placed fields 2-per-row → total ~480px → fit.
+   On mobile, the same grid collapses to 1 column (line 167) → 7 single-column
+   fields > 600px → 3 of them silently hidden behind overflow:hidden.
+   Using `max-height:1500px` accommodates the worst-case full-form-on-mobile
+   while preserving the open/close animation. */
+.det.open{max-height:1500px;opacity:1;padding-top:16px}
 .sbtn{width:100%;padding:15px;font-family:'Tajawal';font-weight:800;font-size:1.15rem;border:none;border-radius:var(--r);cursor:pointer;background:var(--bronze);color:#fff;box-shadow:0 4px 15px rgba(166,130,82,.3);transition:all .3s;margin-top:6px}
 .sbtn:hover{background:var(--bronze-h);transform:translateY(-1px)}
 .sbtn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
