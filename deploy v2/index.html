@@ -20,17 +20,31 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .hbtn:hover{background:var(--bronze-h);box-shadow:0 6px 25px rgba(166,130,82,.4);transform:translateY(-2px)}
 .hfoot{position:absolute;bottom:24px;font-size:.8rem;color:var(--light)}
 /* Sprint 2.7: Data freshness banner + result caveat */
-.dfb{position:fixed;top:0;left:0;right:0;z-index:1000;padding:8px 16px;font-size:.78rem;text-align:center;direction:rtl;border-bottom:1px solid rgba(0,0,0,.08);font-family:'Tajawal',sans-serif;line-height:1.5}
+/* Sprint 2.16.3: changed dfb from position:fixed → position:sticky so it
+   participates in document flow and stacks naturally above .tbar instead
+   of overlapping it. Resolves mobile header congestion where the long
+   Arabic banner text wrapped 2-3 lines and visually clipped the THAMMEN
+   logo + "متصل" indicator. */
+.dfb{position:sticky;top:0;left:0;right:0;z-index:50;padding:8px 16px;font-size:.78rem;text-align:center;direction:rtl;border-bottom:1px solid rgba(0,0,0,.08);font-family:'Tajawal',sans-serif;line-height:1.5}
 .dfb.s-info{background:var(--alt);color:var(--primary)}
 .dfb.s-warning{background:var(--warn-bg);color:var(--warn)}
 .dfb.s-alert{background:var(--bad-bg);color:var(--bad);font-weight:500}
 .dfb[hidden]{display:none}
-body.has-dfb .home,body.has-dfb .screen{padding-top:34px}
+/* Sprint 2.16.3: removed body.has-dfb padding-top override — no longer
+   needed since dfb is now sticky and takes its own flow space. */
 .dfc{margin-top:14px;padding:10px 14px;font-size:.78rem;line-height:1.7;border-radius:8px;direction:rtl;text-align:right}
 .dfc.s-info{background:var(--alt);color:var(--muted);border-right:3px solid var(--border)}
 .dfc.s-warning{background:var(--warn-bg);color:var(--warn);border-right:3px solid var(--warn)}
 .dfc.s-alert{background:var(--bad-bg);color:var(--bad);border-right:3px solid var(--bad);font-weight:500}
 .tbar{display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+/* Sprint 2.16.3: on very narrow viewports, allow tbar children to wrap and
+   give the logo/status more breathing room. Prevents overlap with the
+   sticky freshness banner above. */
+@media(max-width:480px){
+  .tbar{padding:8px 14px;flex-wrap:wrap;gap:6px}
+  .tbar-logo img{height:30px}
+  .tbar-st{font-size:.7rem;white-space:nowrap}
+}
 .tbar-logo{display:flex;align-items:center;gap:8px;cursor:pointer}.tbar-logo img{height:36px;width:auto}
 .tbar-st{font-size:.75rem;color:var(--light)}
 .sdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px;vertical-align:middle}.sdot.on{background:var(--ok)}.sdot.off{background:var(--bad)}
