@@ -52,6 +52,18 @@ from typing import Optional
 
 GIS_BASE = "https://services.gisqatar.org.qa/server/rest/services"
 
+# Sprint 2.16.5: GIS Qatar deprecated the public `services.gisqatar.org.qa/.../QARS_Search/MapServer`
+# endpoint (reduced from ~24M records to 14 bookkeeping rows during a 2026-05-17 ETL migration).
+# The active address layer is now on `khazna.gisqatar.org.qa/fed/rest/services/QARS/QARS_Point/FeatureServer/0`,
+# which is what the official `gisqatar.org.qa/qarssearch/` portal uses today.
+#
+# We verified via direct service info that QARS_Point has the IDENTICAL schema we depend on
+# (ZONE_NO, STREET_NO, BUILDING_NO, PIN, QARS, BUILDING_NO_SUBTYPE) and supports the same
+# query parameters (where, outFields, f, returnGeometry, outSR with datum transformation).
+#
+# Heroku can reach `khazna.gisqatar.org.qa` (public DNS, IP 89.211.33.46).
+KHAZNA_BASE = "https://khazna.gisqatar.org.qa/fed/rest/services"
+
 # ─── Sprint 2.15.1: Feature flag for inline imagery ───────────────────────
 # When False (default): smart() only reads from SQLite cache, never runs
 # imagery analysis inline. This protects the Heroku 30s request budget.
@@ -70,7 +82,13 @@ ENABLE_INLINE_IMAGERY = _os.environ.get(
 ) == '1'
 
 ENDPOINTS = {
-    'qars': f'{GIS_BASE}/Vector/QARS_Search/MapServer/0/query',
+    # Sprint 2.16.5: switched from services.gisqatar.org.qa/Vector/QARS_Search/MapServer
+    # to khazna.gisqatar.org.qa/fed/rest/services/QARS/QARS_Point/FeatureServer/0.
+    # Same schema (ZONE_NO/STREET_NO/BUILDING_NO/PIN/QARS); FeatureServer supports
+    # the exact attribute query patterns this module already issues.
+    'qars': f'{KHAZNA_BASE}/QARS/QARS_Point/FeatureServer/0/query',
+    # Kept for diagnostics; current behavior is "depleted to 14 records".
+    'qars_legacy': f'{GIS_BASE}/Vector/QARS_Search/MapServer/0/query',
     'cadastre': f'{GIS_BASE}/Vector/CadastrePlots/MapServer/0/query',
     'districts': f'{GIS_BASE}/Vector/Districts/MapServer/0/query',
     'geometry': f'{GIS_BASE}/Utilities/Geometry/GeometryServer/project',
@@ -630,7 +648,19 @@ class QatarGIS:
             'outFields': '*', 'f': 'json',
             'returnGeometry': 'true', 'outSR': 4326,
         }
-        res = _http_get_json(ENDPOINTS['qars'], params)
+        # Sprint 2.16.5: try the new khazna endpoint first; fall back to legacy
+        # only if the request itself errors out (network/HTTP/JSON failure).
+        # NOTE: we do NOT fall back on "0 features" — that's a legitimate
+        # "address not found" answer and the legacy endpoint is depleted anyway.
+        try:
+            res = _http_get_json(ENDPOINTS['qars'], params)
+        except Exception as e:
+            self._log(f'qars primary failed ({e}); trying legacy endpoint')
+            try:
+                res = _http_get_json(ENDPOINTS['qars_legacy'], params)
+            except Exception as e2:
+                self._log(f'qars legacy also failed ({e2})')
+                return None
         feats = res.get('features', [])
         if not feats:
             return None

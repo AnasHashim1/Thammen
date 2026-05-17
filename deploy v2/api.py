@@ -449,6 +449,11 @@ async def health():
     # cron pinging /api/health keeps the banner up to date.
     fresh = refresh_freshness()
 
+    # Sprint 2.16.5: probe the QARS endpoint (khazna) so the banner can
+    # detect outages cleanly. We do a cheap "returnCountOnly" call with a
+    # 4-second timeout; if it returns count > 1000, the endpoint is healthy.
+    qars_health = _probe_qars_endpoint()
+
     return {
         "status": "ok",
         "version": f"3.1.0-sprint{SPRINT_TAG}",
@@ -459,6 +464,7 @@ async def health():
             "size_mb": db_size_mb,
         },
         "moj_freshness": freshness_for_health(fresh) if fresh else None,
+        "qars_endpoint": qars_health,
         "modules": {
             "evaluate_property_v2": True,
             "evaluate_unified_v3": _UNIFIED_OK,
@@ -469,6 +475,47 @@ async def health():
         },
         "timestamp": datetime.now().isoformat(),
     }
+
+
+def _probe_qars_endpoint() -> dict:
+    """Sprint 2.16.5: quick health check on the QARS address service.
+
+    Returns a small dict the frontend (or anyone checking /api/health) can
+    use to know whether address-to-PIN resolution is currently functional.
+
+    Strategy: hit `?returnCountOnly=true&where=1=1` on the primary endpoint
+    and the legacy endpoint. Compare counts. The legacy endpoint is known
+    to be depleted to ~14 records since 2026-05-17.
+    """
+    import urllib.request, urllib.parse, json as _json
+    try:
+        from qatar_gis import ENDPOINTS
+    except Exception:
+        return {"status": "unknown", "reason": "qatar_gis module not loaded"}
+
+    def _count(url):
+        params = urllib.parse.urlencode({"where": "1=1", "returnCountOnly": "true", "f": "json"})
+        req = urllib.request.Request(f"{url}?{params}", headers={"User-Agent": "Thammen/2.16.5"})
+        with urllib.request.urlopen(req, timeout=4) as r:
+            return _json.loads(r.read()).get("count", 0)
+
+    out = {
+        "primary_url": ENDPOINTS.get('qars'),
+        "primary_count": None,
+        "primary_alive": False,
+        "legacy_count": None,
+    }
+    try:
+        out["primary_count"] = _count(ENDPOINTS['qars'])
+        out["primary_alive"] = (out["primary_count"] or 0) > 1000
+    except Exception as e:
+        out["primary_error"] = str(e)[:200]
+    try:
+        out["legacy_count"] = _count(ENDPOINTS['qars_legacy'])
+    except Exception as e:
+        out["legacy_error"] = str(e)[:200]
+    out["status"] = "healthy" if out["primary_alive"] else "degraded"
+    return out
 
 
 @app.get("/api/freshness")
