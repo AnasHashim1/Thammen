@@ -44,6 +44,8 @@ label{font-size:.82rem;color:var(--muted);margin-bottom:5px;font-weight:500}
 input,select{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Tajawal';font-size:1rem;transition:border-color .2s,box-shadow .2s;direction:ltr;text-align:right}
 input:focus,select:focus{outline:none;border-color:var(--bronze);box-shadow:0 0 0 3px var(--bronze-g)}
 input::placeholder{color:#C4C0B8}
+/* Sprint 2.16.2: shrink placeholder on narrow viewports so long Arabic+Latin strings don't truncate mid-word */
+@media(max-width:480px){input::placeholder{font-size:.85rem}input,select{padding:11px 10px}}
 select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:14px center;padding-left:32px}
 .aud-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .aud-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;font-family:'Tajawal';font-size:.85rem;font-weight:500;color:var(--muted)}
@@ -252,10 +254,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         </div>
         <div class="fr2">
           <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option></select></div>
-          <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — تقدير الـ footprint" min="0"></div>
+          <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري" min="0"></div>
         </div>
         <div class="fr2">
-          <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — يكفي تقدير ±5 سنوات (مهم للعقارات القديمة)" min="0" max="100"></div>
+          <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" min="0" max="100"></div>
           <div class="fg"><label>تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="">— اختر —</option><option value="0">لا</option><option value="1">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
         </div>
         <div class="fr2">
@@ -1012,9 +1014,13 @@ function renderSection(sec){
       if(c.description_ar)body+='<div class="br-note" style="margin-top:10px">'+c.description_ar+'</div>';
       break;
     case 'negotiation':
+      if(c.is_stratum_aware){
+        body+='<div style="margin-bottom:10px;padding:8px 10px;background:var(--ok-bg);border-right:3px solid var(--ok);border-radius:4px;font-size:.82rem"><strong style="color:var(--ok)">📊 نطاق مُحدَّث حسب فئة عقارك</strong></div>';
+      }
       if(c.opening_offer)body+=row('عرض الفتح المقترح',qarFmt(c.opening_offer),'hl');
       if(c.floor)body+=row('السقف الأدنى',qarFmt(c.floor));
       if(c.ceiling)body+=row('السقف الأعلى',qarFmt(c.ceiling));
+      if(c.stratum_note_ar)body+='<div class="br-note" style="margin-top:10px;font-style:italic">'+c.stratum_note_ar+'</div>';
       if(c.note)body+='<div class="br-note" style="margin-top:10px">'+c.note+'</div>';
       break;
     case 'flags':

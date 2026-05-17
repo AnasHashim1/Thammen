@@ -39,8 +39,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p16p1-strata-hotfix'
-SPRINT_TAG = '2.16.1'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p16p2-stratum-aware-negotiation'
+SPRINT_TAG = '2.16.2'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -903,6 +903,7 @@ def _rewrite_brief_anchored_sections(
     final_high: float,
     audience: str,
     moj_direct: Optional[float] = None,
+    stock_strata: Optional[dict] = None,    # Sprint 2.16.2: stratum-aware anchor
 ) -> None:
     """Sprint 2.4a: Mutate `brief` in place to rewrite audience-specific anchor
     sections so they use the FINAL valuation amount instead of the stale
@@ -922,16 +923,40 @@ def _rewrite_brief_anchored_sections(
     final_low = float(final_low)
     final_high = float(final_high)
 
+    # Sprint 2.16.2: stratum-aware negotiation. If the subject was classified
+    # into a specific stratum (reliable, n≥10), use that stratum's estimated
+    # total as the negotiation anchor instead of the blended bracket median.
+    # Falls back to final_amount when no classification or unreliable stratum.
+    _negotiation_anchor = final_amount
+    _negotiation_note_extra = None
+    if isinstance(stock_strata, dict):
+        _subj = stock_strata.get('subject_property') or {}
+        _cls = _subj.get('classification')
+        if _cls and _cls in ('land_priced', 'aging_stock', 'modern_stock', 'luxury_new'):
+            _stratum_data = (stock_strata.get('strata') or {}).get(_cls) or {}
+            _stratum_total = _stratum_data.get('estimated_total')
+            if _stratum_total and _stratum_data.get('reliable'):
+                _negotiation_anchor = float(_stratum_total)
+                _label = _subj.get('classification_label_ar') or _cls
+                _negotiation_note_extra = (
+                    f'النطاق محسوب بناء على فئة "{_label}" المُصنَّفة لعقارك '
+                    f'(وسيط الفئة: {_stratum_total:,.0f} ر.ق)، '
+                    'وليس وسيط الشريحة المدمج. هذا يعكس فعليا فئة عقارك.'
+                )
+
     for sec in brief['sections']:
         sid = sec.get('id')
 
         # Buyer negotiation: floor 5% below valuation, opening 10% below, ceiling 10% above
         if sid == 'negotiation' and audience == 'buyer':
             content = sec.get('content') or {}
-            content['floor'] = _r100k(final_amount * 0.95)
-            content['opening_offer'] = _r100k(final_amount * 0.90)
-            content['ceiling'] = _r100k(final_amount * 1.10)
-            # Note already exists; leave it
+            content['floor'] = _r100k(_negotiation_anchor * 0.95)
+            content['opening_offer'] = _r100k(_negotiation_anchor * 0.90)
+            content['ceiling'] = _r100k(_negotiation_anchor * 1.10)
+            content['anchor_used'] = _r100k(_negotiation_anchor)
+            content['is_stratum_aware'] = (_negotiation_anchor != final_amount)
+            if _negotiation_note_extra:
+                content['stratum_note_ar'] = _negotiation_note_extra
             sec['content'] = content
 
         # Seller's "your property value" section
@@ -2030,19 +2055,38 @@ def _check_output_sanity(result, listing_price):
         # don't warrant a warning (would just create alert fatigue).
 
     # Listing vs benchmark gap
+    # Sprint 2.16.2: when stock_strata classified the subject into a specific
+    # stratum (reliable, n≥10), use that stratum's estimated_total as benchmark
+    # instead of the blended bracket median. Resolves the Sprint 2.16.0 reporting
+    # contradiction where "asking 5M is +53% above blended" while strata card
+    # says "your luxury_new tier median = 4.69M (+6.7%)".
     val = result.get('valuation') or {}
     benchmark = val.get('amount')
+    benchmark_source_ar = 'المرجع'
+
+    _strata = result.get('stock_strata') or {}
+    _subject = _strata.get('subject_property') or {}
+    _cls = _subject.get('classification')
+    if _cls and _cls in ('land_priced', 'aging_stock', 'modern_stock', 'luxury_new'):
+        _stratum_data = (_strata.get('strata') or {}).get(_cls) or {}
+        _stratum_total = _stratum_data.get('estimated_total')
+        # Only swap if the stratum has a reliable (n≥10) reference
+        if _stratum_total and _stratum_data.get('reliable'):
+            benchmark = _stratum_total
+            _label = _subject.get('classification_label_ar') or _cls
+            benchmark_source_ar = f'وسيط فئة "{_label}"'
+
     if listing_price and benchmark:
         gap = (listing_price - benchmark) / benchmark
         if gap > LISTING_GAP_OVERPRICED_WARN:
             warnings.append(
                 f'السعر المطلوب ({listing_price:,.0f}) أعلى بـ {gap*100:.0f}% '
-                'من المرجع — السوق غالباً يرفض السعر بهذا المستوى.'
+                f'من {benchmark_source_ar} — السوق غالباً يرفض السعر بهذا المستوى.'
             )
         elif gap < LISTING_GAP_UNDERPRICED_WARN:
             warnings.append(
                 f'السعر المطلوب ({listing_price:,.0f}) أقل بـ {abs(gap)*100:.0f}% '
-                'من المرجع — تحقق من السبب (تنازل، أقساط، خلاف، حالة المبنى).'
+                f'من {benchmark_source_ar} — تحقق من السبب (تنازل، أقساط، خلاف، حالة المبنى).'
             )
 
     result['sanity_warnings'] = warnings
@@ -2685,6 +2729,7 @@ def evaluate_thammen(
                 brief, final_amount, final_low, final_high,
                 audience=audience,
                 moj_direct=None,
+                stock_strata=output.get('stock_strata'),  # Sprint 2.16.2
             )
         except Exception as e:
             import sys
@@ -3179,6 +3224,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                     brief, final_amount, final_low, final_high,
                     audience=audience,
                     moj_direct=getattr(ev.valuation, 'fair_price_total', None) if getattr(ev, 'valuation', None) else None,
+                    stock_strata=output.get('stock_strata'),  # Sprint 2.16.2
                 )
             except Exception as e:
                 import sys
