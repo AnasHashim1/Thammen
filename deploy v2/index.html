@@ -792,6 +792,93 @@ function show(d){
     h+='</div>';
   }
 
+  // ── Sprint 2.16.0: Stock Stratification (EMPIRICAL_FINDINGS Rule E4) ──
+  // Per-stratum villa medians: land_priced / aging / modern / luxury_new.
+  // Headline value unchanged; this is exposure-only transparency.
+  const ss=d.stock_strata;
+  if(ss && ss.applied && ss.strata){
+    const STRATA_ORDER=['land_priced','aging_stock','modern_stock','luxury_new'];
+    const STRATA_COLORS={
+      'land_priced':  {bg:'var(--warn-bg)', fg:'var(--warn)', icon:'🏚️'},
+      'aging_stock':  {bg:'var(--alt)',     fg:'var(--muted)', icon:'🏠'},
+      'modern_stock': {bg:'var(--ok-bg)',   fg:'var(--ok)',   icon:'🏡'},
+      'luxury_new':   {bg:'#F5EFE7',        fg:'var(--bronze)', icon:'🌟'},
+    };
+    h+='<div class="rc"><div class="rt" style="margin-bottom:6px">📊 تصنيف المخزون (Stock Stratification)</div>';
+    h+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">'+(ss.methodology_ar||'')+'</div>';
+
+    // Land reference card
+    const lr=ss.land_reference;
+    if(lr){
+      h+='<div class="rn" style="font-size:.82rem;padding:8px 10px;background:var(--alt);border-radius:6px;margin-bottom:12px">';
+      h+='📏 <strong>مرجع الأرض:</strong> '+fmt(lr.median_per_m2)+' ر.ق/م² ';
+      h+='(n='+lr.n+' معاملة، نافذة '+lr.window_months+' شهر، ';
+      h+='شريحة: '+(lr.bracket||'—')+')';
+      h+='</div>';
+    }
+
+    // Subject classification (if listing_price was provided)
+    const sp=ss.subject_property;
+    if(sp && sp.classification && sp.classification!=='unknown'){
+      const cls=STRATA_COLORS[sp.classification]||STRATA_COLORS['aging_stock'];
+      h+='<div style="padding:10px 12px;background:'+cls.bg+';border-right:4px solid '+cls.fg+';border-radius:6px;margin-bottom:12px;font-size:.86rem">';
+      h+='<div style="font-weight:600;color:'+cls.fg+';margin-bottom:4px">'+cls.icon+' عقارك يقع في فئة: '+sp.classification_label_ar+'</div>';
+      h+='<div style="font-size:.78rem;color:#555">السعر المُدخَل: '+fmt(sp.listing_price)+' ر.ق ÷ '+sp.plot_area_m2+' م² = '+fmt(sp.implied_per_m2)+' ر.ق/م²';
+      h+=' &nbsp;|&nbsp; نسبة لـ الأرض: <strong>'+sp.implied_ratio+'×</strong></div>';
+      if(sp.guidance_ar){
+        h+='<div style="font-size:.78rem;color:#555;margin-top:6px">'+sp.guidance_ar+'</div>';
+      }
+      h+='</div>';
+    }
+
+    // Strata table
+    h+='<div style="display:grid;grid-template-columns:1fr;gap:6px">';
+    STRATA_ORDER.forEach(name=>{
+      const s=ss.strata[name];
+      if(!s) return;
+      const c=STRATA_COLORS[name];
+      const isSubject=(sp && sp.classification===name);
+      const isDominant=(ss.dominant_stratum && ss.dominant_stratum.name===name);
+      const borderStyle=isSubject?'border:2px solid '+c.fg:'border:1px solid #e5e5e5';
+      h+='<div style="padding:10px 12px;background:'+c.bg+';'+borderStyle+';border-radius:6px;font-size:.84rem">';
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">';
+      h+='<div><strong style="color:'+c.fg+'">'+c.icon+' '+s.label_ar+'</strong>';
+      h+=' <span style="color:#888;font-size:.78rem">('+s.ratio_band+'×)</span>';
+      if(isDominant) h+=' <span style="font-size:.72rem;color:'+c.fg+';background:white;padding:1px 6px;border-radius:8px;border:1px solid '+c.fg+'">المسيطرة</span>';
+      if(isSubject) h+=' <span style="font-size:.72rem;color:white;background:'+c.fg+';padding:1px 6px;border-radius:8px">← عقارك</span>';
+      h+='</div>';
+      if(s.n>0){
+        h+='<div style="text-align:left;direction:ltr"><strong>'+fmt(s.median_per_m2)+'</strong>/m²';
+        if(s.estimated_total) h+=' &nbsp;·&nbsp; '+fmt(s.estimated_total)+' ر.ق';
+        h+='</div>';
+      } else {
+        h+='<div style="color:#999;font-size:.78rem">لا توجد معاملات</div>';
+      }
+      h+='</div>';
+      // Reliability + description
+      h+='<div style="font-size:.76rem;color:#666;margin-top:6px">';
+      h+='n='+s.n+' &middot; '+s.reliability_label_ar;
+      h+='</div>';
+      h+='<div style="font-size:.74rem;color:#777;margin-top:4px;line-height:1.5">'+s.description_ar+'</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+
+    // Dominant stratum note
+    if(ss.dominant_stratum && ss.dominant_stratum.note_ar){
+      h+='<div style="font-size:.78rem;color:#666;margin-top:10px;padding:8px;background:var(--alt);border-radius:4px">';
+      h+='ℹ <strong>الفئة المسيطرة:</strong> '+ss.dominant_stratum.label_ar+' ('+ss.dominant_stratum.share_pct+'% من العينة). ';
+      h+=ss.dominant_stratum.note_ar;
+      h+='</div>';
+    }
+
+    // Sprint scope caveat (light grey, smaller font)
+    if(ss.sprint_scope_caveat_ar){
+      h+='<div style="font-size:.72rem;color:#888;margin-top:8px;font-style:italic">'+ss.sprint_scope_caveat_ar+'</div>';
+    }
+    h+='</div>';
+  }
+
   // ── Known unknowns ──
   const rtr=d.reasoning_trace;
   if(rtr&&rtr.known_unknowns&&rtr.known_unknowns.length>0){

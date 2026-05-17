@@ -39,8 +39,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p15p1-imagery-prefilled-cache'
-SPRINT_TAG = '2.15.1'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p16p0-stock-stratification'
+SPRINT_TAG = '2.16.0'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -74,6 +74,14 @@ try:
 except ImportError as e:
     _GEOMETRIC_OK = False
     print(f"Warning: geometric_factors not loadable: {e}", file=sys.stderr)
+
+# ── Sprint 2.16.0: Stock Stratification (EMPIRICAL_FINDINGS Rule E4) ──
+try:
+    from stock_strata import build_stock_strata_result
+    _STRATA_OK = True
+except ImportError as e:
+    _STRATA_OK = False
+    print(f"Warning: stock_strata not loadable: {e}", file=sys.stderr)
 
 
 # ============================================================
@@ -2386,6 +2394,39 @@ def evaluate_thammen(
     # ── Step 3: Select PRIMARY comparison value ──
     primary = _select_primary_comparison(ev, geo_v2_result)
 
+    # ── Step 3.5 (Sprint 2.16.0): Stock Stratification ──
+    # EMPIRICAL_FINDINGS Rule E4 — classify villa transactions by
+    # villa/land ratio to surface land_priced / aging / modern / luxury_new
+    # strata. Headline value unchanged; this is exposure-only.
+    stock_strata = None
+    if _STRATA_OK and ev.asset_type in ('standalone_villa', 'villa'):
+        try:
+            geo_primary = (geo_v2_result or {}).get('primary') or {}
+            villa_txns = geo_primary.get('transactions') or []
+            moj_names = set(geo_primary.get('moj_names') or [])
+            if villa_txns and moj_names:
+                _strata_rows = _get_moj_rows(moj_csv_path)
+                # Discover the date column (NBSP-tolerant)
+                _date_col = None
+                if _strata_rows:
+                    for _k in _strata_rows[0].keys():
+                        _kn = ' '.join((_k or '').split())
+                        if 'تاريخ' in _kn and 'تثبيت' in _kn:
+                            _date_col = _k
+                            break
+                if _date_col:
+                    stock_strata = build_stock_strata_result(
+                        moj_rows=_strata_rows,
+                        moj_area_names=moj_names,
+                        villa_transactions=villa_txns,
+                        plot_area_m2=getattr(ev, 'plot_area_m2', None),
+                        listing_price=listing_price,
+                        date_col=_date_col,
+                    )
+        except Exception as e:
+            print(f"[stock_strata] failed: {e}", file=sys.stderr)
+            stock_strata = None
+
     # ── Step 4: v3 layer — for income data, material uncertainty, brief ──
     # (NOT for blending — its blend_3way is ignored)
     v3_result = None
@@ -2436,6 +2477,7 @@ def evaluate_thammen(
         listings_result=listings_result,
         geometric=geometric,
         audience=audience,
+        stock_strata=stock_strata,        # Sprint 2.16.0
         user_inputs={
             'listing_price': listing_price,
             'rental_income': rental_income,
@@ -2700,7 +2742,8 @@ def evaluate_thammen(
 # ============================================================
 
 def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
-                          geo_v2_result, listings_result, geometric, audience, user_inputs) -> Dict:
+                          geo_v2_result, listings_result, geometric, audience,
+                          user_inputs, stock_strata=None) -> Dict:
     output = {
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
@@ -2780,6 +2823,13 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'method_label_ar': income['method_label_ar'],
             'role_ar': income['role_ar'],
         }
+
+    # ── Sprint 2.16.0: Stock Stratification (EMPIRICAL_FINDINGS Rule E4) ──
+    # Surfaces per-stratum villa medians (land_priced / aging / modern / luxury_new)
+    # to expose under-valuation of modern stock by the blended bracket median.
+    # Headline `valuation.amount` is unchanged in this sprint.
+    if stock_strata:
+        output['stock_strata'] = stock_strata
 
     # ── Reconciliation statement (RICS Red Book) ──
     output['reconciliation'] = reconciliation
