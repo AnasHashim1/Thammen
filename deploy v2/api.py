@@ -192,6 +192,15 @@ except Exception:
 _ASKING_PRICE_MAX = 500_000_000.0   # QAR
 _RENTAL_INCOME_MAX = 10_000_000.0   # QAR/month
 
+# Sprint 2.16.10 — tower/compound input pair: (unit_count, avg_monthly_rent_per_unit).
+# Resolves the input-ambiguity bug: a user typing 30,000 into "monthly rent"
+# could mean (a) their one apartment, or (b) the whole tower. The new pair
+# forces an unambiguous split.
+# 500 unit ceiling covers Lusail's largest residential towers (~300 units typical).
+# 500K/month per unit ceiling covers Pearl/Lusail premium apartments.
+_UNIT_COUNT_MAX = 500
+_PER_UNIT_RENT_MAX = 500_000.0      # QAR/month per unit
+
 
 class EvaluateRequest(BaseModel):
     zone: int
@@ -202,6 +211,12 @@ class EvaluateRequest(BaseModel):
     # inputs as /api/evaluate/details, so single-shot callers get comparison logic.
     asking_price: Optional[float] = Field(default=None, gt=0, lt=_ASKING_PRICE_MAX)
     rental_income: Optional[float] = Field(default=None, ge=0, lt=_RENTAL_INCOME_MAX)
+    # Sprint 2.16.10 — tower/compound input clarity: instead of (or in addition
+    # to) a single "rental_income" field that could mean either one unit or the
+    # whole building, callers can split into unit_count + per-unit rent. The
+    # engine derives total monthly rent when both are present.
+    unit_count: Optional[int] = Field(default=None, gt=0, le=_UNIT_COUNT_MAX)
+    avg_monthly_rent_per_unit: Optional[float] = Field(default=None, gt=0, lt=_PER_UNIT_RENT_MAX)
 
 
 class EvaluateDetailsRequest(BaseModel):
@@ -220,6 +235,9 @@ class EvaluateDetailsRequest(BaseModel):
     # (creating a half-rejected state visible to downstream consumers).
     rental_income: Optional[float] = Field(default=None, ge=0, lt=_RENTAL_INCOME_MAX)
     potential_rental: Optional[float] = Field(default=None, ge=0, lt=_RENTAL_INCOME_MAX)
+    # Sprint 2.16.10 — tower/compound input clarity (see EvaluateRequest above).
+    unit_count: Optional[int] = Field(default=None, gt=0, le=_UNIT_COUNT_MAX)
+    avg_monthly_rent_per_unit: Optional[float] = Field(default=None, gt=0, lt=_PER_UNIT_RENT_MAX)
     # Sprint 2.2 — explicit building improvements (RICS Red Book "subject property" specs)
     basement: Optional[bool] = None       # سرداب — adds significant unrecorded value
     footprint_m2: Optional[float] = None  # ground-floor footprint estimate (overrides default)
@@ -665,6 +683,9 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
                 # so single-shot callers get comparison logic if they provide it.
                 listing_price=req.asking_price,
                 rental_income=req.rental_income,
+                # Sprint 2.16.10 — unambiguous tower/compound rental split
+                unit_count=req.unit_count,
+                avg_monthly_rent_per_unit=req.avg_monthly_rent_per_unit,
                 use_listings=True,
                 use_geo_v2=True,
             )
@@ -705,6 +726,9 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
                 audience=req.audience or 'buyer',
                 listing_price=req.asking_price,
                 rental_income=req.rental_income,
+                # Sprint 2.16.10 — unambiguous tower/compound rental split
+                unit_count=req.unit_count,
+                avg_monthly_rent_per_unit=req.avg_monthly_rent_per_unit,
                 floors=req.floors,
                 condition=req.condition,
                 annexes=req.annexes or 0,

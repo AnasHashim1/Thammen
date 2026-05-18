@@ -39,8 +39,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p16p9-muc-frontend-display'
-SPRINT_TAG = '2.16.9'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p16p10-tower-rental-split'
+SPRINT_TAG = '2.16.10'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -1663,7 +1663,8 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
 
 
 def _build_fast_income_only_response(zone, street, building, loc, plot, asset_type,
-                                      audience, rental_income, listing_price):
+                                      audience, rental_income, listing_price,
+                                      rent_source_ar='إفادة العميل (الإيجار الفعلي)'):
     """Sprint A.2: Fast income-only valuation for DCF-only assets.
 
     For compound_large / tower / commercial / apartment_building with rental_income,
@@ -1719,7 +1720,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
                 'annual_rent_gross': annual_rent,
                 'cap_rate_pct': round(cap_rate * 100, 2),
                 'cap_rate_label_ar': f'معدل رسملة {cap_rate*100:.1f}% (نموذجي لـ {asset_label_ar})',
-                'rent_source_ar': 'إفادة العميل (الإيجار الفعلي)',
+                'rent_source_ar': rent_source_ar,
             },
         },
         {
@@ -2135,6 +2136,13 @@ def evaluate_thammen(
     rent_ref_path: Optional[str] = 'rent_reference.json',
     listing_price: Optional[float] = None,
     rental_income: Optional[float] = None,
+    # Sprint 2.16.10 — tower/compound rental clarity:
+    #   if (unit_count, avg_monthly_rent_per_unit) both provided, derive
+    #   total monthly rent = unit_count * avg_monthly_rent_per_unit
+    #   and use that for the income approach. If rental_income is ALSO
+    #   provided, the pair wins (since it's the unambiguous form).
+    unit_count: Optional[int] = None,
+    avg_monthly_rent_per_unit: Optional[float] = None,
     floors: Optional[int] = None,
     condition: Optional[str] = None,
     annexes: int = 0,
@@ -2199,14 +2207,44 @@ def evaluate_thammen(
                 _sanity_warnings = _sanity['warnings_ar']
                 rental_income = _sanity['rental_income_adjusted']
 
+                # ── Sprint 2.16.10: derive total monthly rent from (unit_count × avg_per_unit) ──
+                # The pair wins over a bare rental_income because it's unambiguous —
+                # the user explicitly told us "this is N units × Y QAR each", not
+                # the ambiguous "this is some rent in QAR/month".
+                _rent_source = None
+                if unit_count and avg_monthly_rent_per_unit:
+                    _derived_total = unit_count * avg_monthly_rent_per_unit
+                    _rent_source = {
+                        'kind': 'derived_from_units',
+                        'unit_count': unit_count,
+                        'avg_per_unit': avg_monthly_rent_per_unit,
+                        'derived_monthly_total': _derived_total,
+                        'note_ar': f'محسوب من {unit_count} وحدة × {int(avg_monthly_rent_per_unit):,} ر.ق/شهر = {int(_derived_total):,} ر.ق/شهر إجمالي',
+                    }
+                    rental_income = _derived_total
+                elif rental_income:
+                    _rent_source = {
+                        'kind': 'user_total',
+                        'monthly_total': rental_income,
+                        'note_ar': f'إفادة العميل: {int(rental_income):,} ر.ق/شهر إجمالي',
+                    }
+
                 # ── Sprint A.1/A.2/A.3: DCF fast paths ──
                 if _qtype in DCF_ONLY:
                     if rental_income:
                         # Sprint A.2: income-only valuation (fast)
+                        # Sprint 2.16.10 — provenance label reflects how rent was supplied
+                        _rs_label = (_rent_source['note_ar'] if _rent_source
+                                     else 'إفادة العميل (الإيجار الفعلي)')
                         result = _build_fast_income_only_response(
                             zone, street, building, _loc, _plot, _qtype, audience,
                             rental_income, listing_price,
+                            rent_source_ar=_rs_label,
                         )
+                        # Sprint 2.16.10 — attach source provenance so the UI can
+                        # show "calculated from N units × Y" instead of just a total.
+                        if _rent_source:
+                            result['rent_source'] = _rent_source
                         # Apply post-valuation sanity + accumulate pre-warnings
                         result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
                         _check_output_sanity(result, listing_price)
@@ -2245,10 +2283,16 @@ def evaluate_thammen(
                 if _moj_n < MIN_MOJ_SAMPLES_FOR_FULL_PIPELINE:
                     # No useful MoJ data → route to fast paths
                     if rental_income:
+                        _rs_label = (_rent_source['note_ar'] if _rent_source
+                                     else 'إفادة العميل (الإيجار الفعلي)')
                         result = _build_fast_income_only_response(
                             zone, street, building, _loc, _plot, _qtype, audience,
                             rental_income, listing_price,
+                            rent_source_ar=_rs_label,
                         )
+                        # Sprint 2.16.10 — propagate rent_source provenance
+                        if _rent_source:
+                            result['rent_source'] = _rent_source
                     elif listing_price:
                         result = _build_fast_listing_only_response(
                             zone, street, building, _loc, _plot, _qtype, audience,

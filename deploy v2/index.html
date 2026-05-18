@@ -283,7 +283,21 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         </div>
         <div class="fr2">
           <div class="fg"><label>السعر المطلوب (ر.ق)</label><input type="number" id="askingPrice" placeholder="اختياري" min="0"></div>
-          <div class="fg"><label>الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"></div>
+          <div class="fg"><label id="rentalIncomeLabel">الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"></div>
+        </div>
+        <!-- Sprint 2.16.10 — tower/compound rental split (shown only after a quick
+             evaluation reveals the asset is a tower / compound_large / apartment_building).
+             Resolves the ambiguity where a single "monthly rent" field could mean
+             one apartment or the whole building. -->
+        <div id="towerRentSection" class="tower-only" style="display:none;background:var(--alt);border-right:3px solid var(--bronze);padding:10px 12px;margin-top:6px;border-radius:0 6px 6px 0">
+          <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px">
+            <strong>للأبراج والمجمعات الكبيرة:</strong> إذا لم تعرف الإجمالي،
+            أدخل تفاصيل الوحدات بدلاً منه. سيُحسب الإجمالي تلقائياً.
+          </div>
+          <div class="fr2">
+            <div class="fg"><label>عدد الوحدات في البرج</label><input type="number" id="unitCount" placeholder="مثال: 80" min="1" max="500"></div>
+            <div class="fg"><label>متوسط الإيجار الشهري لكل وحدة (ر.ق)</label><input type="number" id="avgRentPerUnit" placeholder="مثال: 12000" min="1"></div>
+          </div>
         </div>
         <div class="fr2">
           <div class="fg"><label>الإيجار الشهري المتوقع (ر.ق)</label><input type="number" id="potentialRental" placeholder="تقدير" min="0"></div>
@@ -322,11 +336,33 @@ const ASSET_AR={'standalone_villa':'فيلا منفردة','raw_land':'أرض ف
 
 function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(n+'Screen').classList.add('active');window.scrollTo(0,0);if(n==='form')chk()}
 
+// Sprint 2.16.10 — surface tower-specific input fields and update the rental
+// label when the asset is a tower / large compound / apartment building. For
+// those classes a single "monthly rent" is ambiguous (one unit vs the whole
+// building) so we expose unit_count + per-unit rent as the unambiguous split.
+function applyAssetToForm(assetType){
+  var towerLike=(assetType==='tower'||assetType==='compound_large'||assetType==='apartment_building');
+  var section=document.getElementById('towerRentSection');
+  var lbl=document.getElementById('rentalIncomeLabel');
+  if(section)section.style.display=towerLike?'block':'none';
+  if(lbl){
+    lbl.textContent=towerLike
+      ? 'إجمالي الإيجار الشهري للبرج (ر.ق)'
+      : 'الإيجار الشهري الحالي (ر.ق)';
+  }
+}
+
 // Sprint 2.16.8 — go to form + focus a specific field (tower UX).
 // Used by the insufficient-data CTA so users land exactly where their next
 // required input lives (rentalIncome for towers, askingPrice for others).
 function goForm(focusId){
   go('form');
+  // Sprint 2.16.10 — propagate asset_type from the last result so the form
+  // adapts. The last result is cached in window._lastResult by run().
+  try{
+    var at=window._lastResult&&window._lastResult.asset_type;
+    if(at)applyAssetToForm(at);
+  }catch(e){}
   if(!focusId)return;
   // Wait one frame so the screen swap and chk() open the details section
   // before we try to focus a field inside it.
@@ -420,7 +456,10 @@ async function run(){
             fp=document.getElementById('footprintM2').value,
             em=document.getElementById('externalMajlis').value,
             ba=document.getElementById('buildingAge').value,
-            lx=document.getElementById('isLuxury').value;
+            lx=document.getElementById('isLuxury').value,
+            // Sprint 2.16.10 — tower/compound rental split
+            uc=document.getElementById('unitCount').value,
+            apu=document.getElementById('avgRentPerUnit').value;
       if(f)bd.floors=+f;
       if(a)bd.annexes=+a;
       if(c)bd.condition=c;
@@ -432,6 +471,8 @@ async function run(){
       if(em!=='')bd.external_majlis=(em==='1');
       if(ba)bd.building_age_years=+ba;
       if(lx!=='')bd.is_luxury=(lx==='1');
+      // Sprint 2.16.10 — send the pair only when BOTH are present (engine derives total)
+      if(uc&&apu){bd.unit_count=+uc;bd.avg_monthly_rent_per_unit=+apu;}
     }
     const r=await fetch(API+'/api/evaluate/details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
     if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
