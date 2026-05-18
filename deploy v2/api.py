@@ -21,7 +21,7 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # Rate limiting (slowapi)
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -201,6 +201,41 @@ _RENTAL_INCOME_MAX = 10_000_000.0   # QAR/month
 _UNIT_COUNT_MAX = 500
 _PER_UNIT_RENT_MAX = 500_000.0      # QAR/month per unit
 
+# Sprint 2.16.12 (B3) — explicit audience whitelist.
+# Previously _normalize_audience() in evaluate_unified.py silently coerced any
+# unknown value to 'buyer'. A user typing audience='hacker' got buyer-tier
+# briefs without any error signal. Now the API rejects unknown values with
+# HTTP 422 at the boundary; the engine's _normalize_audience still maps
+# accepted aliases (Arabic + 'valuator') to canonical names.
+_AUDIENCE_ACCEPTED = frozenset({
+    # canonical
+    'buyer', 'seller', 'investor', 'valuer',
+    # English aliases
+    'valuator',
+    # Arabic equivalents
+    'مشتري', 'بائع', 'مستثمر',
+    'مثمن', 'مثمّن', 'مُثمِّن',
+    'مقيم', 'مقيّم', 'مُقيِّم',
+})
+
+
+def _check_audience(v):
+    """Shared validator body used by both EvaluateRequest variants."""
+    if v is None:
+        return v
+    if not isinstance(v, str):
+        raise ValueError("audience must be a string")
+    # Match against the whitelist using both raw and normalized forms so
+    # English aliases ('VALUER', 'Valuator', etc.) survive case folding while
+    # Arabic strings (case-folding is a no-op) match directly.
+    if v in _AUDIENCE_ACCEPTED or v.strip().lower() in _AUDIENCE_ACCEPTED:
+        return v
+    raise ValueError(
+        "audience must be one of: buyer/seller/investor/valuer "
+        "(or Arabic مشتري/بائع/مستثمر/مثمن/مقيم). "
+        f"Got: {v!r}"
+    )
+
 
 class EvaluateRequest(BaseModel):
     zone: int
@@ -217,6 +252,12 @@ class EvaluateRequest(BaseModel):
     # engine derives total monthly rent when both are present.
     unit_count: Optional[int] = Field(default=None, gt=0, le=_UNIT_COUNT_MAX)
     avg_monthly_rent_per_unit: Optional[float] = Field(default=None, gt=0, lt=_PER_UNIT_RENT_MAX)
+
+    # Sprint 2.16.12 (B3) — reject unknown audience values at the boundary.
+    @field_validator('audience')
+    @classmethod
+    def _validate_audience(cls, v):
+        return _check_audience(v)
 
 
 class EvaluateDetailsRequest(BaseModel):
@@ -238,6 +279,12 @@ class EvaluateDetailsRequest(BaseModel):
     # Sprint 2.16.10 — tower/compound input clarity (see EvaluateRequest above).
     unit_count: Optional[int] = Field(default=None, gt=0, le=_UNIT_COUNT_MAX)
     avg_monthly_rent_per_unit: Optional[float] = Field(default=None, gt=0, lt=_PER_UNIT_RENT_MAX)
+
+    # Sprint 2.16.12 (B3) — reject unknown audience values at the boundary.
+    @field_validator('audience')
+    @classmethod
+    def _validate_audience(cls, v):
+        return _check_audience(v)
     # Sprint 2.2 — explicit building improvements (RICS Red Book "subject property" specs)
     basement: Optional[bool] = None       # سرداب — adds significant unrecorded value
     footprint_m2: Optional[float] = None  # ground-floor footprint estimate (overrides default)

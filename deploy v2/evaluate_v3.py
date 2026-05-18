@@ -69,11 +69,15 @@ try:
 except ImportError:
     _BRIEFS_AVAILABLE = False
 
-try:
-    from sales_merge import load_all_sales_xlsx, compute_trend_from_xlsx
-    _SALES_AVAILABLE = True
-except ImportError:
-    _SALES_AVAILABLE = False
+# Sprint 2.16.12 (B1) — removed dead import block:
+#     try:
+#         from sales_merge import load_all_sales_xlsx, compute_trend_from_xlsx
+#         _SALES_AVAILABLE = True
+#     except ImportError:
+#         _SALES_AVAILABLE = False
+# Neither imported function nor _SALES_AVAILABLE was referenced anywhere
+# in the codebase. sales_merge.py is left on disk for potential future
+# use, but the unused try/except is no longer pulled into the import path.
 
 
 # ============================================================
