@@ -39,8 +39,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p16p5-qars-endpoint-migration'
-SPRINT_TAG = '2.16.5'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p16p6-classifier-v2-subtype-aware'
+SPRINT_TAG = '2.16.6'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -2146,7 +2146,14 @@ def evaluate_thammen(
         if _loc:
             _plot = _gis_lite.get_plot(_loc.pin)
             if _plot:
-                _quick = classify_asset(_plot, None)
+                # Sprint 2.16.6: pass building_subtype from QARS_Point so the
+                # classifier can use the authoritative type label instead of
+                # area-based heuristic (fixes A1 — 15,881 polygons including
+                # Lusail/West Bay towers were misclassified as "palace").
+                _meta = None
+                if _loc and getattr(_loc, 'building_subtype', None) is not None:
+                    _meta = {'building_subtype': _loc.building_subtype}
+                _quick = classify_asset(_plot, _meta)
                 _qtype = _quick.asset_type.value
 
                 # ── Sprint A.3 GATE 1: out-of-scope rejection ──

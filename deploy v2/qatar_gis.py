@@ -460,8 +460,10 @@ def classify_asset(plot: PlotInfo, location_metadata=None) -> AssetClassificatio
     The output includes alternative classifications when confidence is low,
     so downstream code can ask the user to confirm.
 
-    location_metadata: optional dict with extra context (zone classification,
-    neighbor parcels, etc.). Currently unused — placeholder for v3.
+    location_metadata: optional dict with extra context.
+    Sprint 2.16.6: now consumes `building_subtype` (from QARS_Point) as the
+    primary classification signal when available. Falls back to the legacy
+    area-based heuristic when subtype is missing or unknown.
     """
     area = plot.pdarea
     pd_no = plot.pd_no
@@ -471,6 +473,55 @@ def classify_asset(plot: PlotInfo, location_metadata=None) -> AssetClassificatio
     reasons = []
     flags = []
     alternatives = []
+
+    # === Branch 0 (Sprint 2.16.6): BUILDING_NO_SUBTYPE from QARS_Point ===
+    # The new khazna QARS_Point service exposes the official building-type
+    # classification per QARS point. This is authoritative when present —
+    # it replaces the area-based heuristic that miscategorized ~15,881
+    # Qatar polygons (3K-10K m² → "palace") including all Lusail/West Bay
+    # towers and shopping complexes.
+    subtype = (location_metadata or {}).get('building_subtype')
+    if subtype is not None and subtype != 0:
+        # Map known subtype codes to AssetType. Subtypes not mapped here fall
+        # through to the area heuristic (defensive — never wrong-classify).
+        SUBTYPE_LABEL = {
+            1: "Villa/House", 2: "Compound with Villas",
+            3: "Compound with Villas and Flats", 4: "Shopping Complex",
+            5: "Building Under Construction", 6: "Building with Flats",
+            8: "Sports Club", 9: "Health Centre/Hospital", 10: "Masjid",
+            11: "Tower", 12: "Park", 13: "Commercial",
+            14: "IZBA", 15: "FARM", 16: "Desert House", 17: "Chalet",
+            18: "Stone Crusher", 19: "Metro", 99: "Others",
+        }
+        SUBTYPE_TO_ASSET = {
+            1:  AssetType.STANDALONE_VILLA,    # Villa/House
+            2:  AssetType.COMPOUND_SMALL,       # Compound w/ Villas — extent detection
+                                                # later can promote to COMPOUND_LARGE
+            3:  AssetType.COMPOUND_SMALL,       # Compound w/ Villas+Flats
+            4:  AssetType.COMMERCIAL,           # Shopping Complex
+            6:  AssetType.APARTMENT_BUILDING,   # Building with Flats
+            11: AssetType.TOWER,                # Tower (the A1 fix)
+            13: AssetType.COMMERCIAL,           # Commercial
+        }
+        asset_type = SUBTYPE_TO_ASSET.get(subtype)
+        if asset_type is not None:
+            label = SUBTYPE_LABEL.get(subtype, f'subtype={subtype}')
+            return AssetClassification(
+                asset_type=asset_type,
+                confidence='high',
+                reasons=[
+                    f'BUILDING_NO_SUBTYPE={subtype} ({label}) from QARS_Point',
+                    f'PDAREA {area:,.0f} m² recorded for reference',
+                ],
+                flags=[],
+                alternative_types=[],
+            )
+        # Subtype is known but not in the mapping (e.g. 5=Under Construction,
+        # 8=Sports Club, 14=IZBA, 15=FARM, 16=Desert House, 17=Chalet,
+        # 18=Stone Crusher, 19=Metro, 99=Others). Falling through to the
+        # area heuristic for these — they're rare and don't change the
+        # 99% case. May be enhanced in a future Sprint.
+
 
     # === Branch 1: very small plot ===
     if area < 200:
