@@ -517,11 +517,20 @@ function show(d){
   h+='<button class="copy-btn print-btn" onclick="printReport()" style="margin-right:8px">🖨️ طباعة / حفظ PDF</button>';
   h+='<div style="clear:both"></div>';
 
-  // ── Sprint 2.14.0: RICS VPS 5 Material Uncertainty Clause (FIRST, most prominent) ──
-  // Pulled from d.material_uncertainty if engine attached it (we'll look in
-  // brief sections or check engine-level field — for now check sections)
+  // ── Sprint 2.14.0 + 2.16.9: RICS VPS 5 Material Uncertainty Clause (FIRST, most prominent) ──
+  // Sprint 2.16.9 — read from d.material_uncertainty (canonical root, populated by
+  // Sprint 2.16.8 _enrich_material_uncertainty for ALL paths). Fall back to brief
+  // sections for backward compat with the villa path which has always written
+  // them there too. This keeps villa display intact while finally surfacing the
+  // MUC clause on tower / large compound / out-of-scope responses.
   let muc_ar=null, muc_basis=null, muc_review=null;
-  if(d.brief&&Array.isArray(d.brief.sections)){
+  const mu=d.material_uncertainty;
+  if(mu&&mu.muc_clause_ar){
+    muc_ar=mu.muc_clause_ar;
+    muc_basis=mu.muc_basis_ar;
+    muc_review=mu.muc_review_recommendation_ar;
+  }
+  if(!muc_ar&&d.brief&&Array.isArray(d.brief.sections)){
     const muSec=d.brief.sections.find(s=>s.id==='material_uncertainty');
     if(muSec&&muSec.content){
       muc_ar=muSec.content.muc_clause_ar;

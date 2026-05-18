@@ -39,8 +39,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p16p8-tower-ux-muc-clause'
-SPRINT_TAG = '2.16.8'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p16p9-muc-frontend-display'
+SPRINT_TAG = '2.16.9'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
