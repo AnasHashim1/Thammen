@@ -208,14 +208,14 @@ def _factor_zoning(lat: float, lon: float, purpose: str) -> Optional[Factor]:
 
     if weight == 0 and zoning not in weights:
         return Factor(
-            name='zoning', label_ar=f'تزوير {zoning}',
+            name='zoning', label_ar=f'تنظيم {zoning}',
             source='Vector/Zoning', direction='neutral',
             weight=0, detail=f'تصنيف {zoning} — لا يؤثر على التقييم'
         )
 
     direction = 'positive' if weight > 0 else ('negative' if weight < 0 else 'neutral')
     return Factor(
-        name='zoning', label_ar=f'تزوير {zoning}',
+        name='zoning', label_ar=f'تنظيم {zoning}',
         source='Vector/Zoning', direction=direction,
         weight=weight, detail=f'تصنيف {zoning}'
     )

@@ -21,7 +21,7 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # Rate limiting (slowapi)
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -185,11 +185,23 @@ except Exception:
 
 # ── Request Models ──
 
+# Sprint 2.16.7 — sanity bounds for monetary inputs (bug A3 + A4)
+# Rationale: 500M QAR ceiling covers every realistic Qatar property
+# (Lusail Marina Com-31 commercial tower at ~280M is near top of market).
+# Rental income capped at 10M QAR/month covers any conceivable single asset.
+_ASKING_PRICE_MAX = 500_000_000.0   # QAR
+_RENTAL_INCOME_MAX = 10_000_000.0   # QAR/month
+
+
 class EvaluateRequest(BaseModel):
     zone: int
     street: int
     building: int
     audience: Optional[str] = 'buyer'  # Sprint 1: now wired to backend
+    # Sprint 2.16.7 (bug B2): /api/evaluate now accepts the same listing/rental
+    # inputs as /api/evaluate/details, so single-shot callers get comparison logic.
+    asking_price: Optional[float] = Field(default=None, gt=0, lt=_ASKING_PRICE_MAX)
+    rental_income: Optional[float] = Field(default=None, ge=0, lt=_RENTAL_INCOME_MAX)
 
 
 class EvaluateDetailsRequest(BaseModel):
@@ -200,9 +212,14 @@ class EvaluateDetailsRequest(BaseModel):
     floors: Optional[int] = None          # ABOVE-GROUND floors: 1, 2, 3, 4 (basement is separate)
     annexes: Optional[int] = None         # 0, 1, 2, 3
     condition: Optional[str] = None       # 'new', 'good', 'maintenance', 'renovated'
-    asking_price: Optional[float] = None  # listing price (QAR)
-    rental_income: Optional[float] = None # monthly rental (QAR)
-    potential_rental: Optional[float] = None
+    # Sprint 2.16.7 (bug A3): asking_price must be strictly positive and below 500M QAR.
+    # Previously 0, -1_000_000, and 1 were all accepted silently.
+    asking_price: Optional[float] = Field(default=None, gt=0, lt=_ASKING_PRICE_MAX)
+    # Sprint 2.16.7 (bug A4): rental_income must be non-negative.
+    # Previously -1000 was stored verbatim while income_value was set to None
+    # (creating a half-rejected state visible to downstream consumers).
+    rental_income: Optional[float] = Field(default=None, ge=0, lt=_RENTAL_INCOME_MAX)
+    potential_rental: Optional[float] = Field(default=None, ge=0, lt=_RENTAL_INCOME_MAX)
     # Sprint 2.2 — explicit building improvements (RICS Red Book "subject property" specs)
     basement: Optional[bool] = None       # سرداب — adds significant unrecorded value
     footprint_m2: Optional[float] = None  # ground-floor footprint estimate (overrides default)
@@ -644,6 +661,10 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
                 building=req.building,
                 moj_csv_path=str(MOJ_CSV),
                 audience=req.audience or 'buyer',
+                # Sprint 2.16.7 (bug B2): wire through optional listing/rental
+                # so single-shot callers get comparison logic if they provide it.
+                listing_price=req.asking_price,
+                rental_income=req.rental_income,
                 use_listings=True,
                 use_geo_v2=True,
             )
