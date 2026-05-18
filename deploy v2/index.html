@@ -322,6 +322,31 @@ const ASSET_AR={'standalone_villa':'فيلا منفردة','raw_land':'أرض ف
 
 function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(n+'Screen').classList.add('active');window.scrollTo(0,0);if(n==='form')chk()}
 
+// Sprint 2.16.8 — go to form + focus a specific field (tower UX).
+// Used by the insufficient-data CTA so users land exactly where their next
+// required input lives (rentalIncome for towers, askingPrice for others).
+function goForm(focusId){
+  go('form');
+  if(!focusId)return;
+  // Wait one frame so the screen swap and chk() open the details section
+  // before we try to focus a field inside it.
+  setTimeout(function(){
+    var el=document.getElementById(focusId);
+    if(!el)return;
+    // Open the .det collapsible if it's still closed
+    var det=el.closest&&el.closest('.det');
+    if(det&&!det.classList.contains('open')){
+      var hdr=det.querySelector('.det-h');
+      if(hdr)hdr.click();
+    }
+    try{el.focus({preventScroll:false});el.scrollIntoView({block:'center',behavior:'smooth'});}catch(e){el.focus();}
+    // Brief highlight so the user sees where their attention should go
+    el.style.outline='2px solid var(--warn)';
+    el.style.outlineOffset='2px';
+    setTimeout(function(){el.style.outline='';el.style.outlineOffset='';},2500);
+  },50);
+}
+
 // Sprint 2.14.0 — Scope of Service modal
 function openScope(){
   document.getElementById('scopeModal').style.display='flex';
@@ -562,7 +587,13 @@ function show(d){
       }
       h+='</div>';
     }
-    h+='<button class="insuf-cta" onclick="go(\'form\')">→ أضف الإيجار أو سعر الإعلان</button>';
+    // Sprint 2.16.8 — dynamic CTA: surface service_scope.requires_user_input_ar
+    // when present (towers say "الإيجار السنوي الإجمالي للبرج") so the user
+    // knows exactly what input unlocks the valuation.
+    var ssReq=(d.service_scope&&d.service_scope.requires_user_input_ar)||null;
+    var ctaText=ssReq?('→ أدخل: '+ssReq):'→ أضف الإيجار أو سعر الإعلان';
+    var focusTarget=(d.asset_type==='tower'||d.asset_type==='compound_large'||(ssReq&&ssReq.indexOf('إيجار')>=0))?'rentalIncome':'askingPrice';
+    h+='<button class="insuf-cta" onclick="goForm(\''+focusTarget+'\')">'+ctaText+'</button>';
     h+='</div>';
     // For unknown/no district, that's where we stop. Don't render the rest.
     if(d.asset_type==='unknown'||!d.asset_type){o.innerHTML=h;return}

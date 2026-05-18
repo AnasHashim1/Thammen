@@ -39,8 +39,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p16p7-housekeeping-validators'
-SPRINT_TAG = '2.16.7'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p16p8-tower-ux-muc-clause'
+SPRINT_TAG = '2.16.8'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -1379,6 +1379,37 @@ def _enrich_fast_context(loc, plot):
     return {'district': district_ar, 'geometric_factors': gf}
 
 
+def _enrich_material_uncertainty(mu: dict) -> dict:
+    """Inject RICS VPS 5 MUC fields if not already present (Sprint 2.16.8).
+
+    The four `_build_fast_*` response builders below construct
+    `material_uncertainty` as an inline dict literal — bypassing the v3
+    path in `evaluate_v3.py:457-460` that auto-populates MUC fields for
+    standard villas. As a result, towers, out-of-scope assets, and other
+    fast-path responses produced material_uncertainty WITHOUT the formal
+    RICS VPS 5 muc_clause_ar/en/basis/review fields.
+
+    This helper closes the gap: it calls `regime_muc()` from
+    material_uncertainty.py (which has existed and been unused since
+    Sprint 2.14) and merges its output into the inline mu dict,
+    preserving any keys the caller explicitly set.
+
+    Returns the (possibly enriched) dict — never raises; on any failure
+    it returns the input unchanged so requests never fail on MUC
+    enrichment.
+    """
+    try:
+        from material_uncertainty import regime_muc
+        muc = regime_muc()
+        out = dict(mu)
+        for k, v in muc.items():
+            if v is not None and k not in out:
+                out[k] = v
+        return out
+    except Exception:
+        return mu
+
+
 def _build_fast_insufficient_data_response(zone, street, building, loc, plot, asset_type, audience):
     """Fast response for DCF-only assets when user provided no inputs.
 
@@ -1449,7 +1480,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         'trend': None,
         'location_features': None,
         'geometric_factors': _ctx['geometric_factors'],
-        'material_uncertainty': {
+        'material_uncertainty': _enrich_material_uncertainty({
             'level': 'critical',
             'banner_ar': 'تحفظ مادي حرج: لا توجد بيانات بيع مقارنة لهذه الفئة',
             'known_unknowns_ar': [
@@ -1459,7 +1490,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
                 'عدد الوحدات الفعلي',
             ],
             'rics_compliant': False,
-        },
+        }),
         'brief': {
             'audience': audience,
             'title_ar': f'تقرير {asset_label_ar} — تحتاج بيانات إضافية',
@@ -1571,7 +1602,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
         'trend': None,
         'location_features': None,
         'geometric_factors': _ctx['geometric_factors'],
-        'material_uncertainty': {
+        'material_uncertainty': _enrich_material_uncertainty({
             'level': 'high',
             'banner_ar': 'لا يوجد تقييم حقيقي — فقط فحص ضمني للسعر المطلوب',
             'known_unknowns_ar': [
@@ -1580,7 +1611,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
                 'حالة المبنى والصيانة',
             ],
             'rics_compliant': False,
-        },
+        }),
         'brief': {
             'audience': audience,
             'title_ar': f'فحص ضمني — {asset_label_ar}',
@@ -1810,7 +1841,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         'trend': None,
         'location_features': None,
         'geometric_factors': _ctx['geometric_factors'],
-        'material_uncertainty': {
+        'material_uncertainty': _enrich_material_uncertainty({
             'level': 'high',
             'banner_ar': (
                 'تحفظ مادي مرتفع: التقدير مبني على Cap Rate نموذجي + إيجار مُقدَّم من '
@@ -1823,7 +1854,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
                 'مستوى الإشغال الفعلي',
             ],
             'rics_compliant': False,
-        },
+        }),
         'brief': {
             'audience': audience,
             'title_ar': (
@@ -1899,7 +1930,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
         },
         'accuracy': {'score': 0, 'label': '— خارج النطاق'},
         'trend': None, 'location_features': None, 'geometric_factors': _ctx['geometric_factors'],
-        'material_uncertainty': {
+        'material_uncertainty': _enrich_material_uncertainty({
             'level': 'critical',
             'banner_ar': 'لا يمكن إنتاج تقييم موثوق لهذه الفئة في الإصدار الحالي',
             'known_unknowns_ar': [
@@ -1908,7 +1939,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
                 'منهجية متخصصة مطلوبة',
             ],
             'rics_compliant': False,
-        },
+        }),
         'brief': {
             'audience': audience,
             'title_ar': f'تقرير {asset_label_ar} — خارج النطاق',
