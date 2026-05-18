@@ -39,8 +39,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p16p10-tower-rental-split'
-SPRINT_TAG = '2.16.10'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p16p11-tower-sanity-carveout'
+SPRINT_TAG = '2.16.11'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -2018,7 +2018,14 @@ def _check_input_sanity(asset_type, listing_price, rental_income, plot_area):
         )
 
     # For DCF assets with rental: rent/m² sanity vs plot area
-    if (asset_type in ('compound_large', 'compound_small', 'tower', 'apartment_building')
+    # Sprint 2.16.11 — tower carve-out: plot_area for towers is NOT a
+    # proxy for usable BUA (20+ floors mean BUA ≈ 20× plot). The 60-800
+    # band that fits compounds produces false-positive warnings on towers.
+    # Example: Lusail B201 (3,378 m² plot, ~80 units × 12K rent = 960K/month
+    # → 3,552 QAR/m² of plot, but only ~178 QAR/m² of BUA — perfectly normal).
+    # Until the engine has a reliable BUA estimate (floors × footprint),
+    # we skip this specific check for towers. Other DCF assets keep it.
+    if (asset_type in ('compound_large', 'compound_small', 'apartment_building')
             and rental_income and plot_area and plot_area > 0):
         rent_per_m2 = (rental_income * 12) / plot_area  # annual rent per m² of plot
         # Typical compound: 80-400 QAR/m²/year. Below 60 = likely partial/single-unit rent.
