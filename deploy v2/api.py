@@ -21,7 +21,7 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # Rate limiting (slowapi)
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -238,6 +238,12 @@ def _check_audience(v):
 
 
 class EvaluateRequest(BaseModel):
+    # Sprint 2.16.15 (Bug A2): reject unknown fields with HTTP 422 instead of
+    # silently dropping them. A typo like `rental_inome` previously reached
+    # the engine as rental_income=None, producing an "insufficient data" fast
+    # path while the user believed their input was honored.
+    model_config = ConfigDict(extra='forbid')
+
     zone: int
     street: int
     building: int
@@ -261,6 +267,9 @@ class EvaluateRequest(BaseModel):
 
 
 class EvaluateDetailsRequest(BaseModel):
+    # Sprint 2.16.15 (Bug A2): same boundary tightening as EvaluateRequest.
+    model_config = ConfigDict(extra='forbid')
+
     zone: int
     street: int
     building: int
