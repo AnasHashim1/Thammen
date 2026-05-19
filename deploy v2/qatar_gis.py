@@ -451,6 +451,83 @@ def analyze_polygon_shape(polygon_2932) -> PolygonShape:
 # 5. ASSET CLASSIFIER
 # ============================================================
 
+# ─── Sprint 2.16.14: Bug A11 — Zoning cross-check helpers ───
+# Empirical context (2026-05-19 audit, 22 government/business landmarks):
+#   - 9.1% of GOVERNMENT-category landmarks have a residential-looking
+#     BUILDING_NO_SUBTYPE in QARS_Point (last surveyed 2010-2012) but
+#     sit in a clearly commercial zone today. Example: PIN 61050014
+#     (61/875/20, Public Works Authority) → subtype=6 (Flats) yet
+#     Zoning=CCC (Central Commercial Core).
+#   - 0% of BUSINESS or FINANCE landmarks had this issue.
+#   - Fix: emit a non-blocking flag downstream when a residential
+#     subtype (1/6/11) sits inside a clearly non-residential zone.
+#     We do NOT change asset_type — the user (or a domain expert)
+#     decides whether to re-evaluate as commercial.
+RESIDENTIAL_SUBTYPES_FOR_ZONING_CHECK = frozenset({1, 6, 11})  # Villa, ApartBldg, Tower
+_NON_RES_ZONING_TOKENS = frozenset({'CCC', 'COM', 'CF', 'SCZ', 'TU', 'LFR', 'LInd', 'IND'})
+
+
+def _is_non_residential_zone(zoning) -> bool:
+    """Detect zoning codes that contradict a residential subtype.
+
+    Confirmed non-residential single-token codes:
+        CCC  Central Commercial Core
+        COM  Commercial
+        CF   Community Facility
+        SCZ  Special Commercial Zone
+        TU   Tourism Use
+        LFR  Light Front Retail
+        LInd Light Industrial
+        IND  Industrial
+    Mixed-Use codes (`MU1 G+2`, `MU2 G+5`, `MU3 G+3`, etc.) lean commercial.
+    """
+    if not zoning:
+        return False
+    z = str(zoning).strip()
+    if z in _NON_RES_ZONING_TOKENS:
+        return True
+    if z.startswith('MU'):
+        return True
+    return False
+
+
+def _fetch_zoning_at_point(lat, lon, timeout: float = 4.0):
+    """Lightweight spatial query to Vector/Zoning/MapServer/0.
+
+    Returns the ZONING code (e.g. 'CCC', 'R1', 'MU2 G+5') or None.
+    Used as a defensive fallback inside classify_asset when callers
+    haven't pre-fetched the zoning. Safe to fail silently — the
+    cross-check just becomes a no-op when this returns None.
+    """
+    try:
+        import urllib.request, urllib.parse, json as _json
+        geom = _json.dumps({
+            'x': lon, 'y': lat,
+            'spatialReference': {'wkid': 4326},
+        })
+        params = {
+            'geometry': geom,
+            'geometryType': 'esriGeometryPoint',
+            'inSR': '4326',
+            'spatialRel': 'esriSpatialRelIntersects',
+            'outFields': 'ZONING',
+            'f': 'json',
+        }
+        url = (
+            'https://services.gisqatar.org.qa/server/rest/services/'
+            'Vector/Zoning/MapServer/0/query?' + urllib.parse.urlencode(params)
+        )
+        req = urllib.request.Request(url, headers={'User-Agent': 'Thammen/2.16.14'})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            data = _json.loads(r.read().decode('utf-8', errors='replace'))
+            feats = data.get('features') or []
+            if feats:
+                return (feats[0].get('attributes') or {}).get('ZONING')
+    except Exception:
+        pass
+    return None
+
+
 def classify_asset(plot: PlotInfo, location_metadata=None) -> AssetClassification:
     """
     Classify a plot into an AssetType based on geometric and metadata
@@ -506,15 +583,47 @@ def classify_asset(plot: PlotInfo, location_metadata=None) -> AssetClassificatio
         asset_type = SUBTYPE_TO_ASSET.get(subtype)
         if asset_type is not None:
             label = SUBTYPE_LABEL.get(subtype, f'subtype={subtype}')
+
+            # ─── Sprint 2.16.14: Bug A11 — Zoning cross-check ───
+            # QARS_Point's BUILDING_NO_SUBTYPE was last surveyed 2010-2012
+            # for most parcels. When a building has been converted to
+            # commercial/government use since then (example: PIN 61050014
+            # = Public Works Authority, subtype=6 "Flats", Zoning=CCC),
+            # the residential subtype is stale and misleading. We surface
+            # this as a non-blocking flag so the user can confirm.
+            _zon_flags = []
+            _meta_dict = location_metadata or {}
+            if subtype in RESIDENTIAL_SUBTYPES_FOR_ZONING_CHECK:
+                zoning_val = _meta_dict.get('zoning')
+                if zoning_val is None:
+                    # Caller didn't pre-fetch zoning — try a lightweight
+                    # spatial query as a defensive fallback. Skipped silently
+                    # if lat/lon missing or the GIS call fails.
+                    _lat = _meta_dict.get('lat')
+                    _lon = _meta_dict.get('lon')
+                    if _lat is not None and _lon is not None:
+                        zoning_val = _fetch_zoning_at_point(_lat, _lon)
+                if _is_non_residential_zone(zoning_val):
+                    _zon_flags.append(
+                        f'subtype_zoning_mismatch: QARS subtype={subtype} ({label}) '
+                        f'يقترح استخداماً سكنياً، لكن المنطقة منظَّمة كـ "{zoning_val}" '
+                        f'(غير سكني). بيانات QARS قديمة (آخر مسح غالباً 2010-2012). '
+                        f'تحقق من الاستخدام الفعلي قبل الاعتماد على هذا التصنيف.'
+                    )
+
             return AssetClassification(
                 asset_type=asset_type,
-                confidence='high',
+                # Downgrade confidence when there is a contradiction —
+                # downstream code can use this to pick the right brief.
+                confidence='medium' if _zon_flags else 'high',
                 reasons=[
                     f'BUILDING_NO_SUBTYPE={subtype} ({label}) from QARS_Point',
                     f'PDAREA {area:,.0f} m² recorded for reference',
                 ],
-                flags=[],
-                alternative_types=[],
+                flags=_zon_flags,
+                alternative_types=[
+                    AssetType.COMMERCIAL.value,
+                ] if _zon_flags else [],
             )
         # Subtype is known but not in the mapping (e.g. 5=Under Construction,
         # 8=Sports Club, 14=IZBA, 15=FARM, 16=Desert House, 17=Chalet,

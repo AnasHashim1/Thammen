@@ -39,8 +39,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p16p12-housekeeping-b1-b3'
-SPRINT_TAG = '2.16.12'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p16p14-zoning-cross-check'
+SPRINT_TAG = '2.16.14'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -2184,6 +2184,10 @@ def evaluate_thammen(
     _plot = None
     _loc = None
     _sanity_warnings = []
+    # Sprint 2.16.14 — scope-safe init: if the Lite GIS path fails before
+    # the classifier runs, the full villa pipeline still references this
+    # variable. Defaulting to None means "no mismatch detected".
+    _subtype_zoning_mismatch = None
 
     try:
         from qatar_gis import QatarGIS, classify_asset
@@ -2196,17 +2200,56 @@ def evaluate_thammen(
                 # classifier can use the authoritative type label instead of
                 # area-based heuristic (fixes A1 — 15,881 polygons including
                 # Lusail/West Bay towers were misclassified as "palace").
+                # Sprint 2.16.14: also pass lat/lon so the classifier can
+                # run a Zoning cross-check (Bug A11) — detects stale QARS
+                # subtypes for buildings whose use changed after 2012.
                 _meta = None
                 if _loc and getattr(_loc, 'building_subtype', None) is not None:
-                    _meta = {'building_subtype': _loc.building_subtype}
+                    _meta = {
+                        'building_subtype': _loc.building_subtype,
+                        'lat': getattr(_loc, 'lat', None),
+                        'lon': getattr(_loc, 'lon', None),
+                    }
                 _quick = classify_asset(_plot, _meta)
                 _qtype = _quick.asset_type.value
 
+                # ── Sprint 2.16.14: extract subtype/zoning mismatch flag (Bug A11) ──
+                # The classifier surfaces a contradiction when a residential
+                # subtype sits inside a non-residential zone (e.g. أشغال
+                # 61/875/20: subtype=6 "Flats" + Zoning=CCC). We turn that
+                # raw flag into a structured warning attached to the
+                # response root, mirroring the Sprint 2.16.8/9 MUC pattern.
+                # (`_subtype_zoning_mismatch` was initialized to None above
+                # the try-block for scope safety.)
+                for _flag_str in (_quick.flags or []):
+                    if isinstance(_flag_str, str) and _flag_str.startswith('subtype_zoning_mismatch:'):
+                        _msg_ar = _flag_str.split(':', 1)[1].strip()
+                        _subtype_zoning_mismatch = {
+                            'kind': 'subtype_zoning_mismatch',
+                            'message_ar': _msg_ar,
+                            'qars_subtype': _loc.building_subtype if _loc else None,
+                            'classified_as': _qtype,
+                            'recommendation_ar': (
+                                'تحقق من الاستخدام الفعلي للمبنى. لو كان تجارياً أو '
+                                'حكومياً (مكاتب/خدمات)، أعد التقييم باختيار "تجاري" '
+                                'في نوع العقار للحصول على منهجية تقييم صحيحة.'
+                            ),
+                            'data_age_note_ar': (
+                                'البيانات الأصلية لـ QARS_Point لمعظم القطع جاءت من '
+                                'مسوحات 2010-2012 — قد لا تعكس تحويلات الاستخدام اللاحقة.'
+                            ),
+                        }
+                        break
+
                 # ── Sprint A.3 GATE 1: out-of-scope rejection ──
                 if _qtype in V1_OUT_OF_SCOPE:
-                    return _build_out_of_scope_response(
+                    _oos_result = _build_out_of_scope_response(
                         zone, street, building, _loc, _plot, _qtype, audience,
                     )
+                    # Sprint 2.16.14 — attach Zoning cross-check flag if present
+                    if _subtype_zoning_mismatch:
+                        _oos_result['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
+                    return _oos_result
 
                 # ── Sprint A.3 GATE 2: input sanity (modifies rental_income if needed) ──
                 _sanity = _check_input_sanity(_qtype, listing_price, rental_income,
@@ -2252,6 +2295,9 @@ def evaluate_thammen(
                         # show "calculated from N units × Y" instead of just a total.
                         if _rent_source:
                             result['rent_source'] = _rent_source
+                        # Sprint 2.16.14 — attach Zoning cross-check flag
+                        if _subtype_zoning_mismatch:
+                            result['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
                         # Apply post-valuation sanity + accumulate pre-warnings
                         result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
                         _check_output_sanity(result, listing_price)
@@ -2262,6 +2308,9 @@ def evaluate_thammen(
                             zone, street, building, _loc, _plot, _qtype, audience,
                             listing_price,
                         )
+                        # Sprint 2.16.14 — attach Zoning cross-check flag
+                        if _subtype_zoning_mismatch:
+                            result['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
                         result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
                         return result
                     else:
@@ -2269,6 +2318,9 @@ def evaluate_thammen(
                         result = _build_fast_insufficient_data_response(
                             zone, street, building, _loc, _plot, _qtype, audience,
                         )
+                        # Sprint 2.16.14 — attach Zoning cross-check flag
+                        if _subtype_zoning_mismatch:
+                            result['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
                         result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
                         return result
 
@@ -2309,6 +2361,9 @@ def evaluate_thammen(
                         result = _build_fast_insufficient_data_response(
                             zone, street, building, _loc, _plot, _qtype, audience,
                         )
+                    # Sprint 2.16.14 — attach Zoning cross-check flag
+                    if _subtype_zoning_mismatch:
+                        result['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
                     # Add a warning explaining the routing decision
                     _sanity_warnings.append(
                         f'لا توجد مقارنة كافية في وزارة العدل لـ "{ASSET_TYPE_AR.get(_qtype, _qtype)}" '
@@ -2867,6 +2922,12 @@ def evaluate_thammen(
 
     # ── Sprint A.3: append accumulated sanity warnings + post-valuation checks ──
     output['sanity_warnings'] = _sanity_warnings + (output.get('sanity_warnings') or [])
+    # Sprint 2.16.14 — attach Zoning cross-check flag (Bug A11)
+    # The villa pipeline doesn't usually trigger this (subtype=1 in R1/R2/R3),
+    # but defense-in-depth: if classify_asset surfaced a contradiction for any
+    # reason, the full pipeline must propagate it too.
+    if _subtype_zoning_mismatch:
+        output['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
     _check_output_sanity(output, listing_price)
     return output
 

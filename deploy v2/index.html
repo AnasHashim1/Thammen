@@ -588,6 +588,28 @@ function show(d){
     h+='</div>';
   }
 
+  // ── Sprint 2.16.14: Bug A11 — Zoning/Subtype contradiction warning ──
+  // QARS_Point's BUILDING_NO_SUBTYPE was last surveyed 2010-2012 for most
+  // parcels. When a building was converted to commercial/government use
+  // after that, the residential subtype is stale. Example: PIN 61050014
+  // (61/875/20, Public Works Authority) → subtype=6 "Flats" yet
+  // Zoning=CCC. Empirical 2026-05-19 audit: 9.1% of GOVERNMENT-category
+  // landmarks affected. We surface a non-blocking flag so the user can
+  // confirm the actual use before relying on the residential classification.
+  const szm=d.subtype_zoning_mismatch;
+  if(szm&&szm.message_ar){
+    h+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
+    h+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem">⚠️ تناقض في تصنيف العقار</div>';
+    h+='<div style="line-height:1.7;font-size:.92rem">'+szm.message_ar+'</div>';
+    if(szm.data_age_note_ar){
+      h+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--warn);font-size:.85rem;color:var(--muted)"><strong>ملاحظة:</strong> '+szm.data_age_note_ar+'</div>';
+    }
+    if(szm.recommendation_ar){
+      h+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+szm.recommendation_ar+'</div>';
+    }
+    h+='</div>';
+  }
+
   // ── Sprint 2.14.0: Service Scope tier badge ──
   const ss=d.service_scope;
   if(ss){
