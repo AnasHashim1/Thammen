@@ -147,9 +147,10 @@ All non-blocking — production was safe — but accumulating and visible to use
 
 ## Deployment
 
-> **Not deployed in this session.** Awaiting explicit consent (Operational_Rules
-> #32). When approved, from `C:\Thammen` (NOT `C:\Thammen\deploy v2`) per
-> Operational_Rules #43 divergence procedure:
+> **Deployed 2026-05-20** with explicit consent. Commit `3b139fe`; subtree split
+> `430d02a`; Heroku **Released v77**; `/api/health` →
+> `thammen-sprint2p19p1-polish-and-fixes`. Procedure (from `C:\Thammen`, per
+> Operational_Rules #43):
 
 ```
 git subtree split --prefix "deploy v2" -b heroku-deploy-tmp
@@ -157,7 +158,8 @@ git push heroku heroku-deploy-tmp:master --force
 git branch -D heroku-deploy-tmp
 ```
 
-Wait ~60s for dyno restart.
+**Rollback target (2.19.0) on Heroku = `9808f28`** →
+`git push heroku 9808f28:master --force`.
 
 ## Verification curl
 

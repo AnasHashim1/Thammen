@@ -625,9 +625,14 @@ version/order-agnostic (feature checks retained). After 2.19.1 all 15 test files
 exit 0; new `tests/test_sprint_2p19p1_polish.py` adds 41 green checks. The brief's
 "140/140" was an older, narrower accounting.
 
-**Not deployed** — awaiting explicit consent (Operational_Rules #32).
+**Deployed** 2026-05-20 with explicit consent (commit `3b139fe` → subtree split
+`430d02a` → Heroku **Released v77**). `/api/health` confirms
+`thammen-sprint2p19p1-polish-and-fixes`; `outliers_rejected_total` field present
+(null until next recalibration). Heroku rollback target (2.19.0) = `9808f28`.
+Final browser JS check (Bou Hamour 56/565/21 cap_rate_provenance render) pending
+Anas's screenshot — node --check was unavailable locally.
 
 -----
 
-*Last updated: 2026-05-20 (after Sprint 2.19.1 — Polish & Fixes, built in Claude Code; not yet deployed)*
+*Last updated: 2026-05-20 (Sprint 2.19.1 — Polish & Fixes, deployed v77 from Claude Code; browser JS check pending)*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*
