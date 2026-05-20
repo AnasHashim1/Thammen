@@ -555,6 +555,7 @@ async def health():
             "size_mb": db_size_mb,
         },
         "moj_freshness": freshness_for_health(fresh) if fresh else None,
+        "calibration_freshness": _calibration_freshness(),
         "qars_endpoint": qars_health,
         "modules": {
             "evaluate_property_v2": True,
@@ -565,6 +566,48 @@ async def health():
             "rate_limit": RATE_LIMIT,
         },
         "timestamp": datetime.now().isoformat(),
+    }
+
+
+def _cap_rates_db_path() -> Path:
+    return Path(__file__).resolve().parent / "cap_rates.sqlite"
+
+
+def _calibration_freshness() -> dict:
+    """Sprint 2.19: summarize cap_rates.sqlite for /api/health (best-effort)."""
+    import sqlite3
+    db = _cap_rates_db_path()
+    if not db.exists():
+        return {"available": False, "reason": "cap_rates.sqlite not present"}
+    try:
+        conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        try:
+            rows = conn.execute(
+                "SELECT confidence, COUNT(*) FROM cap_rates GROUP BY confidence"
+            ).fetchall()
+            total = conn.execute(
+                "SELECT COUNT(*), MAX(last_updated) FROM cap_rates"
+            ).fetchone()
+        finally:
+            conn.close()
+    except Exception as e:
+        return {"available": False, "error": str(e)[:200]}
+    last_updated = total[1] if total else None
+    days_old = None
+    if last_updated:
+        try:
+            ts = datetime.fromisoformat(last_updated.replace("Z", "+00:00"))
+            now = datetime.now(ts.tzinfo) if ts.tzinfo else datetime.now()
+            days_old = (now - ts).days
+        except Exception:
+            pass
+    return {
+        "available": True,
+        "total_cells": total[0] if total else 0,
+        "by_confidence": {c: n for c, n in rows},
+        "last_updated": last_updated,
+        "days_old": days_old,
+        "stale": (days_old is not None and days_old > 30),
     }
 
 
@@ -629,6 +672,36 @@ async def freshness():
             "latest_record": None,
         }
     return freshness_for_homepage(fresh)
+
+
+@app.get("/api/calibration")
+async def calibration():
+    """Sprint 2.19: read-only view of the cap-rate calibration snapshot.
+
+    Returns the freshness summary plus up to 200 calibrated cells (reliable
+    first). No secrets — pure derived market parameters.
+    """
+    import sqlite3
+    fresh = _calibration_freshness()
+    if not fresh.get("available"):
+        return {"calibration": fresh, "rows": []}
+    db = _cap_rates_db_path()
+    try:
+        conn = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = [dict(r) for r in conn.execute(
+                "SELECT district_aname, asset_type, size_bracket, stock_class, "
+                "sample_size, median_monthly_rent_qar, median_rent_per_sqm, "
+                "gross_yield, net_yield, cap_rate, confidence, last_updated "
+                "FROM cap_rates "
+                "ORDER BY (confidence='reliable') DESC, sample_size DESC LIMIT 200"
+            ).fetchall()]
+        finally:
+            conn.close()
+    except Exception as e:
+        return {"calibration": fresh, "rows": [], "error": str(e)[:200]}
+    return {"calibration": fresh, "rows": rows}
 
 
 @app.get("/api/disclaimer")

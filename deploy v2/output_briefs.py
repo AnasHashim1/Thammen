@@ -110,6 +110,49 @@ def _base_brief(evaluation, uncertainty):
     }
 
 
+def build_cap_rate_provenance_section(provenance):
+    """Sprint 2.19: build a brief section describing where the cap rate came from.
+
+    `provenance` is the dict produced by evaluate_unified._lookup_calibrated_cap_rate
+    (source='calibrated') or the hardcoded fallback marker (source='hardcoded').
+    Returns a brief-section dict, or None when there is nothing to show.
+
+    Mirrors the Sprint 2.16.9 MUC pattern: the canonical response root
+    (`output['cap_rate_provenance']`) is authoritative; this section is a
+    human-readable echo for the audience brief.
+    """
+    if not provenance:
+        return None
+    source = provenance.get('source')
+    if source == 'calibrated':
+        body_ar = (
+            f"معدل الرسملة المستخدم ({provenance.get('cap_rate_pct')}%) "
+            f"معايَر تجريبياً من إيجارات السوق الحالية (PropertyFinder) منسوبةً إلى "
+            f"وسيط بيع وزارة العدل لنفس المنطقة والشريحة — "
+            f"عيّنة n={provenance.get('sample_size')}، "
+            f"مستوى الثقة: {provenance.get('confidence')}، "
+            f"آخر تحديث: {provenance.get('last_updated')}."
+        )
+    else:
+        body_ar = (
+            f"معدل الرسملة المستخدم ({provenance.get('cap_rate_pct')}%) معدل نموذجي "
+            f"(غير معايَر) — لا توجد بيانات إيجار/بيع كافية لهذه المنطقة والشريحة. "
+            f"{provenance.get('reason_ar', '')}"
+        ).strip()
+    return {
+        'id': 'cap_rate_provenance',
+        'title_ar': 'مصدر معدل الرسملة',
+        'content': {
+            'source': source,
+            'cap_rate_pct': provenance.get('cap_rate_pct'),
+            'sample_size': provenance.get('sample_size'),
+            'confidence': provenance.get('confidence'),
+            'last_updated': provenance.get('last_updated'),
+            'body_ar': body_ar,
+        },
+    }
+
+
 def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     """Buyer-focused: Is the price fair? What to negotiate?"""
     base = _base_brief(evaluation, uncertainty)

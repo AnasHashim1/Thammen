@@ -976,6 +976,57 @@ session log وتعيد محاولة الـ integration.
 - "تذكر Bug A11" → SECURITY_AUDIT
 - "تذكر #34" → Operational_Rules #34
 
+## 43. ⚠️ Heroku deploy = `git subtree push` (app lives in `deploy v2/` subdir)
+
+**Discovered**: 2026-05-20, Sprint 2.19 §8 git diagnosis. A `git push heroku
+master` "من جذر deploy v2/" was rejected. Root cause found by measurement, not
+guessing.
+
+**The structure** (verified 2026-05-20):
+- `git rev-parse --show-toplevel` → **`C:/Thammen`** (NOT `deploy v2`).
+- All Heroku-critical files (`Procfile`, `requirements.txt`, `runtime.txt`,
+  `api.py`, every engine module) are tracked under the **`deploy v2/`** prefix.
+- **Zero** tracked files at the repo root (`git ls-files | grep -vE "/"` empty).
+- Heroku buildpack = `heroku/python` **only**. No monorepo/subdir buildpack,
+  no `PROJECT_PATH`/`SUBDIR`/`MONOREPO` config var (verified via
+  `heroku buildpacks --app thammen-app-123` + `heroku config`).
+- `Procfile` = `web: uvicorn api:app ...` → expects `api.py` at the **slug root**.
+
+**Why plain push fails**: `git push heroku master` ships the whole `C:\Thammen`
+tree. The python buildpack looks for `requirements.txt` at the slug root, finds
+none (it's under `deploy v2/`), and **rejects the build**. This is exactly the
+2026-05-20 failure.
+
+**The mechanism that works** (the only one consistent with this structure — this
+is how Sprint 2.16.15 shipped):
+
+```
+git subtree push --prefix "deploy v2" heroku master
+```
+
+Fallback only if subtree push refuses on diverged history (destructive to the
+Heroku ref — confirm with Anas first per #32):
+```
+git push heroku `git subtree split --prefix "deploy v2" master`:refs/heads/master --force
+```
+
+**Key distinctions**:
+- **Commits** are normal full-tree commits at repo root (they carry the
+  `deploy v2/` prefix). Nothing special about committing.
+- Only the **push-to-Heroku** step needs the `--prefix`. GitHub backup
+  (`git push origin master`) uses the normal full push.
+- `deploy v2/deploy.sh` is **STALE** — an old DigitalOcean VPS guide
+  (systemd + nginx + certbot). It is NOT the Heroku mechanism. Do not follow it.
+- Push discipline #32 still fully applies: branch=master + §3 6-item checklist +
+  Sprint integrity + explicit consent BEFORE any push.
+
+**Read-only verification trio**:
+```
+git rev-parse --show-toplevel                # → C:/Thammen
+git ls-files | grep Procfile                 # → deploy v2/Procfile
+heroku buildpacks --app thammen-app-123      # → heroku/python only
+```
+
 -----
 
 *End of Operational Rules. 30 items migrated from session memory on
@@ -1007,5 +1058,9 @@ two-layer test pattern). Item #41 (Session-End Git Hygiene) PENDING — drill
 prompt truncated, placeholder left between #40 and #42. Item #42 added
 2026-05-19 same session (deferred-work documentation — record abandonment
 in docs with revival conditions, modeled on Project_Instructions §20.8
-Mthamen defer). When new operational invariants emerge in future Claude
-Code sessions, append them here.*
+Mthamen defer). Item #43 added 2026-05-20 during Sprint 2.19 §8 git diagnosis
+(Heroku deploy = `git subtree push --prefix "deploy v2"` because the repo root
+is `C:\Thammen` and the app lives in the `deploy v2/` subdir; plain
+`git push heroku master` is rejected by the python buildpack — no
+requirements.txt at slug root). When new operational invariants emerge in future
+Claude Code sessions, append them here.*
