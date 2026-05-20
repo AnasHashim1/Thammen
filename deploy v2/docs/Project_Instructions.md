@@ -333,6 +333,8 @@ heroku run python smoke_<endpoint>.py
 |2.16.12|v34|B1 + B3 housekeeping|
 |**2.16.14**|**v35**|**Zoning cross-check (Bug A11) — flag stale QARS subtypes**|
 |**2.16.15**|**v36**|**Pydantic extra='forbid' (Bug A2) — reject unknown fields at API boundary**|
+|**2.19**|**v37**|**Cap Rate Calibration v1 — villas + compounds from PropertyFinder rentals ÷ MoJ sale medians (Al-Ebb 4.7% reliable)**|
+|**2.19.1**|**v38**|**Polish & Fixes — Arabic provenance labels, villa 4% rationale, stratification null-guard (A12), rent/m² outlier guard (A13)**|
 |**Mthamen Analysis**|*standalone*|🆕 **2026-05-18 reverse engineering مكتمل. 2026-05-19 deferred indefinitely** — see §20.8|
 
 ### Deferred Sprints
@@ -444,7 +446,7 @@ propertyType: 1=villas, 5=apartments, 6=land
 
 ## 18. Known Bugs Catalogue (2026-05-19 evening)
 
-### 🟢 Resolved (13 bugs)
+### 🟢 Resolved (15 bugs)
 
 A1, A3, A4, A10, B1, B2, B3, Tower CTA, MUC display, Tower input, Tower sanity → Sprints 2.16.6–2.16.12
 
@@ -459,6 +461,16 @@ A1, A3, A4, A10, B1, B2, B3, Tower CTA, MUC display, Tower input, Tower sanity �
 - Fix: `model_config = ConfigDict(extra='forbid')` on both EvaluateRequest and EvaluateDetailsRequest
 - Now returns HTTP 422 with `type=extra_forbidden` and the bad field name in `loc[-1]`
 - Severity: Medium (no wrong value produced; the cost was methodological silence)
+
+**A12** (Stratification gap — villa cap-rate rows with no MoJ land median) → **Sprint 2.19.1** (CHANGELOG_v38, 2026-05-20)
+- Reference case: Pearl/Lqateefiya villa cells with large rent samples but `stock_class=null` (Pearl is reclaimed land — almost no raw-land sales to compute the villa/land ratio)
+- Fix: Rule E4 hard guard in `cap_rate_calibrator.py` — a villa cell with no land median is forced to `confidence='fallback'` (note `stratification_unavailable:no_moj_land_median`), so it can never silently promote to reliable/indicative
+- Severity: Medium (rows were already `fallback`; the risk was *future* silent promotion)
+
+**A13** (Rent/m² outliers reaching calibration) → **Sprint 2.19.1** (CHANGELOG_v38, 2026-05-20)
+- Reference case: Pearl 1500+ villa @ 0.67, معيذر compound @ 183.33, الخريطيات @ 101 (all n=1)
+- Fix: `is_plausible_listing()` rejects rent/m² outside [5, 200] QAR/m²/month before binning; rejections counted + persisted (`calibration_meta`) + surfaced in `/api/calibration`; `>10%` rate emits a WARN
+- Severity: Low (all n=1 → fallback; the value is preventing median contamination at scale)
 
 ### 🔴 Critical: لا توجد. ✅
 

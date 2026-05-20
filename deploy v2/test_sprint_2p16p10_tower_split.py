@@ -76,8 +76,9 @@ def verify_sync():
     with open('evaluate_unified.py', encoding='utf-8') as f:
         eu_src = f.read()
     for expected in [
-        "SPRINT_TAG = '2.16.10'",
-        'sprint2p16p10',
+        # Sprint 2.19.1: dropped stale '2.16.10' version-literal pins (fail by
+        # design after the version advances); feature markers below still verify
+        # the Sprint 2.16.10 code is present.
         'unit_count: Optional[int] = None',
         'avg_monthly_rent_per_unit: Optional[float] = None',
         '_rent_source = None',

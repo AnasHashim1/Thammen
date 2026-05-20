@@ -173,7 +173,6 @@ def test_sync():
     with open('api.py', encoding='utf-8') as f:
         api_src = f.read()
     for expected in [
-        'from pydantic import BaseModel, Field, field_validator',
         '_AUDIENCE_ACCEPTED = frozenset',
         'def _check_audience(v):',
         "@field_validator('audience')",
@@ -181,6 +180,16 @@ def test_sync():
     ]:
         if expected not in api_src:
             failures.append(f"  api.py: missing {expected!r}")
+
+    # Sprint 2.19.1: the exact pydantic import line is brittle (Sprint 2.16.15
+    # inserted ConfigDict into it). Check the needed symbols are imported,
+    # order- and extra-import-agnostic.
+    import re as _re
+    _imp = _re.search(r"from pydantic import ([^\n]+)", api_src)
+    _imported = _imp.group(1) if _imp else ""
+    for _sym in ("BaseModel", "Field", "field_validator"):
+        if _sym not in _imported:
+            failures.append(f"  api.py: pydantic import missing {_sym}")
 
     # The validator must appear twice (once per model)
     if api_src.count("@field_validator('audience')") != 2:
@@ -191,10 +200,13 @@ def test_sync():
 
     with open('evaluate_unified.py', encoding='utf-8') as f:
         eu_src = f.read()
-    if "SPRINT_TAG = '2.16.12'" not in eu_src:
-        failures.append("  evaluate_unified.py: SPRINT_TAG not bumped to 2.16.12")
-    if 'sprint2p16p12' not in eu_src:
-        failures.append("  evaluate_unified.py: ENGINE_VERSION not bumped")
+    # Sprint 2.19.1: relaxed stale '2.16.12' version-literal pins (fail by design
+    # once the version advances) to version-agnostic format checks.
+    import re as _re
+    if not _re.search(r"SPRINT_TAG\s*=\s*'\d+\.\d+", eu_src):
+        failures.append("  evaluate_unified.py: SPRINT_TAG missing/!sprint-format")
+    if not _re.search(r"ENGINE_VERSION\s*=\s*'thammen-sprint\d+p\d+", eu_src):
+        failures.append("  evaluate_unified.py: ENGINE_VERSION missing/!sprint-format")
 
     if failures:
         print("\u2717 SYNC FAILED:")

@@ -574,5 +574,60 @@ Anas can say any of these:
 
 -----
 
-*Last updated: 2026-05-19 evening (after Sprint 2.16.15 — Bug A2 / Pydantic extra='forbid' deployment, first Sprint shipped from Claude Code)*
+## 11. 🆕 2026-05-20 — Sprint 2.19 deploy + Sprint 2.19.1 polish
+
+### 11.1 Sprint 2.19 — Cap Rate Calibration v1 (deployed)
+
+Cap-rate calibration shipped: PropertyFinder *rentals* ÷ MoJ *sale* medians,
+stratified per Rule E4, written to `cap_rates.sqlite` (read-only snapshot the
+engine consults with silent fallback to hardcoded `CAP_RATES_BY_ASSET`). First
+**reliable** cell: **Al-Ebb villa 400-600 m² aging_stock @ 4.7%**. A follow-up
+fix gated cap-rate confidence on the *weaker* of the rental sample and the MoJ
+denominator (commit `74d2fdb`); this demoted a thin Pearl cell (3.31%) to
+fallback. Documented in `CHANGELOG_v37.md` (committed in `a06af56`/`74d2fdb`).
+
+### 11.2 Git deploy mechanism crystallized → Operational_Rules #43
+
+The repo root is `C:\Thammen`; the app lives under the `deploy v2/` prefix, so a
+plain `git push heroku master` is rejected (no `requirements.txt` at slug root).
+Deploy = `git subtree push --prefix "deploy v2" heroku master`. After repeated
+pushes the split commits **diverge** → use the `heroku-deploy-tmp` split + force
+procedure. Documented in Operational_Rules **#43** (expanded in Sprint 2.19.1 —
+the brief had called the divergence step "#44"; folded into #43 to avoid sprawl).
+
+### 11.3 Sprint 2.19.1 — Polish & Fixes (this session, Claude Code)
+
+A real report for villa **56/565/21 (Bou Hamour)** surfaced 6 polish issues:
+
+1. **Fix #1/#2** — Arabic labels + translated source/confidence in the
+   `cap_rate_provenance` brief section. Root leak was `index.html`'s generic
+   `prettify()` dump (not just `output_briefs.py`); fixed both with a dedicated
+   `case 'cap_rate_provenance'`.
+2. **Fix #3** — *investigation:* villa **4.0%** is intentional (owner-occupied
+   low yield; income approach is a cross-check, not the final value). The brief's
+   "villa=6.5%" premise was wrong (6.5% = apartment_building). Documented the
+   rationale; no rate change.
+3. **Fix #4 (A12)** — villa cells with no MoJ land median are hard-guarded to
+   `fallback` (Rule E4) to block silent promotion.
+4. **Fix #5 (A13)** — `is_plausible_listing()` rejects rent/m² outside [5, 200];
+   counter persisted in `calibration_meta` + surfaced in `/api/calibration`.
+   Ceiling kept at 200 (lowering would bias premium-area medians down).
+5. **Fix #6** — docs hygiene: #43 expansion, this Session-Log section,
+   Project_Instructions §11 + §18 (A12/A13).
+
+**Test reality (Rule #36):** the baseline was *not* green. Four Sprint test
+files (`2p16p8`, `2p16p10`, `2p16p11`, `2p16p12`) carried brittle assertions that
+pinned exact, frozen source strings — stale `SPRINT_TAG == '2.16.X'` literals
+(fail for every later Sprint) and one exact `from pydantic import ...` line that
+Sprint 2.16.15's `ConfigDict` broke. Their `tail` summaries printed "0 failed"
+while the process exited non-zero, so they were masked. All relaxed to be
+version/order-agnostic (feature checks retained). After 2.19.1 all 15 test files
+exit 0; new `tests/test_sprint_2p19p1_polish.py` adds 41 green checks. The brief's
+"140/140" was an older, narrower accounting.
+
+**Not deployed** — awaiting explicit consent (Operational_Rules #32).
+
+-----
+
+*Last updated: 2026-05-20 (after Sprint 2.19.1 — Polish & Fixes, built in Claude Code; not yet deployed)*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*

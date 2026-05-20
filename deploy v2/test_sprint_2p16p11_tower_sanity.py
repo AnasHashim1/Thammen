@@ -96,8 +96,13 @@ def main():
     check(has_correct_list, "source: tuple lists exactly compound_large/compound_small/apartment_building")
     check(has_no_tower_in_list, "source: 'tower' is NOT in the asset-type tuple")
     check("Sprint 2.16.11" in src, "source: Sprint 2.16.11 carve-out comment present")
-    check("SPRINT_TAG = '2.16.11'" in src, "source: SPRINT_TAG bumped to 2.16.11")
-    check("sprint2p16p11" in src, "source: ENGINE_VERSION bumped")
+    # Sprint 2.19.1: these previously pinned the literal '2.16.11' version, which
+    # fails for every later Sprint by design. Relaxed to verify the version
+    # constants exist and follow the sprint-tag format (version-agnostic).
+    check(bool(re.search(r"SPRINT_TAG\s*=\s*'\d+\.\d+", src)),
+          "source: SPRINT_TAG defined with sprint-tag format")
+    check(bool(re.search(r"ENGINE_VERSION\s*=\s*'thammen-sprint\d+p\d+", src)),
+          "source: ENGINE_VERSION defined with sprint format")
 
     print()
     print(f"Results: {passed} passed, {failed} failed")

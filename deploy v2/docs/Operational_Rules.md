@@ -1004,8 +1004,20 @@ is how Sprint 2.16.15 shipped):
 git subtree push --prefix "deploy v2" heroku master
 ```
 
-Fallback only if subtree push refuses on diverged history (destructive to the
-Heroku ref — confirm with Anas first per #32):
+**Divergence handling (added Sprint 2.19.1, 2026-05-20).** After repeated
+`git subtree push`, the synthetic split commits diverge from Heroku's ref and a
+plain `git subtree push` is *rejected* ("Updates were rejected"). This is a
+consequence of the subtree mechanism, not a separate topic — so it lives here in
+#43, not in a new rule (decision logged in CHANGELOG_v38 §"Decisions made"; the
+brief had called it "#44"). The recommended, self-cleaning procedure uses a
+named temporary branch + a force push (safe because Heroku is a *deployment
+target*, not a historical repo — confirm with Anas first per #32):
+```
+git subtree split --prefix "deploy v2" -b heroku-deploy-tmp
+git push heroku heroku-deploy-tmp:master --force
+git branch -D heroku-deploy-tmp
+```
+The older one-liner form is equivalent but leaves no temp branch to inspect:
 ```
 git push heroku `git subtree split --prefix "deploy v2" master`:refs/heads/master --force
 ```

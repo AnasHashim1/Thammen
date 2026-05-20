@@ -345,6 +345,10 @@ CREATE TABLE IF NOT EXISTS cap_rates (
 );
 CREATE INDEX IF NOT EXISTS idx_lookup
     ON cap_rates(district_aname, asset_type, size_bracket, stock_class);
+CREATE TABLE IF NOT EXISTS calibration_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
 """
 
 
@@ -416,8 +420,16 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
     aname_by_token = {}
     distno_by_token = {}
     skipped_no_gis = 0
+    outliers_rejected = 0
+    calibratable_seen = 0
     for L in listings:
         if L.get("asset_type") not in CALIBRATABLE:
+            continue
+        calibratable_seen += 1
+        # Sprint 2.19.1 (Fix #5): drop implausible rent/m² before it reaches a
+        # median (and before we spend a GIS call on garbage).
+        if not pf.is_plausible_listing(L):
+            outliers_rejected += 1
             continue
         dist_no, aname = fetch_gis_district(L["lat"], L["lon"], cache=gis_cache)
         if not aname:
@@ -430,7 +442,15 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
         if not bracket:
             continue
         cells[(tok, L["asset_type"], bracket)].append(L)
-    log(f"[bin] cells={len(cells)} skipped_no_gis={skipped_no_gis}")
+    rejection_rate = (outliers_rejected / calibratable_seen) if calibratable_seen else 0.0
+    log(f"[bin] cells={len(cells)} skipped_no_gis={skipped_no_gis} "
+        f"outliers_rejected={outliers_rejected}/{calibratable_seen} "
+        f"({rejection_rate*100:.1f}%)")
+    if rejection_rate > 0.10:
+        # Fix #5 guard: >10% rejection signals a parsing problem, not real
+        # outliers. Surface loudly so a human checks before trusting the run.
+        log(f"[WARN] outlier rejection rate {rejection_rate*100:.1f}% exceeds 10% "
+            f"— possible parsing problem (Sprint 2.19.1 brief §8).")
 
     rows_out = []
     for (tok, asset_type, bracket), cell_listings in sorted(cells.items()):
@@ -468,6 +488,15 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
             notes.append(f"moj_area={moj_area};moj_villa_n={v_n};eff_n={min(n, v_n)}")
             notes.append("rent=built_sqm;sale=plot_sqm")  # basis caveat
 
+        # Sprint 2.19.1 (Fix #4): Rule E4 requires villa stratification before a
+        # cap rate may be trusted. With no MoJ land median we cannot compute the
+        # stock class, so hard-guard the row to fallback regardless of sample size.
+        # This prevents a growing rental sample from silently promoting an
+        # unstratified villa cell to reliable/indicative (a silent Rule E4 breach).
+        if asset_type == "villa" and stock_class is None and confidence != "fallback":
+            confidence = "fallback"
+            notes.append("stratification_unavailable:no_moj_land_median")
+
         rows_out.append({
             "district_aname": aname_by_token.get(tok, tok),
             "district_dist_no": distno_by_token.get(tok),
@@ -487,13 +516,28 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
             "notes": "; ".join(notes) or None,
         })
 
+    # Sprint 2.19.1 (Fix #5): persist run-level counters so /api/calibration can
+    # surface outliers_rejected_total without re-crawling.
+    meta = {
+        "outliers_rejected_total": str(outliers_rejected),
+        "calibratable_listings_seen": str(calibratable_seen),
+        "outlier_rejection_rate": f"{rejection_rate:.4f}",
+        "last_updated": now_iso,
+    }
+
     # Write (idempotent: drop + recreate so reruns don't accumulate)
     conn = sqlite3.connect(db_path)
     try:
         conn.execute("DROP TABLE IF EXISTS cap_rates")
+        conn.execute("DROP TABLE IF EXISTS calibration_meta")
         ensure_schema(conn)
         for r in rows_out:
             insert_row(conn, r)
+        for k, v in meta.items():
+            conn.execute(
+                "INSERT OR REPLACE INTO calibration_meta(key, value) VALUES (?, ?)",
+                (k, v),
+            )
         conn.commit()
     finally:
         conn.close()
@@ -503,6 +547,9 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
         "reliable": sum(1 for r in rows_out if r["confidence"] == "reliable"),
         "indicative": sum(1 for r in rows_out if r["confidence"] == "indicative"),
         "fallback": sum(1 for r in rows_out if r["confidence"] == "fallback"),
+        "outliers_rejected_total": outliers_rejected,
+        "calibratable_listings_seen": calibratable_seen,
+        "outlier_rejection_rate": round(rejection_rate, 4),
         "db_path": db_path,
         "last_updated": now_iso,
     }

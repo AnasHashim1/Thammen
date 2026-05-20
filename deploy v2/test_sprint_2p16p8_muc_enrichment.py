@@ -57,14 +57,19 @@ def verify_wraps(src):
 
 
 def verify_version_bump(src):
-    """Confirm engine version tags are bumped to 2.16.8."""
-    if "SPRINT_TAG = '2.16.8'" not in src:
-        print("\u2717 SPRINT_TAG not bumped to '2.16.8'")
+    """Confirm engine version constants exist in sprint-tag format.
+
+    Sprint 2.19.1: relaxed from the stale literal '2.16.8' pin (which fails by
+    design once the version advances) to a version-agnostic format check.
+    """
+    import re as _re
+    if not _re.search(r"SPRINT_TAG\s*=\s*'\d+\.\d+", src):
+        print("\u2717 SPRINT_TAG missing or not in sprint-tag format")
         return False
-    if 'sprint2p16p8' not in src:
-        print("\u2717 ENGINE_VERSION not bumped to sprint2p16p8")
+    if not _re.search(r"ENGINE_VERSION\s*=\s*'thammen-sprint\d+p\d+", src):
+        print("\u2717 ENGINE_VERSION missing or not in sprint format")
         return False
-    print("\u2713 version bumped to 2.16.8")
+    print("\u2713 version constants present in sprint format")
     return True
 
 

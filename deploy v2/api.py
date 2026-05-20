@@ -588,6 +588,17 @@ def _calibration_freshness() -> dict:
             total = conn.execute(
                 "SELECT COUNT(*), MAX(last_updated) FROM cap_rates"
             ).fetchone()
+            # Sprint 2.19.1 (Fix #5): run-level counters (best-effort; the table
+            # is absent on snapshots built before this Sprint).
+            meta = {}
+            try:
+                meta = {
+                    k: v for k, v in conn.execute(
+                        "SELECT key, value FROM calibration_meta"
+                    ).fetchall()
+                }
+            except Exception:
+                meta = {}
         finally:
             conn.close()
     except Exception as e:
@@ -601,6 +612,18 @@ def _calibration_freshness() -> dict:
             days_old = (now - ts).days
         except Exception:
             pass
+    def _as_int(x):
+        try:
+            return int(x)
+        except (TypeError, ValueError):
+            return None
+
+    def _as_float(x):
+        try:
+            return float(x)
+        except (TypeError, ValueError):
+            return None
+
     return {
         "available": True,
         "total_cells": total[0] if total else 0,
@@ -608,6 +631,10 @@ def _calibration_freshness() -> dict:
         "last_updated": last_updated,
         "days_old": days_old,
         "stale": (days_old is not None and days_old > 30),
+        # Sprint 2.19.1 (Fix #5): None when the snapshot predates the counter.
+        "outliers_rejected_total": _as_int(meta.get("outliers_rejected_total")),
+        "calibratable_listings_seen": _as_int(meta.get("calibratable_listings_seen")),
+        "outlier_rejection_rate": _as_float(meta.get("outlier_rejection_rate")),
     }
 
 

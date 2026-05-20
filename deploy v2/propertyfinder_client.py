@@ -50,6 +50,33 @@ RENT_CATEGORY_URLS = {
 QATAR_LAT_MIN, QATAR_LAT_MAX = 24.4, 26.2
 QATAR_LON_MIN, QATAR_LON_MAX = 50.7, 51.7
 
+# Sprint 2.19.1 (Fix #5): plausible monthly rent per built m². Observed Sprint
+# 2.19 outliers that slipped through: Pearl 1500+ villa @ 0.67 (size/price unit
+# mismatch -> impossibly low); معيذر compound @ 183 and الخريطيات @ 101 (likely a
+# yearly figure mis-tagged as monthly, or a parsing error). Pearl penthouses top
+# out around ~150 QAR/m²/month, so [5, 200] is a generous but firm sanity band.
+# These are floors/ceilings, not market parameters — they only reject garbage.
+RENT_PER_SQM_MIN = 5     # QAR/m²/month — absolute floor
+RENT_PER_SQM_MAX = 200   # QAR/m²/month — absolute ceiling
+
+
+def is_plausible_listing(listing):
+    """True if a normalized listing's rent/m² is within the sanity band.
+
+    Defensive: a listing missing ``rent_per_sqm`` (or with a non-positive size)
+    is treated as implausible. Used by the calibrator to drop garbage before it
+    contaminates medians (Fix #5).
+    """
+    if not listing:
+        return False
+    rps = listing.get("rent_per_sqm")
+    if rps is None:
+        mr_, sz = listing.get("monthly_rent"), listing.get("size_sqm")
+        if not sz:
+            return False
+        rps = mr_ / sz
+    return RENT_PER_SQM_MIN <= rps <= RENT_PER_SQM_MAX
+
 # PropertyFinder property_type -> Thammen asset_type. Anything not mapped here
 # is returned as asset_type=None and dropped by the calibrator (logged).
 PROPERTY_TYPE_TO_ASSET = {

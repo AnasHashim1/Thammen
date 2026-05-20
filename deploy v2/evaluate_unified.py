@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p19p0-cap-rate-calibration'
-SPRINT_TAG = '2.19.0'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p19p1-polish-and-fixes'
+SPRINT_TAG = '2.19.1'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -947,12 +947,28 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
     if calib_rate:
         cap_rate = calib_rate
     else:
+        at_norm = (asset_type or '').lower()
+        # Sprint 2.19.1 (Fix #3): the villa hardcoded rate is 4.0% BY DESIGN, not a
+        # bug and not a 10-Year-Rule land switch. Owner-occupied villas trade at low
+        # yields because location/lifestyle dominate price over rent; the income
+        # approach for a villa is a methodological cross-check that does not drive
+        # the final value. Spell that out so the user does not read 4% as an error.
+        if at_norm in ('villa', 'standalone_villa'):
+            reason_ar = (
+                'الفيلات السكنية سكن مالكي، عائدها الإيجاري منخفض لأن الموقع ونمط '
+                'الحياة يغلبان على الإيجار في تسعيرها — لذا يُستخدم معدل رسملة '
+                'افتراضي منخفض (4%). طريقة الدخل هنا تأكيد منهجي ولا تدخل القيمة '
+                'النهائية لعقار سكني.'
+            )
+        else:
+            reason_ar = 'لا يوجد معدل معايَر مطابق لهذه المنطقة/الشريحة — معدل نموذجي'
         cap_provenance = {
             'source': 'hardcoded',
             'cap_rate': cap_rate,
             'cap_rate_pct': round(cap_rate * 100, 2),
             'confidence': 'fallback',
-            'reason_ar': 'لا يوجد معدل معايَر مطابق لهذه المنطقة/الشريحة — معدل نموذجي',
+            'asset_type': at_norm,
+            'reason_ar': reason_ar,
         }
 
     annual_rent = None

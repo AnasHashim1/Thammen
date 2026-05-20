@@ -1028,7 +1028,7 @@ function show(d){
 }
 
 // Sprint D: Section renderer for brief.sections
-const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘'};
+const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹'};
 function pctFmt(n){return n==null?'—':Number(n).toFixed(2)+'%'}
 function qarFmt(n){return n==null?'—':fmt(n)+' ر.ق'}
 function renderSection(sec){
@@ -1247,6 +1247,18 @@ function renderSection(sec){
           val.forEach(it=>{body+='<li>'+it+'</li>'});body+='</ul>';
         }
       });
+      break;
+    case 'cap_rate_provenance':
+      // Sprint 2.19.1 (Fixes #1+#2): render Arabic labels + translated values
+      // instead of letting the generic dump leak English schema field names.
+      const srcAr=c.source_ar||(c.source==='calibrated'?'مُعايَر من بيانات السوق':'معدل افتراضي (غير مُعايَر)');
+      const confAr=c.confidence_ar||(c.confidence==='reliable'?'موثوقة':c.confidence==='indicative'?'إرشادية':c.confidence==='fallback'?'غير كافية — استُخدم معدل افتراضي':c.confidence);
+      body+=row('المصدر',srcAr,c.source==='calibrated'?'pos':'');
+      if(c.cap_rate_pct!=null)body+=row('نسبة الرسملة',pctFmt(c.cap_rate_pct));
+      body+=row('درجة الثقة',confAr,c.confidence==='reliable'?'pos':c.confidence==='fallback'?'neg':'');
+      if(c.sample_size!=null)body+=row('حجم العيّنة',c.sample_size+' إعلان');
+      if(c.last_updated)body+=row('آخر تحديث',String(c.last_updated).slice(0,10));
+      if(c.body_ar)body+='<div class="br-note" style="margin-top:10px">'+c.body_ar+'</div>';
       break;
     default:
       // Fallback: generic key/value dump

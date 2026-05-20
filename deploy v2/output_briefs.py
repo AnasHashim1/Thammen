@@ -110,6 +110,20 @@ def _base_brief(evaluation, uncertainty):
     }
 
 
+# Sprint 2.19.1 (Fixes #1 + #2): Arabic display strings for provenance values.
+# The SQLite snapshot and API JSON keep English machine values for backward
+# compatibility; ONLY the user-facing brief renders these translations.
+_PROVENANCE_SOURCE_AR = {
+    'calibrated': 'مُعايَر من بيانات السوق',
+    'hardcoded': 'معدل افتراضي (غير مُعايَر)',
+}
+_PROVENANCE_CONFIDENCE_AR = {
+    'reliable': 'موثوقة',
+    'indicative': 'إرشادية',
+    'fallback': 'غير كافية — استُخدم معدل افتراضي',
+}
+
+
 def build_cap_rate_provenance_section(provenance):
     """Sprint 2.19: build a brief section describing where the cap rate came from.
 
@@ -120,10 +134,15 @@ def build_cap_rate_provenance_section(provenance):
     Mirrors the Sprint 2.16.9 MUC pattern: the canonical response root
     (`output['cap_rate_provenance']`) is authoritative; this section is a
     human-readable echo for the audience brief.
+
+    Sprint 2.19.1 (Fixes #1 + #2): the content now carries Arabic display labels
+    (`source_ar`, `confidence_ar`) so the frontend renders Arabic instead of raw
+    schema field names. English `source`/`confidence` are retained for machines.
     """
     if not provenance:
         return None
     source = provenance.get('source')
+    confidence = provenance.get('confidence')
     if source == 'calibrated':
         body_ar = (
             f"معدل الرسملة المستخدم ({provenance.get('cap_rate_pct')}%) "
@@ -143,11 +162,15 @@ def build_cap_rate_provenance_section(provenance):
         'id': 'cap_rate_provenance',
         'title_ar': 'مصدر معدل الرسملة',
         'content': {
+            # Machine-readable (English) — kept for backward compatibility.
             'source': source,
+            'confidence': confidence,
             'cap_rate_pct': provenance.get('cap_rate_pct'),
             'sample_size': provenance.get('sample_size'),
-            'confidence': provenance.get('confidence'),
             'last_updated': provenance.get('last_updated'),
+            # Arabic display strings (Sprint 2.19.1) — what the brief renders.
+            'source_ar': _PROVENANCE_SOURCE_AR.get(source, source),
+            'confidence_ar': _PROVENANCE_CONFIDENCE_AR.get(confidence, confidence),
             'body_ar': body_ar,
         },
     }
