@@ -1,0 +1,5 @@
+.claude/
+*.bak_*
+/tmp/
+__pycache__/
+*.pyc
