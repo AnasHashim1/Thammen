@@ -74,6 +74,10 @@ GIS_DISTRICTS_URL = (
 # Reliability gate (brief §4 confidence column).
 N_RELIABLE = 20
 N_INDICATIVE = 10
+# A cap rate is a RATIO: rent/sqm ÷ MoJ-sale/sqm. It is only as trustworthy as
+# its WEAKER input. The MoJ sale-median denominator below this many transactions
+# is statistically insufficient (project sample-size discipline: <5 = "no median").
+MIN_DENOMINATOR_N = 5
 
 # Brief size-bracket labels (note '1500+' vs MoJ key '1500-99999').
 SIZE_BRACKETS = [(0, 400), (400, 600), (600, 900), (900, 1500), (1500, 10 ** 9)]
@@ -204,6 +208,16 @@ def area_token(name):
     return s.strip()
 
 
+def _zone_num(name):
+    """Extract a trailing zone number from a district name, else None.
+
+    Used to prevent cross-zone contamination: 'المعمورة 56' rentals must not be
+    priced against 'المعمورة 43' sales — different zones, different price levels.
+    """
+    m = re.search(r"(\d+)\s*$", _strip_ar(name or ""))
+    return int(m.group(1)) if m else None
+
+
 # --------------------------------------------------------------------------
 # GIS district resolution
 # --------------------------------------------------------------------------
@@ -278,11 +292,21 @@ class MojSaleIndex:
             )
         return self._ref_cache[moj_area]
 
-    def villa_and_land_median(self, token, bracket_label):
-        """Return (villa_per_m2, land_per_m2, villa_n, moj_area) for a token."""
+    def villa_and_land_median(self, token, bracket_label, gis_aname=None):
+        """Return (villa_per_m2, land_per_m2, villa_n, moj_area) for a token.
+
+        When `gis_aname` carries an explicit zone number, MoJ areas with a
+        DIFFERENT explicit zone are skipped (cross-zone contamination guard);
+        zone-less MoJ areas remain eligible.
+        """
         bkey = _moj_bracket_key(bracket_label)
+        gis_zone = _zone_num(gis_aname) if gis_aname else None
         best = (None, None, 0, None)
         for moj_area in self.areas_for_token(token):
+            if gis_zone is not None:
+                mz = _zone_num(moj_area)
+                if mz is not None and mz != gis_zone:
+                    continue  # different zone — skip
             ref = self._reference(moj_area)
             cats = ref.get("categories", {})
             vb = cats.get("villa", {}).get("size_brackets", {}).get(bkey)
@@ -414,7 +438,9 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
         med_rent = median([L["monthly_rent"] for L in cell_listings])
         med_rent_sqm = median([L["rent_per_sqm"] for L in cell_listings])
 
-        v_med, l_med, v_n, moj_area = moj_index.villa_and_land_median(tok, bracket)
+        gis_aname = aname_by_token.get(tok, tok)
+        v_med, l_med, v_n, moj_area = moj_index.villa_and_land_median(
+            tok, bracket, gis_aname=gis_aname)
         stock_class = None
         notes = []
         if asset_type == "villa":
@@ -428,10 +454,18 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
             notes.append("no_moj_sale_comparable")
             confidence = "fallback"
             cap_rate = None
-        else:
-            confidence = confidence_for_n(n)
+        elif v_n < MIN_DENOMINATOR_N:
+            # A median from <5 sales is not a usable denominator. Keep the
+            # computed rate for transparency but mark it unusable.
+            notes.append(f"moj_area={moj_area};moj_villa_n={v_n};denominator_insufficient")
+            confidence = "fallback"
             cap_rate = net
-            notes.append(f"moj_area={moj_area};moj_villa_n={v_n}")
+        else:
+            # Confidence is governed by the WEAKER of the rental sample and the
+            # MoJ sale sample — a ratio is only as reliable as its weaker input.
+            confidence = confidence_for_n(min(n, v_n))
+            cap_rate = net
+            notes.append(f"moj_area={moj_area};moj_villa_n={v_n};eff_n={min(n, v_n)}")
             notes.append("rent=built_sqm;sale=plot_sqm")  # basis caveat
 
         rows_out.append({

@@ -115,36 +115,55 @@ original hardcoded cap rate, transparently, with
    (ANAME token), not by a pre-declared district list — more robust and fully
    honors §2 (GIS authoritative).
 5. **`/api/calibration` endpoint = YES** (read-only), per brief §13.
+6. **Confidence is governed by the WEAKER of the two samples.** A cap rate is a
+   ratio (rent/m² ÷ MoJ-sale/m²); it is only as reliable as its weaker input.
+   `confidence = confidence_for_n(min(rent_n, moj_sale_n))`, and any cell whose
+   MoJ sale denominator has `< 5` transactions is forced to `fallback`
+   (`denominator_insufficient`). This caught — pre-deploy — several cells that
+   looked "reliable" on rentals alone but were divided by 2–4 sales (Pearl,
+   عين خالد). A cross-zone contamination guard (`_zone_num`) also prevents
+   pricing one zone's rentals against another zone's sales (e.g. المعمورة 56
+   rentals had matched المعمورة 43 sales). Without these gates the engine would
+   have shipped a distorted 3.31% Pearl "reliable" rate.
 
 ---
 
 ## Verification — empirical evidence
 
-First full calibration run (2026-05-20, 600 villa rentals + 21 compounds,
-GIS-resolved 100%, 0 skipped):
+First full calibration run (2026-05-20, ~600 villa rentals + ~21 compounds,
+GIS-resolved 100%, 0 skipped). Confidence is governed by the **weaker** of the
+rental sample and the MoJ sale-median denominator (see Decision 6):
 
 ```
-total cells : 126
-reliable    :   4   (n ≥ 20)
-indicative  :   4   (10–19)
-fallback    : 118   (n < 10 or no MoJ sale comparable)
+total cells : 125
+reliable    :   1   (eff_n ≥ 20, both inputs)
+indicative  :   2   (eff_n 10–19)
+fallback    : 122   (thin denominator, thin rentals, or no MoJ comparable)
 ```
 
-Reliable villa cap rates (calibrated, replace the flat 4% assumption):
+Usable calibrated villa cap rates (replace the flat 4% / 6% assumptions):
 
-| District       | Bracket | n  | gross | net / cap_rate |
-|----------------|---------|----|-------|----------------|
-| عين خالد       | 0-400   | 26 | 8.12% | **6.49%**      |
-| العب           | 400-600 | 36 | 5.88% | **4.70%**      |
-| المعمورة       | 0-400   | 27 | 9.45% | **7.56%**      |
-| جزيرة اللؤلؤة  | 600-900 | 32 | 4.14% | **3.31%**      |
+| District       | Bracket | rent_n | moj_sale_n | net / cap_rate | confidence |
+|----------------|---------|--------|-----------|----------------|------------|
+| العب           | 400-600 | 35     | 31        | **4.70%**      | reliable   |
+| المعمورة 56    | 400-600 | 13     | 18        | **5.90%**      | indicative |
+| الغرافة        | 0-400   | 13     | 12        | **9.38%**      | indicative |
 
-The Pearl (جزيرة اللؤلؤة) villa cap rate of 3.31% is correctly low for a luxury
-location; عين خالد at 6.49% is a solid investment yield — both match Qatar net-
-yield benchmarks (5–6% normal, <4% weak/luxury).
+The العب reliable cell is robust on BOTH sides (35 rentals, 31 MoJ sales) and
+its 4.70% net yield sits in the normal Qatar band.
+
+**Cells correctly demoted to `fallback` by the denominator gate** (their cap
+rate is computed and stored for transparency but NOT used by the engine):
+- جزيرة اللؤلؤة (Pearl) 600-900 villa — rent_n=32 but MoJ sale n=**4**
+  (insufficient). The 3.31% it would have produced is a thin-denominator
+  artifact, not a trustworthy luxury-villa yield.
+- عين خالد 0-400 villa — rent_n=26 but MoJ sale n=**2**.
+- المعمورة 0-400 villa — MoJ sale n=3 AND a zone mismatch (now fixed).
 
 Production lookup confirmed against the committed DB:
-`_lookup_calibrated_cap_rate('villa', 'عين خالد', 350)` → `0.06494` (reliable, n=26).
+- `_lookup_calibrated_cap_rate('villa', 'العب', 520)` → `0.047` (reliable).
+- `_lookup_calibrated_cap_rate('villa', 'عين خالد', 350)` → `None`
+  (denominator insufficient → engine uses hardcoded fallback).
 
 ### Tests
 
@@ -195,7 +214,7 @@ findstr /C:"cap_rate_provenance" out.json
 ```
 
 Post-deploy smoke (3 diverse addresses, NOT 51/835/17 per Bug A6):
-- a villa in a calibrated district (عين خالد) → `cap_rate_provenance.source = calibrated`
+- a villa in the calibrated district العب (400-600) → `cap_rate_provenance.source = calibrated` (~4.7%)
 - a Lusail tower → `cap_rate_provenance.source = hardcoded` (apartments/towers deferred)
 - a third diverse address → 200, no regression
 
