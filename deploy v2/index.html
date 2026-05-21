@@ -1028,7 +1028,7 @@ function show(d){
 }
 
 // Sprint D: Section renderer for brief.sections
-const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹'};
+const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮'};
 function pctFmt(n){return n==null?'—':Number(n).toFixed(2)+'%'}
 function qarFmt(n){return n==null?'—':fmt(n)+' ر.ق'}
 function renderSection(sec){
@@ -1247,6 +1247,26 @@ function renderSection(sec){
           val.forEach(it=>{body+='<li>'+it+'</li>'});body+='</ul>';
         }
       });
+      break;
+    case 'comparable_grid':
+      // Sprint 2.20: RICS land comparable grid (time-only). Mobile card-per-comparable.
+      body+=row('الوسيط المعدّل (ر.ق/م²)',c.adjusted_median_per_m2!=null?fmt(c.adjusted_median_per_m2):'—','hl');
+      body+=row('عدد المقارنات',(c.n||'—')+(c.n?' صفقة':''));
+      body+=row('الموثوقية',c.confidence_ar||c.confidence,c.confidence==='reliable'?'pos':c.confidence==='fallback'?'neg':'');
+      if(c.valuation_date)body+=row('تاريخ التقييم',c.valuation_date);
+      if(c.detail==='full'&&Array.isArray(c.comparables)&&c.comparables.length){
+        body+='<div style="margin-top:8px;font-weight:600">المقارنات (مُطبَّعة زمنياً):</div>';
+        c.comparables.forEach(cp=>{
+          const t=cp.time_pct!=null?((cp.time_pct>0?'+':'')+Number(cp.time_pct).toFixed(1)+'%'):'—';
+          body+='<div class="br-cell" style="display:block;text-align:right;margin-top:6px"><div class="br-cap">'+(cp.date||'')+(cp.size_m2?(' · '+Math.round(cp.size_m2)+' م²'):'')+'</div><div class="br-val">'+(cp.price_per_m2_raw!=null?fmt(cp.price_per_m2_raw):'—')+' → '+(cp.price_per_m2_adjusted!=null?fmt(cp.price_per_m2_adjusted):'—')+' <span class="br-cap">(تعديل الزمن '+t+')</span></div></div>';
+        });
+      }
+      if(Array.isArray(c.sources)&&c.sources.length){
+        const s=c.sources[0];
+        body+='<div class="br-note" style="margin-top:8px;font-size:.78rem">المصدر: '+(s.role_ar||s.source)+' (n='+(s.n||0)+'، Tier '+(s.tier||'')+')</div>';
+      }
+      if(c.note_ar)body+='<div class="br-note" style="margin-top:8px">'+c.note_ar+'</div>';
+      if(c.footer_ar)body+='<div class="br-note" style="margin-top:6px;font-size:.75rem;color:var(--muted)">'+c.footer_ar+'</div>';
       break;
     case 'cap_rate_provenance':
       // Sprint 2.19.1 (Fixes #1+#2): render Arabic labels + translated values

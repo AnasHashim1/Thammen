@@ -176,6 +176,59 @@ def build_cap_rate_provenance_section(provenance):
     }
 
 
+_GRID_CONFIDENCE_AR = {
+    'reliable': 'موثوقة', 'indicative': 'إرشادية', 'fallback': 'غير كافية',
+}
+
+
+def build_comparable_grid_section(grid, audience='buyer'):
+    """Sprint 2.20: RICS land comparable-adjustments grid (time-only v1).
+
+    `grid` is AdjustmentGrid.to_dict() from adjustment_grid.build_land_grid.
+    Returns a brief-section dict, or None when there is nothing to show
+    (fallback used, no comparables, or a secretary audience per §16).
+
+    Complement, not replace: this echoes the time-normalised comparables for
+    transparency; the headline value is unchanged. Audience (§16): valuer/
+    investor → full per-comparable coefficients; buyer/seller → summary; any
+    secretary-like audience → hidden.
+    """
+    if not grid or grid.get('fallback_used') or not grid.get('comparables'):
+        return None
+    aud = (audience or '').strip().lower()
+    if 'secretary' in aud or 'سكرتير' in aud:
+        return None
+    detail = 'full' if aud in ('valuer', 'investor', 'مقيم', 'مستثمر') else 'summary'
+    conf = grid.get('confidence')
+    comps = []
+    for c in grid.get('comparables', []):
+        t = next((a for a in c.get('adjustments', []) if a.get('factor') == 'time'), None)
+        comps.append({
+            'date': c.get('date'),
+            'price_per_m2_raw': c.get('price_per_m2_raw'),
+            'price_per_m2_adjusted': c.get('price_per_m2_adjusted'),
+            'time_pct': (t or {}).get('pct_display'),
+            'size_m2': c.get('size_m2'),
+        })
+    return {
+        'id': 'comparable_grid',
+        'title_ar': 'شبكة المقارنات المعدّلة',
+        'content': {
+            'detail': detail,
+            'adjusted_median_per_m2': grid.get('adjusted_median_per_m2'),
+            'n': grid.get('n'),
+            'confidence': conf,
+            'confidence_ar': _GRID_CONFIDENCE_AR.get(conf, conf),
+            'valuation_date': grid.get('valuation_date'),
+            'sources': grid.get('sources'),                 # E10 attribution
+            'note_ar': grid.get('note_ar'),
+            'comparables': comps,
+            'footer_ar': ('علاوة الزاوية والحجم ستُضاف لاحقاً عند توفّر بيانات '
+                          'مرتبطة جغرافياً (geographically-keyed).'),
+        },
+    }
+
+
 def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     """Buyer-focused: Is the price fair? What to negotiate?"""
     base = _base_brief(evaluation, uncertainty)

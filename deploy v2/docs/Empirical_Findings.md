@@ -128,6 +128,59 @@ Depreciation = f(building_age, finishing_level, structural_status)
 
 -----
 
+### 🆕 Rule E8 — Source Tier Weighting
+
+When combining sources in a calculation, use a **weighted median** with tier
+weights: **T1=1.0, T2=0.7, T4=0.4**, T5 excluded. (Tiers: T1 = ground-truth
+sales — MoJ land/villa, MME apartments; T2 = vetted accessible — PropertyFinder,
+arady, FGRealty; T4 = partial; T5 = excluded permanently — bayut, mzadqatar.)
+Implemented in `adjustment_grid.weighted_median` (Sprint 2.20).
+
+### 🆕 Rule E9 — Cross-Source Validation
+
+A factor confirmed by **≥2 sources from different tiers** that agree = high
+confidence. A **single-source** factor is **`indicative` only**, never
+`reliable`. (Reason corner premium would have been indicative had it come from
+arady alone; reason it is deferred until a T1 source exists — see E12.)
+
+### 🆕 Rule E10 — Transparent Source Attribution
+
+Every output that uses external data must show its **sources + tier + n**.
+Sprint 2.20 grid emits a `sources` block (`[{source, tier, tier_weight, n,
+role_ar}]`) rendered in the brief.
+
+### 🆕 Rule E11 — Tier Floor for Critical Calculations
+
+Core operations (medians, cap rates, adjustments) require **≥Tier-2** to be
+classified `reliable`; Tier-3-alone never `reliable`. The Sprint 2.20 grid is
+`reliable` only at **n≥20** MoJ (T1) comparables, `indicative` at 10–19, and
+**falls back** to Sprint 2.16.0 stratification (no grid) below 10.
+
+### 🆕 Rule E12 — MoJ Self-Calibration for Attribute Premiums — **STATUS: BLOCKED**
+
+When an attribute can be batch-detected on a **PIN-keyed / geocoded** sale
+dataset (T1), the resulting premium is **T1-T1** and may be applied to the **main
+value** (conditions: `n_with ≥20` AND `n_without ≥20` per area×bracket; detection
+method independently validated ≥10/10; documented per E10). This unlocks
+attribute premiums **without** an asking-to-sale gap assumption.
+
+**Status 2026-05-20: BLOCKED.** The MoJ weekly bulletin is **not geocoded** — its
+`رقم العقار المرجعي` is an opaque `PN…` hash (**0/26,719 numeric**), with no
+PIN/coordinates/street. So `detect_corner` (and any GIS attribute detector)
+**cannot tag MoJ sales**. E12 activates only when a PIN-keyed sale source exists
+(Confirmed Sales — indefinitely delayed; or verified MME geocoding). Until then,
+attribute premiums derived from MoJ self-calibration are infeasible. (Discovery
+logged: Sprint 2.20 audit; see Operational_Rules #45.)
+
+> **Note on stability-criteria equivalence** (Sprint 2.20 §8): for a regression
+> slope, **CoV(slope) = SE/|slope| = 1/|t|**, so `CoV<0.5` and `|t|>2` are the
+> *same* test of slope precision — either may be used. **R²** measures explanatory
+> power separately and typically gives a stricter verdict (Sprint 2.20 land
+> size-stability scan: CoV/|t| = 28.4% stable, R²>0.30 = 8.1%, median R²≈0.046 →
+> within-bracket size adjustment deferred to 2.20.1).
+
+-----
+
 ## 3. Empirical benchmarks for Qatar (validated 2026-05)
 
 ### Asking premium expectations

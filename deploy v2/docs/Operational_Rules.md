@@ -1041,6 +1041,30 @@ heroku buildpacks --app thammen-app-123      # → heroku/python only
 
 -----
 
+## 45. ⚠️ Verify data-linking schema BEFORE proposing batch processing
+
+**Discovered**: 2026-05-20, Sprint 2.20 audit. A "MoJ self-calibration" plan
+(tag every MoJ sale as corner/non-corner via `detect_corner`, then derive a T1-T1
+corner premium) was proposed and discussed for ~1h before measurement killed it.
+
+**The rule**: before proposing any **batch join / batch tagging / cross-dataset
+enrichment**, *measure* the linking key on the **actual data** — never assume it
+from a field name or a prose description. "Can dataset A join to B?" and "does
+field X carry a usable key?" are empirical questions.
+
+**The lesson (concrete)**: MoJ `رقم العقار المرجعي` was assumed to be a GIS PIN.
+Measured: it is an opaque `PN…` hash — **0/26,719 numeric**, no PIN, no
+coordinates, no street. So MoJ sales **cannot** be geo-located to parcels →
+`detect_corner` cannot tag them → the entire plan (and Empirical_Findings E12 for
+corner) is **BLOCKED** until a PIN-keyed sale source exists.
+
+**Pairs with**: #33 (empirical-first audits — measure before reading) and the §5
+pre-Sprint discipline. The cost of skipping this is building on an impossible
+premise. (Note: there is no Rule #44 — the subtree-push divergence procedure was
+folded into #43 to avoid sprawl; see CHANGELOG_v38 §"Decisions made".)
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added

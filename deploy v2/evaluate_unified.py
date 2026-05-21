@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p19p1-polish-and-fixes'
-SPRINT_TAG = '2.19.1'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p20p0-time-adjustment-grid'
+SPRINT_TAG = '2.20.0'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -3068,6 +3068,59 @@ def evaluate_thammen(
     # reason, the full pipeline must propagate it too.
     if _subtype_zoning_mismatch:
         output['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
+
+    # ── Sprint 2.20: Land Comparable Adjustments Grid (time-only v1) ──
+    # Complement, NOT replace — the headline value is untouched. For LAND only,
+    # build an RICS market-comparison grid that time-normalises each MoJ
+    # comparable to the valuation date (transparency + RICS time adjustment).
+    # Size deferred to 2.20.1 (§8 scan); corner deferred (E12 BLOCKED). Safe-fail:
+    # any error leaves the response exactly as before.
+    try:
+        _at = (getattr(ev, 'asset_type', '') or '').lower()
+        if _at in ('land', 'raw_land') and geo_v2_result:
+            import adjustment_grid as _ag
+            _prim = geo_v2_result.get('primary') or {}
+            _txns = _prim.get('transactions') or []
+            if len(_txns) >= _ag.INDICATIVE_N:
+                import moj_reference as _mr
+                _rows = _get_moj_rows(moj_csv_path)
+                _dates = [d for d in (_mr.parse_date(r[_mr.DATE_COL]) for r in _rows) if d]
+                _max_d = max(_dates) if _dates else None
+                _slope_pct = 0.0
+                _moj_names = _prim.get('moj_names') or []
+                if _max_d and _moj_names:
+                    try:
+                        _tr = _mr.compute_trend(_rows, _moj_names[0], _max_d, category='land')
+                        _sa = (_tr or {}).get('slope_annual_pct')
+                        if _sa is not None:
+                            # Tolerant unit handling (see slope normalisation note above):
+                            _slope_pct = _sa * 100 if abs(_sa) < 1 else _sa
+                    except Exception:
+                        _slope_pct = 0.0
+                _comps = [{'date': t.get('date'), 'price_m2': t.get('price_m2'),
+                           'area_m2': t.get('area_m2')} for t in _txns]
+                _grid = _ag.build_land_grid(
+                    _comps,
+                    valuation_date=(output.get('valuation_date')
+                                    or datetime.now().strftime('%Y-%m-%d')),
+                    annual_trend_pct=_slope_pct,
+                    subject={'area': _prim.get('gis_name'),
+                             'bracket': _cap_size_bracket(getattr(ev, 'plot_area_m2', None)),
+                             'plot_area_m2': getattr(ev, 'plot_area_m2', None)},
+                )
+                if not _grid.fallback_used:
+                    output['comparable_grid'] = _grid.to_dict()
+                    _brief = output.get('brief') or {}
+                    if isinstance(_brief.get('sections'), list):
+                        from output_briefs import build_comparable_grid_section
+                        _sec = build_comparable_grid_section(
+                            output['comparable_grid'], audience=audience)
+                        if _sec:
+                            _brief['sections'].append(_sec)
+    except Exception as e:
+        import sys
+        print(f'[comparable_grid warning] {e}', file=sys.stderr)
+
     _check_output_sanity(output, listing_price)
     return output
 

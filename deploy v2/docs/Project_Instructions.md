@@ -335,6 +335,7 @@ heroku run python smoke_<endpoint>.py
 |**2.16.15**|**v36**|**Pydantic extra='forbid' (Bug A2) — reject unknown fields at API boundary**|
 |**2.19**|**v37**|**Cap Rate Calibration v1 — villas + compounds from PropertyFinder rentals ÷ MoJ sale medians (Al-Ebb 4.7% reliable)**|
 |**2.19.1**|**v38**|**Polish & Fixes — Arabic provenance labels, villa 4% rationale, stratification null-guard (A12), rent/m² outlier guard (A13)**|
+|**2.20.0**|**v39**|**Land Comparable Adjustments Grid (time-only) — RICS time-normalisation + AdjustmentGrid framework (E8/E10/E11); size deferred 2.20.1 (R²≈0.05), corner deferred (E12 BLOCKED, A8 partial)**|
 |**Mthamen Analysis**|*standalone*|🆕 **2026-05-18 reverse engineering مكتمل. 2026-05-19 deferred indefinitely** — see §20.8|
 
 ### Deferred Sprints
