@@ -35,8 +35,13 @@ PINS_PER_AREA = 3
 
 
 def _get(url, params, timeout=20):
-    q = url + "?" + urllib.parse.urlencode(params)
-    with urllib.request.urlopen(urllib.request.Request(q, headers=UA), timeout=timeout) as r:
+    # POST (not GET) so large polygon geometries don't blow the URL length
+    # limit (HTTP 414 — hit on the Pearl plot's many-vertex polygon). ESRI
+    # /query accepts form-encoded POST. Audit-only; production qatar_gis is
+    # untouched (the POST migration there, if needed for P1, goes in the brief).
+    data = urllib.parse.urlencode(params).encode("utf-8")
+    req = urllib.request.Request(url, data=data, headers=UA)  # data => POST
+    with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode("utf-8", errors="replace"))
 
 
