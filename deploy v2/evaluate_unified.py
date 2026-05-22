@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p21p0p5-land-output-polish'
-SPRINT_TAG = '2.21.0.5'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p21p0p7-asset-type-reality-check'
+SPRINT_TAG = '2.21.0.7'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -2117,6 +2117,83 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
     })
 
 
+def _build_reality_stop_response(loc, plot, audience, reality):
+    """Sprint 2.21.0.7: dedicated 'stop'/'reject' response for the PIN/land path
+    when the Asset Type Reality Check finds the parcel is built or non-residential.
+
+    `reality` is the parsed asset_type_reality payload (kind/action/reason/ruleid/
+    labels/message_ar/discovery). Mirrors the out-of-scope shape but is PIN-aware
+    (no zone/street/building) and carries the exact decision-template message.
+    """
+    from datetime import datetime
+    _ctx = _enrich_fast_context(loc, plot)
+    _district = _ctx.get('district')
+    _pin = getattr(plot, 'pin', None) if plot else None
+    _addr = (f'أرض في {_district} — PIN {_pin}' if _district and _pin
+             else (f'PIN {_pin}' if _pin else '—'))
+    _msg = reality.get('message_ar') or 'هذه القطعة خارج نطاق التقييم الحالي.'
+    _reason = reality.get('reason')
+    _title = ('قطعة عليها مبنى — ليست أرض فضاء'
+              if _reason == 'building_present'
+              else ('قطعة استخدام مختلط — خارج النطاق' if _reason == 'mixed_use'
+                    else f'أرض غير سكنية ({reality.get("ruleid_label_ar", "")}) — خارج النطاق'))
+    return _attach_scope({
+        'status': 'ok',
+        'engine_version': ENGINE_VERSION,
+        'methodology_ar': 'فحص نوع الأصل (Asset Type Reality Check)',
+        'address': _addr,
+        'valuation_date': datetime.now().strftime('%Y-%m-%d'),
+        'district': _district,
+        'plot_area_m2': plot.pdarea if plot else None,
+        'gps': {'lat': loc.lat, 'lon': loc.lon} if loc else None,
+        # asset_type='unknown' → service_scope badge shows "unsupported"
+        # (consistent with the out-of-scope message). The precise reason lives
+        # in the asset_type_reality panel; asset_type_ar keeps a friendly label.
+        'asset_type': 'unknown',
+        'asset_type_ar': 'أرض / قطعة',
+        'audience': audience,
+        'user_inputs': {'pin': str(_pin) if _pin else None},
+        'valuation': {
+            'amount': None, 'low': None, 'high': None,
+            'method': 'asset_type_reality_stop',
+            'reason_ar': _msg,
+        },
+        'moj_sample_size': 0,
+        'cost_approach': None,
+        'income_approach': None,
+        'reconciliation': {
+            'status': 'out_of_scope',
+            'message_ar': _title,
+        },
+        'accuracy': {'score': 0, 'label': '— خارج النطاق'},
+        'trend': None, 'location_features': None,
+        'geometric_factors': _ctx.get('geometric_factors'),
+        'material_uncertainty': _enrich_material_uncertainty({
+            'level': 'critical',
+            'banner_ar': _title,
+            'known_unknowns_ar': [],
+            'rics_compliant': False,
+        }),
+        # The structured reality payload — the UI renders the panel + discovery.
+        'asset_type_reality': reality,
+        'brief': {
+            'audience': audience,
+            'title_ar': _title,
+            'sections': [{
+                'id': 'asset_type_reality',
+                'title_ar': _title,
+                'content': {'note_ar': _msg},
+            }],
+        },
+        'sanity_warnings': [],
+        'disclaimer': (
+            'ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. '
+            'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
+        ),
+        'active_listings': {'available': False, 'reason': 'خارج النطاق'},
+    })
+
+
 def _check_input_sanity(asset_type, listing_price, rental_income, plot_area):
     """Sprint A.3: Pre-evaluation input validation.
 
@@ -2339,6 +2416,9 @@ def evaluate_thammen(
     # the classifier runs, the full villa pipeline still references this
     # variable. Defaulting to None means "no mismatch detected".
     _subtype_zoning_mismatch = None
+    # Sprint 2.21.0.7 — scope-safe init for the asset-type reality check flag
+    # (PIN/land path). None means "no reality issue detected".
+    _asset_type_reality = None
 
     try:
         from qatar_gis import QatarGIS, classify_asset, PropertyLocation
@@ -2410,6 +2490,28 @@ def evaluate_thammen(
                             ),
                         }
                         break
+
+                # ── Sprint 2.21.0.7: Asset Type Reality Check flag ──
+                # The PIN/land classifier emits an `asset_type_reality:` flag
+                # (JSON payload) when QARS finds a building on the "land" parcel
+                # (action=stop), or the RULEID land-use class is non-residential
+                # (action=reject) / tradable-but-non-residential (action=warn).
+                for _flag_str in (_quick.flags or []):
+                    if isinstance(_flag_str, str) and _flag_str.startswith('asset_type_reality:'):
+                        try:
+                            import json as _json_atr
+                            _asset_type_reality = _json_atr.loads(_flag_str.split(':', 1)[1])
+                        except Exception:
+                            _asset_type_reality = None
+                        break
+
+                # GATE 0 (Sprint 2.21.0.7): a 'stop'/'reject' reality result ends
+                # the evaluation with a dedicated message (no valuation). 'warn'
+                # falls through and is attached to the final response below.
+                if _asset_type_reality and _asset_type_reality.get('action') in ('stop', 'reject'):
+                    return _build_reality_stop_response(
+                        _loc, _plot, audience, _asset_type_reality,
+                    )
 
                 # ── Sprint A.3 GATE 1: out-of-scope rejection ──
                 if _qtype in V1_OUT_OF_SCOPE:
@@ -2951,7 +3053,14 @@ def evaluate_thammen(
             print(f'[substantiality warning] {e}', file=sys.stderr)
 
     # ── Sprint 2.2: Flag missing building details in Material Uncertainty ──
-    if bua_breakdown is None and output.get('material_uncertainty'):
+    # Sprint 2.21.0.7 (P4): a bare-land parcel has no building, so the
+    # "building details not provided / assumes a typical building" factor is
+    # nonsensical and leaked onto raw_land reports (bua_breakdown is always None
+    # for land). Sprint 2.21.0.5 fixed the assess_uncertainty factors but NOT
+    # this separate injection point. Guard it: skip for raw_land/land.
+    _p4_at = (output.get('asset_type') or '').lower()
+    if (bua_breakdown is None and output.get('material_uncertainty')
+            and _p4_at not in ('raw_land', 'land')):
         try:
             mu = output['material_uncertainty']
             building_unknown_factor = (
@@ -3114,6 +3223,12 @@ def evaluate_thammen(
     # reason, the full pipeline must propagate it too.
     if _subtype_zoning_mismatch:
         output['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
+
+    # Sprint 2.21.0.7 — attach the 'warn' asset-type reality result (non-residential
+    # but tradable land, valued WITH a bold disclaimer). 'stop'/'reject' returned
+    # earlier at GATE 0, so anything here is a warn that flowed through valuation.
+    if _asset_type_reality and _asset_type_reality.get('action') == 'warn':
+        output['asset_type_reality'] = _asset_type_reality
 
     # ── Sprint 2.20: Land Comparable Adjustments Grid (time-only v1) ──
     # Complement, NOT replace — the headline value is untouched. For LAND only,

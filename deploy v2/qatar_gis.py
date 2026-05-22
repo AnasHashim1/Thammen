@@ -92,6 +92,8 @@ ENDPOINTS = {
     'cadastre': f'{GIS_BASE}/Vector/CadastrePlots/MapServer/0/query',
     'districts': f'{GIS_BASE}/Vector/Districts/MapServer/0/query',
     'geometry': f'{GIS_BASE}/Utilities/Geometry/GeometryServer/project',
+    # Sprint 2.21.0.7: official land-use class (RULEID) + permitted BUILDING_HEIGHT.
+    'landuse': f'{GIS_BASE}/Vector/General_Landuse/MapServer/0/query',
 }
 
 IMAGERY_SERVICES = {
@@ -481,6 +483,128 @@ RESIDENTIAL_SUBTYPES_FOR_ZONING_CHECK = frozenset({1, 6, 11})  # Villa, ApartBld
 _NON_RES_ZONING_TOKENS = frozenset({'CCC', 'COM', 'CF', 'SCZ', 'TU', 'LFR', 'LInd', 'IND'})
 
 
+# ── Sprint 2.21.0.7: General_Landuse RULEID coded-value domain ──────────────
+# Authoritative map fetched from the layer's own coded-value domain
+# (probe_ruleid_domain.py) — NOT guessed. Each code → (en_label, ar_label).
+# Used on the PIN/land path to sanity-check the user's "this is land" hint
+# against the parcel's official land-use class.
+RULEID_LABELS = {
+    1:  ('Single-Family Residential', 'سكني — فلل/بيوت'),
+    2:  ('Multi-Family Residential',  'سكني — عمارات/مجمعات'),
+    3:  ('Retail / Commercial',       'تجاري — محلات تجزئة'),
+    4:  ('Services / Offices',        'خدمات / مكاتب'),
+    5:  ('Wholesale',                 'تجارة جملة'),
+    6:  ('Light Industry',            'صناعة خفيفة'),
+    7:  ('Medium Industry',           'صناعة متوسطة'),
+    8:  ('Heavy Industry',            'صناعة ثقيلة'),
+    9:  ('Extractive Industry',       'صناعة استخراجية'),
+    10: ('Educational',               'تعليمي'),
+    11: ('Health',                    'صحي'),
+    12: ('Governmental',              'حكومي'),
+    13: ('Community / Cultural',      'مجتمعي / ثقافي'),
+    14: ('Religious',                 'ديني'),
+    15: ('Open Space / Recreation',   'مساحات مفتوحة / ترفيهي'),
+    16: ('Sports',                    'رياضي'),
+    17: ('Transportation',            'نقل ومواصلات'),
+    18: ('Utilities',                 'مرافق / بنية تحتية'),
+    19: ('Agricultural',              'زراعي'),
+    20: ('Vacant Land',               'أرض فضاء'),
+    21: ('Special Use',               'استخدام خاص'),
+    22: ('Tourism',                   'سياحي'),
+    23: ('Mixed Use',                 'استخدام مختلط'),
+    24: ('Unknown',                   'غير محدد'),
+    -1: ('Free Representation',       'تمثيل حر'),
+}
+# Residential land-use classes → proceed with the raw_land valuation path.
+RULEID_RESIDENTIAL = frozenset({1, 2, 20})
+# Mixed-use → master-planned developments, not individual market lots → reject
+# (Sprint 2.21.0.7 DECISION 2).
+RULEID_MIXED_USE = frozenset({23})
+# Agricultural → existing AssetType.AGRICULTURAL (handled by V1_OUT_OF_SCOPE).
+RULEID_AGRICULTURAL = frozenset({19})
+# Non-residential classes that DO have a tradable land value → value with a bold
+# disclaimer (Sprint 2.21.0.7 DECISION 1, "accept with warning").
+RULEID_WARN = frozenset({3, 4, 22})
+# Non-residential classes with no meaningful residential comparable → hard reject
+# (Sprint 2.21.0.7 DECISION 1, "reject"). 5-18 + 21.
+RULEID_REJECT = frozenset({5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21})
+# No-signal codes (and None) → fall through to the geometric guard, no flag.
+RULEID_NO_SIGNAL = frozenset({24, -1})
+
+
+def _qars_count_in_polygon(ring, timeout: float = 8.0):
+    """Count QARS_Point features INSIDE a parcel polygon (tight polygon-intersect,
+    not bbox). >0 ⇒ a surveyed building exists ON the plot ⇒ it is NOT bare land.
+
+    Returns int count, or None when the call fails (caller treats None as
+    "unknown" → does not block). Large many-vertex rings overflow the GET URL
+    limit, so `_http_get_json` transparently switches to POST (Rule #48).
+    """
+    if not ring:
+        return None
+    try:
+        geom = json.dumps({'rings': [ring], 'spatialReference': {'wkid': 4326}})
+        res = _http_get_json(ENDPOINTS['qars'], {
+            'geometry': geom, 'geometryType': 'esriGeometryPolygon',
+            'inSR': '4326', 'spatialRel': 'esriSpatialRelIntersects',
+            'returnCountOnly': 'true', 'f': 'json',
+        }, timeout=timeout)
+        c = res.get('count')
+        return int(c) if c is not None else None
+    except Exception:
+        return None
+
+
+def _landuse_at(lon, lat, timeout: float = 6.0):
+    """Land-use class + permitted building height at a point, from
+    Vector/General_Landuse/MapServer/0.
+
+    Returns (ruleid:int|None, building_height:str|None). On no coverage or any
+    failure → (None, None) so the caller falls back to geometry gracefully.
+    """
+    if lon is None or lat is None:
+        return None, None
+    try:
+        geom = json.dumps({'x': lon, 'y': lat, 'spatialReference': {'wkid': 4326}})
+        res = _http_get_json(ENDPOINTS['landuse'], {
+            'geometry': geom, 'geometryType': 'esriGeometryPoint',
+            'inSR': '4326', 'spatialRel': 'esriSpatialRelIntersects',
+            'outFields': 'RULEID,BUILDING_HEIGHT', 'returnGeometry': 'false',
+            'f': 'json',
+        }, timeout=timeout)
+        feats = res.get('features') or []
+        if feats:
+            attrs = feats[0].get('attributes') or {}
+            rid = attrs.get('RULEID')
+            bh = attrs.get('BUILDING_HEIGHT')
+            return (int(rid) if rid is not None else None), (str(bh) if bh not in (None, '') else None)
+    except Exception:
+        pass
+    return None, None
+
+
+def _reality_flag(action, reason, ruleid, rid_en, rid_ar, qcount, bheight, area, message_ar):
+    """Sprint 2.21.0.7: encode an asset-type reality-check result as a single
+    flag string (prefix + JSON payload), mirroring the A11 `subtype_zoning_mismatch:`
+    convention. evaluate_unified parses it into a structured response field.
+
+    action: 'stop' (built parcel) | 'reject' (out of scope) | 'warn' (value + disclaimer)
+    """
+    payload = {
+        'kind': 'asset_type_reality',
+        'action': action,
+        'reason': reason,
+        'ruleid': ruleid,
+        'ruleid_label_en': rid_en,
+        'ruleid_label_ar': rid_ar,
+        'qars_in_polygon': qcount,
+        'building_height': bheight,
+        'area_m2': round(area, 1) if area is not None else None,
+        'message_ar': message_ar,
+    }
+    return 'asset_type_reality:' + json.dumps(payload, ensure_ascii=False)
+
+
 def _is_non_residential_zone(zoning) -> bool:
     """Detect zoning codes that contradict a residential subtype.
 
@@ -659,12 +783,110 @@ def classify_asset(plot: PlotInfo, location_metadata=None,
     # Reached only when no mapped QARS subtype was found above. The user has
     # declared this is bare land; honour it for typical sizes, but let geometry
     # override when the parcel is clearly a compound.
+    #
+    # === Sprint 2.21.0.7: Asset Type Reality Check ===
+    # The user's "this is land" hint is wrong often enough to matter (a PIN may
+    # already have a building on it, or be governmental/commercial/special-use).
+    # Before trusting the hint, consult two authoritative GIS signals we already
+    # own. Precedence (DECISION 4): (1) QARS-in-polygon building check >
+    # (2) RULEID land-use class > (3) geometric guard (legacy, last resort).
+    # All signals are defensive — a failed/empty GIS call returns None and we
+    # fall through to the legacy geometric guard with no flag (graceful, e.g.
+    # parcels with no General_Landuse coverage).
     if input_mode == 'land':
+        # Pre-compute the polygon centroid (for the point land-use query).
+        _ring = plot.polygon_4326 or []
+        _cx = sum(p[0] for p in _ring) / len(_ring) if _ring else None
+        _cy = sum(p[1] for p in _ring) / len(_ring) if _ring else None
+
+        # Allow callers to pre-supply the signals (tests / batch); else fetch.
+        _md = location_metadata or {}
+        _qcount = _md.get('qars_in_polygon')
+        if _qcount is None:
+            _qcount = _qars_count_in_polygon(_ring)
+        _ruleid = _md.get('landuse_ruleid')
+        _bheight = _md.get('building_height')
+        if _ruleid is None:
+            _ruleid, _bheight = _landuse_at(_cx, _cy)
+        _rid_en, _rid_ar = RULEID_LABELS.get(_ruleid, ('Unknown', 'غير محدد'))
+
+        # ── P1: a surveyed building exists ON the plot → it is NOT bare land.
+        #    DECISION 5: stop with guidance + surface the discovered info.
+        if isinstance(_qcount, int) and _qcount > 0:
+            _msg = (
+                f'⚠ هذه القطعة (PIN {plot.pin}) عليها مبنى — ليست أرض فضاء.\n\n'
+                f'المعلومات المكتشفة:\n'
+                f'- المساحة: {area:,.0f} م²\n'
+                f'- التصنيف: {_rid_ar}\n'
+                f'- الارتفاع المسموح: {_bheight or "غير متاح"}\n'
+                f'- البناء: موجود ✓\n\n'
+                f"لتقييم العقار المبني عليها:\n"
+                f"استخدم تبويب 'العنوان' مع Zone/Street/Building.\n\n"
+                f'النظام لا يحوّل تلقائياً لضمان وعي المستخدم بالاكتشاف.'
+            )
+            return AssetClassification(
+                asset_type=AssetType.UNKNOWN, confidence='high',
+                reasons=[f'QARS-in-polygon={_qcount} — a surveyed building exists on PIN {plot.pin}',
+                         f'RULEID={_ruleid} ({_rid_en}); PDAREA {area:,.0f} m²'],
+                flags=[_reality_flag('stop', 'building_present', _ruleid, _rid_en, _rid_ar,
+                                     _qcount, _bheight, area, _msg)],
+                alternative_types=[],
+            )
+
+        # ── P2: land-use class (RULEID). Non-residential overrides the geometric
+        #    guard (DECISION 4) so a large governmental/commercial parcel is NOT
+        #    silently classified as a residential compound.
+        if _ruleid in RULEID_REJECT:
+            _msg = (f'هذه الأرض مصنّفة {_rid_ar} — خارج النطاق الحالي لـ Thammen. '
+                    f'استشر مُقيِّم متخصّص.')
+            return AssetClassification(
+                asset_type=AssetType.UNKNOWN, confidence='high',
+                reasons=[f'RULEID={_ruleid} ({_rid_en}) — non-residential, no residential comparable'],
+                flags=[_reality_flag('reject', 'non_residential', _ruleid, _rid_en, _rid_ar,
+                                     _qcount, _bheight, area, _msg)],
+                alternative_types=[],
+            )
+        if _ruleid in RULEID_MIXED_USE:
+            _msg = ('هذه قطعة ضمن تطوير عقاري مختلط. هذه الفئة لا تباع في السوق '
+                    'المفتوح كأرض فردية. خارج نطاق التقييم.')
+            return AssetClassification(
+                asset_type=AssetType.UNKNOWN, confidence='high',
+                reasons=[f'RULEID={_ruleid} ({_rid_en}) — mixed-use master-planned development'],
+                flags=[_reality_flag('reject', 'mixed_use', _ruleid, _rid_en, _rid_ar,
+                                     _qcount, _bheight, area, _msg)],
+                alternative_types=[],
+            )
+        if _ruleid in RULEID_AGRICULTURAL:
+            return AssetClassification(
+                asset_type=AssetType.AGRICULTURAL, confidence='high',
+                reasons=[f'RULEID={_ruleid} ({_rid_en}) — agricultural land-use'],
+                flags=flags, alternative_types=[AssetType.RAW_LAND],
+            )
+        if _ruleid in RULEID_WARN:
+            # Tradable land value exists but residential comparables are a rough
+            # proxy → value WITH a bold disclaimer (DECISION 1, "accept with
+            # warning"). RULEID overrode the geometric guard, so return raw_land.
+            _msg = (f'⚠ هذه الأرض مصنّفة {_rid_ar}. التقدير يستخدم مقارنات عامة. '
+                    f'السعر الفعلي قد يختلف 2-5 أضعاف حسب: الموقع على الشارع، '
+                    f'مسافة الواجهة، التطوير المسموح. '
+                    f'يُنصح بـ مُقيِّم متخصّص للقرارات النهائية.')
+            return AssetClassification(
+                asset_type=AssetType.RAW_LAND, confidence='medium',
+                reasons=[f'RULEID={_ruleid} ({_rid_en}) — non-residential but tradable land',
+                         f'PDAREA {area:,.0f} m²; valued with disclaimer'],
+                flags=[_reality_flag('warn', 'non_residential', _ruleid, _rid_en, _rid_ar,
+                                     _qcount, _bheight, area, _msg)],
+                alternative_types=[],
+            )
+
+        # RULEID ∈ {1,2,20}, no-signal {24,-1}, or None (no coverage) → trust the
+        # land hint and use the legacy geometric guard (residential context).
         if area >= 50000:
             return AssetClassification(
                 asset_type=AssetType.COMPOUND_LARGE, confidence='high',
                 reasons=[f'PDAREA {area:,.0f} m² ≥ 50,000 — too large for raw land; '
-                         f'treated as large compound (geometric guard overrides land hint)'],
+                         f'treated as large compound (geometric guard overrides land hint)',
+                         f'RULEID={_ruleid} ({_rid_en})'],
                 flags=flags,
                 alternative_types=[AssetType.AGRICULTURAL] if area > 100000 else [],
             )
@@ -672,7 +894,8 @@ def classify_asset(plot: PlotInfo, location_metadata=None,
             return AssetClassification(
                 asset_type=AssetType.COMPOUND_SMALL, confidence='medium',
                 reasons=[f'PDAREA {area:,.0f} m² ≥ 15,000 — likely a compound, not a single '
-                         f'raw-land plot (geometric guard overrides land hint)'],
+                         f'raw-land plot (geometric guard overrides land hint)',
+                         f'RULEID={_ruleid} ({_rid_en})'],
                 flags=flags,
                 alternative_types=[AssetType.RAW_LAND],
             )
@@ -680,7 +903,7 @@ def classify_asset(plot: PlotInfo, location_metadata=None,
             asset_type=AssetType.RAW_LAND,
             confidence='high' if shape.is_rectangular else 'medium',
             reasons=[f'PDAREA {area:,.0f} m² accepted as raw land (explicit land/PIN input)',
-                     f'PD_NO={pd_no}'],
+                     f'RULEID={_ruleid} ({_rid_en}); PD_NO={pd_no}'],
             flags=flags,
             alternative_types=[AssetType.STANDALONE_VILLA],
         )

@@ -640,6 +640,23 @@ function show(d){
     h+='</div>';
   }
 
+  // ── Sprint 2.21.0.7: Asset Type Reality Check panel (PIN/land path) ──
+  // QARS found a building on the "land" parcel (action=stop), or the
+  // General_Landuse RULEID is non-residential — reject (action=reject) or
+  // value-with-disclaimer (action=warn). The backend pre-builds message_ar
+  // (multi-line for the 'stop' discovery block).
+  const atr=d.asset_type_reality;
+  if(atr&&atr.message_ar){
+    const isWarn=atr.action==='warn';
+    const bdr=isWarn?'var(--warn)':'var(--bad)';
+    const bg=isWarn?'var(--warn-bg)':'var(--bad-bg)';
+    const ttl=isWarn?'⚠️ تنبيه على تصنيف الأرض':(atr.reason==='building_present'?'⚠️ القطعة عليها مبنى':'❌ خارج نطاق التقييم');
+    h+='<div style="background:'+bg+';border:2px solid '+bdr+';border-radius:8px;padding:16px;margin-bottom:14px">';
+    h+='<div style="font-weight:700;color:'+bdr+';margin-bottom:8px;font-size:1.02rem">'+ttl+'</div>';
+    h+='<div style="line-height:1.8;font-size:.92rem;white-space:pre-line">'+atr.message_ar+'</div>';
+    h+='</div>';
+  }
+
   // ── Sprint 2.14.0: Service Scope tier badge ──
   const ss=d.service_scope;
   if(ss){
