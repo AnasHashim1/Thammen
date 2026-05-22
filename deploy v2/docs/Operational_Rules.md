@@ -1127,6 +1127,27 @@ membership). Pairs with #45/#46.
 
 -----
 
+## 48. ⚠️ GIS GET requests must fall back to POST when the URL > 2000 chars
+
+**Discovered**: 2026-05-22, Sprint 2.21.0.7 audit (Anas flagged it as the "#50
+candidate"; numbered sequentially as #48 to avoid empty 48/49 gaps).
+
+A many-vertex ESRI geometry sent as a GET query string overflows the URL length
+limit → **HTTP 414 Request-URI Too Long**. Hit on a Pearl master plot when
+`_project_4326_to_2932` passed the full polygon ring to the Geometry server; the
+future QARS-in-polygon (P1) query has the same shape.
+
+**The rule**: `qatar_gis._http_get_json` now builds the GET URL, and **only when
+`len(url) > 2000`** sends the params as a form-encoded **POST** instead (ESRI
+`/query` and the Geometry server accept POST for the same params). Small queries
+stay GET → **zero behaviour change**; large geometries stop silently failing.
+This is a defensive fix that also stabilises production (Pearl/Lusail master
+plots previously errored). Pairs with §21.6 (probe before integrate) — the probe
+`_get` was switched to POST first (audit-only), then this production guard added
+with Anas's explicit approval.
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added

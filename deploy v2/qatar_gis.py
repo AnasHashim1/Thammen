@@ -241,9 +241,23 @@ class PropertyReport:
 # ============================================================
 
 def _http_get_json(url, params=None, timeout=30):
+    # Sprint 2.21.0.7: GET by default, but fall back to POST when the query
+    # string would overflow the URL length limit (HTTP 414). Large ESRI
+    # geometries — projecting a many-vertex polygon (Pearl/Lusail master plots)
+    # or a future QARS-in-polygon query — exceed GET limits; ESRI /query and the
+    # Geometry server accept the same params via form-encoded POST. Small queries
+    # stay GET → zero behaviour change. (Audit-driven defensive fix; Anas-approved.)
+    headers = {'User-Agent': 'qatar-gis-py/2.0'}
     if params:
-        url = f'{url}?{urllib.parse.urlencode(params)}'
-    req = urllib.request.Request(url, headers={'User-Agent': 'qatar-gis-py/2.0'})
+        _encoded = urllib.parse.urlencode(params)
+        _get_url = f'{url}?{_encoded}'
+        if len(_get_url) > 2000:
+            req = urllib.request.Request(
+                url, data=_encoded.encode('utf-8'), headers=headers)  # data => POST
+        else:
+            req = urllib.request.Request(_get_url, headers=headers)
+    else:
+        req = urllib.request.Request(url, headers=headers)
     last_err = None
     for attempt in range(3):
         try:
