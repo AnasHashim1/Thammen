@@ -634,5 +634,46 @@ Anas's screenshot — node --check was unavailable locally.
 
 -----
 
-*Last updated: 2026-05-20 (Sprint 2.19.1 — Polish & Fixes, deployed v77 from Claude Code; browser JS check pending)*
+## 12. 🆕 2026-05-22 — Sprint 2.20.0 + 2.21.0 + 2.21.0.5 (Land Grid → reachable → polished)
+
+### 12.1 Sprint 2.20.0 — Land Comparable Adjustments Grid (deployed v79)
+RICS time-adjustment grid for land: each MoJ comparable time-normalised to the
+valuation date; AdjustmentGrid framework + E8/E10/E11. **Two richer plans killed
+pre-build by audit** (§5): villa attributes flat in arady → villa deferred 2.20.1;
+MoJ ungeocoded (`PN…` hash, 0/26,719 numeric) → corner has no T1 source (E12
+BLOCKED); within-bracket size R²≈0.05 → size deferred 2.20.1. v1 = **time-only**.
+`detect_corner` saved unwired (`property_geo.py`). CHANGELOG_v39.
+
+### 12.2 Sprint 2.21.0 — PIN Input for Lands (deployed)
+The 2.20 grid was **unreachable**: UI only took Z/S/B (QARS = post-construction),
+but bare lands have a Cadastre PIN and no QARS. Two gaps (→ Rule #46): no UI path
+AND the classifier never returned land (a bare-land PIN classified
+`standalone_villa`, high conf; baseline probe **0/5**). Fix: `input_mode='land'`
+hint → `raw_land` (geometric guards ≥50K/≥15K), threaded api → evaluate_thammen →
+evaluate_property → full_property_lookup → classify_asset; PIN entry skips
+find_property (get_plot + centroid). API `pin` field + address-XOR-pin (422
+Arabic); index.html tab switcher. Engine value = **`raw_land`** not `'land'`
+(downstream MoJ-category support; Rule #39 deviation). **Post-deploy E2E found a
+2nd gap**: `_run_geo_v2` resolved lat/lon from the (null) Z/S/B address → geo_v2
+None → grid skipped; fixed to use the PIN polygon centroid. Re-verified: probe
+**5/5**, API returns `raw_land` + `comparable_grid` (الخور n=79 reliable).
+CHANGELOG_v40.
+
+### 12.3 Sprint 2.21.0.5 — Land Output Polish (deployed v~82)
+Post-deploy visual read of a bare-land report (الخور 74328443) found **5 template
+contradictions** (template assumed a building): scope "نوع غير معروف", address
+"None/None/None", negative "building value −3.5%", building-assumption MUC factors,
+tenant/tower due-diligence. Fixes (all conditional on asset_type, regression-safe):
+scope alias raw_land→land (supported); PIN address «أرض في {district} — PIN {pin}»;
+skip decomposition for land + note; `assess_uncertainty(asset_type)` land-aware
+factors/known-unknowns; land due-diligence (7 Qs). Root cause → **Rule #46
+expansion** (audit template output for new modes) + **Rule #47** (alias new
+asset_types, don't rename). Live API verify: **5/5 issues fixed**. CHANGELOG_v41.
+
+**Recurring lesson this session:** post-deploy **E2E** testing repeatedly caught
+what unit tests + backend checks did not (geo_v2 PIN gap; the 5 template issues).
+
+-----
+
+*Last updated: 2026-05-22 (Sprint 2.20.0 + 2.21.0 + 2.21.0.5 — Land Grid built, made reachable via PIN input, and polished; all deployed from Claude Code)*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*

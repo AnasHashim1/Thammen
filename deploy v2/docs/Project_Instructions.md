@@ -337,6 +337,8 @@ heroku run python smoke_<endpoint>.py
 |**2.19**|**v37**|**Cap Rate Calibration v1 — villas + compounds from PropertyFinder rentals ÷ MoJ sale medians (Al-Ebb 4.7% reliable)**|
 |**2.19.1**|**v38**|**Polish & Fixes — Arabic provenance labels, villa 4% rationale, stratification null-guard (A12), rent/m² outlier guard (A13)**|
 |**2.20.0**|**v39**|**Land Comparable Adjustments Grid (time-only) — RICS time-normalisation + AdjustmentGrid framework (E8/E10/E11); size deferred 2.20.1 (R²≈0.05), corner deferred (E12 BLOCKED, A8 partial)**|
+|**2.21.0**|**v40**|**PIN Input for Lands — dual input (address \| PIN); classifier `input_mode='land'`→`raw_land`; geo_v2 PIN-centroid so the 2.20 grid fires for bare lands; Rule #46**|
+|**2.21.0.5**|**v41**|**Land Output Polish — conditional `raw_land` rendering: scope=supported, PIN address, skip building decomposition, land-aware MUC factors/known-unknowns + due-diligence; Rule #47 (alias pattern)**|
 |**2.21.0**|**v40**|**PIN Input for Lands — dual input (address \| PIN); classifier `input_mode='land'` branch (raw_land + geometric guards) so bare-land PINs reach the 2.20 grid; Rule #46**|
 |**Mthamen Analysis**|*standalone*|🆕 **2026-05-18 reverse engineering مكتمل. 2026-05-19 deferred indefinitely** — see §20.8|
 

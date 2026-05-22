@@ -1096,6 +1096,35 @@ is **`raw_land`** (the only AssetType with full downstream MoJ-category support;
 `'land'` has no `ASSET_TYPE_TO_MOJ_CATEGORY` key and would break valuation —
 the grid trigger accepts both, so `raw_land` satisfies the goal).
 
+**Expansion (Sprint 2.21.0.5):** the audit must also cover the **template/output
+layer** for the new mode, not just the classifier. «backend produces raw_land» ≠
+«output template handles raw_land». Post-deploy visual verification of a bare-land
+report found 5 template contradictions (scope said "نوع غير معروف", address
+"None/None/None", a negative "building value", building-assumption uncertainty
+factors, and tenant/tower due-diligence questions) — none of which the backend or
+unit tests surfaced. **Rule:** for any new asset_type/input mode, do a post-deploy
+E2E *visual* read of the user-facing output, section by section, before declaring
+the Sprint user-facing-complete.
+
+-----
+
+## 47. ⚠️ New asset_type → ALIAS in every lookup dict, never rename (outside a refactor Sprint)
+
+**Discovered**: Sprint 2.21.0.5. The classifier emits `raw_land`, but several
+module-level lookup dicts were keyed on `'land'` (`scope_of_service._ASSET_SCOPE`),
+while others had `raw_land` (`ASSET_TYPE_TO_MOJ_CATEGORY`). The mismatch silently
+mislabelled bare-land reports ("نوع غير معروف / خارج النطاق").
+
+**The rule**: when a new asset_type value enters circulation, add an **alias** in
+every module's lookup dict (`_DICT['raw_land'] = _DICT['land']`) rather than
+renaming existing keys. Renaming/normalising the literal across the codebase is a
+*dedicated refactor Sprint*, not a polish change — it touches memory, docs, tests,
+and every consumer at once. Aliasing is surgical and regression-safe.
+
+**Audit aid**: `grep -rn "asset_type" --include=*.py` to find every lookup dict /
+membership test, then confirm each handles the new value (alias or `.lower()`
+membership). Pairs with #45/#46.
+
 -----
 
 *End of Operational Rules. 30 items migrated from session memory on
