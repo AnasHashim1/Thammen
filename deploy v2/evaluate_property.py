@@ -1236,7 +1236,9 @@ def evaluate_property(zone: int, street: int, building: int,
                        opex_ratio: float = 0.23,
                        output_dir: Optional[Path] = None,
                        include_age: bool = False,
-                       gis: Optional['QatarGIS'] = None) -> PropertyEvaluation:
+                       gis: Optional['QatarGIS'] = None,
+                       pin: Optional[str] = None,
+                       input_mode: Optional[str] = None) -> PropertyEvaluation:
     """
     End-to-end property evaluation.
 
@@ -1276,11 +1278,12 @@ def evaluate_property(zone: int, street: int, building: int,
         zone, street, building,
         include_imagery=False,  # full 9-year imagery is too slow; use smart variant below
         output_dir=None,
+        pin=pin, input_mode=input_mode,   # Sprint 2.21.0: land/PIN entry path
     )
 
     if report is None:
         return PropertyEvaluation(
-            address=f'{zone}/{street}/{building}',
+            address=(f'PIN {pin}' if pin else f'{zone}/{street}/{building}'),
             asset_type='unknown', classification_confidence='none',
             plot_area_m2=None, extent_total_m2=None,
             valuation=None, listing_comparison=None, listing_flags=None,

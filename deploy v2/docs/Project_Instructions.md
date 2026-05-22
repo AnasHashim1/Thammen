@@ -140,8 +140,9 @@ mthamen_reference.py    ── ⏸️ ARCHIVE ONLY (2026-05-19 decision)
 
 ### Endpoint structure (api.py)
 
-- `POST /api/evaluate` — تقييم سريع (عنوان فقط)
-- `POST /api/evaluate/details` — مع تفاصيل المبنى
+- `POST /api/evaluate` — تقييم سريع (عنوان zone/street/building **أو** `pin` للأرض — Sprint 2.21.0)
+- `POST /api/evaluate/details` — مع تفاصيل المبنى (يقبل أيضاً `pin`)
+- **Dual input flow (Sprint 2.21.0):** كل من الـ endpoints يقبل **إما** العنوان (zone+street+building، مسار QARS للفيلات/المباني) **أو** `pin` (مسار CadastrePlots للأراضي الخام — لا QARS). XOR إلزامي (422 عربية لو كلاهما/لا شيء). `pin` → `input_mode='land'` يُمرَّر للمُصنِّف فيُنتج `raw_land` (مع حُرّاس: ≥50K compound_large، ≥15K compound_small) → تُفعَّل شبكة المقارنات (2.20).
 - `GET /api/health` — status + freshness + qars_endpoint
 - `GET /api/freshness` — banner data
 - `GET /api/disclaimer` — تحذير المسؤولية
@@ -336,6 +337,7 @@ heroku run python smoke_<endpoint>.py
 |**2.19**|**v37**|**Cap Rate Calibration v1 — villas + compounds from PropertyFinder rentals ÷ MoJ sale medians (Al-Ebb 4.7% reliable)**|
 |**2.19.1**|**v38**|**Polish & Fixes — Arabic provenance labels, villa 4% rationale, stratification null-guard (A12), rent/m² outlier guard (A13)**|
 |**2.20.0**|**v39**|**Land Comparable Adjustments Grid (time-only) — RICS time-normalisation + AdjustmentGrid framework (E8/E10/E11); size deferred 2.20.1 (R²≈0.05), corner deferred (E12 BLOCKED, A8 partial)**|
+|**2.21.0**|**v40**|**PIN Input for Lands — dual input (address \| PIN); classifier `input_mode='land'` branch (raw_land + geometric guards) so bare-land PINs reach the 2.20 grid; Rule #46**|
 |**Mthamen Analysis**|*standalone*|🆕 **2026-05-18 reverse engineering مكتمل. 2026-05-19 deferred indefinitely** — see §20.8|
 
 ### Deferred Sprints

@@ -1065,6 +1065,39 @@ folded into #43 to avoid sprawl; see CHANGELOG_v38 §"Decisions made".)
 
 -----
 
+## 46. ⚠️ Pre-Sprint frontend input-flow audit must validate classifier output for the NEW path
+
+**Discovered**: 2026-05-20→22, Sprint 2.21.0. The Land Grid (2.20) was deployed
+(v79) but **unreachable** by users, and the classifier would have mislabelled the
+new input.
+
+Two distinct checks are required before scoping any Sprint that adds a new input
+path or activates a deployed-but-unreachable feature:
+
+- **(a) Backend feature exists ≠ user can reach it** (Anas's discovery): the UI
+  only accepted Z/S/B (QARS, post-construction → villas/buildings); bare lands
+  have a Cadastre PIN but no QARS address, so the Land Grid never fired.
+- **(b) Classifier exists ≠ classifier returns the correct asset_type for the new
+  input mode** (audit discovery): `classify_asset` had **no branch returning
+  land** — a bare land PIN was classified `standalone_villa` (high confidence!),
+  confirmed live: **0/5 known land PINs triggered the grid** before the fix.
+
+**The rule**: when adding an input path, audit the *full* chain end-to-end —
+input field → API → engine → **classifier output asset_type** → feature trigger —
+on real data, before scoping. Pairs with #33 (measure first), #45 (verify
+data-linking before batch), and §5.
+
+**Fix pattern used**: `input_mode='land'` hint (set when the user enters via the
+land/PIN tab) threaded api → evaluate_thammen → evaluate_property →
+full_property_lookup → classify_asset, where a new branch returns RAW_LAND for
+typical sizes with geometric guards (≥50K compound_large, ≥15K compound_small).
+Additive (`input_mode=None` = legacy behaviour unchanged). Note: the engine value
+is **`raw_land`** (the only AssetType with full downstream MoJ-category support;
+`'land'` has no `ASSET_TYPE_TO_MOJ_CATEGORY` key and would break valuation —
+the grid trigger accepts both, so `raw_land` satisfies the goal).
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added

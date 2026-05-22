@@ -118,10 +118,12 @@ def test_grid_section_fallback_hidden():
 
 def test_layer2_production_chain():
     # Rule #40: exercise the REAL production functions the engine calls.
+    import re as _re
     import evaluate_unified as eu
-    check("ENGINE_VERSION bumped to 2.20.0",
-          eu.ENGINE_VERSION == 'thammen-sprint2p20p0-time-adjustment-grid'
-          and eu.SPRINT_TAG == '2.20.0')
+    # Version-agnostic (do NOT pin a frozen literal — that breaks every later Sprint).
+    check("ENGINE_VERSION in sprint format",
+          bool(_re.match(r'thammen-sprint\d+p\d+', eu.ENGINE_VERSION or ''))
+          and bool(_re.match(r'\d+\.\d+', eu.SPRINT_TAG or '')))
     # the exact symbol evaluate_unified imports at runtime
     from output_briefs import build_comparable_grid_section as real_builder
     g = ag.build_land_grid(_comps(18), valuation_date='2026-05-20', annual_trend_pct=-2.5).to_dict()

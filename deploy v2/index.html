@@ -242,12 +242,23 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <div class="tbar-st" id="statusBar">جاري الاتصال...</div>
   </div>
   <div class="fwrap">
-    <div class="ftitle">📍 عنوان العقار</div>
+    <div class="ftitle">📍 إدخال العقار</div>
     <div class="fcard">
-      <div class="fr3">
-        <div class="fg"><label>رقم المنطقة</label><input type="number" id="zone" placeholder="مثال: 70" min="1"></div>
-        <div class="fg"><label>رقم الشارع</label><input type="number" id="street" placeholder="مثال: 380" min="1"></div>
-        <div class="fg"><label>رقم المبنى</label><input type="number" id="building" placeholder="مثال: 25" min="1"></div>
+      <!-- Sprint 2.21.0: input mode tabs — address (villa/building) OR land PIN -->
+      <div class="aud-row" style="margin-bottom:12px">
+        <div class="aud-btn sel" id="tabAddr" onclick="selTab('address')">فيلا/مبنى (عنوان)</div>
+        <div class="aud-btn" id="tabLand" onclick="selTab('land')">أرض / قطعة (PIN)</div>
+      </div>
+      <div id="grpAddr">
+        <div class="fr3">
+          <div class="fg"><label>رقم المنطقة</label><input type="number" id="zone" placeholder="مثال: 70" min="1"></div>
+          <div class="fg"><label>رقم الشارع</label><input type="number" id="street" placeholder="مثال: 380" min="1"></div>
+          <div class="fg"><label>رقم المبنى</label><input type="number" id="building" placeholder="مثال: 25" min="1"></div>
+        </div>
+      </div>
+      <div id="grpLand" style="display:none">
+        <div class="fg"><label>رقم القطعة (PIN)</label><input type="text" id="pin" inputmode="numeric" placeholder="مثال: 90040668" pattern="\d{7,9}"></div>
+        <div class="br-note" style="margin-top:6px;font-size:.78rem;color:var(--muted)">أدخل رقم القطعة من شهادة الملكية أو خرائط GIS</div>
       </div>
     </div>
     <div class="ftitle">👤 نوع التقرير</div>
@@ -423,13 +434,31 @@ async function loadFreshness(){
 }
 document.addEventListener('DOMContentLoaded',loadFreshness);
 
-function selAud(el,v){audience=v;document.querySelectorAll('.aud-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel')}
+function selAud(el,v){audience=v;el.parentElement.querySelectorAll('.aud-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel')}
+// Sprint 2.21.0: input mode tabs (address villa/building OR land PIN)
+var inputTab='address';
+function selTab(t){
+  inputTab=t;
+  document.getElementById('tabAddr').classList.toggle('sel',t==='address');
+  document.getElementById('tabLand').classList.toggle('sel',t==='land');
+  document.getElementById('grpAddr').style.display=(t==='address')?'':'none';
+  document.getElementById('grpLand').style.display=(t==='land')?'':'none';
+}
 function tog(){dOpen=!dOpen;document.getElementById('dTog').classList.toggle('on',dOpen);document.getElementById('dSec').classList.toggle('open',dOpen)}
 function fmt(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('ar-QA')}
 
 async function run(){
-  const z=document.getElementById('zone').value,s=document.getElementById('street').value,b=document.getElementById('building').value;
-  if(!z||!s||!b){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">يرجى إدخال رقم المنطقة والشارع والمبنى</div>';return}
+  // Sprint 2.21.0: build request body from the active input tab (address XOR PIN).
+  let bd;
+  if(inputTab==='land'){
+    const pinV=(document.getElementById('pin').value||'').trim();
+    if(!/^\d{7,9}$/.test(pinV)){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">يرجى إدخال رقم قطعة صحيح (7 إلى 9 أرقام)</div>';return}
+    bd={pin:pinV,audience};
+  }else{
+    const z=document.getElementById('zone').value,s=document.getElementById('street').value,b=document.getElementById('building').value;
+    if(!z||!s||!b){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">يرجى إدخال رقم المنطقة والشارع والمبنى</div>';return}
+    bd={zone:+z,street:+s,building:+b,audience};
+  }
   const btn=document.getElementById('sBtn');btn.disabled=true;btn.innerHTML='جاري التقييم... <span class="sp"></span>';
   // Sprint D: progressive loading with elapsed time
   const fRes=document.getElementById('fRes');
@@ -444,7 +473,6 @@ async function run(){
   const stepTimer=setInterval(()=>{stepIdx++;if(stepIdx<steps.length)renderLoading();},6000);
   const elapsedTimer=setInterval(renderLoading,1000);
   try{
-    let bd={zone:+z,street:+s,building:+b,audience};
     if(dOpen){
       const f=document.getElementById('floors').value,
             a=document.getElementById('annexes').value,

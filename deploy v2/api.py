@@ -21,7 +21,7 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # Rate limiting (slowapi)
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -237,6 +237,24 @@ def _check_audience(v):
     )
 
 
+def _check_input_mode(req):
+    """Sprint 2.21.0: enforce exactly one input mode — address XOR PIN.
+
+    Shared by EvaluateRequest + EvaluateDetailsRequest model validators.
+    Raises ValueError (→ HTTP 422) with an Arabic message.
+    """
+    has_pin = bool(getattr(req, 'pin', None))
+    has_any_addr = any(getattr(req, f, None) is not None
+                       for f in ('zone', 'street', 'building'))
+    has_full_addr = all(getattr(req, f, None) is not None
+                        for f in ('zone', 'street', 'building'))
+    if has_pin and has_any_addr:
+        raise ValueError("الرجاء استخدام إحدى طريقتي الإدخال فقط: العنوان أو رقم القطعة")
+    if not has_pin and not has_full_addr:
+        raise ValueError("الرجاء إدخال إما العنوان الكامل أو رقم القطعة")
+    return req
+
+
 class EvaluateRequest(BaseModel):
     # Sprint 2.16.15 (Bug A2): reject unknown fields with HTTP 422 instead of
     # silently dropping them. A typo like `rental_inome` previously reached
@@ -244,9 +262,11 @@ class EvaluateRequest(BaseModel):
     # path while the user believed their input was honored.
     model_config = ConfigDict(extra='forbid')
 
-    zone: int
-    street: int
-    building: int
+    # Sprint 2.21.0: address (zone/street/building) OR land PIN — exactly one.
+    zone: Optional[int] = None
+    street: Optional[int] = None
+    building: Optional[int] = None
+    pin: Optional[str] = Field(default=None, pattern=r'^\d{7,9}$')
     audience: Optional[str] = 'buyer'  # Sprint 1: now wired to backend
     # Sprint 2.16.7 (bug B2): /api/evaluate now accepts the same listing/rental
     # inputs as /api/evaluate/details, so single-shot callers get comparison logic.
@@ -265,14 +285,21 @@ class EvaluateRequest(BaseModel):
     def _validate_audience(cls, v):
         return _check_audience(v)
 
+    # Sprint 2.21.0 — exactly one input mode: address XOR PIN.
+    @model_validator(mode='after')
+    def _validate_input_mode(self):
+        return _check_input_mode(self)
+
 
 class EvaluateDetailsRequest(BaseModel):
     # Sprint 2.16.15 (Bug A2): same boundary tightening as EvaluateRequest.
     model_config = ConfigDict(extra='forbid')
 
-    zone: int
-    street: int
-    building: int
+    # Sprint 2.21.0: address (zone/street/building) OR land PIN — exactly one.
+    zone: Optional[int] = None
+    street: Optional[int] = None
+    building: Optional[int] = None
+    pin: Optional[str] = Field(default=None, pattern=r'^\d{7,9}$')
     audience: Optional[str] = 'buyer'  # Sprint 1: now wired to backend
     floors: Optional[int] = None          # ABOVE-GROUND floors: 1, 2, 3, 4 (basement is separate)
     annexes: Optional[int] = None         # 0, 1, 2, 3
@@ -294,6 +321,11 @@ class EvaluateDetailsRequest(BaseModel):
     @classmethod
     def _validate_audience(cls, v):
         return _check_audience(v)
+
+    # Sprint 2.21.0 — exactly one input mode: address XOR PIN.
+    @model_validator(mode='after')
+    def _validate_input_mode(self):
+        return _check_input_mode(self)
     # Sprint 2.2 — explicit building improvements (RICS Red Book "subject property" specs)
     basement: Optional[bool] = None       # سرداب — adds significant unrecorded value
     footprint_m2: Optional[float] = None  # ground-floor footprint estimate (overrides default)
@@ -833,6 +865,8 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
                 zone=req.zone,
                 street=req.street,
                 building=req.building,
+                pin=req.pin,                                  # Sprint 2.21.0
+                input_mode=('land' if req.pin else None),     # Sprint 2.21.0
                 moj_csv_path=str(MOJ_CSV),
                 audience=req.audience or 'buyer',
                 # Sprint 2.16.7 (bug B2): wire through optional listing/rental
@@ -851,6 +885,8 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
             zone=req.zone,
             street=req.street,
             building=req.building,
+            pin=req.pin,                                  # Sprint 2.21.0
+            input_mode=('land' if req.pin else None),     # Sprint 2.21.0
             moj_csv_path=MOJ_CSV,
             include_age=True,
         )
@@ -878,6 +914,8 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
                 zone=req.zone,
                 street=req.street,
                 building=req.building,
+                pin=req.pin,                                  # Sprint 2.21.0
+                input_mode=('land' if req.pin else None),     # Sprint 2.21.0
                 moj_csv_path=str(MOJ_CSV),
                 audience=req.audience or 'buyer',
                 listing_price=req.asking_price,

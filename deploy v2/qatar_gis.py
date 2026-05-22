@@ -528,7 +528,8 @@ def _fetch_zoning_at_point(lat, lon, timeout: float = 4.0):
     return None
 
 
-def classify_asset(plot: PlotInfo, location_metadata=None) -> AssetClassification:
+def classify_asset(plot: PlotInfo, location_metadata=None,
+                   input_mode=None) -> AssetClassification:
     """
     Classify a plot into an AssetType based on geometric and metadata
     evidence. Imagery is NOT used here (it would require fetching tiles
@@ -541,6 +542,14 @@ def classify_asset(plot: PlotInfo, location_metadata=None) -> AssetClassificatio
     Sprint 2.16.6: now consumes `building_subtype` (from QARS_Point) as the
     primary classification signal when available. Falls back to the legacy
     area-based heuristic when subtype is missing or unknown.
+
+    Sprint 2.21.0: `input_mode='land'` is the explicit "this is a bare land
+    parcel" signal (set when the user enters a PIN via the land tab). Geometry
+    cannot distinguish bare land from a villa lot, so this hint is honoured for
+    typical land sizes — BUT geometry still OVERRIDES when conclusive (an
+    oversized parcel is a compound, not raw land). The hint runs only when no
+    mapped QARS subtype is present; `input_mode=None` (every legacy caller)
+    leaves all existing behaviour byte-for-byte unchanged.
     """
     area = plot.pdarea
     pd_no = plot.pd_no
@@ -631,6 +640,36 @@ def classify_asset(plot: PlotInfo, location_metadata=None) -> AssetClassificatio
         # area heuristic for these — they're rare and don't change the
         # 99% case. May be enhanced in a future Sprint.
 
+
+    # === Sprint 2.21.0: explicit land input (PIN / land tab) ===
+    # Reached only when no mapped QARS subtype was found above. The user has
+    # declared this is bare land; honour it for typical sizes, but let geometry
+    # override when the parcel is clearly a compound.
+    if input_mode == 'land':
+        if area >= 50000:
+            return AssetClassification(
+                asset_type=AssetType.COMPOUND_LARGE, confidence='high',
+                reasons=[f'PDAREA {area:,.0f} m² ≥ 50,000 — too large for raw land; '
+                         f'treated as large compound (geometric guard overrides land hint)'],
+                flags=flags,
+                alternative_types=[AssetType.AGRICULTURAL] if area > 100000 else [],
+            )
+        if area >= 15000:
+            return AssetClassification(
+                asset_type=AssetType.COMPOUND_SMALL, confidence='medium',
+                reasons=[f'PDAREA {area:,.0f} m² ≥ 15,000 — likely a compound, not a single '
+                         f'raw-land plot (geometric guard overrides land hint)'],
+                flags=flags,
+                alternative_types=[AssetType.RAW_LAND],
+            )
+        return AssetClassification(
+            asset_type=AssetType.RAW_LAND,
+            confidence='high' if shape.is_rectangular else 'medium',
+            reasons=[f'PDAREA {area:,.0f} m² accepted as raw land (explicit land/PIN input)',
+                     f'PD_NO={pd_no}'],
+            flags=flags,
+            alternative_types=[AssetType.STANDALONE_VILLA],
+        )
 
     # === Branch 1: very small plot ===
     if area < 200:
@@ -1459,31 +1498,63 @@ class QatarGIS:
 
     # ----- Tier 4: composite -----
 
-    def full_property_lookup(self, zone, street, building,
-                             include_imagery=True, output_dir=None) -> Optional[PropertyReport]:
-        loc = self.find_property(zone, street, building)
-        if loc is None:
-            return None
+    def full_property_lookup(self, zone=None, street=None, building=None,
+                             include_imagery=True, output_dir=None,
+                             pin=None, input_mode=None) -> Optional[PropertyReport]:
+        # Sprint 2.21.0: PIN entry path. Bare lands have a Cadastre PIN but no
+        # QARS address, so when `pin` is given we skip find_property entirely,
+        # resolve the polygon straight from CadastrePlots, and synthesise a
+        # minimal location (centroid for the Districts lookup). `input_mode`
+        # ('land') is threaded to classify_asset so the parcel is typed as land
+        # rather than mis-typed as a villa by the area heuristic.
+        if pin:
+            plot = self.get_plot(pin)
+            if plot is None:
+                return None
+            ring = plot.polygon_4326 or []
+            if ring:
+                cx = sum(p[0] for p in ring) / len(ring)
+                cy = sum(p[1] for p in ring) / len(ring)
+            else:
+                cx = cy = None
+            loc = PropertyLocation(
+                zone=zone, street=street, building=building, pin=pin,
+                qars='', plot_no_old=None, lon=cx, lat=cy,
+                electricity_no=None, water_no=None, qtel_id=None,
+                building_subtype=None,
+            )
+        else:
+            loc = self.find_property(zone, street, building)
+            if loc is None:
+                return None
 
         # District is cheap and useful even if cadastre/plot lookup fails.
         try:
-            district = self.get_district_at_point(loc.lon, loc.lat)
+            district = (self.get_district_at_point(loc.lon, loc.lat)
+                        if (loc.lon and loc.lat) else None)
         except Exception:
             district = None
 
-        plot = self.get_plot(loc.pin)
-        if plot is None:
-            return PropertyReport(
-                location=loc, plot=None,
-                classification=AssetClassification(
-                    AssetType.UNKNOWN, 'low', ['No cadastre plot found'], [], []
-                ),
-                extent=None, construction=None,
-                district=district,
-                flags=['Property location found, but no cadastre plot. May be unsurveyed.'],
-            )
+        if not pin:
+            plot = self.get_plot(loc.pin)
+            if plot is None:
+                return PropertyReport(
+                    location=loc, plot=None,
+                    classification=AssetClassification(
+                        AssetType.UNKNOWN, 'low', ['No cadastre plot found'], [], []
+                    ),
+                    extent=None, construction=None,
+                    district=district,
+                    flags=['Property location found, but no cadastre plot. May be unsurveyed.'],
+                )
 
-        classification = classify_asset(plot)
+        # Subtype is only available from QARS (address path); the land/PIN path
+        # has none, so the input_mode='land' hint drives classification.
+        _meta = None
+        if getattr(loc, 'building_subtype', None) is not None:
+            _meta = {'building_subtype': loc.building_subtype,
+                     'lat': loc.lat, 'lon': loc.lon}
+        classification = classify_asset(plot, location_metadata=_meta, input_mode=input_mode)
         extent = self.detect_extent(plot.pin)
 
         construction = None

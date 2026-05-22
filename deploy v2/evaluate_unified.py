@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p20p0-time-adjustment-grid'
-SPRINT_TAG = '2.20.0'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p21p0-pin-input-lands'
+SPRINT_TAG = '2.21.0'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -2272,9 +2272,9 @@ def _check_output_sanity(result, listing_price):
 # ============================================================
 
 def evaluate_thammen(
-    zone: int,
-    street: int,
-    building: int,
+    zone: Optional[int] = None,
+    street: Optional[int] = None,
+    building: Optional[int] = None,
     moj_csv_path: str = 'moj_weekly.csv',
     rent_ref_path: Optional[str] = 'rent_reference.json',
     listing_price: Optional[float] = None,
@@ -2300,6 +2300,11 @@ def evaluate_thammen(
     audience: str = 'buyer',
     use_listings: bool = True,
     use_geo_v2: bool = True,
+    # Sprint 2.21.0 — PIN/land entry: when `pin` is set the request is a bare
+    # land plot (no QARS address); `input_mode='land'` is threaded to the
+    # classifier so it types the parcel as land rather than a villa.
+    pin: Optional[str] = None,
+    input_mode: Optional[str] = None,
 ) -> Dict:
     if not _V2_OK:
         return {'status': 'engine_unavailable', 'error': 'evaluate_property not loaded'}
@@ -2326,11 +2331,30 @@ def evaluate_thammen(
     _subtype_zoning_mismatch = None
 
     try:
-        from qatar_gis import QatarGIS, classify_asset
+        from qatar_gis import QatarGIS, classify_asset, PropertyLocation
         _gis_lite = QatarGIS(verbose=False)
-        _loc = _gis_lite.find_property(zone, street, building)
+        # Sprint 2.21.0: PIN/land entry resolves the plot directly (no QARS) and
+        # synthesises a location (centroid) so the district + comparable gates
+        # below still work. Address entry keeps the original QARS path.
+        _plot0 = None
+        if pin:
+            _plot0 = _gis_lite.get_plot(pin)
+            _ring = (_plot0.polygon_4326 or []) if _plot0 else []
+            if _ring:
+                _cx = sum(p[0] for p in _ring) / len(_ring)
+                _cy = sum(p[1] for p in _ring) / len(_ring)
+            else:
+                _cx = _cy = None
+            _loc = (PropertyLocation(
+                zone=zone, street=street, building=building, pin=pin,
+                qars='', plot_no_old=None, lon=_cx, lat=_cy,
+                electricity_no=None, water_no=None, qtel_id=None,
+                building_subtype=None,
+            ) if _plot0 else None)
+        else:
+            _loc = _gis_lite.find_property(zone, street, building)
         if _loc:
-            _plot = _gis_lite.get_plot(_loc.pin)
+            _plot = _plot0 if pin else _gis_lite.get_plot(_loc.pin)
             if _plot:
                 # Sprint 2.16.6: pass building_subtype from QARS_Point so the
                 # classifier can use the authoritative type label instead of
@@ -2346,7 +2370,7 @@ def evaluate_thammen(
                         'lat': getattr(_loc, 'lat', None),
                         'lon': getattr(_loc, 'lon', None),
                     }
-                _quick = classify_asset(_plot, _meta)
+                _quick = classify_asset(_plot, _meta, input_mode=input_mode)
                 _qtype = _quick.asset_type.value
 
                 # ── Sprint 2.16.14: extract subtype/zoning mismatch flag (Bug A11) ──
@@ -2547,6 +2571,7 @@ def evaluate_thammen(
         _tier = 'high' if is_luxury else 'mid'
         ev = evaluate_property(
             zone=zone, street=street, building=building,
+            pin=pin, input_mode=input_mode,   # Sprint 2.21.0: land/PIN entry
             moj_csv_path=Path(moj_csv_path),
             listing_price=listing_price,
             bua_breakdown=bua_breakdown,
