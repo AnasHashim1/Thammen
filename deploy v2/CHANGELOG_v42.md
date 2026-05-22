@@ -162,3 +162,16 @@ Heroku (post-deploy): 63090011 / 69051939 / 69051981 / 21-set → **reject**;
 (no crash). Rollback target = v89 (`thammen-sprint2p21p0p7-asset-type-reality-check`).
 
 **Hotfix warning:** still **kept** until this micro-follow-up is re-verified by Anas.
+
+---
+
+# 2.21.0.7.1 — hotfix-warning removal (post re-verification)
+
+**Engine version:** `thammen-sprint2p21p0p7p1-hotfix-removed`
+After Anas's visual re-verification (3/3 PASS: 63090011 reject + «مبنى خدمات/مكاتب»;
+52060090 reject + «أرض حكومية»; 90040668 stop + «فيلا سكنية»; Arabic/RTL/emoji/mobile
+clean), the interim PIN-tab warning ("تبويب PIN يعمل حالياً للأراضي السكنية الفضاء
+فقط") added in 2.21.0.5.1 is **removed** — the Asset Type Reality Check now handles
+built / non-residential / governmental / commercial / mixed-use PINs with clear
+stop/reject screens, so the caveat is superseded. Single-file change
+(`index.html`), no logic touched. Rollback target = v90.

@@ -259,8 +259,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       <div id="grpLand" style="display:none">
         <div class="fg"><label>رقم القطعة (PIN)</label><input type="text" id="pin" inputmode="numeric" placeholder="مثال: 74328443" pattern="\d{7,9}"></div>
         <div class="br-note" style="margin-top:6px;font-size:.78rem;color:var(--muted)">أدخل رقم القطعة من شهادة الملكية أو خرائط GIS</div>
-        <!-- Sprint 2.21.0.7 interim hotfix: PIN tab is reliable for residential bare lands only. -->
-        <div class="br-note" style="margin-top:8px;font-size:.78rem;background:var(--warn-bg);color:var(--warn)">⚠ تنبيه مؤقت: تبويب PIN يعمل حالياً للأراضي السكنية الفضاء فقط (مثل الخور، الوكرة، الريان السكنية). للفلل، المباني، الأراضي التجارية أو الحكومية استخدم تبويب «فيلا/مبنى (عنوان)». الإصلاح الكامل قريباً.</div>
+        <!-- Sprint 2.21.0.7.1: interim hotfix warning removed — the Asset Type
+             Reality Check (QARS-in-polygon + RULEID) now handles built parcels,
+             non-residential, governmental, commercial and mixed-use PINs with
+             clear stop/reject screens, so the "residential bare only" caveat is
+             superseded. -->
       </div>
     </div>
     <div class="ftitle">👤 نوع التقرير</div>
