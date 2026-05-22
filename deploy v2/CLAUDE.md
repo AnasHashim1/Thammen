@@ -3,7 +3,7 @@
 > **Project:** thammen.qa — Qatar real-estate AVM (RICS VPS 4)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-19 evening (after Sprint 2.16.15 deployment)
+> **Last update:** 2026-05-22 (after Sprint 2.21.0.7.1 — Land Arc complete)
 
 ## Quick orientation
 
@@ -16,25 +16,35 @@ Read these files in order before any technical work:
 @./docs/Session_Update_2026-05-19.md
 @./docs/Operational_Rules.md
 
-The Session_Update file is the **most recent** state (later than the
-3 main files). When the next consolidation pass happens, fold it back
-into the main files per its §2 "edits to merge" list.
+**Most recent state = `Session_Log.md` §12 (2026-05-22, Land Arc through
+Sprint 2.21.0.7.1).** The `Session_Update_2026-05-19.md` file is an older delta
+(Bug A11 era) kept for history. Newest operational rules: `Operational_Rules.md`
+#43–#49. Newest empirical rules: `Empirical_Findings.md` E13–E14.
 
 -----
 
 ## Current production state (snapshot)
 
 ```
-Engine version deployed:  thammen-sprint2p16p15-extra-forbid
-Latest CHANGELOG:         CHANGELOG_v36.md
-Latest Sprint:            2.16.15 (Pydantic extra='forbid', Bug A2)
-Tests passing:            81/81 (67 regression + 14 new A2)
+Engine version deployed:  thammen-sprint2p21p0p7p1-hotfix-removed  (Heroku v91)
+Latest CHANGELOG:         CHANGELOG_v42.md (2.21.0.7 + 2.21.0.7.1 + hotfix removal)
+Latest Sprint:            2.21.0.7.1 (Asset Type Reality Check micro-follow-up)
+Tests passing:            69/69 (2.21.0.7 suite); full standalone suite exit 0
+                          (test_v2_modules.py needs pytest — not installed; skip)
 Critical bugs open:       0
-High bugs open:           2  (A6 latency, A8 comparable adjustments)
-Medium bugs open:         2  (A5, A7)
+High bugs open:           1  (A6 latency P95 ~25-31s; target 2.18). A8 closed by 2.20.
+Medium bugs open:         2  (A5 asset_type unknown, A7 rics_compliant false)
+Land Arc:                 ✅ COMPLETE — PIN input (2.21.0) + output polish (2.21.0.5)
+                          + Asset Type Reality Check (QARS-in-polygon + General_Landuse
+                          RULEID, 2.21.0.7/.7.1). Built→stop/reject; bare→value/reject
+                          by authoritative RULEID; precedence QARS>RULEID>geometry.
 Mthamen integration:      ⏸️ Deferred indefinitely (see Project_Instructions §20.8)
-Next blocker:             Thursday 2026-05-21 — secretary's confirmed sales data
-Next Sprint:              2.16.16 — Confirmed Sales DB integration (renumbered from 2.16.15)
+Roadmap (next):           2.21.0.8 = P3 MoJ lstkhdm usage filter (Arabic NBSP/hamza
+                          normalization, ~3% comparables) · 2.21.1 = apartments
+                          (MME smoke first, §21.6) · 2.22.x = Map UI (pin-drop → GPS
+                          → PIN via CadastrePlots)
+Confirmed Sales (2.16.16): still pending the secretary's data
+Deploy:                   git subtree push --prefix "deploy v2" (Operational_Rules #43)
 ```
 
 -----
