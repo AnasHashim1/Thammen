@@ -448,6 +448,7 @@ def evaluate_v3(
             building_age_known=False,
             service_charge_confidence='estimated',
             bua_known=eval_dict.get('replacement_cost') is not None,
+            asset_type=eval_dict.get('asset_type'),   # Sprint 2.21.0.5: land-aware
         )
         eval_dict['material_uncertainty'] = {
             'level': uncertainty.level,

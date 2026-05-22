@@ -1333,6 +1333,16 @@ def evaluate_property(zone: int, street: int, building: int,
     plot_area = report.plot.pdarea if report.plot else None
     extent_total = report.extent.total_area_m2 if report.extent else None
 
+    # Sprint 2.21.0.5 (Issue 2): PIN-input lands have no QARS address, so
+    # f'{zone}/{street}/{building}' renders "None/None/None". Show a meaningful
+    # land label instead. Address entry (z/s/b) is unchanged → no regression.
+    _district_name = getattr(report.district, 'aname', None) if report.district else None
+    if pin:
+        _display_address = (f'أرض في {_district_name} — PIN {pin}'
+                            if _district_name else f'PIN {pin}')
+    else:
+        _display_address = f'{zone}/{street}/{building}'
+
     # === Step 2: Load MoJ reference ===
     # We rebuild the reference for the area in question
     valuation = None
@@ -1385,7 +1395,7 @@ def evaluate_property(zone: int, street: int, building: int,
                 trend_data = None
         except Exception as e:
             return PropertyEvaluation(
-                address=f'{zone}/{street}/{building}',
+                address=_display_address,
                 asset_type=asset_type, classification_confidence=confidence,
                 plot_area_m2=plot_area, extent_total_m2=extent_total,
                 valuation=None, listing_comparison=None, listing_flags=None,
@@ -1676,7 +1686,7 @@ def evaluate_property(zone: int, street: int, building: int,
 
     # Build evaluation object first (confidence needs it)
     evaluation = PropertyEvaluation(
-        address=f'{zone}/{street}/{building}',
+        address=_display_address,
         asset_type=asset_type,
         classification_confidence=confidence,
         plot_area_m2=plot_area,

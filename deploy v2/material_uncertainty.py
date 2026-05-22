@@ -155,12 +155,19 @@ def assess_uncertainty(
     service_charge_confidence: str = 'estimated',
     property_type_known: bool = True,
     bua_known: bool = False,
+    asset_type: Optional[str] = None,
 ) -> UncertaintyLevel:
     """
     Assess material uncertainty across all data sources.
 
     The final level is the WORST (highest uncertainty) among all inputs.
+
+    Sprint 2.21.0.5 (Issues 4+5): when `asset_type` is bare land (raw_land/land),
+    building-specific factors and known-unknowns (BUA, building condition/age,
+    service charges, interior/finishes) are irrelevant and are replaced with
+    land-specific unknowns. Non-land assets are unaffected (regression-safe).
     """
+    _is_land = (asset_type or '').lower() in ('raw_land', 'land')
     factors = []
     unknowns = []
     recommendations = []
@@ -198,29 +205,41 @@ def assess_uncertainty(
     # ── Physical inspection ──
     if not has_field_inspection:
         factors.append('لم يتم فحص العقار ميدانياً — تقييم مكتبي فقط')
-        unknowns.append('حالة المبنى الفعلية من الداخل')
-        unknowns.append('التشطيبات والإطلالة والضوضاء')
         scores.append(2)
-        recommendations.append('معاينة ميدانية قبل اتخاذ قرار شراء/بيع')
+        if _is_land:
+            # Land-specific: no interior/finishes to inspect; check site & deed.
+            unknowns.append('منسوب الأرض ومتطلبات الإعداد (ردم/حفر)')
+            unknowns.append('مدى توفّر الخدمات والبنية التحتية للموقع')
+            recommendations.append('معاينة الموقع + بيان عقاري قبل قرار الشراء/البيع')
+        else:
+            unknowns.append('حالة المبنى الفعلية من الداخل')
+            unknowns.append('التشطيبات والإطلالة والضوضاء')
+            recommendations.append('معاينة ميدانية قبل اتخاذ قرار شراء/بيع')
 
-    # ── Building condition ──
-    if not building_condition_known:
-        unknowns.append('حالة المبنى (MoJ لا تفصل بين جديد ومتهالك)')
+    if _is_land:
+        # Bare land has no building → skip all building/BUA/service-charge gaps;
+        # surface land-relevant unknowns instead.
+        unknowns.append('تصنيف المنطقة وارتفاع البناء المسموح')
+        unknowns.append('أي قيود قانونية أو حصص غير مفروزة')
+    else:
+        # ── Building condition ──
+        if not building_condition_known:
+            unknowns.append('حالة المبنى (MoJ لا تفصل بين جديد ومتهالك)')
 
-    if not building_age_known:
-        unknowns.append('عمر البناء الدقيق')
+        if not building_age_known:
+            unknowns.append('عمر البناء الدقيق')
 
-    if not bua_known:
-        unknowns.append('المساحة المبنية الفعلية (BUA)')
-        factors.append('المساحة المبنية غير معروفة — تقدير بنسبة من القطعة')
-        scores.append(1)
+        if not bua_known:
+            unknowns.append('المساحة المبنية الفعلية (BUA)')
+            factors.append('المساحة المبنية غير معروفة — تقدير بنسبة من القطعة')
+            scores.append(1)
 
-    # ── Service charges ──
-    if service_charge_confidence == 'estimated':
-        factors.append('رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى')
-        scores.append(1)
-    elif service_charge_confidence == 'reported':
-        factors.append('رسوم الخدمات مُبلَّغة (ليست مُتحقَّقة من مصدر أصلي)')
+        # ── Service charges ──
+        if service_charge_confidence == 'estimated':
+            factors.append('رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى')
+            scores.append(1)
+        elif service_charge_confidence == 'reported':
+            factors.append('رسوم الخدمات مُبلَّغة (ليست مُتحقَّقة من مصدر أصلي)')
 
     # ── Determine overall level ──
     max_score = max(scores) if scores else 0

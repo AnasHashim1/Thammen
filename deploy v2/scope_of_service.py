@@ -257,6 +257,12 @@ _ASSET_SCOPE = {
     ),
 }
 
+# Sprint 2.21.0.5: alias — the classifier emits 'raw_land' (AssetType.RAW_LAND),
+# while this table is keyed 'land'. Treat raw_land as the supported land scope so
+# a bare-land PIN evaluation isn't mislabelled "نوع غير معروف / خارج النطاق".
+# (Alias pattern, not rename — see Operational_Rules #47.)
+_ASSET_SCOPE['raw_land'] = _ASSET_SCOPE['land']
+
 
 # ─── Public API ───────────────────────────────────────────────────────────
 

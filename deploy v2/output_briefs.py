@@ -282,16 +282,32 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     })
 
     # Section 4: WHAT TO ASK
-    sections.append({
-        'id': 'due_diligence',
-        'title_ar': 'أسئلة يجب طرحها قبل الشراء',
-        'content': [
+    # Sprint 2.21.0.5 (Issue 5): bare land has no building/tenant — swap the
+    # building/tenant questions for land-specific due diligence. Buildings keep
+    # the original list (regression-safe).
+    _dd_at = (evaluation.get('asset_type') or '').lower()
+    if _dd_at in ('raw_land', 'land'):
+        _dd_questions = [
+            'تحقّق من تصنيف المنطقة (R1/R2/R3) من البلدية',
+            'اطلب بيان عقاري من وزارة العدل (يكشف الرهونات والخلافات)',
+            'تحقّق من خدمات الموقع (كهرباء، ماء، صرف)',
+            'اطلب ارتفاع البناء المسموح (طوابق + نسبة بناء + setbacks)',
+            'اسأل عن أي قيود قانونية (إرث، حصص غير مفروزة)',
+            'افحص منسوب الأرض مقارنة بالشارع (تكلفة الردم/الحفر)',
+            'تحقّق من مدى توفّر البنية التحتية (شارع مرصوف، كهرباء قريبة)',
+        ]
+    else:
+        _dd_questions = [
             'اطلب بيان عقاري من وزارة العدل (يكشف الرهونات والخلافات)',
             'اسأل عن عمر البناء الحقيقي (ليس ما يقوله البائع)',
             'تحقق من تصنيف المنطقة (R1/R2/R3) — يحدد ما يمكنك بناؤه',
             'اطلب فواتير الخدمات (كهرباء/ماء) لآخر سنة',
             'إن كان مؤجراً: اطلب عقود الإيجار الحالية',
-        ],
+        ]
+    sections.append({
+        'id': 'due_diligence',
+        'title_ar': 'أسئلة يجب طرحها قبل الشراء',
+        'content': _dd_questions,
     })
 
     # Section 5: MATERIAL UNCERTAINTY (Sprint 2.14.0)

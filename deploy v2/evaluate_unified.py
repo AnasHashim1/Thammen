@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p21p0-pin-input-lands'
-SPRINT_TAG = '2.21.0'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p21p0p5-land-output-polish'
+SPRINT_TAG = '2.21.0.5'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -2985,7 +2985,18 @@ def evaluate_thammen(
     # (from MoJ land-only sales in the area) from implied building value
     # (residual = total − land). Old non-luxury villas show <5% building
     # contribution; new/luxury villas show 25-45%.
-    if (output.get('valuation') and output['valuation'].get('amount')
+    # Sprint 2.21.0.5 (Issue 3): a bare-land parcel has NO building, so the
+    # residual "building value" is meaningless (was rendering "بناء −3.5%"). Skip
+    # the decomposition for land and show a plain note instead. Buildings/villas
+    # keep the decomposition unchanged (regression-safe).
+    _out_at = (output.get('asset_type') or '').lower()
+    if _out_at in ('raw_land', 'land'):
+        if output.get('valuation'):
+            output['valuation']['value_decomposition_note_ar'] = (
+                'هذه قطعة أرض فضاء — التقييم على قيمة الأرض المنفصلة فقط. '
+                'لا توجد قيمة بناء يحسبها هذا التقييم.'
+            )
+    elif (output.get('valuation') and output['valuation'].get('amount')
             and getattr(ev, 'plot_area_m2', None)):
         try:
             # Sprint 2.6: prefer the new ev.moj_reference field
