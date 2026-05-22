@@ -338,6 +338,8 @@ heroku run python smoke_<endpoint>.py
 |**2.19.1**|**v38**|**Polish & Fixes — Arabic provenance labels, villa 4% rationale, stratification null-guard (A12), rent/m² outlier guard (A13)**|
 |**2.20.0**|**v39**|**Land Comparable Adjustments Grid (time-only) — RICS time-normalisation + AdjustmentGrid framework (E8/E10/E11); size deferred 2.20.1 (R²≈0.05), corner deferred (E12 BLOCKED, A8 partial)**|
 |**2.21.0**|**v40**|**PIN Input for Lands — dual input (address \| PIN); classifier `input_mode='land'`→`raw_land`; geo_v2 PIN-centroid so the 2.20 grid fires for bare lands; Rule #46**|
+|**2.21.0.7.1**|**v42**|**Micro-follow-up (v90→v91): built non-residential→reject (not stop; address tab is a dead-end); `_expand_extent` defensive `sorted(…,key=str)` (pre-existing int/str crash); discovered asset-type Arabic label (fixes "نوع العقار: غير محدد"); PIN-tab hotfix warning removed (superseded)**|
+|**2.21.0.7**|**v42**|**Asset Type Reality Check — PIN/land path consults QARS-in-polygon (P1, building present→stop) + General_Landuse RULEID (P2, authoritative coded-value map: residential 1/2/20→value, reject 5-18/21/23, warn 3/4/22, agri 19) + P4 building-factor guard; precedence QARS>RULEID>geometry; deployed v89**|
 |**2.21.0.5**|**v41**|**Land Output Polish — conditional `raw_land` rendering: scope=supported, PIN address, skip building decomposition, land-aware MUC factors/known-unknowns + due-diligence; Rule #47 (alias pattern)**|
 |**2.21.0**|**v40**|**PIN Input for Lands — dual input (address \| PIN); classifier `input_mode='land'` branch (raw_land + geometric guards) so bare-land PINs reach the 2.20 grid; Rule #46**|
 |**Mthamen Analysis**|*standalone*|🆕 **2026-05-18 reverse engineering مكتمل. 2026-05-19 deferred indefinitely** — see §20.8|

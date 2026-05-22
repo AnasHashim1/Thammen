@@ -1106,6 +1106,18 @@ unit tests surfaced. **Rule:** for any new asset_type/input mode, do a post-depl
 E2E *visual* read of the user-facing output, section by section, before declaring
 the Sprint user-facing-complete.
 
+**Expansion #2 (Sprint 2.21.0.7 / 2.21.0.7.1):** the end-to-end audit must also
+(a) **validate the classifier's output asset_type against authoritative GIS/data
+signals for the new path**, not just trust the input hint (→ Rule #49 — PIN "land"
+hint was wrong for 2/5 fixtures: built + governmental), and (b) re-run the
+**post-deploy visual read after every behaviour change**, because it keeps
+catching what unit tests miss. 2.21.0.7's offline tests were green, yet the live
+smoke + Anas's visual pass surfaced: a UX dead-end (built non-residential → "use
+address tab" when the address tab also rejects → changed to reject in 2.21.0.7.1),
+a stale display field ("نوع العقار: غير محدد" despite a known type → discovered
+label), and a pre-existing downstream crash (`_expand_extent` int/str sort, only
+hit because a no-LANDUSE PIN classified as a compound). None were visible offline.
+
 -----
 
 ## 47. ⚠️ New asset_type → ALIAS in every lookup dict, never rename (outside a refactor Sprint)
@@ -1145,6 +1157,37 @@ This is a defensive fix that also stabilises production (Pearl/Lusail master
 plots previously errored). Pairs with §21.6 (probe before integrate) — the probe
 `_get` was switched to POST first (audit-only), then this production guard added
 with Anas's explicit approval.
+
+**Update 2026-05-22 (Sprint 2.21.0.7):** this fallback was *exercised in
+production* by the new QARS-in-polygon query (P1) — many-vertex parcel rings
+(Pearl/Lusail) routinely exceed 2000 chars and now POST automatically. Confirmed
+working in the 15-PIN Heroku smoke. (So Anas's "#50 POST-fallback candidate" =
+this rule #48; no separate #50 created — avoids a numbering gap.)
+
+-----
+
+## 49. ⚠️ An identifier is NOT an asset_type — verify the real type via authoritative GIS/data lookups
+
+**Discovered**: 2026-05-20→22, Sprint 2.21.0 → 2.21.0.7. The PIN/land tab told the
+engine "this is land", and `probe_land_pins.py` "confirmed" 5/5 PINs as land — but
+it only **echoed the user's hint**, never querying ground truth. The live Asset
+Type Reality Check then proved **2 of those 5 were wrong**: `90040668` has a
+building on it (QARS-in-polygon=1 → BUILT), `52060090` is governmental (RULEID=12).
+
+**The rule**: a user-supplied identifier (PIN, address, tab choice) is an *input
+hint*, **not** the asset's true type. Before trusting it for a valuation path,
+cross-check against authoritative GIS/data signals:
+- **QARS-in-polygon** — is there a surveyed building inside the parcel? (built ≠ bare)
+- **General_Landuse RULEID** — official land-use class (residential vs commercial/
+  governmental/special/mixed). Pull the code→label map from the layer's
+  **coded-value domain**, never guess (see Empirical_Findings **E13**).
+- Precedence: building-present > land-use class > geometry. *Surface* the
+  contradiction (stop/reject screens), never silently value the wrong type.
+
+This is the PIN-path sibling of Rule E7 (QARS subtype needs a Zoning cross-check)
+and Bug A11. Pairs with #33 (measure first), #45 (verify data-linking before
+batch), #46 (audit the new path end-to-end), and **E14** (validation scripts must
+exercise production logic, not echo the input).
 
 -----
 

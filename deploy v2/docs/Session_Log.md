@@ -673,7 +673,48 @@ asset_types, don't rename). Live API verify: **5/5 issues fixed**. CHANGELOG_v41
 **Recurring lesson this session:** post-deploy **E2E** testing repeatedly caught
 what unit tests + backend checks did not (geo_v2 PIN gap; the 5 template issues).
 
+### 12.4 Sprint 2.21.0.7 — Asset Type Reality Check (deployed v89)
+The PIN/land path trusted the user's "this is land" hint + one geometric guard.
+A pre-Sprint autonomous audit (RULEID coded-value domain via
+`probe_ruleid_domain.py`; lstkhdm distribution via `probe_lstkhdm_audit.py`;
+12-PIN fixture library) proved the hint is wrong often. Fix consults two
+authoritative GIS signals, precedence **QARS-in-polygon (P1) > General_Landuse
+RULEID (P2) > geometric guard**: building present → stop; RULEID residential
+{1,2,20} → value; reject {5-18,21}; mixed {23} reject; warn {3,4,22} value+
+disclaimer; agri {19}. P4: guard the building-assumption MUC factor for land.
+RULEID map pulled from the layer's **coded-value domain, not guessed** (the guess
+had Pearl=22/23; truth is 21=Special Use → Rule **E13**). 41 isolated tests.
+12-PIN Heroku smoke: **all 15 reality outcomes logically correct** (3 "fails" were
+orthogonal — 2× Bug A6 latency 503s, 1× a pre-existing `_expand_extent` crash).
+CHANGELOG_v42.
+
+### 12.5 Sprint 2.21.0.7.1 — micro-follow-up (v90) + hotfix removal (v91)
+From the v89 smoke + Anas's 4/4 visual pass: **(Q1)** built non-residential →
+**reject** (not stop — the address tab is a dead-end for non-residential);
+**(Q2)** `_expand_extent` defensive `sorted(…, key=str)` (pre-existing
+int/str-key crash, exposed by no-LANDUSE PIN `63090035` classifying as a
+compound); **(Q3)** discovered asset-type Arabic label so "نوع العقار" shows the
+real type instead of "غير محدد" (kept `asset_type='unknown'` for the scope badge,
+surfaced via `asset_type_ar` + frontend precedence). 69 tests; re-smoke 13/15
+(2 remaining = A6 latency; the `63090035` crash became a timeout → Q2 confirmed via
+zero TypeErrors in logs post-deploy). After Anas's 3/3 visual re-verify, the
+**2.21.0.5.1 PIN-tab hotfix warning was removed** (v91, superseded).
+
+### 12.6 The 8 catches of the Land Arc (why E2E + reality checks matter)
+1. Grid unreachable (no PIN input). 2. classify_asset never returned land
+(0/5 baseline). 3. geo_v2 resolved lat/lon from null Z/S/B → grid skipped.
+4. 5 template contradictions for raw_land. 5. `probe_land_pins.py` echoed the
+hint (→ E14). 6. PIN ≠ asset_type (90040668 built, 52060090 governmental → #49).
+7. built non-residential dead-end (stop→reject). 8. `_expand_extent` int/str
+crash. Rules crystallized: **#46** (+2 expansions), **#47**, **#48** (GET→POST,
+exercised by P1), **#49** (identifier ≠ asset_type), **E13** (pull coded-value
+domains), **E14** (validation must exercise production logic).
+
+**Roadmap:** 2.21.0.8 = P3 MoJ lstkhdm usage filter (deferred — Arabic NBSP/hamza
+normalization, ~3% of comparables); 2.21.1 = apartments (MME smoke first, §21.6);
+2.22.x = Map UI (pin-drop → GPS → PIN via CadastrePlots).
+
 -----
 
-*Last updated: 2026-05-22 (Sprint 2.20.0 + 2.21.0 + 2.21.0.5 — Land Grid built, made reachable via PIN input, and polished; all deployed from Claude Code)*
+*Last updated: 2026-05-22 (Sprint 2.20.0 → 2.21.0 → 2.21.0.5 → **2.21.0.7 → 2.21.0.7.1** — Land Grid built, made reachable, polished, and hardened with the Asset Type Reality Check; all deployed from Claude Code)*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*

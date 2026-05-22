@@ -172,12 +172,81 @@ PIN/coordinates/street. So `detect_corner` (and any GIS attribute detector)
 attribute premiums derived from MoJ self-calibration are infeasible. (Discovery
 logged: Sprint 2.20 audit; see Operational_Rules #45.)
 
+**Update 2026-05-21 — PN-hash invertibility analysis ⇒ BLOCKED_CRYPTOGRAPHIC
+(+ BLOCKED_ETHICAL).** Investigated whether the `PN…` hash can be reversed to a
+GIS PIN (which would unblock E12). **It cannot, on two independent grounds:**
+
+1. **Cryptographic.** Full-corpus analysis (n=26,719; 26,128 distinct hashes):
+   body length is **variable 9–13 hex** (rules out every fixed-width truncated
+   hash — MD5/SHA1/SHA256/HMAC/Murmur/xxHash/FNV); length distribution is
+   **unimodal/banded** with P(13)/P(12)=0.073 (rules out keyless hash mod 2^k,
+   which would be uniform with mode=max width — *coverage-independent*);
+   **per-nibble entropy ≈ 4.000 bits** (cryptographic output, not a structured
+   id); **gcd(values)=gcd(diffs)=1** (not affine/XOR of PIN); PIN-embedding
+   slices all sit at the random-chance baseline (no embedded PIN); the hash is
+   **deterministic per parcel** across years (no salt). ⇒ a **keyed PRP/cipher
+   (or keyed MAC)** over a bounded internal-id domain — uncrackable without
+   secret-key recovery (2^128+). A keyless brute-force (md5/sha1/sha256/crc32 ×
+   4 encodings × low/high truncations) returned **0 hits** but covered only
+   PINs 11.0M–18.77M (8.7% of range — corroborating, *not* the basis).
+2. **Identifier mismatch.** Even a hypothetical inversion yields MoJ's
+   **internal parcel id**, not the GIS PIN — no published crosswalk, and
+   embedding tests were negative.
+
+**Ethical hard line (2026-05-21 decision).** The encryption is a deliberate MoJ
+**de-identification** control; inverting it is re-identification of pseudonymized
+government data. **No oracle was built; no >100-record validation was run** — by
+decision, *even if it had been crackable*. Thammen's reputation depends on ethical
+sourcing; mathematical knowledge of crackability has value, the application does
+not. Recon/analysis scripts only: `probe_moj_hash.py`, `probe_moj_decode.py`,
+`probe_moj_crack.py`.
+
+**Net:** E12 stays BLOCKED. The *only* unblock path remains a genuinely PIN-keyed
+T1 sale source (Confirmed Sales — Sprint 2.16.16; or verified MME geocoding) — the
+`PN…` hash is permanently closed as a PIN source. Recall: **"تذكر E12"** /
+**"تذكر تحليل تشفير العدل"**. Any future proposal to crack `encrypted_parcel_number`
+or build a MoJ→GIS re-identification map → **STOP**.
+
 > **Note on stability-criteria equivalence** (Sprint 2.20 §8): for a regression
 > slope, **CoV(slope) = SE/|slope| = 1/|t|**, so `CoV<0.5` and `|t|>2` are the
 > *same* test of slope precision — either may be used. **R²** measures explanatory
 > power separately and typically gives a stricter verdict (Sprint 2.20 land
 > size-stability scan: CoV/|t| = 28.4% stable, R²>0.30 = 8.1%, median R²≈0.046 →
 > within-bracket size adjustment deferred to 2.20.1).
+
+-----
+
+### 🆕 Rule E13 — Coded-value domains are authoritative; pull them, never guess
+
+✓ **Discovered 2026-05-22, Sprint 2.21.0.7.** An ArcGIS layer publishes its own
+`code → description` map in the field's **coded-value domain** (`?f=json` →
+`fields[].domain.codedValues`). For `Vector/General_Landuse` the RULEID map was
+first *guessed* from sampled PINs — and was wrong (the guess put Pearl at
+RULEID 22/23; the authoritative domain shows Pearl is **21 = Special Use**, and
+23 = Mixed Use is a distinct master-planned class). `probe_ruleid_domain.py`
+fetched the real domain (1 Single-Family Res … 12 Governmental … 19 Agricultural
+… 20 Vacant … 21 Special Use … 23 Mixed Use … 24 Unknown, −1 Free Representation).
+
+**The rule**: whenever a GIS/data field carries codes (RULEID, SUBTYPE, ZONING,
+status enums), **fetch the coded-value domain** and key the logic on it. Guessing
+from a handful of observed samples is how you ship "Pearl = Tourism" to
+production. (Implemented: `RULEID_LABELS` in `qatar_gis.py`, sourced from the
+domain.) Recall: **"تذكر E13"** / **"تذكر RULEID"**.
+
+### 🆕 Rule E14 — A validation script must exercise production logic, not echo the input
+
+✓ **Discovered 2026-05-22, Sprint 2.21.0.7.** `probe_land_pins.py` "confirmed"
+5/5 PINs as land — but it only **re-printed the user's land hint**; it never
+queried QARS or RULEID. The live Asset Type Reality Check then proved **2/5 were
+wrong** (`90040668` built, `52060090` governmental). A test that asserts what it
+assumes is worthless.
+
+**The rule**: a validation/probe script must call the **real** detection/
+classification path (or an independent authoritative source) and compare against
+ground truth — never restate its own input as the "result". Pairs with Rule #40
+(replica + production verification) and Operational_Rules #49 (identifier ≠
+asset_type). Self-check: *"if my code were broken, would this script still pass?"*
+If yes, it isn't validating anything. Recall: **"تذكر E14"**.
 
 -----
 
