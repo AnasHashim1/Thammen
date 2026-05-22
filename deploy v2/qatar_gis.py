@@ -583,6 +583,22 @@ def _landuse_at(lon, lat, timeout: float = 6.0):
     return None, None
 
 
+def _nonres_category_ar(ruleid):
+    """Sprint 2.21.0.7.1: short Arabic category word for the 'consult a specialist
+    valuer for {category} properties' line in the built-non-residential reject."""
+    if ruleid in (3, 4, 5, 22):
+        return 'التجارية'
+    if ruleid in (6, 7, 8, 9):
+        return 'الصناعية'
+    if ruleid == 23:
+        return 'المختلطة الاستخدام'
+    if ruleid == 21:
+        return 'الخاصة'
+    if ruleid == 19:
+        return 'الزراعية'
+    return 'المتخصصة'
+
+
 def _reality_flag(action, reason, ruleid, rid_en, rid_ar, qcount, bheight, area, message_ar):
     """Sprint 2.21.0.7: encode an asset-type reality-check result as a single
     flag string (prefix + JSON payload), mirroring the A11 `subtype_zoning_mismatch:`
@@ -811,18 +827,48 @@ def classify_asset(plot: PlotInfo, location_metadata=None,
         _rid_en, _rid_ar = RULEID_LABELS.get(_ruleid, ('Unknown', 'غير محدد'))
 
         # ── P1: a surveyed building exists ON the plot → it is NOT bare land.
-        #    DECISION 5: stop with guidance + surface the discovered info.
+        #    Sprint 2.21.0.7.1 (DECISION Q1): split by land-use.
+        #    - residential / vacant / unknown RULEID → STOP "use address tab"
+        #      (the address/villa flow can value the building) — DECISION 5.
+        #    - CONFIRMED non-residential RULEID → REJECT immediately, because the
+        #      address tab is a dead-end (it also rejects non-residential), so
+        #      "use address tab" would just waste the user's time.
         if isinstance(_qcount, int) and _qcount > 0:
-            _msg = (
-                f'⚠ هذه القطعة (PIN {plot.pin}) عليها مبنى — ليست أرض فضاء.\n\n'
-                f'المعلومات المكتشفة:\n'
+            _disc = (
+                f'\n\nالمعلومات المكتشفة:\n'
                 f'- المساحة: {area:,.0f} م²\n'
                 f'- التصنيف: {_rid_ar}\n'
                 f'- الارتفاع المسموح: {_bheight or "غير متاح"}\n'
-                f'- البناء: موجود ✓\n\n'
-                f"لتقييم العقار المبني عليها:\n"
-                f"استخدم تبويب 'العنوان' مع Zone/Street/Building.\n\n"
-                f'النظام لا يحوّل تلقائياً لضمان وعي المستخدم بالاكتشاف.'
+                f'- البناء: موجود ✓'
+            )
+            _nonres_confirmed = (_ruleid in RULEID_REJECT or _ruleid in RULEID_WARN
+                                 or _ruleid in RULEID_MIXED_USE or _ruleid in RULEID_AGRICULTURAL)
+            if _nonres_confirmed:
+                _cat = _nonres_category_ar(_ruleid)
+                _msg = (
+                    f'⚠ هذه القطعة (PIN {plot.pin}) عليها مبنى + مصنّفة {_rid_ar} '
+                    f'(RULEID={_ruleid}).\n'
+                    f'العقارات {_rid_ar} خارج نطاق Thammen حالياً.\n'
+                    f'استشر مُقيِّم متخصّص للعقارات {_cat}.'
+                    + _disc
+                )
+                return AssetClassification(
+                    asset_type=AssetType.UNKNOWN, confidence='high',
+                    reasons=[f'QARS-in-polygon={_qcount} + RULEID={_ruleid} ({_rid_en}) — '
+                             f'non-residential building, out of scope'],
+                    flags=[_reality_flag('reject', 'non_residential_built', _ruleid, _rid_en,
+                                         _rid_ar, _qcount, _bheight, area, _msg)],
+                    alternative_types=[],
+                )
+            # residential / vacant {20} / unknown {24,-1,None} → stop, not reject
+            # (these are NOT confirmed non-residential — the building may be a
+            # villa/apartment the address flow can value).
+            _msg = (
+                f'⚠ هذه القطعة (PIN {plot.pin}) عليها مبنى — ليست أرض فضاء.'
+                + _disc
+                + f"\n\nلتقييم العقار المبني عليها:\n"
+                  f"استخدم تبويب 'العنوان' مع Zone/Street/Building.\n\n"
+                  f'النظام لا يحوّل تلقائياً لضمان وعي المستخدم بالاكتشاف.'
             )
             return AssetClassification(
                 asset_type=AssetType.UNKNOWN, confidence='high',
@@ -1356,7 +1402,11 @@ class QatarGIS:
 
         return AssetExtent(
             primary_pin=seed.pin,
-            included_pins=sorted(included.keys()),
+            # Sprint 2.21.0.7.1 (DECISION Q2): defensive — PIN keys may be a mix
+            # of int (seed) and str (GIS attribute values), which raises
+            # "TypeError: '<' not supported between int and str". key=str sorts
+            # safely regardless of type. No behaviour change for uniform keys.
+            included_pins=sorted(included.keys(), key=str),
             plots=plots_list,
             total_area_m2=total_area,
             combined_bbox_4326=combined_bbox,

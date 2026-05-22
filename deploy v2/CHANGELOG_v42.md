@@ -113,3 +113,52 @@ the 12-PIN smoke + browser visual on one stop (90040668) + one clean land (74328
 - Auto-pivot built-land → building flow (DECISION 5b, future).
 - Per-use pricing models (commercial/agricultural land medians).
 - `detect_corner` wiring (still parked from 2.20).
+
+---
+
+# 2.21.0.7.1 — micro-follow-up (post-deploy of v89)
+
+**Engine version:** `thammen-sprint2p21p0p7p1-micro-followup`
+**Trigger:** the v89 12-PIN Heroku smoke (12/15 logic PASS; 3 fails all orthogonal)
++ Anas's visual verification (4/4 PASS) surfaced 1 UX issue + confirmed 2 decisions.
+
+**Q1 — built non-residential → reject (not stop).** Previously *any* built parcel
+returned `stop` ("use the address tab"). But for a **non-residential** built
+parcel the address tab is a dead-end (it also rejects non-residential), so the
+user just wastes time. New split in `classify_asset` P1:
+- built + residential `{1,2}` / vacant `{20}` / unknown `{24,−1,None}` → **stop**
+  (the address/villa flow can value it; vacant/unknown are *not* confirmed
+  non-residential, so we don't hard-reject — resolves the two edge cases flagged
+  at brief time).
+- built + **confirmed non-residential** (`3–19, 21, 22, 23`) → **reject**, reason
+  `non_residential_built`, with the discovery block + "consult a specialist valuer
+  for {category} properties".
+
+**Q2 — `_expand_extent` defensive sort.** `sorted(included.keys())` raised
+`TypeError: '<' not supported between int and str` for a compound whose PIN keys
+mix int (seed) and str (GIS attrs) — exposed by fixture `63090035` (no LANDUSE →
+geometric guard → compound). Fixed: `sorted(included.keys(), key=str)`. Pure
+crash-prevention, no behaviour change for uniform keys. Pre-existing bug (would
+have crashed in 2.21.0 too); not introduced by 2.21.0.7.
+
+**Q3 — discovered asset-type label in reports.** stop/reject responses kept
+`asset_type='unknown'` (so the scope badge stays "unsupported"), which made the
+prominent "نوع العقار" field show "غير محدد" even though we know the type.
+Option A (decouple display from logic): `asset_type_ar` now carries a
+RULEID+built-derived Arabic label (e.g. built RULEID=4 → «مبنى خدمات/مكاتب»;
+bare RULEID=12 → «أرض حكومية»), and the frontend prefers `asset_type_ar` when
+`asset_type==='unknown'` (3 display sites). Normal responses unchanged
+(`asset_type!=='unknown'`).
+
+**Files:** `qatar_gis.py` (P1 split + `_nonres_category_ar` + Q2 sort),
+`evaluate_unified.py` (`_DISCOVERED_LABEL_AR` + `_discovered_label_ar` + builder
+title/label + version), `index.html` (3 display sites), `CHANGELOG_v42.md`,
+`tests/test_sprint_2p21p0p7_reality_check.py` (+28 checks → **69 total**),
+`smoke_sprint2p21p0p7.py` (expectations updated for the new logic).
+
+**Verification:** 69/69 isolated; full standalone suite exit 0. Re-smoke from
+Heroku (post-deploy): 63090011 / 69051939 / 69051981 / 21-set → **reject**;
+90040668 → **stop**; 52060090 → reject with «أرض حكومية»; 63090035 → graceful
+(no crash). Rollback target = v89 (`thammen-sprint2p21p0p7-asset-type-reality-check`).
+
+**Hotfix warning:** still **kept** until this micro-follow-up is re-verified by Anas.

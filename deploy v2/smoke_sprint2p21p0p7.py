@@ -28,22 +28,24 @@ UA = {"User-Agent": "Thammen/smoke_2p21p0p7", "Content-Type": "application/json"
 #   else RULEID: {1,2,20}->'raw_land'(+grid) ; 19->'agricultural' ;
 #                {3,4,22}->'warn' ; {5-18,21}->'reject' ; 23->'reject'(mixed) ;
 #                None/no-coverage -> 'raw_land' (graceful geometric guard)
+# Sprint 2.21.0.7.1: built + CONFIRMED non-residential -> REJECT (was stop);
+# built + residential/vacant/unknown -> STOP (use address tab).
 FIXTURES = [
     ("74328443", 1,  0, "raw_land",     "residential bare"),
     ("74430180", 1,  0, "raw_land",     "residential bare"),
     ("90421755", 1,  0, "raw_land",     "residential bare"),
-    ("90040668", 1,  1, "stop",         "residential BUILT (QARS=1)"),
+    ("90040668", 1,  1, "stop",         "residential BUILT -> stop (unchanged)"),
     ("69050029", 2,  0, "raw_land",     "multi-family bare"),
-    ("63090011", 4,  1, "stop",         "offices BUILT — QARS-first => stop (Anas-note guessed warn)"),
+    ("63090011", 4,  1, "reject",       "offices BUILT -> reject (2.21.0.7.1: was stop)"),
     ("56391498", 10, 0, "reject",       "educational bare"),
     ("52060090", 12, 0, "reject",       "governmental bare"),
-    ("69051939", 15, 1, "stop",         "open-space BUILT — QARS-first => stop (Anas-note guessed reject)"),
+    ("69051939", 15, 1, "reject",       "open-space BUILT -> reject (2.21.0.7.1: was stop)"),
     ("63090021", 15, 0, "reject",       "open-space bare"),
-    ("66200396", 21, 1, "stop",         "special-use BUILT (Pearl/EduCity)"),
-    ("66200323", 21, 1, "stop",         "special-use BUILT"),
-    ("52598101", 21, 1, "stop",         "special-use BUILT"),
-    ("69051981", 23, 1, "stop",         "mixed-use BUILT — QARS-first => stop (Anas-note guessed reject)"),
-    ("63090035", None, 0, "raw_land",   "no General_Landuse coverage -> graceful geometric guard"),
+    ("66200396", 21, 1, "reject",       "special-use BUILT -> reject (2.21.0.7.1: was stop)"),
+    ("66200323", 21, 1, "reject",       "special-use BUILT -> reject"),
+    ("52598101", 21, 1, "reject",       "special-use BUILT -> reject"),
+    ("69051981", 23, 1, "reject",       "mixed-use BUILT -> reject (2.21.0.7.1: was stop)"),
+    ("63090035", None, 0, "graceful",   "no LANDUSE coverage -> graceful (no crash; compound via guard)"),
 ]
 
 
@@ -79,6 +81,9 @@ def kind_matches(expected, actual):
         return actual in ("raw_land", "raw_land+grid")
     if expected == "agricultural":
         return actual == "agricultural"
+    if expected == "graceful":
+        # Just needs to NOT crash and NOT be unclassifiable.
+        return not actual.startswith("ERR") and actual != "?"
     return expected == actual
 
 

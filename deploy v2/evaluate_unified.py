@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p21p0p7-asset-type-reality-check'
-SPRINT_TAG = '2.21.0.7'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p21p0p7p1-micro-followup'
+SPRINT_TAG = '2.21.0.7.1'         # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -2117,6 +2117,48 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
     })
 
 
+# Sprint 2.21.0.7.1 (DECISION Q3): RULEID + built → Arabic display label, so the
+# prominent "نوع العقار" field shows the discovered type instead of "غير محدد".
+# (bare_label, built_label); single entry → same label for both states.
+_DISCOVERED_LABEL_AR = {
+    1:  ('أرض سكنية (فلل)',        'فيلا سكنية'),
+    2:  ('أرض سكنية (عمارات)',     'مبنى سكني'),
+    3:  ('أرض تجارية',             'مبنى تجاري'),
+    4:  ('أرض خدمات/مكاتب',        'مبنى خدمات/مكاتب'),
+    5:  ('أرض تجارة جملة',         'مبنى تجارة جملة'),
+    6:  ('أرض صناعية',             'مبنى صناعي'),
+    7:  ('أرض صناعية',             'مبنى صناعي'),
+    8:  ('أرض صناعية',             'مبنى صناعي'),
+    9:  ('أرض صناعية',             'مبنى صناعي'),
+    10: ('أرض تعليمية',            'مبنى تعليمي'),
+    11: ('أرض صحية',               'مبنى صحي'),
+    12: ('أرض حكومية',             'مبنى حكومي'),
+    13: ('أرض مجتمعية/ثقافية',     'مبنى مجتمعي/ثقافي'),
+    14: ('أرض دينية',              'مبنى ديني'),
+    15: ('ساحة/حديقة',             'ساحة/حديقة'),
+    16: ('أرض رياضية',             'منشأة رياضية'),
+    17: ('أرض نقل/مواصلات',        'منشأة نقل/مواصلات'),
+    18: ('أرض مرافق',              'منشأة مرافق'),
+    19: ('أرض زراعية',             'مزرعة'),
+    20: ('أرض فضاء غير مصنّفة',    'أرض فضاء غير مصنّفة'),
+    21: ('تطوير خاص',              'تطوير خاص'),
+    22: ('أرض سياحية',             'مبنى سياحي'),
+    23: ('تطوير مختلط الاستخدام',  'تطوير مختلط الاستخدام'),
+}
+
+
+def _discovered_label_ar(reality):
+    """Sprint 2.21.0.7.1: derive the 'نوع العقار' display label from the reality
+    payload's RULEID + built state. Falls back to the RULEID's Arabic label,
+    then to a generic 'أرض / قطعة'."""
+    rid = reality.get('ruleid')
+    built = isinstance(reality.get('qars_in_polygon'), int) and reality['qars_in_polygon'] > 0
+    pair = _DISCOVERED_LABEL_AR.get(rid)
+    if pair:
+        return pair[1] if built else pair[0]
+    return reality.get('ruleid_label_ar') or 'أرض / قطعة'
+
+
 def _build_reality_stop_response(loc, plot, audience, reality):
     """Sprint 2.21.0.7: dedicated 'stop'/'reject' response for the PIN/land path
     when the Asset Type Reality Check finds the parcel is built or non-residential.
@@ -2133,10 +2175,12 @@ def _build_reality_stop_response(loc, plot, audience, reality):
              else (f'PIN {_pin}' if _pin else '—'))
     _msg = reality.get('message_ar') or 'هذه القطعة خارج نطاق التقييم الحالي.'
     _reason = reality.get('reason')
+    _disc_label = _discovered_label_ar(reality)   # DECISION Q3
     _title = ('قطعة عليها مبنى — ليست أرض فضاء'
               if _reason == 'building_present'
-              else ('قطعة استخدام مختلط — خارج النطاق' if _reason == 'mixed_use'
-                    else f'أرض غير سكنية ({reality.get("ruleid_label_ar", "")}) — خارج النطاق'))
+              else ('قطعة عليها مبنى غير سكني — خارج النطاق' if _reason == 'non_residential_built'
+                    else ('قطعة استخدام مختلط — خارج النطاق' if _reason == 'mixed_use'
+                          else f'أرض غير سكنية ({reality.get("ruleid_label_ar", "")}) — خارج النطاق')))
     return _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
@@ -2150,7 +2194,11 @@ def _build_reality_stop_response(loc, plot, audience, reality):
         # (consistent with the out-of-scope message). The precise reason lives
         # in the asset_type_reality panel; asset_type_ar keeps a friendly label.
         'asset_type': 'unknown',
-        'asset_type_ar': 'أرض / قطعة',
+        # DECISION Q3: keep asset_type='unknown' (scope badge stays unsupported),
+        # but surface the DISCOVERED type here so the "نوع العقار" field shows it
+        # instead of "غير محدد". The frontend prefers asset_type_ar when
+        # asset_type=='unknown'.
+        'asset_type_ar': _disc_label,
         'audience': audience,
         'user_inputs': {'pin': str(_pin) if _pin else None},
         'valuation': {

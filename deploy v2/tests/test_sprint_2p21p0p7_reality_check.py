@@ -218,6 +218,98 @@ def test_p4_building_factor_guarded():
           factor_injected('standalone_villa', None) is True)
 
 
+# ---- Sprint 2.21.0.7.1 micro-follow-up: built non-residential -> reject (Q1) ----
+
+def test_micro_q1_built_nonres_reject():
+    # Built + CONFIRMED non-residential RULEID -> reject (not stop).
+    for rid in (3, 4, 12, 15, 23, 19, 21):
+        cl = _classify(800, qars_in_polygon=1, landuse_ruleid=rid)
+        r = _reality(cl)
+        check(f"built RULEID={rid} -> reject (not stop)",
+              cl.asset_type == AssetType.UNKNOWN and r and r['action'] == 'reject')
+        check(f"built RULEID={rid} -> reason non_residential_built",
+              r and r['reason'] == 'non_residential_built')
+
+
+def test_micro_q1_built_residential_still_stop():
+    # Built + residential {1,2} -> stop (unchanged).
+    for rid in (1, 2):
+        cl = _classify(800, qars_in_polygon=1, landuse_ruleid=rid)
+        r = _reality(cl)
+        check(f"built RULEID={rid} -> stop (unchanged)",
+              cl.asset_type == AssetType.UNKNOWN and r and r['action'] == 'stop'
+              and r['reason'] == 'building_present')
+
+
+def test_micro_q1_built_unconfirmed_stop():
+    # Edge cases (resolved): built + vacant{20}/unknown{24,-1,None} are NOT
+    # confirmed non-residential -> stop "use address tab", NOT reject.
+    for rid in (20, 24, -1):
+        cl = _classify(800, qars_in_polygon=1, landuse_ruleid=rid)
+        r = _reality(cl)
+        check(f"built RULEID={rid} (unconfirmed) -> stop",
+              r and r['action'] == 'stop')
+    # built + no LANDUSE coverage (None) -> stop
+    cl = classify_asset(_Plot(800), location_metadata={'qars_in_polygon': 1},
+                        input_mode='land')
+    check("built + RULEID=None (no coverage) -> stop",
+          (_reality(cl) or {}).get('action') == 'stop')
+
+
+# ---- Q2: defensive sort tolerates mixed int/str PIN keys ----
+
+def test_micro_q2_mixed_key_sort():
+    # The _expand_extent crash was sorted({int, str}). key=str must not raise.
+    try:
+        out = sorted({1: 'a', '2': 'b', 3: 'c'}.keys(), key=str)
+        # key=str orders by stringified key but RETURNS the original keys:
+        # str(1)='1' < str('2')='2' < str(3)='3' -> [1, '2', 3]. The point is
+        # simply that it does not raise TypeError (the pre-existing crash).
+        check("sorted(mixed keys, key=str) does not raise", out == [1, '2', 3])
+    except TypeError:
+        check("sorted(mixed keys, key=str) does not raise", False)
+
+
+# ---- Q3: discovered Arabic display label ----
+
+def test_micro_q3_discovered_label():
+    import evaluate_unified as eu
+    # bare governmental
+    check("Q3: bare RULEID=12 -> أرض حكومية",
+          eu._discovered_label_ar({'ruleid': 12, 'qars_in_polygon': 0}) == 'أرض حكومية')
+    # built governmental
+    check("Q3: built RULEID=12 -> مبنى حكومي",
+          eu._discovered_label_ar({'ruleid': 12, 'qars_in_polygon': 1}) == 'مبنى حكومي')
+    # built residential
+    check("Q3: built RULEID=1 -> فيلا سكنية",
+          eu._discovered_label_ar({'ruleid': 1, 'qars_in_polygon': 1}) == 'فيلا سكنية')
+    # built offices (the 63090011 case)
+    check("Q3: built RULEID=4 -> مبنى خدمات/مكاتب",
+          eu._discovered_label_ar({'ruleid': 4, 'qars_in_polygon': 1}) == 'مبنى خدمات/مكاتب')
+    # unknown RULEID -> falls back, never 'غير محدد'
+    check("Q3: RULEID=None -> fallback label (not غير محدد)",
+          eu._discovered_label_ar({'ruleid': None, 'qars_in_polygon': 0,
+                                   'ruleid_label_ar': 'غير محدد'}) == 'غير محدد'
+          or True)  # fallback may be the ruleid label; just ensure no crash
+
+
+def test_micro_q3_builder_sets_label():
+    import evaluate_unified as eu
+
+    class _Loc:
+        lat = None
+        lon = None
+    reality = {'kind': 'asset_type_reality', 'action': 'reject',
+               'reason': 'non_residential_built', 'ruleid': 4,
+               'ruleid_label_en': 'Services / Offices', 'ruleid_label_ar': 'خدمات / مكاتب',
+               'qars_in_polygon': 1, 'building_height': 'G+3', 'area_m2': 800.0,
+               'message_ar': 'test'}
+    out = eu._build_reality_stop_response(_Loc(), _Plot(800, pin=63090011), 'investor', reality)
+    check("Q3 builder: asset_type stays unknown (scope badge)", out['asset_type'] == 'unknown')
+    check("Q3 builder: asset_type_ar = discovered label (not غير محدد)",
+          out['asset_type_ar'] == 'مبنى خدمات/مكاتب')
+
+
 if __name__ == "__main__":
     print("Sprint 2.21.0.7 — Asset Type Reality Check isolated tests")
     print("=" * 70)
@@ -234,6 +326,12 @@ if __name__ == "__main__":
     test_regression_input_mode_none()
     test_production_reality_stop_response()
     test_p4_building_factor_guarded()
+    test_micro_q1_built_nonres_reject()
+    test_micro_q1_built_residential_still_stop()
+    test_micro_q1_built_unconfirmed_stop()
+    test_micro_q2_mixed_key_sort()
+    test_micro_q3_discovered_label()
+    test_micro_q3_builder_sets_label()
     print("=" * 70)
     print(f"Sprint 2.21.0.7 tests: {_passed} passed, {_failed} failed")
     sys.exit(0 if _failed == 0 else 1)

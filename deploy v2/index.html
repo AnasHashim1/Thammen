@@ -545,7 +545,7 @@ function copyResult(){
   lines.push('━━━ تقرير ثمّن ━━━');
   if(d.address)lines.push('العنوان: '+d.address);
   if(d.district)lines.push('المنطقة: '+d.district);
-  if(d.asset_type)lines.push('نوع العقار: '+(ASSET_AR[d.asset_type]||d.asset_type));
+  if(d.asset_type)lines.push('نوع العقار: '+((d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type)));
   if(d.plot_area_m2)lines.push('مساحة الأرض: '+fmt(d.plot_area_m2)+' م²');
   const v=d.valuation||{};
   if(v.amount){
@@ -685,7 +685,7 @@ function show(d){
   // ── INSUFFICIENT DATA: prominent card with CTA ──
   if(!hasValuation){
     const reason=v.reason_ar||'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً.';
-    const assetAr=ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type||'هذا العقار';
+    const assetAr=(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type||'هذا العقار');
     h+='<div class="insuf">';
     h+='<div class="insuf-icon">ⓘ</div>';
     h+='<h2>التقييم يحتاج بيانات إضافية</h2>';
@@ -727,7 +727,7 @@ function show(d){
     if(d.address)h+=ri('العنوان',d.address,0,1);
     if(d.district)h+=ri('المنطقة',d.district);
     if(d.plot_area_m2)h+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
-    if(d.asset_type)h+=ri('نوع العقار',ASSET_AR[d.asset_type]||d.asset_type);
+    if(d.asset_type)h+=ri('نوع العقار',(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type));
     const pi=d.property_info||{};
     if(pi.zoning)h+=ri('التصنيف',pi.zoning);
     if(pi.permitted_height)h+=ri('الارتفاع المسموح',pi.permitted_height);
