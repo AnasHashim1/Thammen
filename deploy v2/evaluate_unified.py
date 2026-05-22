@@ -619,16 +619,26 @@ def _r100k(n):
 # Geo widening (the primary RICS adjustment when bracket is thin)
 # ============================================================
 
-def _run_geo_v2(ev, moj_csv_path: str):
+def _run_geo_v2(ev, moj_csv_path: str, pin=None):
     lat = lon = None
     try:
         from qatar_gis import QatarGIS
         gis = QatarGIS(verbose=False)
-        parts = ev.address.split('/')
-        loc = gis.find_property(int(parts[0]), int(parts[1]), int(parts[2]))
-        if loc:
-            lat = loc.lat
-            lon = loc.lon
+        if pin:
+            # Sprint 2.21.0: land/PIN entry has no QARS address — resolve lat/lon
+            # from the Cadastre polygon centroid so geo widening (and the
+            # comparable grid) work for bare-land PINs.
+            _plot = gis.get_plot(pin)
+            _ring = (_plot.polygon_4326 or []) if _plot else []
+            if _ring:
+                lon = sum(p[0] for p in _ring) / len(_ring)
+                lat = sum(p[1] for p in _ring) / len(_ring)
+        else:
+            parts = ev.address.split('/')
+            loc = gis.find_property(int(parts[0]), int(parts[1]), int(parts[2]))
+            if loc:
+                lat = loc.lat
+                lon = loc.lon
     except Exception:
         return None
     if not lat or not lon:
@@ -2691,7 +2701,7 @@ def evaluate_thammen(
         if not (use_geo_v2 and _GEO_OK):
             return None
         try:
-            return _run_geo_v2(ev, moj_csv_path)
+            return _run_geo_v2(ev, moj_csv_path, pin=pin)   # Sprint 2.21.0: land/PIN
         except Exception as e:
             print(f"[geo_v2] failed: {e}", file=sys.stderr)
             return None

@@ -46,7 +46,7 @@ def main(pins):
             except Exception:
                 area_name = None
         try:
-            cls = qg.classify_asset(plot, location_metadata=None)
+            cls = qg.classify_asset(plot, location_metadata=None, input_mode='land')
             at = cls.asset_type.value if hasattr(cls.asset_type, 'value') else str(cls.asset_type)
             conf = cls.confidence
         except Exception as e:
