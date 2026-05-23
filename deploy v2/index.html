@@ -709,44 +709,36 @@ function show(d){
     h+='</div>';
   }
 
-  // ── Sprint 2.21.0.9: Multi-QARS detection panel ──
+  // ── Sprint 2.21.0.9 (Stage 1): Multi-QARS unified flag ──
   // One cadastral PIN may host 2+ QARS-addressed villas (Bou Hamour
-  // 56/565/21 = duplex on 900m²). When detected, surface the effective-area
-  // split + (for type='attached') a "value whole structure" toggle that
-  // re-submits with override_land_area=cadastral_area, and (always) a
-  // manual override field so power users can specify their own area.
+  // 56/565/21 = 2 villas on 900m²). Stage 1 surfaces a SINGLE unified
+  // flag — no attached/separate distinction (GPS centroid alone cannot
+  // tell them apart; true A/B discrimination needs Building Footprint
+  // adjacency, deferred to Sprint 2.21.0.10 candidate per Anas 2026-05-23).
+  // The user is invited to correct the area if their actual share differs.
   const mqr=d.multi_qars;
   if(mqr&&mqr.detected){
-    const isAttached=mqr.type==='attached';
-    const isSep=mqr.type==='separate';
-    const titleAr=isAttached?'⚠️ فيلتك ضمن قطعة مشتركة (نمط متلاصق)':
-                  (isSep?'⚠️ القطعة مشتركة مع جيران':'⚠️ القطعة مشتركة (تحقق من النوع)');
-    const explainAr=isAttached?
-      ('هذه القطعة الكاداسترية ('+ (mqr.cadastral_area||'?') +' م²) فيها '+ mqr.n_qars +' فيلتين متلاصقتين على نفس الـ PIN. '+
-       'التقييم اعتمد على نصيب فيلتك ('+ mqr.effective_per_villa +' م²) لاختيار شريحة المقارنة في وزارة العدل.'):
-      ('هذه القطعة الكاداسترية ('+ (mqr.cadastral_area||'?') +' م²) فيها '+ mqr.n_qars +' مبانٍ منفصلة بمداخل وعناوين مختلفة. '+
-       'التقييم اعتمد على نصيب فيلتك ('+ mqr.effective_per_villa +' م²).');
+    const n=mqr.n_qars||0;
+    const cad=mqr.cadastral_area;
+    const eff=mqr.effective_per_villa;
     const coh=(mqr.cohabiting_buildings||[]).filter(x=>x!=null);
     h+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
-    h+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem">'+titleAr+'</div>';
-    h+='<div style="line-height:1.7;font-size:.92rem">'+explainAr+'</div>';
+    h+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem">⚠️ قطعة مشتركة ('+ n +' فلل على نفس القطعة)</div>';
+    h+='<div style="line-height:1.7;font-size:.92rem">تقييم مبدئي بقسمة الأرض بالتساوي ('+ (cad!=null?cad:'?') +' ÷ '+ n +' = '+ eff +' م²). لو حصة الأرض الفعلية مختلفة، عدّل المساحة يدوياً.</div>';
     if(coh.length){
-      h+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted)">الفيلات/المباني الأخرى على نفس الـ PIN: '+ coh.join(', ') +' • المسافة بين النقاط: '+ mqr.max_gps_distance_m +' متر</div>';
+      h+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted)">الفيلات الأخرى على نفس الـ PIN: '+ coh.join(', ') +'</div>';
     }
     if(mqr.user_override_applied){
-      h+='<div style="margin-top:10px;padding:8px 12px;background:var(--ok-bg);color:var(--ok);border-radius:6px;font-size:.88rem">✓ تم استخدام المساحة التي حدّدتها يدوياً ('+ mqr.effective_per_villa +' م²)</div>';
+      h+='<div style="margin-top:10px;padding:8px 12px;background:var(--ok-bg);color:var(--ok);border-radius:6px;font-size:.88rem">✓ تم استخدام المساحة التي حدّدتها يدوياً ('+ eff +' م²)</div>';
     }
-    // Action row — toggle + manual override
-    h+='<div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--warn);display:flex;flex-direction:column;gap:8px">';
-    if(isAttached&&mqr.alternative_valuation&&mqr.alternative_valuation.available){
-      const whole=mqr.alternative_valuation.would_use_pdarea;
-      h+='<button class="copy-btn" style="background:var(--bronze);color:white;border:none" onclick="thammenReEvalOverride('+ whole +')">قيّم المبنى كاملاً ('+ whole +' م²)</button>';
-    }
-    h+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
-    h+='<label style="font-size:.88rem;color:var(--text);font-weight:600">أو حدّد المساحة يدوياً (م²):</label>';
-    h+='<input id="mqOverrideInput" type="number" min="1" max="10000" step="1" placeholder="'+ mqr.effective_per_villa +'" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;width:120px">';
+    // Stage-1 transparency: surface stage + confidence so the broker
+    // understands this is the first-pass estimate, not the final word.
+    h+='<div style="margin-top:8px;font-size:.78rem;color:var(--muted)">المرحلة '+ (mqr.stage||1) +' — ثقة ~'+ (mqr.confidence_pct||70) +'% (تقدير سريع، قابل للتصحيح)</div>';
+    // Manual override row — the only action in Stage 1 (no toggle).
+    h+='<div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--warn);display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
+    h+='<label style="font-size:.88rem;color:var(--text);font-weight:600">عدّل المساحة (م²):</label>';
+    h+='<input id="mqOverrideInput" type="number" min="1" max="10000" step="1" placeholder="'+ eff +'" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;width:120px">';
     h+='<button class="copy-btn" onclick="thammenReEvalOverrideFromInput()">إعادة التقييم</button>';
-    h+='</div>';
     h+='</div>';
     h+='</div>';
   }

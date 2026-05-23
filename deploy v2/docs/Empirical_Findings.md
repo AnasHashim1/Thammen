@@ -248,6 +248,94 @@ ground truth — never restate its own input as the "result". Pairs with Rule #4
 asset_type). Self-check: *"if my code were broken, would this script still pass?"*
 If yes, it isn't validating anything. Recall: **"تذكر E14"**.
 
+### 🆕 Rule E15 — Qatar MME setback regulations (load-bearing for multi-villa logic)
+
+✓ **Sourced 2026-05-23**, anchors Sprint 2.21.0.9 (Stage 1) and the Stage 2
+classification rule (E18).
+
+Qatar Ministry of Municipality (MME) building code requires minimum setbacks on
+residential plots:
+
+| Setback | Minimum |
+|---|---|
+| Residential villa — all sides | **3.0 m** |
+| Basement | 1.0 m |
+| Commercial — front | 8.0 m |
+| Commercial — back | 3.0 m |
+
+**Implication for multi-villa detection.** Two separate villas built on a shared
+cadastral plot at code-minimum setbacks have **walls ≥ 6 m apart** (3 m × 2
+sides), giving centroids roughly **16 m+** apart for a typical 10 m villa width.
+So a 15.2 m GPS centroid distance — like Bou Hamour 56/565/21 — is **fully
+consistent with two physically separate, code-compliant villas**, not a duplex.
+This single fact is why Sprint 2.21.0.9 (Stage 1) does **no GPS-distance
+classification** and Stage 2 (E18) uses **wall-to-wall** distance against the
+6 m code-derived threshold instead. Source: https://www.mme.gov.qa/. Recall:
+**"تذكر E15"** / **"تذكر ارتداد البلدية"**.
+
+### 🆕 Rule E16 — Staged-valuation pattern (platform-wide, Anas 2026-05-23)
+
+✓ **Decided 2026-05-23.** All valuation flows now progressively enhance:
+
+| Stage | Data | Latency | Confidence | UX |
+|---|---|---|---|---|
+| **1** | Minimum (1-field identification + auto-fetched GIS/MoJ) | ≤ 5 s | ~70% | Always returns a number |
+| **2** | Richer auto-fetched data (e.g. Building Footprint, deeper GIS layers) | seconds | ~90% | Refines Stage 1; user sees the upgrade transparently |
+| **3** | User-on-site corrections / valuer-entered ground truth | n/a | ~95%+ | User overrides resolved |
+
+**The rule.** Every future Sprint reviewed through the staged lens: *which stage
+does this contribute to, and can Stage 1 ship independently?* Stage 1 must never
+be blocked on Stage 2 data. Sprint 2.21.0.9 is the first Sprint shipped under
+this discipline (multi-QARS detection ships without attached/separate
+classification because that's Stage 2 territory — see E18). Recall:
+**"تذكر E16"** / **"تذكر staged valuation"**.
+
+### 🆕 Rule E17 — 1-field minimum input principle (Anas 2026-05-23)
+
+✓ **Decided 2026-05-23.** The only field required from the broker is **property
+identification** — `zone/street/building` address, `PIN`, or (future) map
+pin-drop. **Everything else is auto-fetched from authoritative sources** and
+presented transparently for review.
+
+Optional refinements are **asset-type-adaptive** and revealed *post-
+classification* (e.g. tower-specific inputs only appear after classify_asset
+returns tower; villa-specific inputs only appear after standalone_villa). The
+broker reviews and corrects what Thammen fetched — Thammen never asks the broker
+to supply what GIS already publishes.
+
+This is the inverse of the legacy "ask the user everything" pattern and aligns
+with **RICS VPS 4 disclosure requirements** (every datum cited with source).
+Recall: **"تذكر E17"** / **"تذكر 1-field minimum"**.
+
+### 🆕 Rule E18 — Stage 2 wall-to-wall classification rule (Anas 2026-05-23)
+
+✓ **Pre-specified 2026-05-23**, deferred to Sprint 2.21.0.10 candidate
+(conditional on Building Footprint layer probe). Anchored on E15 (Qatar MME
+setback code).
+
+**The rule.** Two villas sharing one cadastral plot are classified by
+**direct wall-to-wall distance**, not GPS centroid distance:
+
+```python
+wall_to_wall = shapely.distance(footprint_A, footprint_B)
+if   wall_to_wall <  1.0: type = 'attached'      # shared wall + 1m GPS noise
+elif wall_to_wall >= 6.0: type = 'separate'      # Qatar code min (3m × 2 sides)
+else:                     type = 'sub_minimum'   # 1m-6m: rare, flag for review
+```
+
+This **replaces** the GPS-centroid threshold (15 m proposed; 18 m considered;
+both rejected) that the original Sprint 2.21.0.9 brief assumed. The replacement
+is decisive because the 1 m / 6 m boundaries are not tuning parameters — they
+fall directly out of Qatar MME building code (E15). No re-debate needed in
+Stage 2.
+
+**Prerequisite.** Building Footprint layer must be reachable from Heroku and
+queryable by `ZONE_NO + STREET_NO + BUILDING_NO`. Probe is the first deliverable
+of any Sprint 2.21.0.10 work. Sprint 2.21.0.9 (Stage 1) logs `pin`, `n_qars`,
+`is_shared`, `override_applied` so Sprint 2.21.0.10 can join historical
+detection traffic on `pin` once footprints arrive. Recall: **"تذكر E18"** /
+**"تذكر قاعدة 6 متر"**.
+
 -----
 
 ## 3. Empirical benchmarks for Qatar (validated 2026-05)

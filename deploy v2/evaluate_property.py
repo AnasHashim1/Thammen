@@ -1353,14 +1353,21 @@ def evaluate_property(zone: int, street: int, building: int,
     extent_total = report.extent.total_area_m2 if report.extent else None
 
     # ════════════════════════════════════════════════════════════════════
-    # Sprint 2.21.0.9 — Multi-QARS detection + effective_land_area
+    # Sprint 2.21.0.9 — Multi-QARS Detection (STAGE 1)
     # ════════════════════════════════════════════════════════════════════
-    # Discovered via the Bou Hamour 56/565/21 case (PDAREA=900 carrying two
-    # QARS-addressed villas B=19+B=21 → MoJ bracket-selection over-valued
-    # the land ~30-40% by looking up 600-900 m² comparables instead of the
-    # correct 400-600 m² stratum). This is THE injection point: after
-    # full_property_lookup, before any bracket-selection-keyed call uses
-    # `plot_area` (lines ~1400, ~1523, ~1624, ~1692 all read this variable).
+    # Discovered via Bou Hamour 56/565/21 (PDAREA=900 carrying two QARS-addressed
+    # villas B=19+B=21 → MoJ bracket-selection over-valued the land ~30-40% by
+    # looking up the 900-1500 stratum instead of the correct 400-600). This is
+    # THE injection point: after full_property_lookup, before any bracket-
+    # selection-keyed call uses `plot_area` (lines ~1400, ~1523, ~1624, ~1692
+    # all read this variable).
+    #
+    # STAGE 1 (this Sprint, intentionally minimal):
+    #   - Detect: is_shared = n_qars >= 2 (after carve-outs).
+    #   - Split:  effective = PDAREA / n_qars (no title discount).
+    #   - Override: user-supplied value always wins.
+    #   - No type classification, no GPS-distance threshold, no toggle. UI
+    #     surfaces a single unified flag + mandatory manual override field.
     #
     # Gated on `asset_type == 'standalone_villa'` so compound_large, tower,
     # apartment_building, raw_land, agricultural paths are byte-for-byte
@@ -1375,59 +1382,61 @@ def evaluate_property(zone: int, street: int, building: int,
             if ring:
                 polygon_geom = {'rings': [ring], 'spatialReference': {'wkid': 4326}}
             qars_list = count_qars_within_polygon(polygon_geom) if polygon_geom else []
-            from property_geo import classify_multi_qars
+            from property_geo import classify_multi_qars, STAGE1_CONFIDENCE_PCT
             multi = classify_multi_qars(
                 pdarea=cadastral_plot_area,
                 qars_list=qars_list,
                 subject_building_no=building,
             )
-            # User-supplied override always wins (E2E from the UI toggle or
-            # the manual override field).
+            # Effective area precedence: user override > auto-split > raw PDAREA.
             if plot_area_override is not None and plot_area_override > 0:
                 plot_area = float(plot_area_override)
                 multi_qars_used_override = True
-            elif multi.type in ('attached', 'separate', 'ambiguous'):
+            elif multi.is_shared:
                 plot_area = multi.effective_land_area
-            # else (standalone / handled_by_classifier): plot_area unchanged.
+            # else (standalone): plot_area unchanged (raw PDAREA).
 
-            # Build the dict the API + UI consume. `alternative_valuation`
-            # is offered only for 'attached' (duplex semantic — user can
-            # value the whole structure); for separate/ambiguous it's hidden.
-            multi_dict = multi.to_dict()
-            multi_dict['cadastral_area'] = (round(cadastral_plot_area, 1)
-                                            if cadastral_plot_area else None)
-            multi_dict['effective_per_villa'] = multi_dict['effective_land_area']
-            multi_dict['detected'] = (multi.type in ('attached', 'separate',
-                                                    'ambiguous'))
-            multi_dict['split_basis'] = ('user_override' if multi_qars_used_override
-                                         else 'equal_by_count_default')
-            multi_dict['user_override_available'] = True
-            multi_dict['user_override_applied'] = multi_qars_used_override
-            multi_dict['cohabiting_buildings'] = [
-                q.get('building_no') for q in (multi.qars_buildings or [])
-                if building is None or q.get('building_no') != building
-            ]
-            if multi.type == 'attached':
-                multi_dict['alternative_valuation'] = {
-                    'available': True,
-                    'scope': 'value_whole_structure',
-                    'would_use_pdarea': multi_dict['cadastral_area'],
+            # API/UI dict — only surfaced when detected (is_shared=True).
+            # Per Sprint 2.21.0.9 spec: detected, n_qars, cohabiting, cadastral,
+            # effective_per_villa, stage=1, confidence_pct=70, split_basis,
+            # user_override_*.
+            if multi.is_shared:
+                cohabiting = [
+                    q.get('building_no') for q in (multi.qars_buildings or [])
+                    if building is None or q.get('building_no') != building
+                ]
+                multi_qars_dict = {
+                    'detected': True,
+                    'n_qars': multi.n_qars,
+                    'cohabiting_buildings': cohabiting,
+                    'cadastral_area': (round(cadastral_plot_area, 1)
+                                       if cadastral_plot_area else None),
+                    'effective_per_villa': round(multi.effective_land_area, 1),
+                    'stage': 1,
+                    'confidence_pct': STAGE1_CONFIDENCE_PCT,
+                    'split_basis': ('user_override' if multi_qars_used_override
+                                    else 'equal_by_count_default'),
+                    'user_override_available': True,
+                    'user_override_applied': multi_qars_used_override,
                 }
-            multi_qars_dict = multi_dict
 
-            # Structured log line for later distribution learning (Anas asked
-            # to log every detection so we can calibrate A:B ratios over time
-            # and tune the 18m threshold against real-world prevalence).
-            print(f'[multi_qars] pin={pin or "addr"} '
+            # Structured log line for retrospective Stage 2 calibration
+            # (Anas, 2026-05-23: log every detection so we can review A:B
+            # distribution once we have 100+ production cases and decide
+            # whether the Building Footprint probe / Sprint 2.21.0.10 is
+            # warranted). Stage 1 does not compute GPS distance, so the log
+            # line records what Stage 1 DOES know: pdarea, n_qars, effective,
+            # cohabiting set, override applied.
+            print(f'[multi_qars] stage=1 '
+                  f'pin={pin or report.location.pin if report.location else "addr"} '
                   f'pdarea={cadastral_plot_area} '
-                  f'n={multi.n_qars} dist={multi.max_gps_distance_m:.1f}m '
-                  f'type={multi.type} effective={multi.effective_land_area:.0f} '
-                  f'override={multi_qars_used_override}')
+                  f'n={multi.n_qars} '
+                  f'is_shared={multi.is_shared} '
+                  f'effective={multi.effective_land_area:.0f} '
+                  f'override_applied={multi_qars_used_override}')
         except Exception as _e_multi:
             # Detection must never break valuation — fall through with no flag.
             multi_qars_dict = None
-            # Surface to the warnings list so it shows in raw_property_report
-            # but doesn't trip any user-visible warning panel.
             print(f'[multi_qars] detection failed: {type(_e_multi).__name__}: {_e_multi}')
     elif plot_area_override is not None and plot_area_override > 0:
         # Non-villa path: respect explicit override (rare, but supported for
@@ -1435,9 +1444,9 @@ def evaluate_property(zone: int, street: int, building: int,
         plot_area = float(plot_area_override)
         multi_qars_used_override = True
     # ════════════════════════════════════════════════════════════════════
-    # End Sprint 2.21.0.9 injection. `plot_area` from here on is the
-    # *effective* area for bracket selection. `cadastral_plot_area` retains
-    # the raw PDAREA for the API response + display.
+    # End Sprint 2.21.0.9 (Stage 1) injection. `plot_area` from here on is
+    # the *effective* area for bracket selection. `cadastral_plot_area` retains
+    # the raw PDAREA for display.
 
     # Sprint 2.21.0.5 (Issue 2): PIN-input lands have no QARS address, so
     # f'{zone}/{street}/{building}' renders "None/None/None". Show a meaningful

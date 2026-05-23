@@ -41,7 +41,7 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p21p0p9-multi-qars-detection'
+ENGINE_VERSION = 'thammen-sprint2p21p0p9-multi-qars-stage1'
 SPRINT_TAG = '2.21.0.9'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:

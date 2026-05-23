@@ -199,8 +199,12 @@ def test_production_reality_stop_response():
     check("builder: PIN-aware address", 'PIN 52060090' in (out.get('address') or ''))
     check("builder: no valuation amount", out['valuation']['amount'] is None)
     check("builder: asset_type_reality attached", out.get('asset_type_reality') == reality)
-    check("builder: engine_version is 2.21.0.7",
-          '2p21p0p7' in (out.get('engine_version') or ''))
+    # Sprint 2.21.0.9 relaxed: assert the field is attached + follows the
+    # project's engine-version convention, NOT a specific Sprint literal
+    # (which fails for every later Sprint — same brittleness Sprint 2.19.1
+    # already corrected across the other test files; see CLAUDE.md note).
+    check("builder: engine_version attached + in project format",
+          (out.get('engine_version') or '').startswith('thammen-sprint'))
 
 
 # ---- P4: building-assumption factor guarded for land ----
