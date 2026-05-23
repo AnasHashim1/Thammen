@@ -507,6 +507,10 @@ async function run(){
       // Sprint 2.16.10 — send the pair only when BOTH are present (engine derives total)
       if(uc&&apu){bd.unit_count=+uc;bd.avg_monthly_rent_per_unit=+apu;}
     }
+    // Sprint 2.21.0.9 — remember this submission so the multi_qars UI can
+    // re-submit with `override_land_area` (the "value whole structure" toggle
+    // + the manual override field).
+    window._lastSubmit={endpoint:'/api/evaluate/details', body:JSON.parse(JSON.stringify(bd))};
     const r=await fetch(API+'/api/evaluate/details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
     if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
     const data=await r.json();
@@ -520,6 +524,51 @@ async function run(){
     clearInterval(stepTimer);clearInterval(elapsedTimer);
     btn.disabled=false;btn.innerHTML='ثمّن';
   }
+}
+
+// Sprint 2.21.0.9 — Multi-QARS user override re-evaluation.
+// Triggered by (a) the "قيّم المبنى كاملاً" toggle on attached duplexes
+// (passes cadastral_area), or (b) the manual override input field below it.
+async function thammenReEvalOverride(area){
+  const a=Number(area);
+  if(!window._lastSubmit||!isFinite(a)||a<=0||a>10000){
+    alert('يرجى إدخال مساحة صحيحة بين 1 و 10,000 م²');
+    return;
+  }
+  const bd=JSON.parse(JSON.stringify(window._lastSubmit.body));
+  bd.override_land_area=a;
+  const fRes=document.getElementById('fRes');
+  // Visual feedback at the top of the results area (we may not be on the form screen).
+  try{
+    const banner=document.createElement('div');
+    banner.id='_mqReevalBanner';
+    banner.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--bronze);color:white;padding:10px 16px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);z-index:1500;font-weight:600';
+    banner.textContent='جاري إعادة التقييم بمساحة '+ a +' م²...';
+    document.body.appendChild(banner);
+  }catch(_){}
+  try{
+    const r=await fetch(API+window._lastSubmit.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
+    if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
+    const data=await r.json();
+    window._lastResult=data;
+    window._lastSubmit={endpoint:window._lastSubmit.endpoint, body:bd};
+    show(data);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }catch(e){
+    if(fRes)fRes.innerHTML='<div class="err" style="margin-top:14px">⚠️ '+(e.message||'حدث خطأ')+'</div>';
+    else alert('⚠️ '+(e.message||'حدث خطأ'));
+  }finally{
+    const b=document.getElementById('_mqReevalBanner');
+    if(b)b.remove();
+  }
+}
+
+function thammenReEvalOverrideFromInput(){
+  const el=document.getElementById('mqOverrideInput');
+  if(!el){return;}
+  const v=(el.value||'').trim();
+  if(!v){alert('يرجى إدخال المساحة الجديدة');el.focus();return;}
+  thammenReEvalOverride(v);
 }
 
 function openMapPicker(lat,lon){
@@ -657,6 +706,48 @@ function show(d){
     h+='<div style="background:'+bg+';border:2px solid '+bdr+';border-radius:8px;padding:16px;margin-bottom:14px">';
     h+='<div style="font-weight:700;color:'+bdr+';margin-bottom:8px;font-size:1.02rem">'+ttl+'</div>';
     h+='<div style="line-height:1.8;font-size:.92rem;white-space:pre-line">'+atr.message_ar+'</div>';
+    h+='</div>';
+  }
+
+  // ── Sprint 2.21.0.9: Multi-QARS detection panel ──
+  // One cadastral PIN may host 2+ QARS-addressed villas (Bou Hamour
+  // 56/565/21 = duplex on 900m²). When detected, surface the effective-area
+  // split + (for type='attached') a "value whole structure" toggle that
+  // re-submits with override_land_area=cadastral_area, and (always) a
+  // manual override field so power users can specify their own area.
+  const mqr=d.multi_qars;
+  if(mqr&&mqr.detected){
+    const isAttached=mqr.type==='attached';
+    const isSep=mqr.type==='separate';
+    const titleAr=isAttached?'⚠️ فيلتك ضمن قطعة مشتركة (نمط متلاصق)':
+                  (isSep?'⚠️ القطعة مشتركة مع جيران':'⚠️ القطعة مشتركة (تحقق من النوع)');
+    const explainAr=isAttached?
+      ('هذه القطعة الكاداسترية ('+ (mqr.cadastral_area||'?') +' م²) فيها '+ mqr.n_qars +' فيلتين متلاصقتين على نفس الـ PIN. '+
+       'التقييم اعتمد على نصيب فيلتك ('+ mqr.effective_per_villa +' م²) لاختيار شريحة المقارنة في وزارة العدل.'):
+      ('هذه القطعة الكاداسترية ('+ (mqr.cadastral_area||'?') +' م²) فيها '+ mqr.n_qars +' مبانٍ منفصلة بمداخل وعناوين مختلفة. '+
+       'التقييم اعتمد على نصيب فيلتك ('+ mqr.effective_per_villa +' م²).');
+    const coh=(mqr.cohabiting_buildings||[]).filter(x=>x!=null);
+    h+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
+    h+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem">'+titleAr+'</div>';
+    h+='<div style="line-height:1.7;font-size:.92rem">'+explainAr+'</div>';
+    if(coh.length){
+      h+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted)">الفيلات/المباني الأخرى على نفس الـ PIN: '+ coh.join(', ') +' • المسافة بين النقاط: '+ mqr.max_gps_distance_m +' متر</div>';
+    }
+    if(mqr.user_override_applied){
+      h+='<div style="margin-top:10px;padding:8px 12px;background:var(--ok-bg);color:var(--ok);border-radius:6px;font-size:.88rem">✓ تم استخدام المساحة التي حدّدتها يدوياً ('+ mqr.effective_per_villa +' م²)</div>';
+    }
+    // Action row — toggle + manual override
+    h+='<div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--warn);display:flex;flex-direction:column;gap:8px">';
+    if(isAttached&&mqr.alternative_valuation&&mqr.alternative_valuation.available){
+      const whole=mqr.alternative_valuation.would_use_pdarea;
+      h+='<button class="copy-btn" style="background:var(--bronze);color:white;border:none" onclick="thammenReEvalOverride('+ whole +')">قيّم المبنى كاملاً ('+ whole +' م²)</button>';
+    }
+    h+='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
+    h+='<label style="font-size:.88rem;color:var(--text);font-weight:600">أو حدّد المساحة يدوياً (م²):</label>';
+    h+='<input id="mqOverrideInput" type="number" min="1" max="10000" step="1" placeholder="'+ mqr.effective_per_villa +'" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;width:120px">';
+    h+='<button class="copy-btn" onclick="thammenReEvalOverrideFromInput()">إعادة التقييم</button>';
+    h+='</div>';
+    h+='</div>';
     h+='</div>';
   }
 

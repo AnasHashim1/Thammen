@@ -200,6 +200,11 @@ _RENTAL_INCOME_MAX = 10_000_000.0   # QAR/month
 # 500K/month per unit ceiling covers Pearl/Lusail premium apartments.
 _UNIT_COUNT_MAX = 500
 _PER_UNIT_RENT_MAX = 500_000.0      # QAR/month per unit
+# Sprint 2.21.0.9 — user override for multi-QARS effective land area.
+# Upper bound 10,000 m² = larger than any realistic single-villa parcel; above
+# that is compound territory (already handled by classify_asset compound_large
+# branch). Lower bound 1 m² (Pydantic gt=0) — anything else is a typo / abuse.
+_LAND_OVERRIDE_MAX = 10_000.0
 
 # Sprint 2.16.12 (B3) — explicit audience whitelist.
 # Previously _normalize_audience() in evaluate_unified.py silently coerced any
@@ -278,6 +283,11 @@ class EvaluateRequest(BaseModel):
     # engine derives total monthly rent when both are present.
     unit_count: Optional[int] = Field(default=None, gt=0, le=_UNIT_COUNT_MAX)
     avg_monthly_rent_per_unit: Optional[float] = Field(default=None, gt=0, lt=_PER_UNIT_RENT_MAX)
+    # Sprint 2.21.0.9 — multi-QARS user override for effective land area. Sent by
+    # the UI (a) when the user clicks "قيّم المبنى كاملاً" on an attached duplex
+    # (UI re-submits with override=cadastral_area), or (b) when they fill the
+    # manual override field on a shared/ambiguous plot. None → engine auto-detects.
+    override_land_area: Optional[float] = Field(default=None, gt=0, lt=_LAND_OVERRIDE_MAX)
 
     # Sprint 2.16.12 (B3) — reject unknown audience values at the boundary.
     @field_validator('audience')
@@ -315,6 +325,8 @@ class EvaluateDetailsRequest(BaseModel):
     # Sprint 2.16.10 — tower/compound input clarity (see EvaluateRequest above).
     unit_count: Optional[int] = Field(default=None, gt=0, le=_UNIT_COUNT_MAX)
     avg_monthly_rent_per_unit: Optional[float] = Field(default=None, gt=0, lt=_PER_UNIT_RENT_MAX)
+    # Sprint 2.21.0.9 — multi-QARS user override (see EvaluateRequest above).
+    override_land_area: Optional[float] = Field(default=None, gt=0, lt=_LAND_OVERRIDE_MAX)
 
     # Sprint 2.16.12 (B3) — reject unknown audience values at the boundary.
     @field_validator('audience')
@@ -876,6 +888,8 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
                 # Sprint 2.16.10 — unambiguous tower/compound rental split
                 unit_count=req.unit_count,
                 avg_monthly_rent_per_unit=req.avg_monthly_rent_per_unit,
+                # Sprint 2.21.0.9 — multi-QARS effective-land-area override.
+                override_land_area=req.override_land_area,
                 use_listings=True,
                 use_geo_v2=True,
             )
@@ -923,6 +937,8 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
                 # Sprint 2.16.10 — unambiguous tower/compound rental split
                 unit_count=req.unit_count,
                 avg_monthly_rent_per_unit=req.avg_monthly_rent_per_unit,
+                # Sprint 2.21.0.9 — multi-QARS effective-land-area override.
+                override_land_area=req.override_land_area,
                 floors=req.floors,
                 condition=req.condition,
                 annexes=req.annexes or 0,

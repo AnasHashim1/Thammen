@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p21p0p7p1-hotfix-removed'
-SPRINT_TAG = '2.21.0.7.1'         # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p21p0p9-multi-qars-detection'
+SPRINT_TAG = '2.21.0.9'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -2440,6 +2440,12 @@ def evaluate_thammen(
     # classifier so it types the parcel as land rather than a villa.
     pin: Optional[str] = None,
     input_mode: Optional[str] = None,
+    # Sprint 2.21.0.9 — Multi-QARS user override: when set, overrides the
+    # auto-detected effective_land_area used for MoJ bracket selection. UI
+    # uses this for (a) the "value whole structure" toggle on attached duplexes
+    # (re-submits with override=cadastral_area), and (b) the manual override
+    # field on shared/ambiguous plots.
+    override_land_area: Optional[float] = None,
 ) -> Dict:
     if not _V2_OK:
         return {'status': 'engine_unavailable', 'error': 'evaluate_property not loaded'}
@@ -2741,6 +2747,9 @@ def evaluate_thammen(
             full_renovation=full_reno,
             rental_income=rental_income,
             include_age=True,
+            # Sprint 2.21.0.9: user override for multi-QARS effective land area.
+            # None → engine auto-detects via classify_multi_qars.
+            plot_area_override=override_land_area,
         )
     except Exception as e:
         import traceback
@@ -3822,6 +3831,21 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
 
     # Sprint 2.14.0 — attach RICS VPS 2 scope assessment
     _attach_scope(output)
+
+    # Sprint 2.21.0.9 — surface multi-QARS detection at the canonical root
+    # (mirrors material_uncertainty / cap_rate_provenance pattern). When the
+    # cadastral PIN carries multiple QARS-addressed villas (attached duplex /
+    # separate shared plot / ambiguous), the UI renders a yellow card with the
+    # effective-area split, the cadastral area for context, and (for
+    # type='attached') the "value whole structure" toggle. Single source of
+    # truth — the brief sections must defer to this root field (Sprint 2.16.9
+    # lesson). `ev.multi_qars` is None for compound_large / tower / raw_land /
+    # agricultural / non-detected → field is absent from the response by
+    # default, no UI panel rendered.
+    _multi_qars = getattr(ev, 'multi_qars', None) if ev else None
+    if _multi_qars:
+        output['multi_qars'] = _multi_qars
+
     return output
 
 

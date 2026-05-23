@@ -555,6 +555,59 @@ def _qars_count_in_polygon(ring, timeout: float = 8.0):
         return None
 
 
+def count_qars_within_polygon(polygon_geometry, timeout: float = 10.0) -> list:
+    """Sprint 2.21.0.9 — Reverse spatial QARS-in-polygon, returning full attributes
+    (not just the count). Companion to `_qars_count_in_polygon` which only returns
+    a count; this one is used by `property_geo.classify_multi_qars` to detect
+    multi-villa cadastral parcels (Bou Hamour 56/565/21 pattern).
+
+    Args:
+      polygon_geometry: ESRI polygon dict with 'rings' (WKID 4326 — as returned by
+                        CadastrePlots/MapServer/0). Defensive on shape.
+      timeout:          per-call timeout (POST fallback via Rule #48 covers
+                        many-vertex parcel rings transparently).
+
+    Returns:
+      list of dicts: [{building_no, zone_no, street_no, pin, subtype, lat, lon},...]
+      Empty list on missing/empty input, network failure, or empty response.
+      NEVER raises (defensive — caller should never need a try/except).
+    """
+    if not polygon_geometry:
+        return []
+    rings = polygon_geometry.get('rings') if isinstance(polygon_geometry, dict) else None
+    if not rings:
+        return []
+    try:
+        geom = json.dumps({'rings': rings, 'spatialReference': {'wkid': 4326}})
+        res = _http_get_json(ENDPOINTS['qars'], {
+            'geometry': geom,
+            'geometryType': 'esriGeometryPolygon',
+            'inSR': '4326',
+            'spatialRel': 'esriSpatialRelIntersects',
+            'outFields': 'BUILDING_NO,ZONE_NO,STREET_NO,PIN,BUILDING_NO_SUBTYPE',
+            'returnGeometry': 'true',
+            'outSR': '4326',
+            'f': 'json',
+        }, timeout=timeout) or {}
+    except Exception:
+        return []
+    feats = res.get('features') or []
+    out = []
+    for f in feats:
+        a = f.get('attributes') or {}
+        g = f.get('geometry') or {}
+        out.append({
+            'building_no': a.get('BUILDING_NO'),
+            'zone_no': a.get('ZONE_NO'),
+            'street_no': a.get('STREET_NO'),
+            'pin': a.get('PIN'),
+            'subtype': a.get('BUILDING_NO_SUBTYPE'),
+            'lat': g.get('y'),
+            'lon': g.get('x'),
+        })
+    return out
+
+
 def _landuse_at(lon, lat, timeout: float = 6.0):
     """Land-use class + permitted building height at a point, from
     Vector/General_Landuse/MapServer/0.

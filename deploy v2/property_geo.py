@@ -174,6 +174,201 @@ def detect_corner(pin):
         return {'error': f'{type(e).__name__}: {str(e)[:120]}', 'pin': pin}
 
 
+# ════════════════════════════════════════════════════════════════════════
+# Sprint 2.21.0.9 — Multi-QARS detection (one PIN, multiple addressed buildings)
+# ════════════════════════════════════════════════════════════════════════
+# Pure-logic classifier (no GIS calls — caller supplies the qars_list from
+# qatar_gis.count_qars_within_polygon). Discovered via the Bou Hamour
+# 56/565/21 case where a single cadastral PIN (PDAREA=900) carried two
+# QARS-addressed villas (B=19 + B=21), causing MoJ bracket-selection to
+# look up 600-900 instead of the correct 400-600 → ~30-40% over-valuation.
+#
+# Threshold 18m (NOT spec's 15m): Phase 1 empirical audit (2026-05-23)
+# found two unrelated cases at exactly 15.2m, which looks like a QARS_Point
+# GPS-labeling artifact. Bumping to 18m absorbs that cluster while still
+# leaving the 18-30m ambiguous band for genuinely uncertain cases. Bracket
+# selection identical either way (PDAREA/n=2); the only behavioural
+# difference is the UI "value whole structure" toggle visibility.
+
+from dataclasses import dataclass, field, asdict
+from typing import Optional
+
+
+@dataclass
+class MultiQarsResult:
+    """Outcome of classifying how a cadastral polygon's QARS points cluster.
+
+    `type` semantics:
+      - 'standalone'             → n_qars <= 1; effective = pdarea
+      - 'attached'               → n=2, max_dist < THRESHOLD_ATTACHED_M (duplex)
+      - 'separate'               → n=2 & max_dist > THRESHOLD_SEPARATE_M, OR 3<=n<=5
+      - 'ambiguous'              → n=2 & THRESHOLD_ATTACHED_M <= max_dist <= THRESHOLD_SEPARATE_M
+      - 'handled_by_classifier'  → PDAREA>=50K (compound_large) OR n>=6 (apartments path)
+    """
+    is_shared: bool
+    n_qars: int
+    qars_buildings: list  # list of dicts with building_no/zone/street/subtype/lat/lon
+    subject_building_no: Optional[int]
+    type: str             # see semantics above
+    effective_land_area: float
+    max_gps_distance_m: float
+    confidence: str       # 'high' | 'medium' | 'low'
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        # Round noisy floats
+        d['effective_land_area'] = round(self.effective_land_area, 1)
+        d['max_gps_distance_m'] = round(self.max_gps_distance_m, 1)
+        return d
+
+
+# Phase 1 audit cluster sat at exactly 15.2m → 18m absorbs the artifact.
+THRESHOLD_ATTACHED_M: float = 18.0
+THRESHOLD_SEPARATE_M: float = 30.0
+# PIN/polygon area at-or-above this → compound_large path already owns it.
+COMPOUND_LARGE_AREA_M2: float = 50_000.0
+# n_qars at-or-above this → apartments path will own it (deferred — Sprint 2.21.1).
+APARTMENTS_THRESHOLD_N: int = 6
+
+
+def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    R = 6_371_008.8  # IUGG mean Earth radius (metres)
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlam = math.radians(lon2 - lon1)
+    a = (math.sin(dphi / 2) ** 2
+         + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2)
+    return 2 * R * math.asin(math.sqrt(a))
+
+
+def _max_pairwise_distance_m(qars_list: list) -> float:
+    """Largest haversine distance between any two QARS points in the list."""
+    if not qars_list or len(qars_list) < 2:
+        return 0.0
+    max_d = 0.0
+    for i in range(len(qars_list)):
+        a = qars_list[i]
+        a_lat, a_lon = a.get('lat'), a.get('lon')
+        if a_lat is None or a_lon is None:
+            continue
+        for j in range(i + 1, len(qars_list)):
+            b = qars_list[j]
+            b_lat, b_lon = b.get('lat'), b.get('lon')
+            if b_lat is None or b_lon is None:
+                continue
+            d = _haversine_m(a_lat, a_lon, b_lat, b_lon)
+            if d > max_d:
+                max_d = d
+    return max_d
+
+
+def classify_multi_qars(
+    pdarea: Optional[float],
+    qars_list: list,
+    subject_building_no: Optional[int] = None,
+    threshold_attached_m: float = THRESHOLD_ATTACHED_M,
+    threshold_separate_m: float = THRESHOLD_SEPARATE_M,
+) -> MultiQarsResult:
+    """
+    Classify how a cadastral polygon's QARS points cluster.
+
+    Args:
+      pdarea:                cadastral PDAREA (m²). None → treated as 0 for split arithmetic.
+      qars_list:             list of dicts (from qatar_gis.count_qars_within_polygon)
+                             with keys building_no, zone_no, street_no, pin, subtype, lat, lon.
+      subject_building_no:   the user's specific building (None if PIN-only entry).
+      threshold_attached_m:  default 18m (Phase 1 audit calibration — see header).
+      threshold_separate_m:  default 30m (above this → clearly separate).
+
+    Decision rules (Sprint 2.21.0.9 spec + 18m calibration):
+      PDAREA >= 50,000 AND n_qars <= 1     → handled_by_classifier (compound_large)
+      n_qars >= 6                          → handled_by_classifier (apartments path)
+      n_qars <= 1                          → standalone
+      n_qars == 2 & dist < 18m             → attached      (Type A — duplex)
+      n_qars == 2 & 18 <= dist <= 30       → ambiguous     (default behaviour: separate)
+      n_qars == 2 & dist > 30m             → separate
+      3 <= n_qars <= 5                     → separate
+
+    effective_land_area:
+      standalone OR handled_by_classifier  → pdarea (unchanged)
+      attached / separate / ambiguous      → pdarea / n_qars (no title discount)
+
+    Confidence:
+      attached + dist < threshold_attached_m - 3        → high (well below boundary)
+      separate + dist > threshold_separate_m + 5        → high
+      ambiguous                                         → medium
+      handled_by_classifier / standalone                → high
+    """
+    n = len(qars_list) if qars_list else 0
+    max_dist = _max_pairwise_distance_m(qars_list)
+    safe_pdarea = float(pdarea) if pdarea else 0.0
+
+    # Carve-outs (existing paths own these — do not double-classify)
+    if safe_pdarea >= COMPOUND_LARGE_AREA_M2 and n <= 1:
+        return MultiQarsResult(
+            is_shared=False, n_qars=n, qars_buildings=list(qars_list or []),
+            subject_building_no=subject_building_no,
+            type='handled_by_classifier',
+            effective_land_area=safe_pdarea, max_gps_distance_m=max_dist,
+            confidence='high',
+        )
+    if n >= APARTMENTS_THRESHOLD_N:
+        return MultiQarsResult(
+            is_shared=True, n_qars=n, qars_buildings=list(qars_list or []),
+            subject_building_no=subject_building_no,
+            type='handled_by_classifier',
+            effective_land_area=safe_pdarea, max_gps_distance_m=max_dist,
+            confidence='medium',
+        )
+
+    if n <= 1:
+        return MultiQarsResult(
+            is_shared=False, n_qars=n, qars_buildings=list(qars_list or []),
+            subject_building_no=subject_building_no,
+            type='standalone',
+            effective_land_area=safe_pdarea, max_gps_distance_m=max_dist,
+            confidence='high',
+        )
+
+    # n >= 2 with a small parcel → multi-villa
+    effective = safe_pdarea / n if n > 0 else safe_pdarea
+    if n == 2:
+        if max_dist < threshold_attached_m:
+            confidence = 'high' if max_dist < (threshold_attached_m - 3) else 'medium'
+            return MultiQarsResult(
+                is_shared=True, n_qars=n, qars_buildings=list(qars_list),
+                subject_building_no=subject_building_no,
+                type='attached',
+                effective_land_area=effective, max_gps_distance_m=max_dist,
+                confidence=confidence,
+            )
+        if max_dist > threshold_separate_m:
+            return MultiQarsResult(
+                is_shared=True, n_qars=n, qars_buildings=list(qars_list),
+                subject_building_no=subject_building_no,
+                type='separate',
+                effective_land_area=effective, max_gps_distance_m=max_dist,
+                confidence='high',
+            )
+        # 18m <= dist <= 30m → ambiguous (default behaviour: separate)
+        return MultiQarsResult(
+            is_shared=True, n_qars=n, qars_buildings=list(qars_list),
+            subject_building_no=subject_building_no,
+            type='ambiguous',
+            effective_land_area=effective, max_gps_distance_m=max_dist,
+            confidence='medium',
+        )
+
+    # 3 <= n <= 5 → clean small cluster, treat as separate
+    return MultiQarsResult(
+        is_shared=True, n_qars=n, qars_buildings=list(qars_list),
+        subject_building_no=subject_building_no,
+        type='separate',
+        effective_land_area=effective, max_gps_distance_m=max_dist,
+        confidence='high',
+    )
+
+
 if __name__ == '__main__':
     import sys
     print(json.dumps(detect_corner(int(sys.argv[1])), ensure_ascii=False, indent=2))

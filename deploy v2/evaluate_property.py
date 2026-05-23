@@ -45,9 +45,15 @@ from typing import Optional
 # even when the project's qatar_gis isn't on PYTHONPATH.
 try:
     from qatar_gis import QatarGIS, AssetType, PropertyReport
+    # Sprint 2.21.0.9: reverse spatial QARS-in-polygon for multi-QARS detection.
+    # Lives next to _qars_count_in_polygon and shares its POST fallback (#48).
+    from qatar_gis import count_qars_within_polygon
     _GIS_AVAILABLE = True
 except ImportError:
     _GIS_AVAILABLE = False
+    # Stub so the engine still imports without qatar_gis on PYTHONPATH (tests).
+    def count_qars_within_polygon(*args, **kwargs):  # noqa: E306
+        return []
 
 # moj_reference is a sibling script. We need its build_reference function.
 try:
@@ -478,6 +484,13 @@ class PropertyEvaluation:
     # Sprint 2.6: expose the MoJ reference dict (categories.land, etc.) for
     # consumers like the value-decomposition module in evaluate_unified.
     moj_reference: Optional[dict] = None
+    # Sprint 2.21.0.9: Multi-QARS detection — one cadastral PIN may host
+    # multiple QARS-addressed buildings (Bou Hamour 56/565/21 pattern).
+    # Surface as a dict so the API response + UI can offer the "value whole
+    # structure" toggle and (always) a manual override field. None = either
+    # not applicable (compound_large / raw_land / tower) or detection failed
+    # gracefully. See property_geo.classify_multi_qars for the dict shape.
+    multi_qars: Optional[dict] = None
 
 
 # ============================================================
@@ -1238,7 +1251,13 @@ def evaluate_property(zone: int, street: int, building: int,
                        include_age: bool = False,
                        gis: Optional['QatarGIS'] = None,
                        pin: Optional[str] = None,
-                       input_mode: Optional[str] = None) -> PropertyEvaluation:
+                       input_mode: Optional[str] = None,
+                       # Sprint 2.21.0.9: when set, replaces report.plot.pdarea as
+                       # the working `plot_area` for MoJ bracket selection + all
+                       # downstream area-keyed calls. Used by the multi-QARS UI
+                       # ("value whole structure" toggle re-submits with
+                       # override=cadastral_area; manual user override field).
+                       plot_area_override: Optional[float] = None) -> PropertyEvaluation:
     """
     End-to-end property evaluation.
 
@@ -1332,6 +1351,93 @@ def evaluate_property(zone: int, street: int, building: int,
     confidence = report.classification.confidence
     plot_area = report.plot.pdarea if report.plot else None
     extent_total = report.extent.total_area_m2 if report.extent else None
+
+    # ════════════════════════════════════════════════════════════════════
+    # Sprint 2.21.0.9 — Multi-QARS detection + effective_land_area
+    # ════════════════════════════════════════════════════════════════════
+    # Discovered via the Bou Hamour 56/565/21 case (PDAREA=900 carrying two
+    # QARS-addressed villas B=19+B=21 → MoJ bracket-selection over-valued
+    # the land ~30-40% by looking up 600-900 m² comparables instead of the
+    # correct 400-600 m² stratum). This is THE injection point: after
+    # full_property_lookup, before any bracket-selection-keyed call uses
+    # `plot_area` (lines ~1400, ~1523, ~1624, ~1692 all read this variable).
+    #
+    # Gated on `asset_type == 'standalone_villa'` so compound_large, tower,
+    # apartment_building, raw_land, agricultural paths are byte-for-byte
+    # unchanged (single-purpose, Rule #38; raw-land Reality Check unbroken).
+    multi_qars_dict = None
+    multi_qars_used_override = False
+    cadastral_plot_area = plot_area  # snapshot before any override
+    if asset_type == 'standalone_villa' and report.plot is not None:
+        try:
+            polygon_geom = None
+            ring = getattr(report.plot, 'polygon_4326', None)
+            if ring:
+                polygon_geom = {'rings': [ring], 'spatialReference': {'wkid': 4326}}
+            qars_list = count_qars_within_polygon(polygon_geom) if polygon_geom else []
+            from property_geo import classify_multi_qars
+            multi = classify_multi_qars(
+                pdarea=cadastral_plot_area,
+                qars_list=qars_list,
+                subject_building_no=building,
+            )
+            # User-supplied override always wins (E2E from the UI toggle or
+            # the manual override field).
+            if plot_area_override is not None and plot_area_override > 0:
+                plot_area = float(plot_area_override)
+                multi_qars_used_override = True
+            elif multi.type in ('attached', 'separate', 'ambiguous'):
+                plot_area = multi.effective_land_area
+            # else (standalone / handled_by_classifier): plot_area unchanged.
+
+            # Build the dict the API + UI consume. `alternative_valuation`
+            # is offered only for 'attached' (duplex semantic — user can
+            # value the whole structure); for separate/ambiguous it's hidden.
+            multi_dict = multi.to_dict()
+            multi_dict['cadastral_area'] = (round(cadastral_plot_area, 1)
+                                            if cadastral_plot_area else None)
+            multi_dict['effective_per_villa'] = multi_dict['effective_land_area']
+            multi_dict['detected'] = (multi.type in ('attached', 'separate',
+                                                    'ambiguous'))
+            multi_dict['split_basis'] = ('user_override' if multi_qars_used_override
+                                         else 'equal_by_count_default')
+            multi_dict['user_override_available'] = True
+            multi_dict['user_override_applied'] = multi_qars_used_override
+            multi_dict['cohabiting_buildings'] = [
+                q.get('building_no') for q in (multi.qars_buildings or [])
+                if building is None or q.get('building_no') != building
+            ]
+            if multi.type == 'attached':
+                multi_dict['alternative_valuation'] = {
+                    'available': True,
+                    'scope': 'value_whole_structure',
+                    'would_use_pdarea': multi_dict['cadastral_area'],
+                }
+            multi_qars_dict = multi_dict
+
+            # Structured log line for later distribution learning (Anas asked
+            # to log every detection so we can calibrate A:B ratios over time
+            # and tune the 18m threshold against real-world prevalence).
+            print(f'[multi_qars] pin={pin or "addr"} '
+                  f'pdarea={cadastral_plot_area} '
+                  f'n={multi.n_qars} dist={multi.max_gps_distance_m:.1f}m '
+                  f'type={multi.type} effective={multi.effective_land_area:.0f} '
+                  f'override={multi_qars_used_override}')
+        except Exception as _e_multi:
+            # Detection must never break valuation — fall through with no flag.
+            multi_qars_dict = None
+            # Surface to the warnings list so it shows in raw_property_report
+            # but doesn't trip any user-visible warning panel.
+            print(f'[multi_qars] detection failed: {type(_e_multi).__name__}: {_e_multi}')
+    elif plot_area_override is not None and plot_area_override > 0:
+        # Non-villa path: respect explicit override (rare, but supported for
+        # power users) without running detection.
+        plot_area = float(plot_area_override)
+        multi_qars_used_override = True
+    # ════════════════════════════════════════════════════════════════════
+    # End Sprint 2.21.0.9 injection. `plot_area` from here on is the
+    # *effective* area for bracket selection. `cadastral_plot_area` retains
+    # the raw PDAREA for the API response + display.
 
     # Sprint 2.21.0.5 (Issue 2): PIN-input lands have no QARS address, so
     # f'{zone}/{street}/{building}' renders "None/None/None". Show a meaningful
@@ -1710,6 +1816,7 @@ def evaluate_property(zone: int, street: int, building: int,
         warnings=warnings,
         raw_property_report=raw_report,
         moj_reference=moj_ref_dict,  # Sprint 2.6: expose for value decomposition
+        multi_qars=multi_qars_dict,  # Sprint 2.21.0.9: multi-villa-in-one-PIN
     )
 
     # === Step 7c: Confidence score ===
