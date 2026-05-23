@@ -19,18 +19,19 @@ Read these files in order before any technical work:
 **Most recent state = `Session_Log.md` §12 (2026-05-22, Land Arc through
 Sprint 2.21.0.7.1).** The `Session_Update_2026-05-19.md` file is an older delta
 (Bug A11 era) kept for history. Newest operational rules: `Operational_Rules.md`
-#43–#49. Newest empirical rules: `Empirical_Findings.md` E13–E14.
+#43–#50. Newest empirical rules: `Empirical_Findings.md` E13–E18.
 
 -----
 
 ## Current production state (snapshot)
 
 ```
-Engine version deployed:  thammen-sprint2p21p0p7p1-hotfix-removed  (Heroku v91)
-Latest CHANGELOG:         CHANGELOG_v42.md (2.21.0.7 + 2.21.0.7.1 + hotfix removal)
-Latest Sprint:            2.21.0.7.1 (Asset Type Reality Check micro-follow-up)
-Tests passing:            69/69 (2.21.0.7 suite); full standalone suite exit 0
-                          (test_v2_modules.py needs pytest — not installed; skip)
+Engine version deployed:  thammen-sprint2p21p0p9-multi-qars-stage1  (Heroku v97)
+Latest CHANGELOG:         CHANGELOG_v43.md (2.21.0.9 Stage 1 — Multi-QARS Detection)
+Latest Sprint:            2.21.0.9 (Multi-QARS Detection — Stage 1, staged-valuation
+                          pattern adopted platform-wide)
+Tests passing:            37/37 new (9 functions) + 269 prior = full standalone suite
+                          exit 0 (test_v2_modules.py needs pytest — not installed; skip)
 Critical bugs open:       0
 High bugs open:           1  (A6 latency P95 ~25-31s; target 2.18). A8 closed by 2.20.
 Medium bugs open:         2  (A5 asset_type unknown, A7 rics_compliant false)
@@ -38,11 +39,18 @@ Land Arc:                 ✅ COMPLETE — PIN input (2.21.0) + output polish (2
                           + Asset Type Reality Check (QARS-in-polygon + General_Landuse
                           RULEID, 2.21.0.7/.7.1). Built→stop/reject; bare→value/reject
                           by authoritative RULEID; precedence QARS>RULEID>geometry.
+Multi-QARS (2.21.0.9):    ✅ STAGE 1 LIVE — one cadastral PIN with 2+ QARS-addressed
+                          villas detected; bracket selection switched from raw PDAREA
+                          to PDAREA/n_qars (fixes Bou Hamour 56/565/21 ~30-40% land
+                          over-valuation). NO classification (attached vs separate) —
+                          GPS centroid alone cannot tell them apart (15.2m can mean
+                          either, per MME setback code E15). Stage 2 pre-specified
+                          (wall-to-wall rule, E18) for Sprint 2.21.0.10 candidate.
 Mthamen integration:      ⏸️ Deferred indefinitely (see Project_Instructions §20.8)
-Roadmap (next):           2.21.0.8 = P3 MoJ lstkhdm usage filter (Arabic NBSP/hamza
-                          normalization, ~3% comparables) · 2.21.1 = apartments
-                          (MME smoke first, §21.6) · 2.22.x = Map UI (pin-drop → GPS
-                          → PIN via CadastrePlots)
+Roadmap (next):           2.21.0.10 = Stage 2 wall-to-wall classification (probe
+                          Building Footprint layer first) · 2.21.0.8 = P3 MoJ lstkhdm
+                          usage filter · 2.21.1 = apartments (MME smoke first, §21.6)
+                          · 2.22.x = Map UI (pin-drop → GPS → PIN via CadastrePlots)
 Confirmed Sales (2.16.16): still pending the secretary's data
 Deploy:                   git subtree push --prefix "deploy v2" (Operational_Rules #43)
 ```
@@ -160,6 +168,10 @@ STOP if I:
 - أنفّذ Y بدل X المطلوب بدون 3-جمل justification → STOP، راجع Operational_Rules.md #39 (Deviation Justification Protocol). اذكر: لماذا Y ضروري + ما يُفقد بترك X + ما يحتاج user معرفته لتفسير النتائج.
 - أعتمد على replica tests فقط بدون verification ضد production class → STOP، راجع Operational_Rules.md #40 (Replica + Production Verification). أضِف سطراً واحداً على الأقل يستدعي الكود الإنتاجي الفعلي.
 - أؤجّل/أستبعد عمل بدون توثيق في الـ docs + شروط إحياء → STOP، راجع Operational_Rules.md #42 (Deferred-Work Documentation). وثّق: ما جُرّب + لماذا أُجِّل + شروط الإحياء + توجيه قاطع للجلسات اللاحقة.
+- أقترح Sprint بدون مراجعته خلال عدسة Stage 1/2/3 (E16) → STOP، راجع Operational_Rules.md #50 (Staged-Sprint Discipline). كل Sprint جديد يجاوب: أي stage يخدم؟ هل Stage 1 يمكنه الشحن مستقلاً عن Stage 2 data؟
+- أرفع threshold مستنتج من بيانات صغيرة بدون مراجعة domain knowledge → STOP، Sprint 2.21.0.9 رفض ذلك (15.2m clustering أوحى بـ 18m، لكن Anas أكّد أن الفيلات منفصلة فعلياً مع ارتداد كامل — E15). data-driven inference لا تتغلّب على domain confirmation.
+- أصمّم تصنيف GPS-centroid-based دون فحص MME setback code → STOP، راجع EMPIRICAL E15. فيلتين منفصلتين code-compliant على نفس قطعة لهما centroid ≥16m؛ أي threshold تحت ذلك false-positive محتمل. استخدم wall-to-wall (E18) بدلاً.
+- أطلب من broker إدخال حقل يمكن جلبه آلياً من GIS/MoJ → STOP، راجع EMPIRICAL E17 (1-field minimum input). property identification فقط مطلوب من broker؛ كل شيء آخر auto-fetched ومرئي لمراجعته. Thammen verifies، broker corrects، أبداً العكس.
 
 -----
 
@@ -178,8 +190,15 @@ STOP if I:
 | "تذكر Bug A11" | Zoning/Subtype contradiction discovery 2026-05-19 PM |
 | "تذكر أشغال 61/875/20" | The reference case for Bug A11 |
 | "تذكر Rule E7" | QARS subtype requires Zoning cross-check |
+| "تذكر Sprint 2.21.0.9" أو "تذكر Stage 1" | Multi-QARS detection — staged-valuation pattern, no GPS-distance classification, 18m threshold rejected, wall-to-wall (E18) deferred to 2.21.0.10 |
+| "تذكر Bou Hamour" أو "تذكر 56/565/21" | The Sprint 2.21.0.9 trigger case — 2 villas on PIN 56090294 (PDAREA=900), physically separate despite 15.2m centroid (full ارتداد + حوش per MME code E15) |
+| "تذكر E15" أو "تذكر ارتداد البلدية" | Qatar MME 3m setback code → code-compliant separate villas have centroids ≥16m |
+| "تذكر E16" أو "تذكر staged valuation" | Stage 1 (≤5s, ~70%) → Stage 2 (~90%) → Stage 3 (~95%+); every Sprint reviewed through this lens |
+| "تذكر E17" أو "تذكر 1-field minimum" | Broker supplies property identification only; everything else auto-fetched; Thammen verifies, broker corrects |
+| "تذكر E18" أو "تذكر قاعدة 6 متر" | Stage 2 wall-to-wall classification rule (wall<1m → attached; ≥6m → separate; 1-6m → sub_minimum). Replaces rejected GPS-centroid threshold |
+| "تذكر #50" أو "Staged Sprint" | Operational_Rules #50 — every Sprint reviewed through Stage 1/2/3 lens |
 | "بيانات السكرتيرة جاهزة" | Begin Sprint 2.16.16 (Confirmed Sales — renumbered from 2.16.15) |
-| "راجع EMPIRICAL_FINDINGS" | Audit rules E1-E7 |
+| "راجع EMPIRICAL_FINDINGS" | Audit rules E1-E18 |
 | "اقرأ القسم X" | Activate self-correction trigger from section X |
 | "ركذت قاعدة الدفع" أو "تذكر #32" | Push & Commit discipline — Operational_Rules #32 |
 | "هل أدفع؟" أو "should I push?" | يُفعّل #32 checklist، أعطِ status report قبل الإجابة |

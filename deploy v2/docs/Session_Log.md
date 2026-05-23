@@ -716,5 +716,105 @@ normalization, ~3% of comparables); 2.21.1 = apartments (MME smoke first, §21.6
 
 -----
 
-*Last updated: 2026-05-22 (Sprint 2.20.0 → 2.21.0 → 2.21.0.5 → **2.21.0.7 → 2.21.0.7.1** — Land Grid built, made reachable, polished, and hardened with the Asset Type Reality Check; all deployed from Claude Code)*
+## 13. 🆕 2026-05-23 — Sprint 2.21.0.9 Stage 1 (Multi-QARS Detection) + staged-valuation pattern adopted
+
+### 13.1 The trigger and the methodology fix
+
+User submitted Bou Hamour 56/565/21 (a 2.19.1 smoke address) and noticed the
+land component was inflated. Investigation: PIN 56090294 carries **two
+QARS-addressed villas** (B=19 + B=21) on a single 900 m² cadastral parcel. Pre-
+Sprint, MoJ bracket-selection used PDAREA=900 → 900-1500 bucket; the correct
+stratum for one share of two villas is 400-600. The address had been silently
+mis-valued by ~30-40% on the land component for weeks.
+
+### 13.2 Phase 1 audit (Heroku v92, file-based per Rule #34)
+
+10-case cohort across address + PIN entries, hitting QARS_Point + CadastrePlots
++ a new reverse spatial query (returns ALL QARS within a polygon, not just
+count). **9/10 succeeded**:
+
+| pattern | count | examples |
+|---|---:|---|
+| multi-QARS (n≥2) | 5 polygons | 56/565/21+19, PIN 56092231, PIN 56090355, PIN 51240140 (n=4), PIN 71380039 |
+| standalone | 1 | 52/903/90 |
+| compound_large (PDAREA≥50K + n=1) | 1 | PIN 66030258 |
+| QARS lookup empty (graceful) | 1 | 53/240/12 |
+
+Estimated prevalence: 5-10% of Doha old-district villas.
+
+### 13.3 The design pivot — three iterations to the right Stage 1
+
+**v93 deploy (rejected by Anas during review)**: classifier with `type ∈
+{attached, separate, ambiguous, standalone, handled_by_classifier}`, 18m
+GPS-centroid threshold, "قيّم المبنى كاملاً" toggle for attached.
+
+**Anas's domain confirmation that killed the 18m threshold**: 56/565/21 + 19
+are physically SEPARATE villas with full setback (ارتداد) and courtyard (حوش)
+between each villa and its boundary wall, **despite the 15.2m centroid**. Qatar
+MME building code requires 3m setbacks on all sides — two code-compliant
+separate villas have walls ≥6m apart, centroids roughly ~16m+ apart. So 15.2m
+centroid is *fully consistent* with separate villas, not duplexes.
+**Conclusion: GPS centroid alone cannot discriminate at 10-20m**. No
+GPS-distance threshold (15m, 18m, anything) can be safe.
+
+**v96 deploy (still wrong, briefly live)**: reverted threshold to 15m. Same
+fundamental issue — false-positive risk unbounded.
+
+**v97 deploy (Stage 1, current production)**: dropped classification entirely.
+`is_shared = (n_qars ≥ 2)`, `effective = PDAREA / n_qars`, mandatory user
+override, single unified UI flag. NO type field, NO GPS distance, NO toggle.
+Engine: `thammen-sprint2p21p0p9-multi-qars-stage1`.
+
+### 13.4 Staged-valuation pattern adopted platform-wide
+
+Anas's biggest decision this session (now EMPIRICAL E16): every Sprint shipped
+under a **Stage 1 / Stage 2 / Stage 3** discipline. Stage 1 always returns a
+number in ≤5s with minimum data, ~70% confidence. Stage 2 refines with richer
+data (~90%). Stage 3 applies user-on-site overrides (~95%+). Each future Sprint
+reviewed through the lens: which stage does this contribute to, and can Stage 1
+ship independently? Sprint 2.21.0.9 is the first Sprint shipped under this
+discipline.
+
+Companion decisions:
+- **E17 (1-field minimum input)**: broker supplies property identification
+  only; everything else auto-fetched and transparent for review.
+- **E18 (Stage 2 wall-to-wall rule, pre-specified)**: `wall_to_wall < 1m →
+  attached`; `≥ 6m → separate` (Qatar code minimum); `1-6m → sub_minimum`. Maps
+  directly to MME setback code — no threshold tuning needed in Stage 2.
+- **#50 (Staged-Sprint Discipline)**: every Sprint proposal must answer 3
+  questions: (1) which stage? (2) can Stage 1 ship independently? (3) if a
+  precise stage is deferred, is its logic pre-specified?
+
+### 13.5 Test discipline
+
+37 new sub-checks (9 test functions) green. 269 prior tests green after a
+**one-line brittle-pin relax** in `test_sprint_2p21p0p7_reality_check.py`
+(`'2p21p0p7' in engine_version` → `startswith('thammen-sprint')`) — same
+anti-pattern Sprint 2.19.1 corrected across other test files. Full standalone
+suite: all files exit 0 (test_v2_modules.py still pytest-blocked).
+
+### 13.6 Heroku release history this session
+
+| v | Engine | Note |
+|---|---|---|
+| v92 | (unchanged) | audit_multi_qars.py only — Phase 1 probe |
+| v93 | sprint2p21p0p9-multi-qars-detection (18m, rejected) | first deploy of the rejected design |
+| v94 | (unchanged) | smoke script v1 |
+| v95 | (unchanged) | smoke + UA header fix |
+| v96 | sprint2p21p0p9-multi-qars-detection (15m, still rejected) | threshold reverted, still wrong design |
+| **v97** | **sprint2p21p0p9-multi-qars-stage1** | **Stage 1 — current production** |
+
+### 13.7 What's queued next
+
+- **Sprint 2.21.0.10 candidate** — Building Footprint layer probe from Heroku;
+  if accessible, implement Stage 2 (E18 wall-to-wall classification).
+  Conditional on the probe result.
+- **Sprint 2.21.0.8** — P3 MoJ lstkhdm usage filter (still deferred).
+- **Sprint 2.21.1** — apartments via MME (smoke first per §21.6).
+- **Sprint 2.16.16** — Confirmed Sales DB integration (still awaiting
+  secretary's data).
+
+-----
+
+*Last updated: 2026-05-23 (Sprint 2.21.0.9 Stage 1 — Multi-QARS Detection deployed; staged-valuation pattern E16/E17/E18 + Operational_Rules #50 adopted platform-wide; all from Claude Code)*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*

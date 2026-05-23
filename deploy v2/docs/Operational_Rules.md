@@ -1191,6 +1191,46 @@ exercise production logic, not echo the input).
 
 -----
 
+## 50. ⚠️ Staged-Sprint Discipline — every Sprint reviewed through the Stage 1/2/3 lens
+
+**Discovered**: 2026-05-23, Sprint 2.21.0.9. The original Sprint brief proposed
+a GPS-centroid threshold (`<15m → attached`) plus a "value whole structure"
+toggle, plus classification UI variants for attached/separate/ambiguous. After
+two rounds of deploys (v93 with 18m, v96 with 15m), Anas overturned the design
+entirely: 56/565/21 + 19 are physically separate villas with full setbacks
+despite the 15.2m centroid — GPS centroid distance alone CANNOT discriminate
+attached from separate at the 10-20m range (E15). The right signal is wall-to-
+wall via Building Footprint geometry (E18), which we don't have yet. The
+re-framing: ship **Stage 1** (detect + split + manual override, ~70%
+confidence) without classification; **pre-specify Stage 2** (the wall-to-wall
+rule) for a future Sprint conditional on the footprint probe.
+
+**The rule**: every Sprint proposal must answer:
+
+1. **Which stage does this contribute to?** (Stage 1 = minimum data, ≤5s, ~70%;
+   Stage 2 = richer data, ~90%; Stage 3 = on-site overrides, ~95%+. See E16.)
+2. **Can Stage 1 ship independently** (without Stage 2/3 data)? If not,
+   re-scope or split.
+3. **If a more-precise stage is deferred, is its logic pre-specified** in
+   EMPIRICAL_FINDINGS or the CHANGELOG addendum so the next session doesn't
+   re-debate the design? (Sprint 2.21.0.9's E18 is the model: deferred Stage 2
+   logic pinned to Qatar building code, no re-debate needed.)
+
+**Anti-pattern from Sprint 2.21.0.9** (don't repeat):
+- Building a classifier + UI for an A/B distinction whose signal is unreliable.
+- Trusting a data-derived threshold (audit clustering at 15.2m → "raise to 18m")
+  when domain knowledge says the threshold can't work at all (E15).
+- Shipping Stage 1+2 hybrid where Stage 1 is correct but Stage 2 is wrong;
+  splitting into pure-Stage-1 was the fix.
+
+**Pairs with**: **E16** (staged-valuation pattern), **E17** (1-field minimum
+input), **E18** (Stage 2 wall-to-wall rule), **#42** (deferred-work
+documentation — pre-specify the deferred logic, not just the deferral).
+
+**Recall**: "تذكر #50" / "Staged Sprint discipline" / "تذكر Stage 1".
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added
