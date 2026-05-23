@@ -27,6 +27,7 @@ import json
 import math
 import urllib.request
 import urllib.parse
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 
@@ -485,36 +486,57 @@ def analyze_property(lat: float, lon: float,
     factors = []
     notes = []
 
-    # 1. Zoning
-    if verbose: print("  [factors] Querying zoning...")
-    f = _factor_zoning(lat, lon, purpose)
-    if f:
-        factors.append(f)
+    # ─── Sprint 2.18.0 — Parallel GIS fan-out (max_workers=5) ─────────────────
+    # The 5 helpers below each query a different ArcGIS layer at the same
+    # (lat, lon). They share no mutable state (§5/2 mini-audit) and are pure
+    # (§5/3). Each call costs ~830 ms RTT to GIS Qatar Doha (audit_a6 §3).
+    # Serial: 5 × 830 ms ≈ 4.1 s. Parallel: ~830 ms + ~50 ms overhead.
+    # Expected saving on villa / raw_land / compound paths: ~3.5–4 s/request.
+    #
+    # max_workers=5 == task count (§5/4 mini-audit, Anas approved 2026-05-23).
+    # Adding workers beyond the task count creates idle threads with zero
+    # benefit. If a future Sprint adds independent layers, bump max_workers
+    # to match the new task count.
+    if verbose: print("  [factors] Querying 5 GIS layers in parallel...")
+    with ThreadPoolExecutor(max_workers=5, thread_name_prefix='factors') as pool:
+        fut_zoning     = pool.submit(_factor_zoning, lat, lon, purpose)
+        fut_commercial = pool.submit(_factor_commercial_street, lat, lon, purpose)
+        fut_road       = pool.submit(_factor_main_road, lat, lon, purpose)
+        fut_landmarks  = pool.submit(_factor_landmarks, lat, lon, purpose)
+        fut_height     = pool.submit(_factor_permitted_height, lat, lon)
+        zoning_result     = fut_zoning.result()
+        commercial_result = fut_commercial.result()
+        road_result       = fut_road.result()
+        landmark_factors  = fut_landmarks.result()
+        height_result     = fut_height.result()
+
+    # Merge results in the SAME order as the pre-2.18.0 serial code so the
+    # final `factors` list is byte-identical for any given (lat, lon, purpose).
+    # Determinism matters for: brief rendering order, test reproducibility,
+    # the existing `raw_adjustment = sum(f.weight for f in factors)` (sum is
+    # commutative so order doesn't affect the number, but does affect which
+    # entry is "primary" for any code that reads `factors[0]`).
+
+    # 1. Zoning  (None → user-facing note about missing zoning layer)
+    if zoning_result:
+        factors.append(zoning_result)
     else:
         notes.append('لم يُعثر على تصنيف زوننج — طبقة قد تكون غير متاحة')
 
     # 2. Commercial street
-    if verbose: print("  [factors] Querying commercial streets...")
-    f = _factor_commercial_street(lat, lon, purpose)
-    if f:
-        factors.append(f)
+    if commercial_result:
+        factors.append(commercial_result)
 
     # 3. Main vs local road
-    if verbose: print("  [factors] Querying road type...")
-    f = _factor_main_road(lat, lon, purpose)
-    if f:
-        factors.append(f)
+    if road_result:
+        factors.append(road_result)
 
-    # 4. Landmarks
-    if verbose: print("  [factors] Querying landmarks...")
-    landmark_factors = _factor_landmarks(lat, lon, purpose)
+    # 4. Landmarks  (helper returns a list — may be empty)
     factors.extend(landmark_factors)
 
     # 5. Permitted height
-    if verbose: print("  [factors] Querying permitted height...")
-    f = _factor_permitted_height(lat, lon)
-    if f:
-        factors.append(f)
+    if height_result:
+        factors.append(height_result)
 
     # 6. Plot shape (from caller, not a GIS query)
     if plot_shape:
