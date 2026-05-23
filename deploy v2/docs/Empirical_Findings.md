@@ -1,6 +1,6 @@
 # EMPIRICAL FINDINGS — Methodology Validation 2026-05
 
-> **Status:** Validated by paired field audits (villas + lands), 5 areas, 4 brackets each, MoJ n=149+ villas + n=149+ lands. **2026-05-18 update:** Cost Approach (DRC) added via Mthamen reverse engineering (Rule E6). **2026-05-19 AM update:** Rule E6 §8.5 added — Mthamen live integration deferred indefinitely. **2026-05-19 PM update:** Rule E7 added — QARS subtype requires Zoning cross-check; deployed as Sprint 2.16.14 (CHANGELOG_v35). **2026-05-20→22 update (Land Arc):** E8-E11 (source tiers / cross-validation / attribution / tier floor — Sprint 2.20); E12 (MoJ self-calibration BLOCKED — cryptographic + ethical); **E13 (pull coded-value domains, never guess RULEID) + E14 (validation scripts must exercise production logic) — Sprint 2.21.0.7**.
+> **Status:** Validated by paired field audits (villas + lands), 5 areas, 4 brackets each, MoJ n=149+ villas + n=149+ lands. **2026-05-18 update:** Cost Approach (DRC) added via Mthamen reverse engineering (Rule E6). **2026-05-19 AM update:** Rule E6 §8.5 added — Mthamen live integration deferred indefinitely. **2026-05-19 PM update:** Rule E7 added — QARS subtype requires Zoning cross-check; deployed as Sprint 2.16.14 (CHANGELOG_v35). **2026-05-20→22 update (Land Arc):** E8-E11 (source tiers / cross-validation / attribution / tier floor — Sprint 2.20); E12 (MoJ self-calibration BLOCKED — cryptographic + ethical); **E13 (pull coded-value domains, never guess RULEID) + E14 (validation scripts must exercise production logic) — Sprint 2.21.0.7**. **2026-05-23 update:** E15-E18 (Qatar MME setback / staged-valuation pattern / 1-field minimum input / Stage 2 wall-to-wall rule — Sprint 2.21.0.9); **E19 (I/O-bound parallelization: max_workers = task count) — Sprint 2.18.0**, measurement-validated to ±2% across all paths in the post-deploy audit comparison.
 > **Bound to every Thammen session as a permanent methodological reference.**
 
 -----
@@ -335,6 +335,53 @@ of any Sprint 2.21.0.10 work. Sprint 2.21.0.9 (Stage 1) logs `pin`, `n_qars`,
 `is_shared`, `override_applied` so Sprint 2.21.0.10 can join historical
 detection traffic on `pin` once footprints arrive. Recall: **"تذكر E18"** /
 **"تذكر قاعدة 6 متر"**.
+
+### 🆕 Rule E19 — I/O-bound parallelization: max_workers = task count
+
+✓ **Discovered 2026-05-23 evening**, Sprint 2.18.0 §5 mini-audit. Applies
+platform-wide to any I/O-bound parallelization of a **fixed set of N independent
+tasks** (network calls to different endpoints, file reads from independent
+paths, etc.).
+
+**The rule**: when parallelizing N independent fixed-set I/O tasks with
+`concurrent.futures.ThreadPoolExecutor`, **`max_workers = N`**. Not more,
+not fewer.
+
+**Why N is the correct number**:
+- Each worker is ~50 KB of thread-stack memory plus scheduler overhead.
+  Workers beyond `N` sit idle waiting for work that will never arrive
+  (the task set is fixed by problem structure, not by demand).
+- Fewer than `N` workers force-serializes some tasks → defeats the point.
+- The GIL is not the constraint for I/O — threads release the GIL during
+  `recv` / `read` blocking. So 2× tasks ≠ 2× workers needed.
+
+**Where this came from**: Sprint 2.18.0 needed to parallelize the 5
+independent `_factor_*` GIS calls in `property_factors.analyze_property`.
+Anas's original spec suggested `max_workers=8-12` based on generic concurrency
+intuition ("leave headroom"). The §5 mini-audit corrected this: there are
+exactly 5 top-level independent calls; workers 6-12 would be idle from
+millisecond 0. `max_workers=5` was chosen and documented in CHANGELOG_v44 §4
+with the explicit instruction: *"If a future Sprint adds independent layers,
+bump max_workers to match the new task count."*
+
+**Where this rule does NOT apply**:
+- **Unbounded / streaming task sets** (e.g. processing N user-submitted
+  requests where N is not known at code-write time) — use a pool sized to
+  expected concurrent demand, not task count.
+- **CPU-bound tasks** — different problem entirely (use multiprocessing or
+  process pools; GIL is the constraint).
+- **Tasks with non-trivial inter-dependencies** — if task B needs A's
+  output, B isn't a parallel task; it's a stage. Restructure.
+
+**Measurement-validated**: the patch landed exactly as predicted by the
+audit. multi_qars_56 (villa): predicted −4 000 ms, measured −4 003 ms.
+khor_land (raw_land): predicted −4 000 ms, measured −3 887 ms. Confirms
+both the parallelization mechanism and the choice of N.
+
+**Pairs with**: Operational_Rules **#51** (audit-driven Sprint pattern).
+E19 is the empirical finding; #51 is the workflow that surfaced it.
+
+**Recall**: **"تذكر E19"** / **"تذكر max_workers"** / **"تذكر 5 not 8"**.
 
 -----
 

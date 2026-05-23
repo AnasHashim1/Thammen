@@ -816,5 +816,105 @@ suite: all files exit 0 (test_v2_modules.py still pytest-blocked).
 
 -----
 
-*Last updated: 2026-05-23 (Sprint 2.21.0.9 Stage 1 — Multi-QARS Detection deployed; staged-valuation pattern E16/E17/E18 + Operational_Rules #50 adopted platform-wide; all from Claude Code)*
+## 14. 🆕 2026-05-23 evening — Sprint 2.18.0 (Parallel property_factors)
+
+### 14.1 The Sprint and what it shipped
+
+Sprint 2.18.0 shipped same day as Sprint 2.21.0.9 (§13), splitting Bug A6 (high
+latency) into a two-Sprint surgical fix: 2.18.0 = parallel `property_factors`,
+2.18.1 = parallel BFS in `_expand_extent`. The pre-Sprint Phase 1 audit
+([audit_a6_2026-05-23.md](../audit_a6_2026-05-23.md)) measured 21 in-process
+runs across 7 diverse addresses and revealed three regimes:
+
+| regime | observed | bottleneck |
+|---|---|---|
+| DCF fast-path (apartment_building, compound_large→unknown reject) | ~4.1 s, 4 events | inherent lite-baseline (qars→cadastre→geometry→districts) |
+| Full villa / land pipeline | ~25-27 s, 18-19 events | **5 sequential `_factor_*` calls in `property_factors.analyze_property` = ~4 s** ← Sprint 2.18.0 |
+| `compound_small` extent expansion | ~100 s, 97 events | **`_expand_extent` BFS fetches each neighbour serially** ← Sprint 2.18.1 |
+
+**2.18.0 patch:** replace the 5 serial `_factor_*` calls with
+`ThreadPoolExecutor(max_workers=5)`. Merge order preserved byte-for-byte. Same
+factors, same numbers, same brief — only wall-clock changes.
+
+Engine: `thammen-sprint2p18p0-parallel-property-factors` (Heroku v99).
+
+### 14.2 §5 mini-audit (Anas-requested gate before coding)
+
+Four checks, 15-min time-box, all clean:
+
+- **§5/1 Baseline stability** — re-ran audit on v98; pre-patch numbers matched
+  Phase 1 within ±2% on slow-path, ±0.6% on fast-path. GIS conditions stable.
+- **§5/2 Shared state** — zero mutable shared state in `property_factors`. All
+  module globals (`LAYER_URLS`, `LANDMARK_WEIGHTS`, `ZONING_WEIGHTS`, `HEIGHT_WEIGHTS`,
+  `TIMEOUT`, `MAX_ADJUSTMENT`) are read-only literals frozen at module load.
+- **§5/3 Helper purity** — all 5 GIS-touching helpers pure: same `(lat, lon,
+  purpose)` in → same `Optional[Factor] | list[Factor]` out, no side effects.
+- **§5/4 ThreadPoolExecutor + urllib + Python compat** — Heroku runtime =
+  python-3.10.11. `urllib.request.urlopen` thread-safe since 3.7. `_query_gis`
+  and `_http_get_json` are stateless. Recommended `max_workers=5`, not Anas's
+  initial 8-12 suggestion (Rule #39 deviation; codified as E19 below).
+
+### 14.3 Audit prediction vs measurement — within ±2%
+
+CHANGELOG_v44 §5 predicted per-case post-deploy timings *before* deploy.
+Post-deploy audit comparison:
+
+| case | predicted Δ | measured Δ | accuracy |
+|---|---:|---:|---|
+| safe_villa_52 (fast-path) | 0 | −17 ms (−0.4%) | within noise |
+| lusail_apt (fast-path) | 0 | +36 ms (+0.9%) | within noise |
+| works_a11 (fast-path) | 0 | +55 ms (+1.3%) | within noise |
+| compound_large (fast-path) | 0 | −10 ms (−0.2%) | within noise |
+| **multi_qars_56 (villa)** | **~−4 000 ms** | **−4 003 ms (−15.0%)** | **bullseye** |
+| **khor_land (raw_land)** | **~−4 000 ms** | **−3 887 ms (−15.5%)** | **bullseye** |
+| a6_trigger_51 (compound_small) | ~0 | −3 471 ms (−3.7%) | small bonus (final factor analysis on seed plot also got parallelized) |
+
+**Variance:** each case ranged <250 ms across the 3 reps. Reproducibility
+matches §5/1 baseline conditions.
+
+This is the first measurement-validated performance Sprint in the project's
+history. The pattern is canonicalized as Operational_Rules **#51** below.
+
+### 14.4 PC interruption handled gracefully
+
+Mid-way through the post-deploy HTTP measurement run, the user's PC stopped
+suddenly. The local `tee` capture cut off at HTTP rep#1 of a6_trigger_51 — but
+**all 21 in-process runs landed in the log first** (the audit script does
+in-process runs all-then HTTP all). Since the §5/1 baseline already established
+HTTP − in-process = ~100-250 ms (Cloudflare + WAF + Heroku router), the
+in-process data is the engine-internal truth and is fully conclusive on its own.
+A fresh redundant audit was kicked off in background; it confirmed the same
+fast-path + a6_trigger numbers before another disconnect, supporting the
+comparison without changing any conclusion.
+
+### 14.5 Releases this session
+
+| v | Engine | Note |
+|---|---|---|
+| v97 | sprint2p21p0p9-multi-qars-stage1 | Sprint 2.21.0.9 deploy (earlier same day) |
+| v98 | sprint2p21p0p9-multi-qars-stage1 | audit_a6_latency.py probe deploy (no engine change) |
+| **v99** | **sprint2p18p0-parallel-property-factors** | **Sprint 2.18.0 — current production** |
+
+Rollback target for 2.18.0: Heroku v98 (`heroku rollback`) — same engine code,
+just without the audit probe script.
+
+### 14.6 What's queued next
+
+- **Sprint 2.18.1** — parallel BFS in `_expand_extent` via `ThreadPoolExecutor`.
+  Target: 51/835/17 from ~89 s → ~5-8 s, kills the HTTP 503 class. Same §5
+  audit-driven pattern. Effort estimate: 2 days (parallel BFS is slightly more
+  involved than the 5-way fan-out — needs polygon-sharing tested against
+  already-fetched neighbours; bounded `as_completed` consumption; deterministic
+  output). Ready to start on Anas's approval.
+- **Sprint 2.18.2 candidate** — lite/full GIS deduplication. Closes the
+  villa/land Stage-1 (≤5 s) gap (~22 s → ~12 s). Deferred until 2.18.1 ships.
+- **Sprint 2.21.0.10 candidate** — Building Footprint probe + Stage 2
+  wall-to-wall classification (E18). Conditional on probe outcome.
+- **Sprint 2.16.16** — Confirmed Sales DB integration (still awaits secretary).
+
+-----
+
+*Last updated: 2026-05-23 evening (Sprint 2.18.0 deployed — parallel
+`property_factors`; first audit-validated performance Sprint; Operational_Rules
+#51 + EMPIRICAL_FINDINGS E19 codified)*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*

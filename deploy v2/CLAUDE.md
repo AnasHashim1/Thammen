@@ -3,7 +3,7 @@
 > **Project:** thammen.qa — Qatar real-estate AVM (RICS VPS 4)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-22 (after Sprint 2.21.0.7.1 — Land Arc complete)
+> **Last update:** 2026-05-23 evening (after Sprint 2.18.0 — parallel property_factors)
 
 ## Quick orientation
 
@@ -16,24 +16,30 @@ Read these files in order before any technical work:
 @./docs/Session_Update_2026-05-19.md
 @./docs/Operational_Rules.md
 
-**Most recent state = `Session_Log.md` §12 (2026-05-22, Land Arc through
-Sprint 2.21.0.7.1).** The `Session_Update_2026-05-19.md` file is an older delta
-(Bug A11 era) kept for history. Newest operational rules: `Operational_Rules.md`
-#43–#50. Newest empirical rules: `Empirical_Findings.md` E13–E18.
+**Most recent state = `Session_Log.md` §14 (2026-05-23 evening, Sprint 2.18.0 —
+parallel property_factors fan-out).** §13 covered Sprint 2.21.0.9 Stage 1 earlier
+the same day; §11-12 covered the Land Arc through Sprint 2.21.0.7.1. The
+`Session_Update_2026-05-19.md` file is an older delta (Bug A11 era) kept for
+history. Newest operational rules: `Operational_Rules.md` #43–#51. Newest empirical
+rules: `Empirical_Findings.md` E13–E19.
 
 -----
 
 ## Current production state (snapshot)
 
 ```
-Engine version deployed:  thammen-sprint2p21p0p9-multi-qars-stage1  (Heroku v97)
-Latest CHANGELOG:         CHANGELOG_v43.md (2.21.0.9 Stage 1 — Multi-QARS Detection)
-Latest Sprint:            2.21.0.9 (Multi-QARS Detection — Stage 1, staged-valuation
-                          pattern adopted platform-wide)
-Tests passing:            37/37 new (9 functions) + 269 prior = full standalone suite
-                          exit 0 (test_v2_modules.py needs pytest — not installed; skip)
+Engine version deployed:  thammen-sprint2p18p0-parallel-property-factors  (Heroku v99)
+Latest CHANGELOG:         CHANGELOG_v44.md (2.18.0 Parallel property_factors fan-out)
+Latest Sprint:            2.18.0 (Parallel property_factors — A6 latency Phase 1 of 2)
+Tests passing:            11/11 new (3 functions, including wall-clock concurrency
+                          proof) + 269+ prior across 21 standalone files (all exit 0).
+                          test_v2_modules.py needs pytest — not installed; skip.
 Critical bugs open:       0
-High bugs open:           1  (A6 latency P95 ~25-31s; target 2.18). A8 closed by 2.20.
+High bugs open:           1  (A6 latency: villa/raw_land paths cut −4s by 2.18.0
+                          (26.8s→22.8s, 25.1s→21.2s, measured). compound_small extent
+                          expansion still ~89s → HTTP 503 class still present.
+                          Sprint 2.18.1 = parallel BFS in _expand_extent will close.)
+                          A8 closed by 2.20.
 Medium bugs open:         2  (A5 asset_type unknown, A7 rics_compliant false)
 Land Arc:                 ✅ COMPLETE — PIN input (2.21.0) + output polish (2.21.0.5)
                           + Asset Type Reality Check (QARS-in-polygon + General_Landuse
@@ -46,11 +52,20 @@ Multi-QARS (2.21.0.9):    ✅ STAGE 1 LIVE — one cadastral PIN with 2+ QARS-ad
                           GPS centroid alone cannot tell them apart (15.2m can mean
                           either, per MME setback code E15). Stage 2 pre-specified
                           (wall-to-wall rule, E18) for Sprint 2.21.0.10 candidate.
+A6 latency (2.18.0):      ✅ PHASE 1 LIVE — 5 of 6 independent property_factors GIS
+                          calls now fan out in parallel via ThreadPoolExecutor
+                          (max_workers=5 == task count, E19). Audit-derived −4s
+                          delivered on villa/raw_land (audit_a6_2026-05-23.md →
+                          CHANGELOG_v44 §5 prediction matched measurement within
+                          ±2%, Rule #51). Methodology unchanged. Phase 2 = Sprint
+                          2.18.1 (parallel BFS in _expand_extent → kills 503 class).
 Mthamen integration:      ⏸️ Deferred indefinitely (see Project_Instructions §20.8)
-Roadmap (next):           2.21.0.10 = Stage 2 wall-to-wall classification (probe
-                          Building Footprint layer first) · 2.21.0.8 = P3 MoJ lstkhdm
-                          usage filter · 2.21.1 = apartments (MME smoke first, §21.6)
-                          · 2.22.x = Map UI (pin-drop → GPS → PIN via CadastrePlots)
+Roadmap (next):           2.18.1 = parallel BFS in _expand_extent (kill 503 class on
+                          compound_small; ~89s→~5-8s on 51/835/17) · 2.21.0.10 = Stage 2
+                          wall-to-wall classification (probe Building Footprint layer
+                          first) · 2.21.0.8 = P3 MoJ lstkhdm usage filter · 2.21.1 =
+                          apartments (MME smoke first, §21.6) · 2.22.x = Map UI
+                          (pin-drop → GPS → PIN via CadastrePlots)
 Confirmed Sales (2.16.16): still pending the secretary's data
 Deploy:                   git subtree push --prefix "deploy v2" (Operational_Rules #43)
 ```
@@ -197,8 +212,11 @@ STOP if I:
 | "تذكر E17" أو "تذكر 1-field minimum" | Broker supplies property identification only; everything else auto-fetched; Thammen verifies, broker corrects |
 | "تذكر E18" أو "تذكر قاعدة 6 متر" | Stage 2 wall-to-wall classification rule (wall<1m → attached; ≥6m → separate; 1-6m → sub_minimum). Replaces rejected GPS-centroid threshold |
 | "تذكر #50" أو "Staged Sprint" | Operational_Rules #50 — every Sprint reviewed through Stage 1/2/3 lens |
+| "تذكر Sprint 2.18.0" أو "تذكر parallel factors" | 5-way parallel `property_factors.analyze_property` via `ThreadPoolExecutor(max_workers=5)`. Deployed Heroku v99 (2026-05-23 evening, CHANGELOG_v44). −4s on villa/raw_land paths (multi_qars_56 26.8s→22.8s, khor_land 25.1s→21.2s); fast-paths unchanged; HTTP 503 class still present on compound_small (Sprint 2.18.1 territory). Audit prediction matched measurement within ±2% — first validation of Rule #51 + E19. |
+| "تذكر E19" أو "تذكر max_workers" | I/O-bound parallelization of N independent fixed tasks → `max_workers = N`. More workers = idle overhead. Discovered Sprint 2.18.0 §5 mini-audit; pattern applies platform-wide. |
+| "تذكر #51" أو "تذكر audit-driven Sprint" | Operational_Rules #51 — canonical performance-Sprint pattern: pre-Sprint §5 audit → audit-derived patch (measured bottleneck, scoped fix) → post-deploy audit comparison. Sprint 2.18.0 proved prediction accuracy ≤±2% across all measured paths. |
 | "بيانات السكرتيرة جاهزة" | Begin Sprint 2.16.16 (Confirmed Sales — renumbered from 2.16.15) |
-| "راجع EMPIRICAL_FINDINGS" | Audit rules E1-E18 |
+| "راجع EMPIRICAL_FINDINGS" | Audit rules E1-E19 |
 | "اقرأ القسم X" | Activate self-correction trigger from section X |
 | "ركذت قاعدة الدفع" أو "تذكر #32" | Push & Commit discipline — Operational_Rules #32 |
 | "هل أدفع؟" أو "should I push?" | يُفعّل #32 checklist، أعطِ status report قبل الإجابة |

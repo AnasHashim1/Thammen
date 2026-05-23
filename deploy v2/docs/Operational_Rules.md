@@ -1231,6 +1231,62 @@ documentation — pre-specify the deferred logic, not just the deferral).
 
 -----
 
+## 51. ⚠️ Audit-driven Sprint pattern — the canonical performance-Sprint loop
+
+**Discovered**: 2026-05-23 evening, Sprint 2.18.0. Empirically validated:
+the CHANGELOG_v44 §5 pre-deploy table predicted per-case post-deploy timings
+to **within ±2% on every measured path** (predicted −4 000 ms / measured −4 003 ms
+on multi_qars_56; predicted −4 000 ms / measured −3 887 ms on khor_land; all
+fast-paths predicted 0 / measured ±60 ms = sub-noise).
+
+**The rule**: any Sprint whose primary goal is performance (latency, throughput,
+resource use) MUST follow this 3-stage loop:
+
+1. **Pre-Sprint §5 audit (mandatory before any code).** Write a standalone
+   profiling probe (Rule #34, file-based), deploy to Heroku, run against a
+   *diverse* cohort (Rule §5 — at least one of: known regression case, fast
+   path, slow path, edge case). Output: per-phase timings + per-call counts +
+   a written audit report with a decision-gate section.
+2. **Audit-derived patch (single-purpose per Rule #38).** Patch only what the
+   audit identified as the dominant bottleneck. CHANGELOG.md MUST include a
+   "Success criteria" section with **predicted post-deploy timings**, per case,
+   so post-deploy measurement is a falsifiable test of the hypothesis.
+3. **Post-deploy audit comparison.** Re-run the same probe on the same cohort
+   from the same Heroku slug type (one-off dyno, same GIS network). Compare
+   actual vs predicted per case. Report deviation. If actual ≥ 2× predicted
+   delta in either direction → STOP and investigate (the bottleneck model was
+   wrong, or the patch has a side effect).
+
+**Why this works**: it converts performance work from craft to engineering.
+The pre-deploy table forces you to commit to a falsifiable claim. The
+post-deploy comparison gives a measurement-backed pass/fail.
+
+**Why this beats benchmarks alone**: a benchmark answers "how fast?", an
+audit answers "*why* this fast and what's *next* to fix". Sprint 2.18.0
+shipped knowing exactly which 4 seconds it would kill; Sprint 2.18.1 ships
+knowing exactly which ~85 seconds it should kill (and which it should NOT —
+the lite-baseline 4.1 s is Sprint 2.18.2 territory).
+
+**Anti-patterns this rule prevents**:
+- "I'll just parallelize this loop, looks slow" → measure first; the loop
+  may not be the bottleneck.
+- "Performance is unpredictable, ship and see" → no. The audit gives a
+  prediction. If the prediction was wrong, the model is wrong, and the
+  next Sprint needs a different audit.
+- Bundling multiple performance fixes into one Sprint → splits the
+  measurement signal. Rule #38 + #51 together force single-purpose
+  performance Sprints with traceable wins.
+
+**When this rule does NOT apply**: feature Sprints (Land Arc, multi-QARS,
+asset-type reality check), correctness fixes (Bug A11, Bug A2), and
+methodology changes. For those, the §5 audit is qualitative (find affected
+landmarks/PINs/edge cases) and the success criterion is "behaviour
+matches spec", not "latency Δ matches prediction".
+
+**Recall**: "تذكر #51" / "تذكر audit-driven Sprint" / "تذكر prediction-vs-measurement".
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added
@@ -1264,5 +1320,11 @@ Mthamen defer). Item #43 added 2026-05-20 during Sprint 2.19 §8 git diagnosis
 (Heroku deploy = `git subtree push --prefix "deploy v2"` because the repo root
 is `C:\Thammen` and the app lives in the `deploy v2/` subdir; plain
 `git push heroku master` is rejected by the python buildpack — no
-requirements.txt at slug root). When new operational invariants emerge in future
-Claude Code sessions, append them here.*
+requirements.txt at slug root). Item #50 added 2026-05-23 during Sprint 2.21.0.9
+(staged-Sprint discipline — every Sprint reviewed through Stage 1/2/3 lens,
+crystallized after the 18m-threshold reversal). Item #51 added 2026-05-23
+evening during Sprint 2.18.0 closeout (audit-driven performance-Sprint pattern —
+crystallized after the §5 audit / pre-deploy prediction table / post-deploy
+measurement loop landed within ±2% across all 7 measured paths; the first
+measurement-validated performance Sprint in the project's history). When new
+operational invariants emerge in future Claude Code sessions, append them here.*
