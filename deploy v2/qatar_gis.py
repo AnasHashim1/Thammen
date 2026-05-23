@@ -40,6 +40,7 @@ import math
 import sys
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, asdict
 from enum import Enum
 from pathlib import Path
@@ -1405,21 +1406,54 @@ class QatarGIS:
         ]
         notes.append(f'Stage 2: {len(eligible)} eligible by area/PD_NO rules')
 
-        # BFS expand: fetch polygons and test boundary sharing
+        # Sprint 2.18.1 — Parallel upfront-prefetch of all eligible plot polygons.
+        # The pre-2.18.1 serial loop fired get_plot(pin) on each frontier visit,
+        # each call = cadastre (~830 ms) + geometry_project (~830 ms) serially
+        # inside get_plot. For compound_small (e.g. 51/835/17 with ~42 eligibles)
+        # this added ~69 s of serial GIS round-trips and produced HTTP 503 at the
+        # Heroku 30 s router timeout. Upfront-prefetch fetches every eligible's
+        # plot in parallel before the BFS loop runs; the BFS loop below is then
+        # byte-identical to the serial version, just always cache-hit.
+        # Cap = min(len(eligible), 20): right-sized to task count per E19 with
+        # a 20-cap for khazna same-host concurrent-connection politeness
+        # (Anas-approved §5/3 decision-gate, 2026-05-23 evening).
+        cached_polygons = {}
+        if eligible:
+            n_workers = min(len(eligible), 20)
+            with ThreadPoolExecutor(
+                max_workers=n_workers, thread_name_prefix='bfs_prefetch'
+            ) as pool:
+                future_to_pin = {
+                    pool.submit(self.get_plot, c['pin']): c['pin']
+                    for c in eligible
+                }
+                for fut, pin in future_to_pin.items():
+                    try:
+                        cached_polygons[pin] = fut.result(timeout=10)
+                    except Exception as e:
+                        # One failed PIN is non-fatal — BFS skips None polygons.
+                        cached_polygons[pin] = None
+                        notes.append(
+                            f'BFS prefetch failed for PIN={pin}: '
+                            f'{type(e).__name__}'
+                        )
+
+        # BFS expand: serial walk, cache-hit only (no fetches during traversal).
+        # The traversal order is byte-identical to pre-2.18.1; the included set
+        # produced by parallel-prefetch is mathematically identical to serial
+        # (proof: §5/4 decision-gate report — reachability is invariant under
+        # traversal order, and the cache map produced by parallel fetch is the
+        # same set of (pin → PlotInfo|None) entries the serial code would have
+        # produced lazily).
         included = {seed.pin: seed}
         frontier = [seed]
-        cached_polygons = {}
 
         while frontier:
             current = frontier.pop()
             for cand in eligible:
                 if cand['pin'] in included:
                     continue
-                if cand['pin'] not in cached_polygons:
-                    cand_plot = self.get_plot(cand['pin'])
-                    cached_polygons[cand['pin']] = cand_plot
-                else:
-                    cand_plot = cached_polygons[cand['pin']]
+                cand_plot = cached_polygons.get(cand['pin'])
                 if cand_plot is None:
                     continue
                 if self._polygons_share_boundary(current.polygon_2932, cand_plot.polygon_2932):
