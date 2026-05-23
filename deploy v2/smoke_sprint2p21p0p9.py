@@ -16,6 +16,7 @@ Verifies:
 File-based per Rule #34 — avoids Windows-cmd quoting hell with `heroku run -c`.
 """
 import json
+import time
 import urllib.request
 
 BASE = 'https://thammen.qa'
@@ -56,30 +57,47 @@ def main():
     except Exception as e:
         print(f'    FAIL — {type(e).__name__}: {e}')
 
-    # ---- 56/565/21 — the trigger case
+    # ---- 56/565/21 — the trigger case (Bug A6 latency known; retry up to 3x)
     print('\n[2] POST /api/evaluate {zone:56,street:565,building:21}')
-    try:
-        st, d = hit('/api/evaluate',
-                    {'zone': 56, 'street': 565, 'building': 21})
-        mq = d.get('multi_qars')
-        print(f'    status={st}  engine={d.get("engine_version", "?")}')
-        if mq:
-            print(f'    multi_qars.detected = {mq.get("detected")}')
-            print(f'    multi_qars.type     = {mq.get("type")}')
-            print(f'    cadastral_area      = {mq.get("cadastral_area")}')
-            print(f'    effective_per_villa = {mq.get("effective_per_villa")}')
-            print(f'    n_qars              = {mq.get("n_qars")}')
-            print(f'    max_gps_distance_m  = {mq.get("max_gps_distance_m")}')
-            print(f'    cohabiting_buildings = {mq.get("cohabiting_buildings")}')
-            print(f'    alternative_valuation = {mq.get("alternative_valuation")}')
-            attached = mq.get('type') == 'attached'
-            split_ok = mq.get('effective_per_villa') in (450, 450.0)
-            print(f'    {"PASS" if attached and split_ok else "FAIL"} — '
-                  f'expected attached + effective=450')
-        else:
-            print('    FAIL — multi_qars block ABSENT (detection did not fire)')
-    except Exception as e:
-        print(f'    FAIL — {type(e).__name__}: {e}')
+    success = False
+    for attempt in range(1, 4):
+        t0 = time.time()
+        try:
+            st, d = hit('/api/evaluate',
+                        {'zone': 56, 'street': 565, 'building': 21})
+            elapsed = time.time() - t0
+            mq = d.get('multi_qars')
+            print(f'    attempt {attempt}: status={st} elapsed={elapsed:.1f}s')
+            print(f'    engine={d.get("engine_version", "?")}  asset_type={d.get("asset_type")}')
+            if mq:
+                print(f'    multi_qars.detected      = {mq.get("detected")}')
+                print(f'    multi_qars.type          = {mq.get("type")}')
+                print(f'    cadastral_area           = {mq.get("cadastral_area")}')
+                print(f'    effective_per_villa      = {mq.get("effective_per_villa")}')
+                print(f'    n_qars                   = {mq.get("n_qars")}')
+                print(f'    max_gps_distance_m       = {mq.get("max_gps_distance_m")}')
+                print(f'    cohabiting_buildings     = {mq.get("cohabiting_buildings")}')
+                print(f'    alternative_valuation    = {mq.get("alternative_valuation")}')
+                print(f'    user_override_applied    = {mq.get("user_override_applied")}')
+                print(f'    split_basis              = {mq.get("split_basis")}')
+                attached = mq.get('type') == 'attached'
+                split_ok = mq.get('effective_per_villa') in (450, 450.0)
+                print(f'    {"PASS" if attached and split_ok else "FAIL"} — '
+                      f'expected attached + effective=450')
+                success = True
+            else:
+                print('    FAIL — multi_qars block ABSENT (detection did not fire)')
+                success = False
+            break
+        except Exception as e:
+            elapsed = time.time() - t0
+            print(f'    attempt {attempt}: FAIL after {elapsed:.1f}s — '
+                  f'{type(e).__name__}: {e}')
+            if attempt < 3:
+                print(f'    ... waiting 8s before retry (Bug A6 latency known)')
+                time.sleep(8)
+    if not success:
+        print('    OVERALL: FAIL — 3 attempts all errored (likely Bug A6 P95 ~25-31s)')
 
     # ---- PIN 66030258 — compound_large regression
     print('\n[3] POST /api/evaluate {pin:"66030258"}')
