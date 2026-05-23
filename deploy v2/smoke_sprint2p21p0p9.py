@@ -19,16 +19,20 @@ import json
 import urllib.request
 
 BASE = 'https://thammen.qa'
+# Cloudflare 403s default urllib UA; matches the smoke_sprint2p21p0p7.py pattern.
+UA = {'User-Agent': 'Thammen/smoke_2p21p0p9'}
 
 
 def hit(path, body=None):
     if body is None:
-        req = urllib.request.Request(BASE + path)
+        req = urllib.request.Request(BASE + path, headers=UA)
     else:
+        hdrs = dict(UA)
+        hdrs['Content-Type'] = 'application/json'
         req = urllib.request.Request(
             BASE + path,
             data=json.dumps(body).encode('utf-8'),
-            headers={'Content-Type': 'application/json'},
+            headers=hdrs,
             method='POST',
         )
     with urllib.request.urlopen(req, timeout=60) as resp:
