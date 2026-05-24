@@ -309,7 +309,7 @@ findstr /C:"thammen-sprint2p16p17-security-hardening" legal.json
 ```
 
 Smoke on 3 diverse addresses post-deploy (per Project_Instructions §5 #6):
-- `52/903/90` (villa, A6-safe baseline per CLAUDE.md §22)
+- `52/903/90` (apartment_building, A6-safe DCF fast-path baseline per CLAUDE.md §22; verified 2026-05-24 audit)
 - `69/305/201` (Lusail tower — confirms Sprint 2.16.10 path still works)
 - `61/875/20` (Public Works — confirms Bug A11 flag still emits)
 

@@ -446,26 +446,54 @@ breakdown. Also supports `--listing-bua` as flat number (backward compat).
 Authentication:
 ```
 GET qrepcms.aqarat.gov.qa/flows/trigger/412A3B92-16F9-437D-AAFC-BBE5E25ED9F5
-→ returns JWT
+→ returns JWT (verified reachable from Heroku 2026-05-24, HTTP 200 in ~0.9s)
 ```
+
+⚠️ **Auth scope** (verified 2026-05-24, smoke v1+v2): this public
+flow-trigger issues an **anonymous Directus token** —
+`{role: null, app_access: false, admin_access: false, iss: "directus"}`.
+With this token, kpi29 returns HTTP 200 + `{count:0, transactionList:[]}`
+for every propertyType / areaCode / window combination. The authenticated
+session token (the one used by the mme.gov.qa web app after user login)
+is required for actual data; capture via browser DevTools is the only
+known path today.
 
 Sales endpoint:
 ```
 POST qrepbe.aqarat.gov.qa/mme-services/kpi/sell/kpi29/transactions
 Params: issueDateYear, StartMonth, EndMonth, municipalityId, areaCode, propertyTypeList
+
+Response schema (verified 2026-05-24 — extractor key is transactionList,
+NOT data/transactions/result/records):
+{
+  "count": <int>,
+  "transactionList": [ <row>, … ]
+}
 ```
 
-Rentals:
+Rentals — **paths verified dead 2026-05-24, needs re-discovery**:
 ```
-POST .../kpi/rent/kpi30, kpi31, kpi32  (returns by areaCode)
+POST .../kpi/rent/kpi30           → 404
+POST .../kpi/rent/kpi30/transactions → 404   (mirroring sell path shape)
+POST .../kpi/rent/kpi30/list      → 404
+POST .../kpi/rent/kpi30/data      → 404
+POST .../kpi/rents/kpi30/...      → 404      (plural)
+POST .../kpi/lease/kpi30/...      → 404
+POST .../kpi/rental/kpi30/...     → 404
+GET  .../kpi/rent                 → 404      (directory listing)
 ```
+Tested 7 path variants + 1 GET — all 404. The kpi30/31/32 endpoint
+shape from a now-unknown reference must be rediscovered via DevTools
+on the rental KPIs page of mme.gov.qa.
 
 Property types: 1=villas, 5=apartments, 6=land.
 
 **Apartments are exclusively here** (MoJ does not contain individual
 apartment units). Pearl Qatar areaCode=765, Lusail areaCode=812.
 
-`mme_reference.py` tool is ready in the codebase.
+`mme_reference.py` tool referenced in older docs is **not in the live
+codebase** (verified by grep 2026-05-24); any client built on top of MME
+must use the auth-scope-aware pattern documented above.
 
 -----
 
