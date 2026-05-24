@@ -27,8 +27,61 @@ The gap between asking prices and MoJ medians in Qatar reflects **building-stock
 ### Rule E2 — Section 4 Buyer Hard Ceiling validated
 ✓ **Buyer Hard Ceiling = MoJ × 1.10** matches empirical asking premium for clean stock.
 
-### Rule E3 — Listings = sentiment ONLY
-✓ Asking prices may appear as "Market Sentiment" panel with explicit framing. MUST NOT enter calculation.
+### Rule E3 (updated 2026-05-24, Sprint 2.21.2) — Listings: tier-weighted entry permitted
+
+✓ Asking prices MAY enter valuation calculations only via the
+`hybrid_valuation_v1()` framework (`hybrid_valuation.py`, Sprint 2.21.2),
+with the following hard constraints:
+
+1. **T2 sources** (arady.qa, PropertyFinder, broker direct listings) carry
+   maximum weight `0.40` per valuation when T1 is present. Each value is
+   discounted by the T2 negotiation margin from `HYBRID_TIER_CONFIG`
+   (midpoint `−12.5%`) before entering the weighted average.
+
+2. **T3 sources** (developer-direct off-plan, single-developer inventory)
+   carry maximum weight `0.15` per valuation. Each value is discounted by
+   the T3 combined adjustment from `HYBRID_TIER_CONFIG` (midpoint `−17.5%`,
+   covering both negotiation and off-plan-to-resale equivalent).
+
+3. **T1 dominance preserved**: if T1 (MoJ + Confirmed Sales) is present with
+   n≥10, T1 weight is `1 − (T2_weight + T3_weight)` and MUST be ≥0.45.
+
+4. **No T1 → indicative ceiling**: if T1 is absent or n<10, the output
+   confidence cannot exceed `indicative`. A `reliable` rating REQUIRES T1.
+
+5. **Mandatory MUC** when T1 absent: the brief MUST include a Material
+   Uncertainty Clause stating the valuation rests on asking-tier evidence
+   with a declared ±20% range.
+
+6. **Source-level transparency** (Rule E10 still applies): every value
+   contributing to the weighted average appears in the `sources` block with
+   its tier, raw value, discounted value, and weight.
+
+7. **Like-for-like normalization (RICS VPS 4)**: all values input to
+   `hybrid_valuation_v1()` MUST be in the same unit of comparison (typically
+   QAR/m²), normalized for size bracket and area BEFORE entering the
+   function. Comparing un-normalized values is a contract breach with the
+   framework.
+
+8. **T3 alone insufficient**: `hybrid_valuation_v1()` MUST refuse to return
+   a value when only T3 is present (no T1, no T2). T3 by itself is
+   single-developer evidence and cannot anchor a valuation. Output =
+   `fallback` with explicit message requesting T1 or T2 data.
+
+**What this rule still forbids** (E1 unchanged):
+- Adjusting MoJ medians upward based on listing data ("MoJ uplift")
+- Treating an asking price as a transaction
+- Producing a `reliable` rating from T2/T3 alone
+
+**Calibration status of D5/D6 discounts:** both midpoints
+(`T2_discount_midpoint = −0.125`, `T3_discount_midpoint = −0.175`) are
+tagged `provisional, broker-experience-grounded` in `HYBRID_TIER_CONFIG`.
+D5 derives from Empirical_Findings §3 asking-premium band (+8% to +20%
+above MoJ) inverted to a closing discount range (−7% to −17%); the
+central `−10% to −15%` band picks the centre. D6 = ~10% negotiation
+component + ~7.5% off-plan-to-resale component, stacked. Recalibration
+trigger: brokerage Confirmed Sales pipeline produces ≥30 (asking, close)
+pairs (BRIEF §8 roadmap, deferred Sprint).
 
 ### Rule E4 — Villa valuation requires stock stratification
 ✓ Before any villa reference, classify:
