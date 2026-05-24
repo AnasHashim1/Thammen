@@ -1340,6 +1340,31 @@ will not be the last.
 
 -----
 
+## 53. ⚠️ Closed cases stay closed — including as comparison anchors
+
+Rules derived from a deferred/closed case remain in force. The originating
+case itself does not get cited as a foil, precedent, or comparison when
+documenting new work. Findings stand on their own terms. Cite §X (the rule),
+not the case that produced §X.
+
+**Pairs with** Project Instructions §22 ("treating closed case as Sprint
+candidate → STOP"). This rule extends that discipline from "don't propose
+reviving" to "don't drag back as a comparison anchor."
+
+**Self-check**: if a sentence in new documentation contains
+"unlike [closed case]" or "mirror [closed case] pattern" or similar —
+delete it. The finding doesn't need the contrast to be understood.
+
+**Discovered**: 2026-05-24, MME smoke session (pre-Sprint 2.21.1). The MME
+diagnosis was technically accurate but kept getting framed against the
+2026-05-19 closed Qatar government endpoint case across four+ sites:
+script docstring, two ledger interpretations, and a multi-choice question
+option. Each reference reopened a settled decision unnecessarily.
+
+**Recall**: "تذكر #53" / "تذكر closed cases stay closed".
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added
@@ -1386,5 +1411,9 @@ unmask methodology bugs — crystallized after Sprint 2.18.1 successfully cut
 verification on thammen.qa to catch that the now-reachable response
 contained silent arithmetic failure: land=218M, total=6.8M, building=−211M,
 pct=−3,107%; the first documented "latency unmasks methodology bug" case in
-project history). When new operational invariants emerge in future Claude
-Code sessions, append them here.*
+project history). Item #53 added 2026-05-24 during pre-Sprint 2.21.1 MME
+smoke session (closed cases stay closed — including as comparison anchors;
+crystallized after the MME diagnosis kept getting framed against a closed
+endpoint case in four+ documentation sites, each technically accurate but
+each reopening a settled decision unnecessarily). When new operational
+invariants emerge in future Claude Code sessions, append them here.*

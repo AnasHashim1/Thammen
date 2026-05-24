@@ -22,7 +22,7 @@ upfront-prefetch + compound-misroute fix).** §14 covered Sprint 2.18.0 earlier
 that day; §13 covered Sprint 2.21.0.9 Stage 1; §11-12 covered the Land Arc
 through Sprint 2.21.0.7.1. The `Session_Update_2026-05-19.md` file is an older
 delta (Bug A11 era) kept for history. Newest operational rules:
-`Operational_Rules.md` #43–#52. Newest empirical rules:
+`Operational_Rules.md` #43–#53. Newest empirical rules:
 `Empirical_Findings.md` E13–E20.
 
 -----
@@ -202,6 +202,7 @@ STOP if I:
 - أُعلن Sprint مكتمل بمجرد نجاح الـ deploy + الاختبارات دون فحص الـ response content على المسار الذي أصبح متاحاً للمستخدم → STOP، راجع Operational_Rules.md #52 (Latency Unmasks Methodology). كل Sprint يحول 5xx→2xx على مسار كان timeout سابقاً = response content على هذا المسار قابل للفحص لأول مرة → فحص methodology إلزامي post-deploy. Sprint 2.18.1 → 2.18.1.1 هو السابقة الأولى.
 - أُصنّف compound_small بناءً على QARS subtype فقط دون فحص extent.total_area_m2 → STOP، راجع EMPIRICAL E20. compound > 15K m² لا يملك MoJ comparable (المسجَّل الأكبر 15,027 m²). Sprint 2.18.1.1 Patch A تروّج تلقائياً إلى compound_large عند extent ≥ 15K → Income Approach refusal pattern نظيف.
 - أضيف decomposition (land + building) بدون guard ضد `land_value > valuation_amount` → STOP، راجع Sprint 2.18.1.1 Patch C. القاعدة: في أي function يحسب land_value × area للأصول السكنية، يجب return None لو النتيجة > valuation_amount. الـ guard universal (يلتقط premium-land villa teardowns + MoJ outliers + future bug classes).
+- أكتب جملة جديدة تحوي "unlike [closed case]" أو "mirror [closed case] pattern" أو "precedent: [closed case]" → STOP، راجع Operational_Rules.md #53 (Closed cases stay closed — including as comparison anchors). احذف الجملة. الـ finding يقف بذاته. اذكر §X (القاعدة)، ليس الحالة التي أنتجتها.
 
 -----
 
@@ -234,6 +235,7 @@ STOP if I:
 | "تذكر Sprint 2.18.1.1" أو "تذكر compound misroute" أو "تذكر Patches A+C" | Compound-misroute fix (Anas's verification discovered silent failure on 51/835/17: land=218M vs total=6.8M, building=−211M, pct=−3,107%). Patch A in qatar_gis.full_property_lookup: when classification.asset_type==COMPOUND_SMALL and extent.total_area_m2 >= 15000, promote both to COMPOUND_LARGE → routes via ASSET_TYPE_TO_MOJ_CATEGORY['compound_large']=None → valuation=None → clean Income Approach refusal. Patch C in _decompose_value: universal `if land_value > valuation_amount: return None` (catches premium-land villa teardowns + MoJ outliers too). Deployed Heroku v101 (2026-05-24 morning, CHANGELOG_v46). Anas visual verify 9/9. Threshold = E20. |
 | "تذكر #52" أو "تذكر latency unmasks methodology" | Operational_Rules #52 — when a latency Sprint converts 5xx→2xx on a previously-unreachable path, the response *content* on that path is newly verifiable and may have latent bugs. Post-deploy verification scope must include the now-reachable response content, not just the latency metric. First documented case: Sprint 2.18.1 unmasked the compound_small >15K methodology bug; Sprint 2.18.1.1 closed it. |
 | "تذكر E20" أو "تذكر 15K compound" | EMPIRICAL_FINDINGS E20 — MoJ "مجمع فلل" sampling max = **15,027 m²**. Compounds with extent ≥ 15K m² have no MoJ comparable; Income Approach with rent input is the only valid methodology. The 15K threshold drives Sprint 2.18.1.1 Patch A. |
+| "تذكر #53" أو "تذكر closed cases stay closed" | Operational_Rules #53 — rules derived from a deferred/closed case remain in force, but the originating case itself is not cited as a foil, precedent, or comparison in new documentation. Cite §X (the rule), not the case that produced §X. Self-check: delete any sentence containing "unlike [closed case]" or "mirror [closed case] pattern". Crystallized 2026-05-24, pre-Sprint 2.21.1 MME smoke session. |
 | "بيانات السكرتيرة جاهزة" | Begin Sprint 2.16.16 (Confirmed Sales — renumbered from 2.16.15) |
 | "راجع EMPIRICAL_FINDINGS" | Audit rules E1-E20 |
 | "اقرأ القسم X" | Activate self-correction trigger from section X |
