@@ -1,6 +1,6 @@
 # EMPIRICAL FINDINGS — Methodology Validation 2026-05
 
-> **Status:** Validated by paired field audits (villas + lands), 5 areas, 4 brackets each, MoJ n=149+ villas + n=149+ lands. **2026-05-18 update:** Cost Approach (DRC) added via Mthamen reverse engineering (Rule E6). **2026-05-19 AM update:** Rule E6 §8.5 added — Mthamen live integration deferred indefinitely. **2026-05-19 PM update:** Rule E7 added — QARS subtype requires Zoning cross-check; deployed as Sprint 2.16.14 (CHANGELOG_v35). **2026-05-20→22 update (Land Arc):** E8-E11 (source tiers / cross-validation / attribution / tier floor — Sprint 2.20); E12 (MoJ self-calibration BLOCKED — cryptographic + ethical); **E13 (pull coded-value domains, never guess RULEID) + E14 (validation scripts must exercise production logic) — Sprint 2.21.0.7**. **2026-05-23 update:** E15-E18 (Qatar MME setback / staged-valuation pattern / 1-field minimum input / Stage 2 wall-to-wall rule — Sprint 2.21.0.9); **E19 (I/O-bound parallelization: max_workers = task count) — Sprint 2.18.0**, measurement-validated to ±2% across all paths in the post-deploy audit comparison.
+> **Status:** Validated by paired field audits (villas + lands), 5 areas, 4 brackets each, MoJ n=149+ villas + n=149+ lands. **2026-05-18 update:** Cost Approach (DRC) added via Mthamen reverse engineering (Rule E6). **2026-05-19 AM update:** Rule E6 §8.5 added — Mthamen live integration deferred indefinitely. **2026-05-19 PM update:** Rule E7 added — QARS subtype requires Zoning cross-check; deployed as Sprint 2.16.14 (CHANGELOG_v35). **2026-05-20→22 update (Land Arc):** E8-E11 (source tiers / cross-validation / attribution / tier floor — Sprint 2.20); E12 (MoJ self-calibration BLOCKED — cryptographic + ethical); **E13 (pull coded-value domains, never guess RULEID) + E14 (validation scripts must exercise production logic) — Sprint 2.21.0.7**. **2026-05-23 update:** E15-E18 (Qatar MME setback / staged-valuation pattern / 1-field minimum input / Stage 2 wall-to-wall rule — Sprint 2.21.0.9); **E19 (I/O-bound parallelization: max_workers = task count) — Sprint 2.18.0**, measurement-validated to ±2% across all paths in the post-deploy audit comparison. **2026-05-24 update: E20 (MoJ compound sampling boundary at 15K m²) — Sprint 2.18.1.1**, the threshold driving Patch A's classifier extent-promotion (compound_small → compound_large when extent ≥ 15K, routing through clean Income Approach refusal pattern).
 > **Bound to every Thammen session as a permanent methodological reference.**
 
 -----
@@ -382,6 +382,57 @@ both the parallelization mechanism and the choice of N.
 E19 is the empirical finding; #51 is the workflow that surfaced it.
 
 **Recall**: **"تذكر E19"** / **"تذكر max_workers"** / **"تذكر 5 not 8"**.
+
+### 🆕 Rule E20 — MoJ compound sampling boundary at 15K m² (Sprint 2.18.1.1)
+
+✓ **Discovered 2026-05-24 morning** during Sprint 2.18.1.1 §5 audit (the
+compound-misroute fix). Validated against the MoJ weekly bulletin
+(`moj_weekly.csv`, n=~26 K transactions over 24 months).
+
+**The empirical finding**: MoJ's largest recorded **"مجمع فلل"** transaction
+has area = **15 027 m²**. Above this size, MoJ has zero comparable
+transactions — the sampling base is empty. Applying the MoJ comparison
+methodology (median × area decomposition) to compounds above this threshold
+produces silent arithmetic failure because:
+
+- `valuation_amount` stays anchored to the median of similar-bracket
+  transactions (all < 15 K m²) → typically 5-15 M QAR.
+- `land_value = full_area × land_per_m²` grows linearly with the compound
+  area → for a 67 K m² compound at 3 229 QAR/m², land = 218 M.
+- `building_implied = valuation − land` goes deeply negative
+  (e.g. −211 M on 51/835/17) → status `land_exceeds_value` fires but
+  doesn't suppress the rendering.
+
+**The rule**: compounds with extent total ≥ 15 000 m² have no MoJ
+comparable. The MoJ comparison + per-m² land decomposition is **NOT a
+valid methodology** for them. Income Approach with rent input is the only
+valid methodology (same as compound_large + tower + apartment_building
+without rent → DCF_REQUIRED + insufficient_data refusal).
+
+**Implementation**: Sprint 2.18.1.1 Patch A in
+`qatar_gis.full_property_lookup` enforces this threshold. After
+`detect_extent` produces `extent.total_area_m2`, if `classification.asset_type
+== COMPOUND_SMALL` and `total_area_m2 >= 15000`, promote both classification
+and extent to `COMPOUND_LARGE`. The promoted type routes via
+`ASSET_TYPE_TO_MOJ_CATEGORY['compound_large'] = None` → MoJ skipped →
+`valuation_amount = None` → clean Income Approach refusal pattern.
+
+**Why exactly 15 000 m² and not 15 027 m²?** The threshold is a round
+number ~0.2 % above the largest observed sample. Future weekly bulletins
+*may* add a slightly-larger transaction; 15 000 is the safe ceiling.
+
+**Reference case**: 51/835/17 (Public Works Authority compound, extent
+= 67 536 m²). Pre-2.18.1.1: classified `compound_small` → MoJ comparison
+→ land=218 M vs total=6.8 M silent failure. Post-2.18.1.1: classified
+`compound_large` → MoJ skipped → `valuation_amount=None` → clean refusal
+("requires annual rent for Income Approach" Arabic message).
+
+**Pairs with**: Operational_Rules **#52** (latency unmasks methodology)
+— this empirical boundary was invisible until 2.18.1's latency fix made
+the broken response renderable; the boundary itself is methodology.
+
+**Recall**: **"تذكر E20"** / **"تذكر 15K compound"** /
+**"تذكر 15,027 m²"**.
 
 -----
 

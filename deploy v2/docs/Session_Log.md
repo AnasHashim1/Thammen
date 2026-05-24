@@ -914,7 +914,172 @@ just without the audit probe script.
 
 -----
 
-*Last updated: 2026-05-23 evening (Sprint 2.18.0 deployed — parallel
-`property_factors`; first audit-validated performance Sprint; Operational_Rules
-#51 + EMPIRICAL_FINDINGS E19 codified)*
+## 15. 🆕 2026-05-23 evening → 2026-05-24 morning — Sprints 2.18.1 + 2.18.1.1 (unified narrative)
+
+> Two Sprints, one user-facing outcome. **2.18.1** delivered the latency fix
+> exactly as scoped (89 s → 29 s on `compound_small`, HTTP 503×3 → 200×3).
+> The same fix unmasked a pre-existing methodology bug. **2.18.1.1** closed
+> it. Together they make `compound_small` addresses reachable AND
+> methodologically correct for the first time since the bug class was
+> catalogued.
+
+### 15.1 Sprint 2.18.1 — Parallel BFS upfront-prefetch (Heroku v100)
+
+Phase 1 §5 mini-audit (5-case focused cohort post-v99) corrected the
+original Sprint 2.18 §7.3 prediction:
+
+| audit doc said | §5 mini-audit measured | reason |
+|---|---|---|
+| ~21 eligibles × 830 ms parallel = ~1.2 s | ~42 eligibles × 1 645 ms (cadastre + geometry internal chain) = need ~5 s at max_workers=20 | Eligibles miscounted ×2; `get_plot`'s internal serial chain missed |
+| target 5-8 s on 51/835/17 | **honest target 22-27 s** | The ~15 s of non-GIS Python overhead can't be parallelized in this Sprint |
+
+**Decision-gate report** (Rule #51 step 1) ran before any code. Anas
+approved the corrected target. Patch shipped at max_workers=20 (sweet spot
+between politeness on khazna and safety margin under 30 s router timeout).
+
+**Post-deploy audit** (Rule #51 step 3) measured:
+- a6_trigger_51: 89 355 ms → **28 891 ms** (−60.5 s, 15 % over prediction)
+- multi_qars_56: 22 808 → 22 760 (−0.2 %, within noise)
+- safe_villa_52: 4 239 → 5 395 avg (+27 % avg — but **rep #3 = 4 114 ms** within ±0 % of v99: first 2 reps cold-dyno, not regression; fast-path never enters `_expand_extent`)
+- Wider 21-rep cohort HTTP: **503×4 + 200×17 → 503×0 + 200×21** (19 % → 0 % failure)
+
+**Verdict:** Sprint 2.18.1 ships. The §5-corrected prediction was off by
++15 % on the target case (28.9 s vs 25 s predicted) — documented in
+CHANGELOG_v45 §8.3 per Rule #51. The user-visible bug (HTTP 503) is closed.
+
+### 15.2 The unmasked-bug discovery
+
+Anas's post-deploy visual verification (CLAUDE.md §3 last item: "smoke
+test 3 diverse addresses from Heroku post-deploy") caught what the 503
+timeout had been hiding for weeks: the now-reachable `compound_small`
+response on 51/835/17 contained silent arithmetic failure:
+
+```
+asset_type:       compound_small (wrong — extent is 67 536 m², 4.5× the MoJ-comparable max)
+valuation_amount: 6 800 000      (MoJ median of similar-bracket transactions, all <15 K m²)
+land_value:       218 073 744    (67 536 × 3 229 — full compound area × land per m²)
+building_value:   −211 273 744   (silent negative — building_implied = total − land)
+building_pct:     −3 107 %       (impossible)
+status flag:      'land_exceeds_value' (detected in code, NOT surfaced as refusal)
+```
+
+This bug **existed before** Sprint 2.18.1. Sprint 2.18.1 was not the
+cause — it was the **revealer**. The HTTP 503 router timeout had been
+masking the broken response for the entire `compound_small` class
+(~5–10 % of Doha old-district inventory).
+
+The forensic credit goes entirely to **Anas's verification step**. The
+checklist did exactly what it was designed for.
+
+### 15.3 Sprint 2.18.1.1 — Compound-misroute fix (Heroku v101)
+
+§5 audit identified **three cooperating defects**:
+
+1. **Classifier ignores extent area** ([qatar_gis.py:790-799](../qatar_gis.py:790)) — QARS subtype 2/3 always returns COMPOUND_SMALL regardless of `_expand_extent`'s discovered total area. Comment promised "extent detection later can promote" — no such promotion existed.
+2. **`compound_small` not in DCF_ONLY** ([evaluate_unified.py:2464](../evaluate_unified.py:2464)) — the routing layer that would have produced a clean "insufficient_data" refusal for compound_large + apartment_building never fires for compound_small.
+3. **`_decompose_value` has no sanity guard** ([evaluate_unified.py:828](../evaluate_unified.py:828)) — the code detects `bld_implied < 0` and labels status='land_exceeds_value' with an Arabic message, **but still returns the broken numbers**.
+
+**Two surgical patches** (single Sprint per Rule #38):
+
+- **Patch A** — `qatar_gis.full_property_lookup`: after `detect_extent`, if `classification.asset_type == COMPOUND_SMALL and extent.total_area_m2 ≥ 15 000`, promote both `classification.asset_type` and `extent.asset_type` to COMPOUND_LARGE + confidence='medium' + audit note. **Routes via existing `ASSET_TYPE_TO_MOJ_CATEGORY['compound_large'] = None`** → MoJ skipped → `valuation_amount = None` → clean refusal (identical to PIN-entry compound_large which my §5/C probe confirmed already returns None).
+
+- **Patch C** — `evaluate_unified._decompose_value`: when `land_value > valuation_amount`, return None. **Universal** (per Anas's scope decision #4) — not compound-specific. Catches premium-land villa teardowns + MoJ outliers too.
+
+**Threshold = 15 000 m²**. Source: MoJ's largest recorded "مجمع فلل" is
+**15 027 m²** (codified now as **EMPIRICAL_FINDINGS E20**). Above this,
+MoJ has no sampling base; Income Approach with rent input is the only
+valid methodology.
+
+### 15.4 Post-deploy probe + Anas's visual verification
+
+Post-deploy probe (probe_compound_classifier_bug.py on v101) confirmed:
+
+| field | v100 | v101 actual | predicted | match |
+|---|---|---|---|---|
+| 51/835/17 asset_type | compound_small | **compound_large** | compound_large | ✓ |
+| 51/835/17 valuation_amount | 6 800 000 | **None** | None | ✓ |
+| 51/835/17 land/building/decomp_status | (broken numbers) | **None / None / None** | None × 3 | ✓ |
+| 51/835/17 latency | 28.9 s | **26.8 s** | ~29 s | ✓ (slightly faster — Patch A skips MoJ entirely) |
+| Regression: safe_villa_52 | 200 / 4.5 s | **200 / 4.6 s** | unchanged | ✓ |
+| Regression: multi_qars_56 (decomp still works) | val=2.5 M, land=1.7 M, building=799 K (32 %, 'normal') | **byte-identical** | unchanged | ✓ |
+| Regression: PIN 66030258 | 200 / 4.6 s / unknown | **200 / 4.6 s / unknown** | unchanged | ✓ |
+
+**Anas's visual verification on thammen.qa (2026-05-24, post-v101)** — 9/9 checkmarks:
+
+- ✅ asset_type displays as "مجمع فلل كبير" (compound_large) in Arabic
+- ✅ No valuation number shown (clean refusal)
+- ✅ Methodology correctly shows "منهج الدخل (Income Approach)"
+- ✅ Request clearly states: "يتطلب: الإيجار السنوي الإجمالي للمجمع"
+- ✅ Material reservation escalated to "حرج" (critical) — appropriate
+- ✅ Six explicit limitation factors listed (no MoJ comparables, no rent data, no time trend, no field inspection, BUA unknown, service charges estimated)
+- ✅ RICS Red Book recommendations explicit
+- ✅ Auto-discovery still working (landmarks, road type, cadastre area)
+- ✅ Buyer checklist still useful (MoJ statement, real age, zoning, utility bills, lease contracts)
+
+### 15.5 Two UX observations — future Sprint candidates (NOT blockers)
+
+1. **Generic "بيانات غير كافية" box could deep-link to the rent input field**
+   once Sprint 2.21.0.11 (or similar) adds it. Current state is fine — just
+   not the most-helpful affordance.
+2. **"نطاق التفاوض المقترح" box shows generic advice when valuation=None.**
+   Could either hide the box entirely or replace with explicit
+   "نطاق التفاوض غير متاح حتى تقديم الإيجار السنوي". Cosmetic; not a bug.
+
+Filed as cosmetic UX candidates. Not blocking 2.18.1.1 closeout.
+
+### 15.6 The "latency unmasks methodology" pattern — codified as Rule #52
+
+This is the **first documented case** in the project's history where a
+latency Sprint unmasked a methodology bug on a previously-unreachable
+response path. Anas's CLAUDE.md §3 checklist already does the right
+verification — Rule #52 makes it an explicit named checkpoint future
+Sprints can reference. When a Sprint converts 5xx → 2xx on a path that
+was previously timeout-blocked, the response *content* on that path is
+verifiable for the first time and may have its own latent bugs. The
+post-deploy verification scope must explicitly include the now-reachable
+content, not just the latency metric.
+
+Companion empirical rule **E20** codifies the 15 K m² MoJ compound
+sampling boundary that drove Patch A's threshold choice.
+
+### 15.7 Releases history this session
+
+| v | engine | what |
+|---|---|---|
+| v98 | sprint2p21p0p9-multi-qars-stage1 | Sprint 2.18 §5 audit probe deploy (no engine change) |
+| v99 | sprint2p18p0-parallel-property-factors | Sprint 2.18.0 (−4 s villa/raw_land via parallel `property_factors`) |
+| v100 | sprint2p18p1-parallel-bfs-prefetch | Sprint 2.18.1 (−60 s compound_small via parallel BFS; kills HTTP 503 class **but unmasks methodology bug**) |
+| **v101** | **sprint2p18p1p1-compound-misroute-fix** | **Sprint 2.18.1.1 — current production** (Patches A + C; closes the unmasked methodology bug) |
+
+Rollback targets: v100 (for 2.18.1.1 only) or v99 (for everything since
+yesterday afternoon). Neither used.
+
+### 15.8 What's queued next
+
+- **Sprint 2.18.2 candidate** — lite/full GIS-call deduplication +
+  boundary-test optimization. Target: shave the ~15 s of Python overhead
+  on compound_small (the remaining tail after Patch A's MoJ-skip). Would
+  close Stage-1 (≤ 5 s) for compound_small.
+- **Sprint 2.21.0.11 candidate (cosmetic)** — UX: deep-link rent input
+  field from the insufficient-data box (observation #1 above).
+- **Sprint 2.21.0.12 candidate (cosmetic)** — UX: hide/replace generic
+  negotiation-range box when valuation=None (observation #2 above).
+- **Sprint 2.21.0.10 candidate** — Stage 2 wall-to-wall classification
+  (E18). Conditional on Building Footprint layer probe.
+- **Sprint 2.16.16** — Confirmed Sales DB integration. Still awaits
+  secretary's data.
+- **Sprint 2.21.1** — MME apartments smoke + integration (§21.6).
+
+### 15.9 New rules codified this session
+
+| rule | type | what |
+|---|---|---|
+| **Operational #52** | Cross-session memory | Latency Sprints make previously-unreachable response paths verifiable for the first time → post-deploy methodology check is mandatory on any path that newly returns HTTP 2xx. |
+| **EMPIRICAL E20** | Methodology | MoJ "مجمع فلل" sampling max = **15 027 m²**. Compounds with extent ≥ 15 K m² have no MoJ comparable; Income Approach with rent input is the only valid methodology. Threshold used by Patch A in Sprint 2.18.1.1. |
+
+-----
+
+*Last updated: 2026-05-24 morning (Sprints 2.18.1 + 2.18.1.1 closed in
+unified narrative; first documented "latency-unmasks-methodology-bug"
+case; Operational_Rules #52 + EMPIRICAL_FINDINGS E20 codified).*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*

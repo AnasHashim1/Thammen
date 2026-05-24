@@ -3,7 +3,7 @@
 > **Project:** thammen.qa — Qatar real-estate AVM (RICS VPS 4)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-23 evening (after Sprint 2.18.0 — parallel property_factors)
+> **Last update:** 2026-05-24 morning (after unified closeout for Sprints 2.18.1 + 2.18.1.1 — parallel BFS upfront-prefetch + compound-misroute fix; first documented "latency-unmasks-methodology-bug" case; Operational #52 + EMPIRICAL E20 codified)
 
 ## Quick orientation
 
@@ -16,30 +16,32 @@ Read these files in order before any technical work:
 @./docs/Session_Update_2026-05-19.md
 @./docs/Operational_Rules.md
 
-**Most recent state = `Session_Log.md` §14 (2026-05-23 evening, Sprint 2.18.0 —
-parallel property_factors fan-out).** §13 covered Sprint 2.21.0.9 Stage 1 earlier
-the same day; §11-12 covered the Land Arc through Sprint 2.21.0.7.1. The
-`Session_Update_2026-05-19.md` file is an older delta (Bug A11 era) kept for
-history. Newest operational rules: `Operational_Rules.md` #43–#51. Newest empirical
-rules: `Empirical_Findings.md` E13–E19.
+**Most recent state = `Session_Log.md` §15 (2026-05-23 evening → 2026-05-24
+morning, unified narrative for Sprints 2.18.1 + 2.18.1.1 — parallel BFS
+upfront-prefetch + compound-misroute fix).** §14 covered Sprint 2.18.0 earlier
+that day; §13 covered Sprint 2.21.0.9 Stage 1; §11-12 covered the Land Arc
+through Sprint 2.21.0.7.1. The `Session_Update_2026-05-19.md` file is an older
+delta (Bug A11 era) kept for history. Newest operational rules:
+`Operational_Rules.md` #43–#52. Newest empirical rules:
+`Empirical_Findings.md` E13–E20.
 
 -----
 
 ## Current production state (snapshot)
 
 ```
-Engine version deployed:  thammen-sprint2p18p0-parallel-property-factors  (Heroku v99)
-Latest CHANGELOG:         CHANGELOG_v44.md (2.18.0 Parallel property_factors fan-out)
-Latest Sprint:            2.18.0 (Parallel property_factors — A6 latency Phase 1 of 2)
-Tests passing:            11/11 new (3 functions, including wall-clock concurrency
-                          proof) + 269+ prior across 21 standalone files (all exit 0).
-                          test_v2_modules.py needs pytest — not installed; skip.
+Engine version deployed:  thammen-sprint2p18p1p1-compound-misroute-fix  (Heroku v101)
+Latest CHANGELOG:         CHANGELOG_v46.md (2.18.1.1 Compound-misroute fix; v45 = 2.18.1)
+Latest Sprint:            2.18.1.1 (Patches A + C — closes unmasked methodology bug)
+Tests passing:            19/19 new (7 functions: promotion 15K/50K, Patch C guard,
+                          Lusail premium-land edge case) + 332 prior = 351 across
+                          16 standalone files (all exit 0). Run with PYTHONIOENCODING=utf-8.
 Critical bugs open:       0
-High bugs open:           1  (A6 latency: villa/raw_land paths cut −4s by 2.18.0
-                          (26.8s→22.8s, 25.1s→21.2s, measured). compound_small extent
-                          expansion still ~89s → HTTP 503 class still present.
-                          Sprint 2.18.1 = parallel BFS in _expand_extent will close.)
-                          A8 closed by 2.20.
+High bugs open:           0  (A6 latency ✅ CLOSED: 89s→28.9s on compound_small,
+                          HTTP 503 class eliminated. compound_small extents ≥15K m²
+                          now route to clean Income Approach refusal via Patch A
+                          promotion to compound_large. Wider cohort: 19% HTTP failure
+                          → 0% across 21 reps. A8 closed by 2.20.)
 Medium bugs open:         2  (A5 asset_type unknown, A7 rics_compliant false)
 Land Arc:                 ✅ COMPLETE — PIN input (2.21.0) + output polish (2.21.0.5)
                           + Asset Type Reality Check (QARS-in-polygon + General_Landuse
@@ -52,16 +54,26 @@ Multi-QARS (2.21.0.9):    ✅ STAGE 1 LIVE — one cadastral PIN with 2+ QARS-ad
                           GPS centroid alone cannot tell them apart (15.2m can mean
                           either, per MME setback code E15). Stage 2 pre-specified
                           (wall-to-wall rule, E18) for Sprint 2.21.0.10 candidate.
-A6 latency (2.18.0):      ✅ PHASE 1 LIVE — 5 of 6 independent property_factors GIS
-                          calls now fan out in parallel via ThreadPoolExecutor
-                          (max_workers=5 == task count, E19). Audit-derived −4s
-                          delivered on villa/raw_land (audit_a6_2026-05-23.md →
-                          CHANGELOG_v44 §5 prediction matched measurement within
-                          ±2%, Rule #51). Methodology unchanged. Phase 2 = Sprint
-                          2.18.1 (parallel BFS in _expand_extent → kills 503 class).
+A6 latency arc:           ✅ COMPLETE in 3 Sprints. (1) 2.18.0 Phase 1: 5 parallel
+                          property_factors → −4s villa/raw_land (audit prediction
+                          ±2%, Rule #51). (2) 2.18.1: parallel BFS upfront-prefetch
+                          → −60s compound_small (89s→29s, kills 503 class). (3)
+                          2.18.1.1: Patches A+C — promote compound_small→compound_large
+                          when extent ≥ 15K m² (E20); universal _decompose_value
+                          guard when land>valuation. Sprint 2.18.2 candidate
+                          (lite/full GIS dedup, ~−15s) remains queued for Stage-1
+                          compliance on compound_small (≤5s target).
+Compound-misroute        ✅ CLOSED 2026-05-24 (Sprint 2.18.1.1, v101). Anas's
+(unmasked bug):           visual verification 9/9 ✓ — "مجمع فلل كبير" displays,
+                          no broken numbers, Income Approach refusal correct,
+                          critical material reservation, 6 explicit limitation
+                          factors, RICS Red Book recommendations. First documented
+                          "latency unmasks methodology" case → Operational #52.
 Mthamen integration:      ⏸️ Deferred indefinitely (see Project_Instructions §20.8)
-Roadmap (next):           2.18.1 = parallel BFS in _expand_extent (kill 503 class on
-                          compound_small; ~89s→~5-8s on 51/835/17) · 2.21.0.10 = Stage 2
+Roadmap (next):           2.18.2 candidate = lite/full GIS dedup + boundary-test
+                          optimization (closes Stage-1 ≤5s for compound_small) ·
+                          2.21.0.11/.12 candidates = cosmetic UX (rent-input deep-link,
+                          negotiation-range box hide when val=None) · 2.21.0.10 = Stage 2
                           wall-to-wall classification (probe Building Footprint layer
                           first) · 2.21.0.8 = P3 MoJ lstkhdm usage filter · 2.21.1 =
                           apartments (MME smoke first, §21.6) · 2.22.x = Map UI
@@ -187,6 +199,9 @@ STOP if I:
 - أرفع threshold مستنتج من بيانات صغيرة بدون مراجعة domain knowledge → STOP، Sprint 2.21.0.9 رفض ذلك (15.2m clustering أوحى بـ 18m، لكن Anas أكّد أن الفيلات منفصلة فعلياً مع ارتداد كامل — E15). data-driven inference لا تتغلّب على domain confirmation.
 - أصمّم تصنيف GPS-centroid-based دون فحص MME setback code → STOP، راجع EMPIRICAL E15. فيلتين منفصلتين code-compliant على نفس قطعة لهما centroid ≥16m؛ أي threshold تحت ذلك false-positive محتمل. استخدم wall-to-wall (E18) بدلاً.
 - أطلب من broker إدخال حقل يمكن جلبه آلياً من GIS/MoJ → STOP، راجع EMPIRICAL E17 (1-field minimum input). property identification فقط مطلوب من broker؛ كل شيء آخر auto-fetched ومرئي لمراجعته. Thammen verifies، broker corrects، أبداً العكس.
+- أُعلن Sprint مكتمل بمجرد نجاح الـ deploy + الاختبارات دون فحص الـ response content على المسار الذي أصبح متاحاً للمستخدم → STOP، راجع Operational_Rules.md #52 (Latency Unmasks Methodology). كل Sprint يحول 5xx→2xx على مسار كان timeout سابقاً = response content على هذا المسار قابل للفحص لأول مرة → فحص methodology إلزامي post-deploy. Sprint 2.18.1 → 2.18.1.1 هو السابقة الأولى.
+- أُصنّف compound_small بناءً على QARS subtype فقط دون فحص extent.total_area_m2 → STOP، راجع EMPIRICAL E20. compound > 15K m² لا يملك MoJ comparable (المسجَّل الأكبر 15,027 m²). Sprint 2.18.1.1 Patch A تروّج تلقائياً إلى compound_large عند extent ≥ 15K → Income Approach refusal pattern نظيف.
+- أضيف decomposition (land + building) بدون guard ضد `land_value > valuation_amount` → STOP، راجع Sprint 2.18.1.1 Patch C. القاعدة: في أي function يحسب land_value × area للأصول السكنية، يجب return None لو النتيجة > valuation_amount. الـ guard universal (يلتقط premium-land villa teardowns + MoJ outliers + future bug classes).
 
 -----
 
@@ -215,8 +230,12 @@ STOP if I:
 | "تذكر Sprint 2.18.0" أو "تذكر parallel factors" | 5-way parallel `property_factors.analyze_property` via `ThreadPoolExecutor(max_workers=5)`. Deployed Heroku v99 (2026-05-23 evening, CHANGELOG_v44). −4s on villa/raw_land paths (multi_qars_56 26.8s→22.8s, khor_land 25.1s→21.2s); fast-paths unchanged; HTTP 503 class still present on compound_small (Sprint 2.18.1 territory). Audit prediction matched measurement within ±2% — first validation of Rule #51 + E19. |
 | "تذكر E19" أو "تذكر max_workers" | I/O-bound parallelization of N independent fixed tasks → `max_workers = N`. More workers = idle overhead. Discovered Sprint 2.18.0 §5 mini-audit; pattern applies platform-wide. |
 | "تذكر #51" أو "تذكر audit-driven Sprint" | Operational_Rules #51 — canonical performance-Sprint pattern: pre-Sprint §5 audit → audit-derived patch (measured bottleneck, scoped fix) → post-deploy audit comparison. Sprint 2.18.0 proved prediction accuracy ≤±2% across all measured paths. |
+| "تذكر Sprint 2.18.1" أو "تذكر parallel BFS" | Parallel `_expand_extent` upfront-prefetch via `ThreadPoolExecutor(max_workers=min(N,20))`. Deployed Heroku v100 (2026-05-23 evening, CHANGELOG_v45). −60s on compound_small (51/835/17 89s→28.9s); HTTP 503×3 → 200×3 (THE WIN). §5 mini-audit corrected the original audit's "5-8s" prediction to honest 22-27s (off by ~3x). Latency goal delivered, but post-deploy visual verification unmasked methodology bug → Sprint 2.18.1.1. |
+| "تذكر Sprint 2.18.1.1" أو "تذكر compound misroute" أو "تذكر Patches A+C" | Compound-misroute fix (Anas's verification discovered silent failure on 51/835/17: land=218M vs total=6.8M, building=−211M, pct=−3,107%). Patch A in qatar_gis.full_property_lookup: when classification.asset_type==COMPOUND_SMALL and extent.total_area_m2 >= 15000, promote both to COMPOUND_LARGE → routes via ASSET_TYPE_TO_MOJ_CATEGORY['compound_large']=None → valuation=None → clean Income Approach refusal. Patch C in _decompose_value: universal `if land_value > valuation_amount: return None` (catches premium-land villa teardowns + MoJ outliers too). Deployed Heroku v101 (2026-05-24 morning, CHANGELOG_v46). Anas visual verify 9/9. Threshold = E20. |
+| "تذكر #52" أو "تذكر latency unmasks methodology" | Operational_Rules #52 — when a latency Sprint converts 5xx→2xx on a previously-unreachable path, the response *content* on that path is newly verifiable and may have latent bugs. Post-deploy verification scope must include the now-reachable response content, not just the latency metric. First documented case: Sprint 2.18.1 unmasked the compound_small >15K methodology bug; Sprint 2.18.1.1 closed it. |
+| "تذكر E20" أو "تذكر 15K compound" | EMPIRICAL_FINDINGS E20 — MoJ "مجمع فلل" sampling max = **15,027 m²**. Compounds with extent ≥ 15K m² have no MoJ comparable; Income Approach with rent input is the only valid methodology. The 15K threshold drives Sprint 2.18.1.1 Patch A. |
 | "بيانات السكرتيرة جاهزة" | Begin Sprint 2.16.16 (Confirmed Sales — renumbered from 2.16.15) |
-| "راجع EMPIRICAL_FINDINGS" | Audit rules E1-E19 |
+| "راجع EMPIRICAL_FINDINGS" | Audit rules E1-E20 |
 | "اقرأ القسم X" | Activate self-correction trigger from section X |
 | "ركذت قاعدة الدفع" أو "تذكر #32" | Push & Commit discipline — Operational_Rules #32 |
 | "هل أدفع؟" أو "should I push?" | يُفعّل #32 checklist، أعطِ status report قبل الإجابة |

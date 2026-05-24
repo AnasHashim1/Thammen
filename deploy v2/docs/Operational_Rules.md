@@ -1287,6 +1287,59 @@ matches spec", not "latency Δ matches prediction".
 
 -----
 
+## 52. ⚠️ Latency Sprints unmask methodology bugs — post-deploy verification must include the now-reachable response content
+
+**Discovered**: 2026-05-24 morning, Sprint 2.18.1.1. Sprint 2.18.1 (latency)
+shipped successfully — 51/835/17 went from HTTP 503×3 in 30s router timeout
+to HTTP 200×3 in 28.9s. Latency goal met, success criteria met, regression
+clean. But Anas's visual verification step on thammen.qa (CLAUDE.md §3 last
+item: "smoke test 3 diverse addresses post-deploy") caught what the 503
+timeout had been hiding: the *content* of the now-reachable response
+contained silent arithmetic failure (land=218M vs total=6.8M, building=
+−211M, pct=−3,107%). The bug pre-existed Sprint 2.18.1 but was masked by
+the router timeout for weeks — invisible until the latency fix made the
+response path reachable.
+
+**The rule**: when a Sprint converts 5xx → 2xx on a path that was previously
+timeout-blocked (or routinely-failing), the response *content* on that path
+becomes verifiable for the first time. Post-deploy verification scope must
+explicitly include:
+
+1. **Latency / HTTP status** (the stated Sprint goal — measure this).
+2. **Methodology of the response content** (the newly-reachable response
+   may itself have latent bugs that were timeout-masked — *measure this too*).
+3. **Anas's visual verification on thammen.qa** is the canonical step. It
+   catches what unit tests + isolated audits + offline regression can't:
+   the user-visible report rendered end-to-end with real GIS data + real
+   MoJ comparables + real brief composition.
+
+**The mechanism**: a request that times out at HTTP 503 returns the
+WAF/router error page, not application data. So no application-level
+assertion can fire against its content. The instant the latency fix makes
+the path complete in under 30s, the engine renders whatever it would have
+been rendering all along — which may itself be wrong. Sprint 2.18.1.1 is
+the first documented case of this pattern in the project's history; it
+will not be the last.
+
+**Pairs with**:
+- **Rule #51** (audit-driven Sprint pattern) — extends step 3 (post-deploy
+  comparison) to explicitly cover content verification, not just timings.
+- **Rule §5** (UI-First Audit) — the 6th item ("Smoke test 3 diverse
+  addresses from Heroku post-deploy") is what catches this. #52 names the
+  pattern so future Sprints can reference it explicitly.
+
+**Anti-pattern this rule prevents**:
+- "Sprint X shipped successfully — latency reduced from N to M, all tests
+  pass, deploy is done" without checking what the response now *contains*.
+- Treating "HTTP 200" as equivalent to "correct response". 200 only means
+  the engine returned a JSON document; the document's *content* may still
+  be broken.
+
+**Recall**: "تذكر #52" / "تذكر latency unmasks methodology" /
+"تذكر 2.18.1 → 2.18.1.1".
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added
@@ -1326,5 +1379,12 @@ crystallized after the 18m-threshold reversal). Item #51 added 2026-05-23
 evening during Sprint 2.18.0 closeout (audit-driven performance-Sprint pattern —
 crystallized after the §5 audit / pre-deploy prediction table / post-deploy
 measurement loop landed within ±2% across all 7 measured paths; the first
-measurement-validated performance Sprint in the project's history). When new
-operational invariants emerge in future Claude Code sessions, append them here.*
+measurement-validated performance Sprint in the project's history). Item #52
+added 2026-05-24 morning during Sprint 2.18.1.1 closeout (latency Sprints
+unmask methodology bugs — crystallized after Sprint 2.18.1 successfully cut
+89s→29s on 51/835/17, converting HTTP 503×3 to 200×3, only for Anas's visual
+verification on thammen.qa to catch that the now-reachable response
+contained silent arithmetic failure: land=218M, total=6.8M, building=−211M,
+pct=−3,107%; the first documented "latency unmasks methodology bug" case in
+project history). When new operational invariants emerge in future Claude
+Code sessions, append them here.*
