@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p21p2-hybrid-foundation'
-SPRINT_TAG = '2.21.2'              # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p21p3-t2-apartments-lusail'
+SPRINT_TAG = '2.21.3'              # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -1695,6 +1695,242 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
     })
 
 
+# Sprint 2.21.3 — Hybrid T2 apartments path (D10 gate + first live-path
+# coupling of hybrid_valuation_v1). Minimum listings to trust an indicative
+# estimate; below this, fall through to insufficient_data (more honest than
+# indicative-with-n=2).
+HYBRID_T2_MIN_N = 5
+
+
+def _t2_sample_band(n: int) -> str:
+    """Map T2 sample size to discipline band (Project_Instructions §3).
+
+    Rule E3 §4 still caps the *confidence label* at 'indicative' regardless
+    of n when T1 is absent. This function affects user-facing wording and
+    accuracy score only — the engine's confidence remains 'indicative' per
+    hybrid_valuation_v1 Case B.
+
+    Returns:
+        'boundary'           for 5 <= n < 10   (minimum-sample band)
+        'indicative'         for 10 <= n < 20  (standard indicative)
+        'strong_indicative'  for n >= 20       (large sample, ceiling still indicative)
+    """
+    if n < 10:
+        return 'boundary'
+    if n < 20:
+        return 'indicative'
+    return 'strong_indicative'
+
+
+def _t2_band_copy(band: str, n: int, muc_range_pct: float) -> dict:
+    """Return user-facing wording + accuracy fields for the band.
+
+    muc_range_pct stays 0.20 across bands (Rule E3 Constraint 5 — mandatory
+    ±20% when T1 absent). Only the *wording* and *accuracy score* vary,
+    so brokers can distinguish n=7 from n=27 at a glance.
+    """
+    pct = int(muc_range_pct * 100)
+    if band == 'boundary':
+        return {
+            'banner_ar': (
+                f'تحفظ مادي: عينة عند الحد الأدنى (n={n}<10) — تفسير حذر مطلوب. '
+                f'النطاق ±{pct}% (Rule E3 §5).'
+            ),
+            'disclaimer_ar': (
+                'هذا التقدير من إعلانات (تطلعات بائعين) — ليس صفقات مسجلة. '
+                f'مع n={n}<10، العينة عند الحد الأدنى للاسترشاد فقط — '
+                'السقف "إرشادي" (Rule E3 §4) ولا يُعتمد كقيمة سوق.'
+            ),
+            'level':          'medium',
+            'accuracy_score': 1,
+            'accuracy_label': '🟡 إرشادي عند الحد الأدنى للعينة (T2, n<10)',
+        }
+    if band == 'indicative':
+        return {
+            'banner_ar': (
+                f'تحفظ مادي: عينة إرشادية (n={n}, 10≤n<20). '
+                f'النطاق ±{pct}% — لا يُعتمد كقيمة سوق نهائية.'
+            ),
+            'disclaimer_ar': (
+                'هذا التقدير من إعلانات (تطلعات بائعين) — ليس صفقات مسجلة. '
+                'الدقة "إرشادية" (Rule E3 §4): السقف إرشادي بدون T1 '
+                '(Confirmed Sales أو MME).'
+            ),
+            'level':          'medium',
+            'accuracy_score': 2,
+            'accuracy_label': '🟡 إرشادي — مبني على إعلانات (T2)',
+        }
+    # strong_indicative — n >= 20
+    return {
+        'banner_ar': (
+            f'تحفظ مادي: عينة قوية (n={n}≥20) لكن السقف يبقى إرشادي بدون '
+            f'تأكيد وزارة العدل (Rule E3 §4). النطاق ±{pct}%.'
+        ),
+        'disclaimer_ar': (
+            'هذا التقدير من إعلانات بحجم عينة قوي (n≥20)، لكنه يبقى T2 — '
+            'للوصول لـ "موثوق" يلزم تأكيد T1 (Confirmed Sales أو MME). '
+            'Rule E3 §4 يثبّت السقف عند "إرشادي" بدون T1.'
+        ),
+        'level':          'low',
+        'accuracy_score': 3,
+        'accuracy_label': '🟢 إرشادي قوي — عينة كبيرة (T2 n≥20)',
+    }
+
+
+def _try_hybrid_apartments_response(
+    zone, street, building, loc, plot, asset_type, audience, gis_lite,
+):
+    """Sprint 2.21.3 — Lusail apartments via PropertyFinder T2 listings.
+
+    Returns a complete response dict when D10 conditions are met AND the
+    hybrid framework produced a `value_per_m2`. Returns None to signal
+    "fall through to the existing insufficient_data path" — callers must
+    handle that case.
+
+    D10 gate (CHANGELOG_v48 §1):
+      - asset_type == 'apartment_building'  (caller has verified)
+      - district == 'Lusail'                (computed here)
+      - HYBRID_APARTMENTS_ENABLED env var  != 'false'  (D11; default true)
+
+    Defensive contract: any exception → return None + log to stderr. Never
+    raises. This protects existing apartment_building behaviour (the
+    pre-2.21.3 insufficient_data response) against connector/network/
+    parser failures (D6/D7).
+    """
+    import os
+    # D11 feature flag — emergency rollback without code revert
+    if os.getenv('HYBRID_APARTMENTS_ENABLED', 'true').lower() == 'false':
+        return None
+
+    # D10 district gate — Lusail only
+    if not (loc and getattr(loc, 'lat', None) and getattr(loc, 'lon', None)):
+        return None
+    try:
+        dist = gis_lite.get_district_at_point(loc.lon, loc.lat)
+    except Exception as e:
+        print(f"[hybrid-apt] district lookup failed: {e}", file=sys.stderr)
+        return None
+    district_ar = (dist.aname if dist else '') or ''
+    district_en = (dist.ename if dist else '') or ''
+    if 'لوسيل' not in district_ar and 'lusail' not in district_en.lower():
+        return None
+
+    # Fetch T2 listings (D6 — connector swallows network errors)
+    try:
+        from connectors.propertyfinder_apartments_t2_sales import (
+            get_apartment_sales_lusail,
+        )
+    except ImportError as e:
+        print(f"[hybrid-apt] connector import failed: {e}", file=sys.stderr)
+        return None
+    try:
+        listings = get_apartment_sales_lusail(size_bracket=None, use_cache=True)
+    except Exception as e:
+        print(f"[hybrid-apt] connector exception: {e}", file=sys.stderr)
+        return None
+    if not listings or len(listings) < HYBRID_T2_MIN_N:
+        return None
+
+    # Call hybrid framework — single tier (T2), Case B will fire
+    try:
+        from hybrid_valuation import hybrid_valuation_v1
+        hybrid = hybrid_valuation_v1(
+            t1_values=None, t1_n_total=0,
+            t2_values=listings, t3_values=None,
+        )
+    except Exception as e:
+        print(f"[hybrid-apt] hybrid_valuation_v1 exception: {e}", file=sys.stderr)
+        return None
+
+    value_per_m2 = hybrid.get('value_per_m2')
+    if value_per_m2 is None:
+        return None
+
+    # Build response — start from base insufficient_data shell, then overlay
+    base = _build_fast_insufficient_data_response(
+        zone, street, building, loc, plot, asset_type, audience,
+    )
+
+    muc_range_pct = hybrid.get('muc_range_pct') or 0.20
+    low_per_m2 = round(value_per_m2 * (1.0 - muc_range_pct), 2)
+    high_per_m2 = round(value_per_m2 * (1.0 + muc_range_pct), 2)
+    confidence = hybrid.get('confidence', 'indicative')
+    asset_label_ar = ASSET_TYPE_AR.get(asset_type, asset_type)
+
+    # Sample-size band — adapts user-facing wording + accuracy score so
+    # brokers can distinguish n=7 (boundary) from n=27 (strong indicative)
+    # at a glance. Engine `confidence` and `muc_range_pct` are unchanged —
+    # both are Rule E3 hard constraints (§4 ceiling, §5 mandatory ±20%).
+    n_used = len(listings)
+    band = _t2_sample_band(n_used)
+    copy = _t2_band_copy(band, n_used, muc_range_pct)
+
+    base['methodology_ar'] = (
+        f'منهجية هجينة (Hybrid v1) — وسيط أسعار الإعلانات (T2) من PropertyFinder '
+        f'بعد خصم تفاوضي مرجعي ~12.5%. n={n_used} إعلان شقة للبيع في لوسيل '
+        f'(عينة {band}).'
+    )
+    base['methodology_disclaimer_ar'] = copy['disclaimer_ar']
+    base['valuation'] = {
+        'amount': None,                # no specific apartment area in this query
+        'low': None,
+        'high': None,
+        'method': 'hybrid_t2',
+        'value_per_m2': round(value_per_m2, 2),
+        'value_per_m2_low': low_per_m2,
+        'value_per_m2_high': high_per_m2,
+        'reason_ar': (
+            f'القيمة الإرشادية للمتر المربع لشقق {asset_label_ar} في لوسيل ≈ '
+            f'{int(value_per_m2):,} ر.ق/م² '
+            f'(نطاق ±{int(muc_range_pct*100)}%: '
+            f'{int(low_per_m2):,} – {int(high_per_m2):,} ر.ق/م²). '
+            'لقيمة شقة محددة، اضرب في مساحتها م² الفعلية.'
+        ),
+    }
+    base['hybrid'] = {
+        'case': hybrid.get('case'),
+        'confidence': confidence,
+        'sample_size_band': band,
+        'n_used': n_used,
+        'tier_breakdown': hybrid.get('tier_breakdown', []),
+        'muc_required': hybrid.get('muc_required', True),
+        'muc_range_pct': muc_range_pct,
+        'rule_e3_compliance': hybrid.get('rule_e3_compliance'),
+    }
+    base['sources'] = [{
+        'source': 'propertyfinder',
+        'tier': 'T2',
+        'n_raw': n_used,
+        'role_ar': 'إعلانات بيع شقق — لوسيل',
+        'url_template': 'propertyfinder.qa/en/buy/lusail/apartments-for-sale.html',
+        'calibration_status': 'provisional_broker_experience_grounded',
+    }]
+    base['accuracy'] = {
+        'score': copy['accuracy_score'],
+        'label': copy['accuracy_label'],
+    }
+    base['reconciliation'] = {
+        'status': 'hybrid_indicative',
+        'message_ar': (
+            f'تقدير من مصدر T2 واحد (PropertyFinder، n={n_used}، عينة {band}). '
+            'وزارة العدل لا تسجّل الشقق الفردية (تُحفظ تحت الأبراج). '
+            'لتقدير "موثوق" يلزم Confirmed Sales أو MME.'
+        ),
+    }
+    base['material_uncertainty'] = _enrich_material_uncertainty({
+        'level': copy['level'],
+        'banner_ar': copy['banner_ar'],
+        'known_unknowns_ar': [
+            'مساحة الشقة المحددة',
+            'الطابق + الإطلالة + التشطيب',
+            'حالة الصيانة الفعلية',
+            'مدى تطابق الإعلانات مع الصفقات المنجزة',
+        ],
+        'rics_compliant': True,        # hybrid framework satisfies Rule E3
+    })
+    return base
+
+
 def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_type,
                                        audience, listing_price):
     """Sprint A.3 fix: Fast response for DCF asset with listing_price but no rental.
@@ -2669,6 +2905,24 @@ def evaluate_thammen(
                         result['sanity_warnings'] = _sanity_warnings + (result.get('sanity_warnings') or [])
                         return result
                     else:
+                        # Sprint 2.21.3 — Hybrid T2 apartments path (Lusail, D10-gated).
+                        # Tries PropertyFinder T2 listings → hybrid_valuation_v1.
+                        # Returns None on miss (env flag off, non-Lusail, n<5,
+                        # connector/network/parse failure) → falls through to
+                        # the pre-2.21.3 insufficient_data response below.
+                        if _qtype == 'apartment_building':
+                            _hybrid_result = _try_hybrid_apartments_response(
+                                zone, street, building, _loc, _plot, _qtype, audience,
+                                _gis_lite,
+                            )
+                            if _hybrid_result is not None:
+                                if _subtype_zoning_mismatch:
+                                    _hybrid_result['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
+                                _hybrid_result['sanity_warnings'] = (
+                                    _sanity_warnings
+                                    + (_hybrid_result.get('sanity_warnings') or [])
+                                )
+                                return _hybrid_result
                         # Sprint A.1: classification only (no inputs)
                         result = _build_fast_insufficient_data_response(
                             zone, street, building, _loc, _plot, _qtype, audience,
