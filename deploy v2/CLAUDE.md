@@ -142,17 +142,26 @@ Roadmap (priority order, post-2.21.2):
   7. Sprint 2.21.0.10 — Stage 2 wall-to-wall (E18). Needs Building
                      Footprint layer probe.
   8. Sprint 2.21.1 — MME apartments. Awaits authenticated session.
-  9. Sprint 2.16.16 — Confirmed Sales DB. Secretary data uncertain
-                     (per Anas 2026-05-24); recalibration of D5/D6
-                     shifts to brokerage-pipeline-only path (≥30 (asking,
-                     close) pairs as the trigger). NOT a blocker for 2.21.2
+  9. Sprint 2.16.16 — Confirmed Sales DB. REDEFINED 2026-05-24 post
+                     secretary-source-closure (the supplying company is
+                     shutting down; this is permanent, NOT delayed arrival).
+                     Pipeline is brokerage-fed ONLY. Two viable paths:
+                     (a) consolidate with Sprint 2.21.4 T3 schema
+                     (developer_inventory.sqlite extended to brokerage
+                     closings), OR (b) defer until brokerage transaction
+                     velocity warrants its own DB (6-18 months for ≥30
+                     Lusail apartment closings). NOT a blocker for 2.21.2
                      or anything depending on it.
 
 D5/D6 calibration:        provisional, broker-experience-grounded.
-                          Recalibration trigger = brokerage Confirmed Sales
-                          pipeline produces ≥30 (asking, close) pairs.
-                          Empirical basis: EMPIRICAL_FINDINGS §3 asking-
-                          premium ranges + broker negotiation experience.
+                          Recalibration via brokerage Confirmed Sales pipeline
+                          ONLY (secretary source permanently closed 2026-05-24
+                          — the company supplying that data is shutting down).
+                          Timeline depends on brokerage transaction velocity —
+                          estimate 6-18 months for ≥30 Lusail apartment
+                          closings. Empirical basis (interim): EMPIRICAL_FINDINGS
+                          §3 asking-premium ranges + broker negotiation
+                          experience.
 
 Deploy:                   git subtree push --prefix "deploy v2" (Operational #43)
 ```
@@ -316,7 +325,7 @@ STOP if I:
 | "تذكر Pre-Sprint 2.22.0" أو "تذكر H5 FALSE" | Pre-Sprint 2.22.0 audit (2p22p0_pre/CHANGELOG, 2026-05-24). Tested whether 3-stage UX architecture solves the apartments gap. H5 FALSE was decisive: 52/903/90 apartment_building returns HTTP 200 + valuation_amount=None + 4.7s — failure is data-driven, not latency-driven. 3-stage would just rename "insufficient data" across two stages. Sprint 2.22.0 deferred; BRIEF_2p21p2 (hybrid foundation) returned to top of queue and shipped. H1 TRUE + H3 TRUE + H4 TRUE evidence preserved for future UX-refactor Sprint after 2.21.5. |
 | "تذكر Pre-Sprint 2.21.3" أو "تذكر DOM duplication" أو "تذكر arady /listings" | Pre-Sprint 2.21.3 smoke (2p21p3_pre/CHANGELOG, 2026-05-24 evening). 4 of 5 TRUE. arady canonical search URL = **`/listings`** (HTTP 200, 70 listing hits page 1, sitemap.xml available for full inventory). PropertyFinder reachable from Heroku (exact parity with sandbox; raw=142 = sandbox=142). H2 FALSE was a threshold artifact: PropertyFinder DOM duplicates listing nodes ~6× (142 raw → 24 unique on Lusail page 1). **Sprint 2.21.3 connector MUST deduplicate by canonical URL or listing ID.** Detail-page schema confirmed extractable: CSS class `property-price` + regex fallback for QAR/AED + regex for m²/sqm. |
 | "تذكر D5/D6" أو "تذكر calibration provisional" | `HYBRID_TIER_CONFIG` ships with D5 T2 discount midpoint −12.5% (range −10%/−15%) and D6 T3 discount midpoint −17.5% (range −15%/−20%), both tagged `provisional, broker-experience-grounded`. Empirical basis: EMPIRICAL_FINDINGS §3 asking-premium ranges (+8% to +20% inverted). Recalibration trigger: brokerage Confirmed Sales pipeline produces ≥30 (asking, close) pairs. Secretary data may never arrive (per Anas 2026-05-24) — recalibration is on the brokerage-pipeline-only path; not a blocker for 2.21.2 or anything depending on it. |
-| "بيانات السكرتيرة جاهزة" | Begin Sprint 2.16.16 (Confirmed Sales — renumbered from 2.16.15). NOTE 2026-05-24: per Anas this data may never arrive; D5/D6 recalibration migrated to brokerage-pipeline-only path. |
+| "تذكر إغلاق مصدر السكرتيرة" أو "تذكر secretary source closed" | Secretary data source permanently closed 2026-05-24 (the company supplying it is shutting down — this is permanent source closure, NOT uncertain arrival). Confirmed Sales DB (Sprint 2.16.16) now depends entirely on brokerage closings. D5/D6 recalibration migrated to brokerage-only path; timeline estimate 6-18 months for ≥30 Lusail apartment closings depending on transaction velocity. Roadmap entry for 2.16.16 redefined: consolidate with 2.21.4 T3 schema OR defer. |
 | "راجع EMPIRICAL_FINDINGS" | Audit rules E1-E20 |
 | "اقرأ القسم X" | Activate self-correction trigger from section X |
 | "ركذت قاعدة الدفع" أو "تذكر #32" | Push & Commit discipline — Operational_Rules #32 |
