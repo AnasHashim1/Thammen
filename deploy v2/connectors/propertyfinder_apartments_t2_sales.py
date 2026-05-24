@@ -8,52 +8,63 @@ WHAT THIS CONNECTOR DOES
     list of normalized dicts with `value_per_m2` (RICS VPS 4 like-for-like,
     Rule E3 Constraint 7) for ingestion by the engine.
 
+ARCHITECTURE — list-page JSON-LD only (Sprint 2.21.3 polish, post-deploy)
+    PropertyFinder's `/en/buy/lusail/apartments-for-sale.html` ships ONE
+    `<script type="application/ld+json">` ItemList containing 27 listings
+    per page, each as a `WebPage.mainEntity.RealEstateListing` with:
+        offers[0].priceSpecification.price       (int QAR)
+        offers[0].priceSpecification.priceCurrency ("QAR" / "AED")
+        floorSize.value + floorSize.unitText      (sqm)
+        url                                       (canonical /plp/buy/...)
+        address.addressLocality                   ("Lusail" / "The Pearl" / ...)
+        address.addressRegion                     ("Marina District" / "Fox Hills" / ...)
+    This is the single source of truth — no per-listing detail fetch.
+
+WHY NOT DETAIL-PAGE FETCHES
+    Initial implementation fetched each detail page individually to get the
+    price + area. On Heroku post-deploy verification (v118) this took >30s
+    (3 list pages + 24 detail fetches × 1.5s each) and tripped the router
+    H12 timeout (HTTP 503). Audit-driven refactor (Rule #51 + Rule #52
+    inverse: methodology-fix unmasked latency) replaced detail-fetch with
+    list-page JSON-LD parse. New wall budget: ~5s for 3 list pages.
+
 WHY ONLY PROPERTYFINDER (BRIEF §12 contingency)
-    Sprint 2.21.3 Step 2 schema audit (2 rounds, Heroku v110→v113) found:
-      - PF: SALES URL is `/en/buy/<city>/apartments-for-sale[-<area>].html`
-        — Lusail-specific path returns 16 big_prices (>500K QAR), max 7.17M.
-        Detail pages embed schema.org RealEstateListing in
-        `<script id="plp-schema" type="application/ld+json">`.
-      - arady: Next.js JS-hydrated listing content; sitemap.xml only
-        exposes 5 category URLs (no individual listings). Deferred to a
-        future Sprint 2.21.3.2 pending __NEXT_DATA__ probe.
-    See 2p21p3_brief/connector_schema_audit.md for full evidence.
+    Sprint 2.21.3 Step 2 schema audit (Heroku v110→v113) found arady's
+    listing content is JS-hydrated; its sitemap.xml only exposes 5 category
+    URLs. Deferred to Sprint 2.21.3.2 candidate.
 
 PUBLIC API (per BRIEF §3.2)
     get_apartment_sales_lusail(
-        size_bracket: Optional[tuple[int, int]] = None,   # (min_m2, max_m2) filter
+        size_bracket: Optional[tuple[int, int]] = None,
         use_cache: bool = True,
+        cache: Optional[Any] = None,   # for tests
     ) -> list[dict]
 
-OUTPUT SHAPE (per dict, per BRIEF §3.1)
+OUTPUT SHAPE (per dict)
     {
-        "source":            "propertyfinder",
-        "source_url":        "https://www.propertyfinder.qa/en/plp/buy/...",
-        "tier":              "T2",
-        "transaction_type":  "sale",
-        "raw_price_qar":     2_500_000,        # int, BEFORE T2 discount
-        "area_m2":           120.0,            # float
-        "value_per_m2":      20833.0,          # float, raw_price / area
-        "district":          "Lusail",
-        "size_bracket":      "0-100" | "100-150" | "150-250" | "250+",
-        "listing_date":      None,             # PF doesn't always expose this
-        "raw_html_excerpt":  "<...max 500 chars...>",
+        "source":           "propertyfinder",
+        "source_url":       "https://www.propertyfinder.qa/en/plp/buy/...",
+        "tier":             "T2",
+        "transaction_type": "sale",
+        "raw_price_qar":    2_500_000,        # BEFORE T2 discount
+        "area_m2":          120.0,
+        "value_per_m2":     20833.33,         # raw_price / area
+        "district":         "Lusail",
+        "size_bracket":     "0-100" | "100-150" | "150-250" | "250+",
+        "address_region":   "Marina District" | "Fox Hills" | ...,
+        "listing_date":     None,             # PF list page doesn't expose
     }
 
 BEHAVIOR CONTRACT (BRIEF §3.2 + D-decisions)
+    D4  cache:         24h TTL, key=(propertyfinder, Lusail, <bracket-label>)
     D5  rate-limit:    1 req/sec inter-fetch, max 3 list pages
-    D6  network fail:  HTTPError/URLError → return [] (do NOT raise)
-    D7  parse fail:    return [] for that listing, log to logger
-    D8  AED skip:      listings with priceCurrency != "QAR" are skipped + warned
-    D9  dedup:         intra-source by listing_id (last numeric before .html)
-                       BEFORE counting; raw PF DOM duplicates ~6× (Pre-Sprint smoke)
-    Rule E3 §7        output value_per_m2 in QAR/m² (no T2 discount applied here;
-                       hybrid_valuation_v1 applies the discount per HYBRID_TIER_CONFIG)
-
-CACHE
-    24h TTL via t2_listings_cache.T2ListingsCache (D4). Key =
-    (propertyfinder, Lusail, "<size_bracket_label>" or "all"). On cache miss
-    fetch the network; on hit return instantly (<10ms).
+    D6  network fail:  HTTPError/URLError → return what we have (D6 partial)
+    D7  parse fail:    skip that listing + log
+    D8  AED skip:      listings with priceCurrency != "QAR" are skipped
+    D9  dedup:         intra-source by listing url (rare on list page; PF
+                       ItemList already dedups within a page)
+    Rule E3 §7        output value_per_m2 in QAR/m² (no discount applied;
+                       hybrid_valuation_v1 applies it per HYBRID_TIER_CONFIG)
 """
 
 from __future__ import annotations
@@ -68,43 +79,35 @@ from typing import Any, Optional
 try:
     from t2_listings_cache import T2ListingsCache
 except ImportError:                            # pragma: no cover
-    T2ListingsCache = None  # type: ignore
+    T2ListingsCache = None                     # type: ignore
 
 logger = logging.getLogger("t2.propertyfinder")
-# Module is library code; no handler attached. Embedding apps configure logging.
 
 # ---------------------------------------------------------------------------
-# Constants — single source of truth so tests can monkeypatch
+# Configuration — module-level so tests can monkeypatch
 # ---------------------------------------------------------------------------
 
 LUSAIL_SALE_URL = (
     "https://www.propertyfinder.qa/en/buy/lusail/apartments-for-sale.html"
 )
-# Pagination scheme verified by Pre-Sprint smoke + PF general convention.
-# PF supports ?page=N for N >= 2; page 1 is the bare URL.
 PAGE_QUERY_PARAM = "page"
 MAX_PAGES = 3                                  # D5
-INTER_REQUEST_SLEEP_S = 1.0                    # D5
+INTER_REQUEST_SLEEP_S = 1.0                    # D5 polite rate-limit
 HTTP_TIMEOUT_S = 20
-RAW_HTML_EXCERPT_CHARS = 500
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 )
 
-# /en/plp/buy/<slug>-<id>.html — id is the trailing numeric, our dedup key.
-LISTING_PATH_RE = re.compile(r'/(?:en|ar)/plp/buy/[^\s"\'<>]+\.html')
-LISTING_ID_RE = re.compile(r"-(\d+)\.html$")
+# Square-meter unit codes (PF uses "sqm" via unitText; we accept variants).
+SQM_UNIT_VALUES = frozenset({"sqm", "sq m", "m²", "m2"})
 
-# Detail-page JSON-LD schema block (verified in probe v2 raw HTML excerpt).
+# JSON-LD block — PF list pages emit it inline.
 JSONLD_BLOCK_RE = re.compile(
-    r'<script id="plp-schema"[^>]*?>\s*(\{.*?\})\s*</script>',
+    r'<script[^>]*type="application/ld\+json"[^>]*>\s*(.+?)\s*</script>',
     re.DOTALL,
 )
-
-# Square-meter unit codes per UN/CEFACT (PF uses MTK; we accept MTQ + SQM too).
-SQM_UNIT_CODES = frozenset({"MTK", "MTQ", "SQM", "M2"})
 
 
 # ---------------------------------------------------------------------------
@@ -112,10 +115,7 @@ SQM_UNIT_CODES = frozenset({"MTK", "MTQ", "SQM", "M2"})
 # ---------------------------------------------------------------------------
 
 def _http_get(url: str) -> Optional[str]:
-    """GET + return body text. None on HTTP/URL/timeout/decoding failure (D6).
-
-    Logs at WARNING for non-200, INFO for transport errors. Never raises.
-    """
+    """GET + return body text. None on any failure (D6). Never raises."""
     req = urllib.request.Request(
         url,
         headers={
@@ -148,107 +148,105 @@ def _page_url(page_num: int) -> str:
     return f"{LUSAIL_SALE_URL}?{PAGE_QUERY_PARAM}={page_num}"
 
 
-def _extract_listing_urls(body: str) -> list[str]:
-    """Find canonical /en/plp/buy/... URLs in a list-page body.
+def _walk_real_estate_listings(obj: Any) -> list[dict[str, Any]]:
+    """Recursively collect every dict with @type containing RealEstateListing.
 
-    Intra-source dedup per D9: PF DOM duplicates each link ~6×; we keep
-    first occurrence by canonical path. Returns absolute URLs.
+    PF's list-page JSON-LD wraps listings as
+      ItemList → itemListElement[N] → WebPage.mainEntity.RealEstateListing.
+    We walk depth-first because PF has tweaked the wrapping over time.
     """
-    seen: set[str] = set()
-    out: list[str] = []
-    for path in LISTING_PATH_RE.findall(body):
-        if path in seen:
-            continue
-        seen.add(path)
-        out.append(f"https://www.propertyfinder.qa{path}")
+    out: list[dict[str, Any]] = []
+    if isinstance(obj, dict):
+        t = obj.get("@type")
+        if t == "RealEstateListing" or (isinstance(t, list) and "RealEstateListing" in t):
+            out.append(obj)
+        for v in obj.values():
+            out.extend(_walk_real_estate_listings(v))
+    elif isinstance(obj, list):
+        for v in obj:
+            out.extend(_walk_real_estate_listings(v))
     return out
 
 
-def _listing_id(url: str) -> Optional[str]:
-    """Return the trailing numeric id from /plp/buy/<slug>-<id>.html, or None."""
-    m = LISTING_ID_RE.search(url)
-    return m.group(1) if m else None
-
-
-def _parse_jsonld(body: str) -> Optional[dict[str, Any]]:
-    """Extract the schema.org RealEstateListing entity from detail HTML.
-
-    Returns the inner `mainEntity.mainEntity` block (per probe v2 raw HTML
-    structure), or the outer JSON itself if that path doesn't exist.
-    None on missing/malformed block (D7).
-    """
-    m = JSONLD_BLOCK_RE.search(body)
-    if not m:
-        return None
-    try:
-        data = json.loads(m.group(1))
-    except (ValueError, json.JSONDecodeError) as e:
-        logger.info("PF jsonld parse error: %s", e)
-        return None
-    # PF nests RealEstateListing under mainEntity.mainEntity (probe-verified)
-    entity = data
-    for key in ("mainEntity", "mainEntity"):
-        nxt = entity.get(key) if isinstance(entity, dict) else None
-        if isinstance(nxt, dict):
-            entity = nxt
-    return entity if isinstance(entity, dict) else None
+def _extract_jsonld_listings(body: str) -> list[dict[str, Any]]:
+    """Parse every ld+json block; return flat list of RealEstateListing entities."""
+    out: list[dict[str, Any]] = []
+    for raw in JSONLD_BLOCK_RE.findall(body):
+        try:
+            data = json.loads(raw)
+        except (ValueError, json.JSONDecodeError) as e:
+            logger.info("PF ld+json parse skip: %s", e)
+            continue
+        out.extend(_walk_real_estate_listings(data))
+    return out
 
 
 def _price_qar_from_entity(entity: dict[str, Any]) -> Optional[int]:
-    """Return integer QAR price or None (D8 — skip AED + missing).
+    """PF list page nests price under offers[0].priceSpecification.price.
 
-    Walks `entity.offers` which may be a dict or list of offers. Returns
-    None if currency != QAR.
+    Returns None on AED, missing, or out-of-sales-band (D8 + sanity).
     """
     offers = entity.get("offers")
     if isinstance(offers, list):
         offers = offers[0] if offers else None
     if not isinstance(offers, dict):
         return None
-    price = offers.get("price")
-    currency = (offers.get("priceCurrency") or "").upper()
+    # PF list-page shape (preferred): offers[0].priceSpecification.price
+    spec = offers.get("priceSpecification")
+    if isinstance(spec, dict):
+        price_raw = spec.get("price")
+        currency = (spec.get("priceCurrency") or "").upper()
+    else:
+        # Fallback: detail-page shape uses offers.price directly
+        price_raw = offers.get("price")
+        currency = (offers.get("priceCurrency") or "").upper()
     if currency and currency != "QAR":
-        logger.info("PF skip non-QAR listing (currency=%s)", currency)
+        logger.info("PF skip non-QAR (currency=%s)", currency)
         return None
-    if price in (None, "", "0", 0):
+    if price_raw in (None, "", 0, "0"):
         return None
     try:
-        amt = int(float(price))
+        amt = int(float(price_raw))
     except (TypeError, ValueError):
         return None
     if amt < 100_000 or amt > 1_000_000_000:
-        # Sales-band sanity: a 50K QAR "price" on a sale listing is almost
-        # certainly a rent or service fee; reject. 1B cap is just outlier guard.
         return None
     return amt
 
 
 def _area_m2_from_entity(entity: dict[str, Any]) -> Optional[float]:
-    """Return floor size in m², or None when missing/wrong-unit."""
+    """Return floor size in m²; PF uses floorSize.value (number) + unitText='sqm'."""
     fs = entity.get("floorSize")
     if not isinstance(fs, dict):
         return None
-    unit = (fs.get("unitCode") or "").upper().strip()
-    if unit and unit not in SQM_UNIT_CODES:
-        return None
-    val = fs.get("value")
+    unit = (fs.get("unitText") or fs.get("unitCode") or "").strip().lower()
+    if unit and unit not in SQM_UNIT_VALUES:
+        # Some entries use unitCode='MTK' (m²); accept that too
+        if unit.upper() not in {"MTK", "MTQ"}:
+            return None
     try:
-        m2 = float(val)
+        m2 = float(fs.get("value"))
     except (TypeError, ValueError):
         return None
     if not (20.0 <= m2 <= 5_000.0):
-        # Apartment sanity band; outside → wrong unit (sqft?) or bad data
         return None
     return m2
 
 
-def _listing_date_from_entity(entity: dict[str, Any]) -> Optional[str]:
-    """Best-effort listing-date extraction. PF doesn't always expose it."""
-    for key in ("datePosted", "dateCreated", "uploadDate"):
-        v = entity.get(key)
-        if isinstance(v, str) and v.strip():
-            return v[:10]                      # ISO date portion
-    return None
+def _listing_is_lusail(entity: dict[str, Any]) -> bool:
+    """Sub-Lusail filter — PF '/en/buy/lusail/...' returns Lusail + adjacent."""
+    addr = entity.get("address")
+    if isinstance(addr, dict):
+        loc = (addr.get("addressLocality") or "")
+        reg = (addr.get("addressRegion") or "")
+        if re.search(r"lusail|لوسيل|fox\s*hills|ghar\s*thuaileb", loc, re.IGNORECASE):
+            return True
+        if re.search(r"lusail|لوسيل|fox\s*hills|ghar\s*thuaileb", reg, re.IGNORECASE):
+            return True
+    name = entity.get("name") or ""
+    if isinstance(name, str) and re.search(r"\blusail\b|لوسيل", name, re.IGNORECASE):
+        return True
+    return False
 
 
 def size_bracket_label(area_m2: float) -> str:
@@ -262,41 +260,24 @@ def size_bracket_label(area_m2: float) -> str:
     return "250+"
 
 
-def _listing_is_lusail(body: str, entity: Optional[dict[str, Any]]) -> bool:
-    """Sub-Lusail filter per BRIEF §3.2 closing note.
+def _entity_to_row(entity: dict[str, Any]) -> Optional[dict[str, Any]]:
+    """Convert one RealEstateListing entity to the BRIEF §3.1 output shape.
 
-    PF's `l=63` (and `/en/buy/lusail/...`) returns Lusail + adjacent areas.
-    Enforce strict Lusail-only by checking title/breadcrumb on each listing.
+    Returns None when any required field is missing/invalid (D7).
     """
-    if entity:
-        name = (entity.get("name") or "") if isinstance(entity, dict) else ""
-        addr = entity.get("address") or {}
-        if isinstance(addr, dict):
-            for k in ("addressLocality", "addressRegion", "streetAddress"):
-                v = addr.get(k)
-                if isinstance(v, str) and re.search(r"lusail|لوسيل", v, re.IGNORECASE):
-                    return True
-        if re.search(r"lusail|لوسيل", name, re.IGNORECASE):
-            return True
-    return bool(re.search(r"\b[Ll]usail\b|لوسيل", body))
-
-
-def _fetch_detail(url: str) -> Optional[dict[str, Any]]:
-    """Fetch + parse one detail page. None on any failure (D6/D7)."""
-    body = _http_get(url)
-    if not body:
-        return None
-    entity = _parse_jsonld(body)
-    if not entity:
-        return None
     price = _price_qar_from_entity(entity)
+    if price is None:
+        return None
     area = _area_m2_from_entity(entity)
-    if price is None or area is None:
+    if area is None:
         return None
-    if not _listing_is_lusail(body, entity):
-        logger.info("PF skip non-Lusail listing %s", url)
+    if not _listing_is_lusail(entity):
+        logger.info("PF skip non-Lusail entity url=%s", entity.get("url"))
         return None
-    value_per_m2 = price / area
+    url = entity.get("url") or entity.get("@id") or ""
+    addr = entity.get("address") or {}
+    region = (addr.get("addressRegion") if isinstance(addr, dict) else None) or ""
+    vpm2 = price / area
     return {
         "source":           "propertyfinder",
         "source_url":       url,
@@ -304,11 +285,11 @@ def _fetch_detail(url: str) -> Optional[dict[str, Any]]:
         "transaction_type": "sale",
         "raw_price_qar":    price,
         "area_m2":          area,
-        "value_per_m2":     round(value_per_m2, 2),
+        "value_per_m2":     round(vpm2, 2),
         "district":         "Lusail",
         "size_bracket":     size_bracket_label(area),
-        "listing_date":     _listing_date_from_entity(entity),
-        "raw_html_excerpt": body[:RAW_HTML_EXCERPT_CHARS],
+        "address_region":   region,
+        "listing_date":     None,
     }
 
 
@@ -336,22 +317,21 @@ def _cache_key_label(size_bracket: Optional[tuple[int, int]]) -> str:
 def get_apartment_sales_lusail(
     size_bracket: Optional[tuple[int, int]] = None,
     use_cache: bool = True,
-    cache: Optional[Any] = None,               # for test injection
+    cache: Optional[Any] = None,
 ) -> list[dict[str, Any]]:
     """Return Lusail apartment-for-sale listings as T2 evidence dicts.
 
-    Network behaviour:
-      - Hits the configured Lusail SALE URL across MAX_PAGES (D5).
-      - INTER_REQUEST_SLEEP_S between requests (D5 rate-limit).
-      - HTTPError / URLError / timeout / decode failures yield []
-        (D6 — never raise).
-      - JSON-LD parse failures skip that one listing + log (D7).
-      - AED-priced listings are skipped + logged (D8).
-      - Sub-Lusail filter on every listing (BRIEF §3.2 note).
-      - Dedup by listing_id (D9) BEFORE counting.
+    List-page-only extraction (Sprint 2.21.3 polish). For each page:
+      1. Fetch the listing page (HTML).
+      2. Parse the embedded JSON-LD ItemList.
+      3. Walk for RealEstateListing entities.
+      4. For each: extract price (QAR), area (m²), URL, region; skip AED;
+         enforce sub-Lusail filter; compute value_per_m2.
+      5. Dedup by URL across pages.
+    Total wall budget for default (MAX_PAGES=3, INTER_REQUEST_SLEEP_S=1s):
+    ~5s — well under Heroku 30s router timeout.
 
     Cache: 24h TTL keyed by (propertyfinder, Lusail, <bracket-label>).
-    Set `use_cache=False` to bypass for fresh fetches.
     """
     bracket_label = _cache_key_label(size_bracket)
     cache_obj = cache
@@ -368,36 +348,31 @@ def get_apartment_sales_lusail(
             logger.info("PF cache hit (n=%d, bracket=%s)", len(hit), bracket_label)
             return hit
 
-    # ── List-page fan-out (sequential per D5 polite-rate-limit) ──
-    seen_ids: set[str] = set()
-    detail_urls: list[str] = []
+    # ── List-page sweep (sequential per D5) ──
+    listings: list[dict[str, Any]] = []
+    seen_urls: set[str] = set()
     for page in range(1, MAX_PAGES + 1):
         body = _http_get(_page_url(page))
         if not body:
             break                              # D6 — partial result OK
-        urls_on_page = _extract_listing_urls(body)
-        for url in urls_on_page:
-            lid = _listing_id(url)
-            if not lid or lid in seen_ids:
+        entities = _extract_jsonld_listings(body)
+        page_added = 0
+        for ent in entities:
+            row = _entity_to_row(ent)
+            if row is None:
                 continue
-            seen_ids.add(lid)
-            detail_urls.append(url)
-        if page < MAX_PAGES:
-            time.sleep(INTER_REQUEST_SLEEP_S)
-
-    # ── Detail fetch (sequential per D5) ──
-    listings: list[dict[str, Any]] = []
-    for i, url in enumerate(detail_urls):
-        row = _fetch_detail(url)
-        if row is not None:
+            url = row["source_url"]
+            if url in seen_urls:
+                continue
+            seen_urls.add(url)
             listings.append(row)
-        if i < len(detail_urls) - 1:
+            page_added += 1
+        logger.info("PF page %d: %d entities -> %d new rows", page, len(entities), page_added)
+        if page < MAX_PAGES:
             time.sleep(INTER_REQUEST_SLEEP_S)
 
     listings = _apply_size_bracket_filter(listings, size_bracket)
 
-    # Cache the full pre-filter result? No — filter is part of the cache
-    # key (bracket_label). Each bracket-call caches its own filtered list.
     if cache_obj is not None and use_cache:
         cache_obj.set("propertyfinder", "Lusail", bracket_label, listings)
 
@@ -418,8 +393,5 @@ if __name__ == "__main__":                      # pragma: no cover
     result = get_apartment_sales_lusail(use_cache=False)
     print(f"\nTotal: {len(result)} Lusail apartment-for-sale listings")
     for row in result[:5]:
-        print(json.dumps(
-            {k: v for k, v in row.items() if k != "raw_html_excerpt"},
-            ensure_ascii=False, indent=2,
-        ))
+        print(json.dumps(row, ensure_ascii=False, indent=2))
     sys.exit(0 if result else 1)
