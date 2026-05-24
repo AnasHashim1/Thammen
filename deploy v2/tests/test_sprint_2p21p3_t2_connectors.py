@@ -408,6 +408,52 @@ class TestEngineIntegration(unittest.TestCase):
         self.assertEqual(result["hybrid"]["muc_range_pct"], 0.20)
         # 'level' in material_uncertainty drops to 'low' for strong band
 
+    def test_27_d10_fox_hills_lusail_subdistrict_accepted(self):
+        """Sprint 2.21.3 post-deploy polish — Fox Hills ANAME='غار ثعيلب'
+        is a Lusail sub-district that doesn't contain 'لوسيل' as substring.
+        Verifies _is_lusail_district() accepts it via the dedicated token.
+        Reference case: PIN 69/329/20."""
+        gis = MagicMock()
+        gis.get_district_at_point.return_value = MagicMock(
+            aname="غار ثعيلب", ename="Ghar Thuaileb",
+        )
+        listings = [{"value_per_m2": 20_000.0 + i * 100} for i in range(12)]
+        with patch.dict(os.environ, {"HYBRID_APARTMENTS_ENABLED": "true"}), patch(
+            "connectors.propertyfinder_apartments_t2_sales.get_apartment_sales_lusail",
+            return_value=listings,
+        ):
+            result = self.eu._try_hybrid_apartments_response(
+                zone=69, street=329, building=20,
+                loc=self.fake_loc, plot=self.fake_plot,
+                asset_type="apartment_building", audience="self",
+                gis_lite=gis,
+            )
+        # Hybrid path MUST fire for Fox Hills (Lusail sub-district)
+        self.assertIsNotNone(result, "Fox Hills should be accepted as Lusail")
+        self.assertIn("hybrid", result)
+        self.assertEqual(result["valuation"]["method"], "hybrid_t2")
+
+    def test_28_d10_lusail_69_aname_accepted(self):
+        """Authoritative ANAME='لوسيل 69' contains substring 'لوسيل';
+        the gate must accept it (Lusail proper district)."""
+        gis = MagicMock()
+        gis.get_district_at_point.return_value = MagicMock(
+            aname="لوسيل 69", ename="Lusail 69",
+        )
+        listings = [{"value_per_m2": 21_000.0 + i * 50} for i in range(8)]
+        with patch.dict(os.environ, {"HYBRID_APARTMENTS_ENABLED": "true"}), patch(
+            "connectors.propertyfinder_apartments_t2_sales.get_apartment_sales_lusail",
+            return_value=listings,
+        ):
+            result = self.eu._try_hybrid_apartments_response(
+                zone=69, street=100, building=1,
+                loc=self.fake_loc, plot=self.fake_plot,
+                asset_type="apartment_building", audience="self",
+                gis_lite=gis,
+            )
+        self.assertIsNotNone(result)
+        self.assertEqual(result["hybrid"]["sample_size_band"], "boundary")
+
 
 # ─────────────────────────────────────────────────────────────────────────
 # Tally + main entrypoint (matches Sprint 2.19.1+ test discipline)

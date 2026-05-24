@@ -1702,6 +1702,42 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
 HYBRID_T2_MIN_N = 5
 
 
+# Sprint 2.21.3 polish — Lusail GIS Districts substring tokens.
+# Post-deploy on v114 surfaced that PIN 69/329/20 (Lusail apt confirmed
+# by Anas) classifies into Districts/MapServer/0 ANAME='غار ثعيلب' —
+# Lusail Fox Hills, which does NOT contain 'لوسيل' as substring. The
+# original gate `'لوسيل' in district_ar` rejected it incorrectly.
+#
+# Authoritative capture (Rule E13, probe_lusail_districts.py on v117):
+#   Lusail proper Districts → ANAME ∈ {'لوسيل 69', 'لوسيل 70',
+#                                       'وادي لوسيل'} all contain 'لوسيل'
+#   Lusail Fox Hills        → ANAME = 'غار ثعيلب'   (separate token)
+# Marketing names (Marina, Energy City, Waterfront) are sub-zones WITHIN
+# 'لوسيل 69'/'لوسيل 70' per GIS, not separate districts.
+LUSAIL_AR_TOKENS = frozenset({'لوسيل', 'غار ثعيلب'})
+LUSAIL_EN_TOKENS = frozenset({'lusail', 'ghar thuaileb', 'fox hills'})
+
+
+def _is_lusail_district(district_ar: str, district_en: str) -> bool:
+    """D10 Lusail-municipality test (Sprint 2.21.3 polish-fix).
+
+    Substring match against authoritative token sets:
+      - 'لوسيل' covers لوسيل 69 / لوسيل 70 / وادي لوسيل
+      - 'غار ثعيلب' covers Fox Hills (Anas-confirmed Lusail per 69/329/20)
+      - English tokens cover the ENAME column as a defensive belt+suspenders
+    """
+    if district_ar:
+        for tok in LUSAIL_AR_TOKENS:
+            if tok in district_ar:
+                return True
+    if district_en:
+        en = district_en.lower()
+        for tok in LUSAIL_EN_TOKENS:
+            if tok in en:
+                return True
+    return False
+
+
 def _t2_sample_band(n: int) -> str:
     """Map T2 sample size to discipline band (Project_Instructions §3).
 
@@ -1812,7 +1848,7 @@ def _try_hybrid_apartments_response(
         return None
     district_ar = (dist.aname if dist else '') or ''
     district_en = (dist.ename if dist else '') or ''
-    if 'لوسيل' not in district_ar and 'lusail' not in district_en.lower():
+    if not _is_lusail_district(district_ar, district_en):
         return None
 
     # Fetch T2 listings (D6 — connector swallows network errors)
