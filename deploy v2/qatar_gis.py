@@ -1931,6 +1931,48 @@ class QatarGIS:
         classification = classify_asset(plot, location_metadata=_meta, input_mode=input_mode)
         extent = self.detect_extent(plot.pin)
 
+        # ─── Sprint 2.18.1.1 — compound-misroute fix ────────────────────────
+        # Discovered 2026-05-23 evening via Anas's visual verification of
+        # 51/835/17 (compound at 67,536 m², far above the MoJ-sampled
+        # "مجمع فلل" max of 15,027 m²). The QARS subtype path classifies
+        # subtype 2/3 → COMPOUND_SMALL unconditionally (line ~790), but
+        # the BFS-discovered extent can be 4-5x larger than any MoJ-
+        # comparable compound. Without this promotion, evaluate_property
+        # runs MoJ-villa-comparison + land×per_m² decomposition → silent
+        # arithmetic failure (land=218M vs total=6.8M, building=-211M).
+        #
+        # Promotion lever: `ASSET_TYPE_TO_MOJ_CATEGORY['compound_large'] = None`
+        # in evaluate_property.py already routes compound_large to the
+        # "no MoJ comparable, DCF-required" path → valuation_amount=None,
+        # clean refusal pattern (same as PIN-entry compound_large or
+        # apartment_building without rent input).
+        #
+        # Threshold = 15,000 m². Source: Empirical_Findings §7.x "largest
+        # recorded مجمع فلل in MoJ is 15,027 m²". Above this, MoJ has no
+        # comparable transactions, so Income Approach (with rent) is the
+        # only valid methodology. 2-tier (≤15K=small, >15K=large) per
+        # Anas's Sprint 2.18.1.1 scope decision #1 (no COMPOUND_MEDIUM
+        # enum — engine treats both as compound_large for routing).
+        if (classification.asset_type == AssetType.COMPOUND_SMALL
+                and extent is not None
+                and extent.total_area_m2 >= 15000):
+            _promo_note = (
+                f'Sprint 2.18.1.1: extent total {extent.total_area_m2:,.0f} m² '
+                f'≥ 15,000 — promoted compound_small → compound_large. MoJ has '
+                f'no comparable "مجمع فلل" transactions at this scale (max '
+                f'observed = 15,027 m²); Income Approach with rent input is '
+                f'the only valid methodology.'
+            )
+            classification.asset_type = AssetType.COMPOUND_LARGE
+            # Downgrade confidence: the seed's QARS subtype said COMPOUND
+            # but didn't know the scale. We're sure it's a compound but
+            # not sure it's an income-producing investment vs. e.g. a
+            # subdivided estate that happens to be unsubdivided.
+            classification.confidence = 'medium'
+            classification.reasons.append(_promo_note)
+            extent.asset_type = AssetType.COMPOUND_LARGE
+            extent.notes.append(_promo_note)
+
         construction = None
         if include_imagery and classification.asset_type not in (AssetType.RAW_LAND, AssetType.UNKNOWN):
             try:

@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p18p1-parallel-bfs-prefetch'
-SPRINT_TAG = '2.18.1'             # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p18p1p1-compound-misroute-fix'
+SPRINT_TAG = '2.18.1.1'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -826,6 +826,35 @@ def _decompose_value(
 
     # Compute land value for this property
     land_value = round(plot_area_m2 * land_per_m2)
+
+    # ─── Sprint 2.18.1.1 — Patch C: defensive sanity guard ────────────────
+    # Refuse the decomposition when the per-m² × full-area land value
+    # exceeds the MoJ-comparison total. Three cases this catches:
+    #  1. Compound misroute (the trigger bug, 51/835/17): extent area too
+    #     large for the MoJ-comparable bracket. Primarily handled by
+    #     Patch A in qatar_gis.full_property_lookup (promotes
+    #     compound_small → compound_large when extent ≥ 15K m², which
+    #     makes ASSET_TYPE_TO_MOJ_CATEGORY[…]=None → valuation_amount=None
+    #     → this function returns at line 806 before reaching here). Patch
+    #     C is belt-and-suspenders for any edge case Patch A doesn't catch.
+    #  2. Premium-land teardown candidates: a small old villa (200 m²) on
+    #     Pearl/Lusail premium land (≥ 5K QAR/m²) → land 1.0M+ while
+    #     as-built valuation may be 900K (Sprint 2.16.10-era Lusail B201
+    #     dynamics).
+    #  3. MoJ sample outliers that pull the bracket median below the true
+    #     land value (rare but possible on small brackets, n<10).
+    #
+    # Returning None suppresses the value_decomposition entirely in the API
+    # response (caller at line 3194: `if decomp: output[...] = decomp`).
+    # Frontend at index.html:862 `if(hasValuation && v.value_decomposition)`
+    # then naturally skips the broken tile.
+    # Bug discovered 2026-05-23 evening: 51/835/17 → land=218M vs total=6.8M
+    # (32.1× silent failure). Universal guard (NOT compound-specific) per
+    # Anas's Sprint 2.18.1.1 scope decision #4: "Patch C must catch all
+    # asset_types, not just compounds".
+    if land_value > valuation_amount:
+        return None
+
     # Implied building value (residual)
     bld_implied = round(valuation_amount - land_value)
     bld_per_m2 = round(bld_implied / bua_m2) if (bua_m2 and bua_m2 > 0) else None

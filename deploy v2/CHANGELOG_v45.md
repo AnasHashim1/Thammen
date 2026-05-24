@@ -320,3 +320,31 @@ Decision on which to pursue is for a separate Sprint 2.18.2 §5 audit.
 ---
 
 *Sprint 2.18.1 ends one bug class outright (HTTP 503 on `compound_small`). It does **not** close the Stage-1 villa/land gap — that's Sprint 2.18.2 territory. Every Sprint reviewed through the Stage 1/2/3 lens per Operational_Rules #50.*
+
+---
+
+## 11. Post-deploy addendum (2026-05-23 evening)
+
+Post-deploy visual verification by Anas on thammen.qa (CLAUDE.md §3 "smoke
+test 3 diverse addresses from Heroku post-deploy") revealed a pre-existing
+methodology bug on `compound_small` classification when the extent ≥ 15 K m²:
+the report on 51/835/17 (the trigger case) showed `land=218 M, total=6.8 M,
+building=−211 M, building_pct=−3 107 %` — silent arithmetic failure
+(`land_value > valuation_amount` by 32×).
+
+**This bug existed before Sprint 2.18.1** but was masked by the HTTP 503
+router timeout. Sprint 2.18.1's latency fix made the bug reachable for the
+first time, which Anas's verification step caught immediately. Addressed
+in **Sprint 2.18.1.1** (see [CHANGELOG_v46.md](CHANGELOG_v46.md)).
+
+Sprint 2.18.1's stated success criteria — latency reduction (89 s → 29 s)
+and HTTP 503 elimination on `compound_small` (503×3 → 200×3) — are all
+**met**; user-facing completeness deferred until Sprint 2.18.1.1 ships
+(Patch A: extent-driven classifier promotion + Patch C: universal
+`_decompose_value` sanity guard).
+
+Sprint 2.18.1 ships as-is. The follow-up Sprint 2.18.1.1 is documented
+separately in v46. Together they form a unified narrative:
+- **2.18.1**: made the response reachable (latency goal — delivered)
+- **2.18.1.1**: made the reachable response correct (methodology goal —
+  closing the loop)
