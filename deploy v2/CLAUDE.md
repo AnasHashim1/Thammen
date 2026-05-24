@@ -3,7 +3,7 @@
 > **Project:** thammen.qa — Qatar real-estate AVM (RICS VPS 4)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-24 morning (after unified closeout for Sprints 2.18.1 + 2.18.1.1 — parallel BFS upfront-prefetch + compound-misroute fix; first documented "latency-unmasks-methodology-bug" case; Operational #52 + EMPIRICAL E20 codified)
+> **Last update:** 2026-05-24 evening (after Sprint 2.21.2 Hybrid Foundation deployed Heroku v107; Pre-Sprint 2.22.0 audit refuted 3-stage premise via H5 FALSE — apartments problem is data not latency; Pre-Sprint 2.21.3 smoke discovered arady `/listings` URL pattern + PropertyFinder DOM-duplication finding; Operational #53 codified; Rule E3 expanded to 8 constraints — see Empirical_Findings.md)
 
 ## Quick orientation
 
@@ -16,70 +16,145 @@ Read these files in order before any technical work:
 @./docs/Session_Update_2026-05-19.md
 @./docs/Operational_Rules.md
 
-**Most recent state = `Session_Log.md` §15 (2026-05-23 evening → 2026-05-24
-morning, unified narrative for Sprints 2.18.1 + 2.18.1.1 — parallel BFS
-upfront-prefetch + compound-misroute fix).** §14 covered Sprint 2.18.0 earlier
-that day; §13 covered Sprint 2.21.0.9 Stage 1; §11-12 covered the Land Arc
-through Sprint 2.21.0.7.1. The `Session_Update_2026-05-19.md` file is an older
-delta (Bug A11 era) kept for history. Newest operational rules:
-`Operational_Rules.md` #43–#53. Newest empirical rules:
-`Empirical_Findings.md` E13–E20.
+**Most recent state = Sprint 2.21.2 Hybrid Foundation deployed Heroku v107
+on 2026-05-24 evening + two Pre-Sprint diagnostics flanking it.** Session_Log
+§15 still holds the most recent NARRATIVE entry (Sprints 2.18.1 + 2.18.1.1,
+parallel BFS + compound-misroute fix). Pre-Sprint artifacts since:
+
+- `2p21p1_pre/CHANGELOG_pre_2p21p1.md` — MME smoke (anonymous Directus
+  token, kpi29 schema discovered, rent paths verified dead). Sprint 2.21.1
+  deferred pending DevTools capture.
+- `2p22p0_pre/CHANGELOG_pre_2p22p0.md` — 3-stage architecture exploration
+  audit. H5 FALSE: apartments are a data problem, not latency. Sprint
+  2.22.0 deferred. H1+H3+H4 evidence preserved for future UX-refactor Sprint.
+- `2p21p2_pre/` — Sprint 2.21.2 §5 audit probes (MoJ Lusail apt count = 0,
+  PropertyFinder reachable, arady root only). Sprint 2.21.2 then shipped.
+- `2p21p3_pre/CHANGELOG_pre_2p21p3.md` — T2 connector smoke from Heroku.
+  4 of 5 TRUE. arady canonical search = `/listings`. PropertyFinder DOM
+  duplicates listing nodes ~6× (raw 142 → 24 unique on Lusail page 1) —
+  connector MUST deduplicate by canonical URL or listing ID.
+
+§14 covered Sprint 2.18.0 earlier that morning; §13 covered Sprint 2.21.0.9
+Stage 1; §11-12 covered the Land Arc through Sprint 2.21.0.7.1. The
+`Session_Update_2026-05-19.md` file is an older delta (Bug A11 era) kept
+for history. Newest operational rules: `Operational_Rules.md` #43–#53
+(latest = #53 "Closed cases stay closed — including as comparison anchors").
+Newest empirical rules: `Empirical_Findings.md` E13–E20 (Rule E3 itself
+expanded to 8 numbered constraints by Sprint 2.21.2 — listings now allowed
+tier-weighted entry via `hybrid_valuation_v1()`).
 
 -----
 
 ## Current production state (snapshot)
 
 ```
-Engine version deployed:  thammen-sprint2p18p1p1-compound-misroute-fix  (Heroku v101)
-Latest CHANGELOG:         CHANGELOG_v46.md (2.18.1.1 Compound-misroute fix; v45 = 2.18.1)
-Latest Sprint:            2.18.1.1 (Patches A + C — closes unmasked methodology bug)
-Tests passing:            19/19 new (7 functions: promotion 15K/50K, Patch C guard,
-                          Lusail premium-land edge case) + 332 prior = 351 across
-                          16 standalone files (all exit 0). Run with PYTHONIOENCODING=utf-8.
+Engine version deployed:  thammen-sprint2p21p2-hybrid-foundation  (Heroku v107 code)
+                          Heroku slug now at v109 (v107 engine + smoke files removed).
+api/health version:       3.1.0-sprint2.21.2
+Latest CHANGELOG:         CHANGELOG_v47.md  (2.21.2 Hybrid Foundation; slot drift
+                          v43 → v47 documented per Rule #53 spirit)
+Latest Sprint:            2.21.2 Hybrid Valuation Foundation
+                          - Rule E3 expanded to 8 constraints
+                          - hybrid_valuation.py module: HYBRID_TIER_CONFIG +
+                            hybrid_valuation_v1() (Cases A/B/C/D + Constraint 7/8)
+                          - D5 T2 discount midpoint −12.5%,
+                            D6 T3 discount midpoint −17.5%,
+                            both `provisional, broker-experience-grounded`
+                          - Function exists; NO engine path calls it yet — production
+                            behavior identical to 2.18.1.1 (Bou Hamour 56/565/21
+                            re-evaluated post-deploy: identical output)
+                          - Connectors land in 2.21.3 (T2) + 2.21.4 (T3)
+Tests passing:            27 standalone files, all exit 0. Latest counts where
+                          reported: 11+12+19+37+67 = 146 sub-checks measured (older
+                          files don't print numeric summary). Sprint 2.21.2 added
+                          22 functions / 67 sub-checks (H1+H2+H3+H4+H6 all TRUE);
+                          H5 (no regression) verified via 27/27 pass.
+                          Run with PYTHONIOENCODING=utf-8.
 Critical bugs open:       0
-High bugs open:           0  (A6 latency ✅ CLOSED: 89s→28.9s on compound_small,
-                          HTTP 503 class eliminated. compound_small extents ≥15K m²
-                          now route to clean Income Approach refusal via Patch A
-                          promotion to compound_large. Wider cohort: 19% HTTP failure
-                          → 0% across 21 reps. A8 closed by 2.20.)
+High bugs open:           0  (A6 latency ✅ CLOSED via 2.18.0 + 2.18.1 + 2.18.1.1;
+                          A8 closed by 2.20)
 Medium bugs open:         2  (A5 asset_type unknown, A7 rics_compliant false)
+
+Recent Sprints (chronological):
+  2.18.0   Parallel property_factors fan-out (−4s villa/raw_land, v99)
+  2.18.1   Parallel BFS upfront-prefetch (−60s compound_small, v100, kills 503)
+  2.18.1.1 Compound-misroute fix Patches A+C (v101)
+  2.21.2   Hybrid Foundation: Rule E3 → 8 constraints + hybrid_valuation.py (v107)
+  → all live; engine version reflects the most recent (2.21.2).
+
+Pre-Sprints since (no engine change, diagnostic only):
+  2.21.1 pre-MME smoke v1+v2 — Heroku reaches MME (P1 TRUE), but JWT is
+         anonymous Directus token (role=null) → kpi29 returns count:0 for
+         all queries. Rent paths (kpi30/31/32) verified DEAD. Sprint 2.21.1
+         deferred pending DevTools capture of authenticated session.
+         (Operational §28 annotated 2026-05-24 with the auth-scope caveat
+         + the real {count, transactionList} response schema.)
+  2.22.0 audit — H5 FALSE: apartment failures are DATA-driven, not
+         latency-driven (3/3 reps on 52/903/90: HTTP 200 + val=None +
+         4.7s). 3-stage architecture does NOT solve apartments;
+         BRIEF_2p21p2 (hybrid foundation) returned to top of queue and
+         shipped as Sprint 2.21.2. H1+H3+H4 evidence preserved.
+  2.21.3 smoke — T2 connector reachability + URL discovery (Heroku-IP).
+         4 of 5 TRUE. arady canonical search URL = /listings (HTTP 200,
+         70 hits page 1); /sitemap.xml available. PropertyFinder reachable
+         (Heroku-sandbox parity exact). H5 confirmed PF detail pages
+         expose both price + area extractable tokens (CSS class
+         property-price + regex fallbacks). DOM duplication finding:
+         PF raw matches inflate ~6× over unique listing count — connector
+         in 2.21.3 MUST deduplicate by canonical URL or listing ID.
+
 Land Arc:                 ✅ COMPLETE — PIN input (2.21.0) + output polish (2.21.0.5)
-                          + Asset Type Reality Check (QARS-in-polygon + General_Landuse
-                          RULEID, 2.21.0.7/.7.1). Built→stop/reject; bare→value/reject
-                          by authoritative RULEID; precedence QARS>RULEID>geometry.
-Multi-QARS (2.21.0.9):    ✅ STAGE 1 LIVE — one cadastral PIN with 2+ QARS-addressed
-                          villas detected; bracket selection switched from raw PDAREA
-                          to PDAREA/n_qars (fixes Bou Hamour 56/565/21 ~30-40% land
-                          over-valuation). NO classification (attached vs separate) —
-                          GPS centroid alone cannot tell them apart (15.2m can mean
-                          either, per MME setback code E15). Stage 2 pre-specified
-                          (wall-to-wall rule, E18) for Sprint 2.21.0.10 candidate.
-A6 latency arc:           ✅ COMPLETE in 3 Sprints. (1) 2.18.0 Phase 1: 5 parallel
-                          property_factors → −4s villa/raw_land (audit prediction
-                          ±2%, Rule #51). (2) 2.18.1: parallel BFS upfront-prefetch
-                          → −60s compound_small (89s→29s, kills 503 class). (3)
-                          2.18.1.1: Patches A+C — promote compound_small→compound_large
-                          when extent ≥ 15K m² (E20); universal _decompose_value
-                          guard when land>valuation. Sprint 2.18.2 candidate
-                          (lite/full GIS dedup, ~−15s) remains queued for Stage-1
-                          compliance on compound_small (≤5s target).
-Compound-misroute        ✅ CLOSED 2026-05-24 (Sprint 2.18.1.1, v101). Anas's
-(unmasked bug):           visual verification 9/9 ✓ — "مجمع فلل كبير" displays,
-                          no broken numbers, Income Approach refusal correct,
-                          critical material reservation, 6 explicit limitation
-                          factors, RICS Red Book recommendations. First documented
-                          "latency unmasks methodology" case → Operational #52.
-Mthamen integration:      ⏸️ Deferred indefinitely (see Project_Instructions §20.8)
-Roadmap (next):           2.18.2 candidate = lite/full GIS dedup + boundary-test
-                          optimization (closes Stage-1 ≤5s for compound_small) ·
-                          2.21.0.11/.12 candidates = cosmetic UX (rent-input deep-link,
-                          negotiation-range box hide when val=None) · 2.21.0.10 = Stage 2
-                          wall-to-wall classification (probe Building Footprint layer
-                          first) · 2.21.0.8 = P3 MoJ lstkhdm usage filter · 2.21.1 =
-                          apartments (MME smoke first, §21.6) · 2.22.x = Map UI
-                          (pin-drop → GPS → PIN via CadastrePlots)
-Confirmed Sales (2.16.16): still pending the secretary's data
-Deploy:                   git subtree push --prefix "deploy v2" (Operational_Rules #43)
+                          + Asset Type Reality Check (2.21.0.7/.7.1).
+Multi-QARS (2.21.0.9):    ✅ STAGE 1 LIVE (n_qars≥2 detection + bracket adjust).
+                          Stage 2 wall-to-wall (E18) pre-specified for 2.21.0.10.
+A6 latency arc:           ✅ COMPLETE in 3 Sprints (2.18.0 / 2.18.1 / 2.18.1.1).
+
+Rule E3 (Empirical_Findings): EXPANDED 2026-05-24 by Sprint 2.21.2.
+                          Now 8 numbered constraints permitting tier-weighted
+                          listing entry via hybrid_valuation_v1(). E1 (no MoJ
+                          uplift) preserved. T2 cap 0.40, T3 cap 0.15, T1 floor
+                          0.45, MUC mandatory when T1 absent, no T3-alone valuation.
+
+Operational rules added 2026-05-24:
+  #53  Closed cases stay closed — including as comparison anchors. Cite
+       §X / Rule #N, never the originating closed case as foil/precedent.
+
+Mthamen integration:      ⏸️ Deferred indefinitely (Project_Instructions §20.8)
+MME apartments (2.21.1):  ⏸️ Deferred — awaits DevTools auth capture on
+                          mme.gov.qa (see 2p21p1_pre/CHANGELOG)
+
+Roadmap (priority order, post-2.21.2):
+  1. Sprint 2.21.3 — T2 connectors (arady /listings + PropertyFinder).
+                     Inputs ready in 2p21p3_pre/. Needs BRIEF from Claude.ai
+                     (lane discipline). Connector MUST deduplicate per
+                     DOM finding above.
+  2. Sprint 2.21.4 — T3 schema (developer_inventory.sqlite + Aryan manual
+                     entry). Function is null-safe for T3 absence.
+  3. Sprint 2.21.5 — UI tier breakdown + MUC surfacing for hybrid outputs.
+                     Needs 2.21.3 + 2.21.4 shipped.
+  4. Sprint 2.21.0.11/.12 — Cosmetic UX (rent-input deep-link;
+                     negotiation-range box hide when val=None).
+  5. Sprint 2.18.2 candidate — lite/full GIS dedup (Stage-1 ≤5s for
+                     compound_small). Needs §5 audit first.
+  6. Sprint 2.22.0 — 3-stage architecture, DEFERRED. Evidence in
+                     2p22p0_pre/. Revisit after 2.21.5 (hybrid UI may
+                     benefit from staged UX).
+  7. Sprint 2.21.0.10 — Stage 2 wall-to-wall (E18). Needs Building
+                     Footprint layer probe.
+  8. Sprint 2.21.1 — MME apartments. Awaits authenticated session.
+  9. Sprint 2.16.16 — Confirmed Sales DB. Secretary data uncertain
+                     (per Anas 2026-05-24); recalibration of D5/D6
+                     shifts to brokerage-pipeline-only path (≥30 (asking,
+                     close) pairs as the trigger). NOT a blocker for 2.21.2
+                     or anything depending on it.
+
+D5/D6 calibration:        provisional, broker-experience-grounded.
+                          Recalibration trigger = brokerage Confirmed Sales
+                          pipeline produces ≥30 (asking, close) pairs.
+                          Empirical basis: EMPIRICAL_FINDINGS §3 asking-
+                          premium ranges + broker negotiation experience.
+
+Deploy:                   git subtree push --prefix "deploy v2" (Operational #43)
 ```
 
 -----
@@ -236,7 +311,12 @@ STOP if I:
 | "تذكر #52" أو "تذكر latency unmasks methodology" | Operational_Rules #52 — when a latency Sprint converts 5xx→2xx on a previously-unreachable path, the response *content* on that path is newly verifiable and may have latent bugs. Post-deploy verification scope must include the now-reachable response content, not just the latency metric. First documented case: Sprint 2.18.1 unmasked the compound_small >15K methodology bug; Sprint 2.18.1.1 closed it. |
 | "تذكر E20" أو "تذكر 15K compound" | EMPIRICAL_FINDINGS E20 — MoJ "مجمع فلل" sampling max = **15,027 m²**. Compounds with extent ≥ 15K m² have no MoJ comparable; Income Approach with rent input is the only valid methodology. The 15K threshold drives Sprint 2.18.1.1 Patch A. |
 | "تذكر #53" أو "تذكر closed cases stay closed" | Operational_Rules #53 — rules derived from a deferred/closed case remain in force, but the originating case itself is not cited as a foil, precedent, or comparison in new documentation. Cite §X (the rule), not the case that produced §X. Self-check: delete any sentence containing "unlike [closed case]" or "mirror [closed case] pattern". Crystallized 2026-05-24, pre-Sprint 2.21.1 MME smoke session. |
-| "بيانات السكرتيرة جاهزة" | Begin Sprint 2.16.16 (Confirmed Sales — renumbered from 2.16.15) |
+| "تذكر Sprint 2.21.2" أو "تذكر Hybrid Foundation" أو "تذكر hybrid_valuation_v1" | Sprint 2.21.2 (CHANGELOG_v47.md, Heroku v107, deployed 2026-05-24 evening). Foundation Sprint — Rule E3 expanded from "MUST NOT enter calculation" sentence to **8 numbered constraints** permitting tier-weighted listing entry via `hybrid_valuation_v1()`. New module `hybrid_valuation.py` exposes `HYBRID_TIER_CONFIG` (D5 T2 discount −12.5%, D6 T3 −17.5%, both provisional) + the function (Cases A/B/C/D + Constraint 7 unit-norm + Constraint 8 T3-alone refusal). Function exists, no engine path calls it yet — production behavior identical to 2.18.1.1. Connectors land in 2.21.3 (T2) + 2.21.4 (T3). 22 test functions / 67 sub-checks (H1+H2+H3+H4+H6 all TRUE); H5 verified 27/27 files pass. |
+| "تذكر Rule E3 v2" أو "تذكر 8 constraints" | Rule E3 in `docs/Empirical_Findings.md` was rewritten 2026-05-24 by Sprint 2.21.2. Now 8 numbered constraints: (1) T2 cap 0.40 with T1 + D5 discount; (2) T3 cap 0.15 + D6 discount; (3) T1 floor 0.45 when present; (4) no T1 → indicative ceiling; (5) mandatory MUC ±20% when T1 absent; (6) source-level transparency (E10); (7) like-for-like unit normalization (RICS VPS 4); (8) T3 alone insufficient. E1 (no MoJ uplift) preserved. |
+| "تذكر Pre-Sprint 2.22.0" أو "تذكر H5 FALSE" | Pre-Sprint 2.22.0 audit (2p22p0_pre/CHANGELOG, 2026-05-24). Tested whether 3-stage UX architecture solves the apartments gap. H5 FALSE was decisive: 52/903/90 apartment_building returns HTTP 200 + valuation_amount=None + 4.7s — failure is data-driven, not latency-driven. 3-stage would just rename "insufficient data" across two stages. Sprint 2.22.0 deferred; BRIEF_2p21p2 (hybrid foundation) returned to top of queue and shipped. H1 TRUE + H3 TRUE + H4 TRUE evidence preserved for future UX-refactor Sprint after 2.21.5. |
+| "تذكر Pre-Sprint 2.21.3" أو "تذكر DOM duplication" أو "تذكر arady /listings" | Pre-Sprint 2.21.3 smoke (2p21p3_pre/CHANGELOG, 2026-05-24 evening). 4 of 5 TRUE. arady canonical search URL = **`/listings`** (HTTP 200, 70 listing hits page 1, sitemap.xml available for full inventory). PropertyFinder reachable from Heroku (exact parity with sandbox; raw=142 = sandbox=142). H2 FALSE was a threshold artifact: PropertyFinder DOM duplicates listing nodes ~6× (142 raw → 24 unique on Lusail page 1). **Sprint 2.21.3 connector MUST deduplicate by canonical URL or listing ID.** Detail-page schema confirmed extractable: CSS class `property-price` + regex fallback for QAR/AED + regex for m²/sqm. |
+| "تذكر D5/D6" أو "تذكر calibration provisional" | `HYBRID_TIER_CONFIG` ships with D5 T2 discount midpoint −12.5% (range −10%/−15%) and D6 T3 discount midpoint −17.5% (range −15%/−20%), both tagged `provisional, broker-experience-grounded`. Empirical basis: EMPIRICAL_FINDINGS §3 asking-premium ranges (+8% to +20% inverted). Recalibration trigger: brokerage Confirmed Sales pipeline produces ≥30 (asking, close) pairs. Secretary data may never arrive (per Anas 2026-05-24) — recalibration is on the brokerage-pipeline-only path; not a blocker for 2.21.2 or anything depending on it. |
+| "بيانات السكرتيرة جاهزة" | Begin Sprint 2.16.16 (Confirmed Sales — renumbered from 2.16.15). NOTE 2026-05-24: per Anas this data may never arrive; D5/D6 recalibration migrated to brokerage-pipeline-only path. |
 | "راجع EMPIRICAL_FINDINGS" | Audit rules E1-E20 |
 | "اقرأ القسم X" | Activate self-correction trigger from section X |
 | "ركذت قاعدة الدفع" أو "تذكر #32" | Push & Commit discipline — Operational_Rules #32 |
