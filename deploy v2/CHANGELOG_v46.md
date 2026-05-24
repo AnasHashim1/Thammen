@@ -192,30 +192,62 @@ Acceptance gate: any one of the following = hard failure → rollback to v100:
 
 ---
 
-## 6. Post-deploy measurement (actual)
+## 6. Post-deploy measurement (actual — 2026-05-23 evening, Heroku v101)
 
-*To be filled after deploy — Rule #51 step 3.*
+Deployed via `git subtree push` per Rule #43 at ~21:55 +0300 (commit `fe86d82`,
+subtree split `bbc9487`). `/api/health` confirms `engine_version =
+thammen-sprint2p18p1p1-compound-misroute-fix`.
 
-### 6.1 The trigger case
+### 6.1 The trigger case — 51/835/17 (single rep via probe_compound_classifier_bug.py)
 
-| field | v100 measured | v101 predicted | v101 actual | verdict |
+| field | v100 measured | v101 predicted | **v101 actual** | verdict |
 |---|---|---|---|---|
-| `asset_type` | compound_small | compound_large |  |  |
-| `valuation_amount` | 6 800 000 | None |  |  |
-| `land_value` | 218 073 744 | None |  |  |
-| `building_value` | −211 273 744 | None |  |  |
-| `decomp_status` | land_exceeds_value | None |  |  |
-| `classification.confidence` | (varies) | medium |  |  |
-| HTTP status | 200 | 200 |  |  |
-| Latency | ~29 s | ~29 s (±5 %) |  |  |
+| `asset_type` | compound_small (wrong) | compound_large | **compound_large** | ✅ PASS |
+| `valuation_amount` | 6 800 000 (wrong) | None | **None** | ✅ PASS |
+| `land_value` | 218 073 744 | None | **None** | ✅ PASS |
+| `building_value` | −211 273 744 | None | **None** | ✅ PASS |
+| `building_pct` | −3 107 % | None | **None** | ✅ PASS |
+| `decomp_status` | `land_exceeds_value` | None | **None** | ✅ PASS |
+| HTTP status | 200 (with broken numbers) | 200 (clean refusal) | **200** | ✅ PASS |
+| Latency | 28 891 ms | ~29 000 ms (±5 %) | **26 755 ms** | ✅ PASS (slightly faster — Patch A skips MoJ comparison entirely, one less call chain) |
 
-### 6.2 Regression checks
+**THE WIN delivered:** the silent arithmetic failure is closed. 51/835/17 now returns a clean "needs rent input for Income Approach" refusal pattern, identical in shape to PIN 66030258 (compound_large via PIN). The user-visible report no longer shows `−3 107 %` building percentages.
 
-| case | v100 | v101 actual | verdict |
+### 6.2 Regression checks (3 control cases, 1 rep each)
+
+| case | v100 expected | v101 actual | verdict |
 |---|---|---|---|
-| safe_villa_52 | 200 / ~4 s / apartment_building | | |
-| multi_qars_56 | 200 / ~23 s / standalone_villa / decomp present | | |
-| PIN 66030258 | 200 / ~4.5 s / unknown / valuation_amount=None | | |
+| safe_villa_52 (52/903/90) | HTTP 200, ~4 s, apartment_building, val=None | **HTTP 200, 4 591 ms, apartment_building, val=None** | ✅ UNCHANGED |
+| multi_qars_56 (56/565/21) | HTTP 200, ~23 s, standalone_villa, val=2.5 M, decomp present | **HTTP 200, 24 381 ms, standalone_villa, val=2 500 000, land=1 700 100, building=799 900 (32 %, status='normal')** | ✅ UNCHANGED — decomposition still works, Patch C correctly does NOT fire (land < valuation) |
+| PIN 66030258 (compound_large via PIN) | HTTP 200, ~4.5 s, unknown, val=None (asset_type_reality stop) | **HTTP 200, 4 647 ms, unknown, val=None** | ✅ UNCHANGED |
+
+### 6.3 The unmasked-vs-current contrast (51/835/17 user-facing)
+
+| view | v99 (pre-2.18.1) | v100 (post-2.18.1) | v101 (post-2.18.1.1) |
+|---|---|---|---|
+| HTTP status | **503** (Heroku router timeout) | 200 (with broken numbers) | **200** (clean refusal) ✅ |
+| asset_type rendered | n/a (timeout) | compound_small (wrong) | **compound_large** ✅ |
+| valuation_amount rendered | n/a | 6 800 000 (wrong) | **null** (clean refusal) ✅ |
+| land/building tiles | n/a | 218 M / −211 M (silent failure) | **absent** (no decomposition) ✅ |
+| user message | (error page) | Wrong numbers, no warning | "Needs Income Approach: provide annual rent" Arabic (verdict=DCF_REQUIRED) ✅ |
+
+### 6.4 Acceptance gate — all green
+
+| criterion (from §5.3) | result |
+|---|---|
+| `asset_type` no longer `compound_small` | ✅ `compound_large` |
+| `valuation_amount` is `None` | ✅ |
+| `value_decomposition` absent | ✅ |
+| All 3 regression cases unchanged (asset_type, valuation_amount, HTTP status) | ✅ all match v100 byte-for-byte (within ±5 % latency noise) |
+
+**No rollback triggers fired.** Sprint 2.18.1.1 ships.
+
+### 6.5 What was confirmed by measurement
+
+1. **Patch A works as designed.** The promotion fires when extent ≥ 15 K m², the asset_type flips, `ASSET_TYPE_TO_MOJ_CATEGORY['compound_large']=None` short-circuits the MoJ comparison, and the valuation pipeline returns `None`. The mechanism predicted in §5/B of the audit report is exactly what production now does.
+2. **Patch C does NOT fire on 51/835/17** post-Patch-A — because there's no valuation_amount to compare land against (Patch A already returned `None` at the MoJ stage). Patch C's value is purely **belt-and-suspenders** for the edge cases it was designed for (premium-land teardowns, future bug classes).
+3. **multi_qars_56 confirms Patch C is correctly inactive** in normal cases: land=1.7 M < valuation=2.5 M → Patch C's strict `>` comparator does not trigger → decomposition returned normally. The 332 prior sub-checks + 19 new sub-checks proved this offline; the live run confirms it.
+4. **Latency on 51/835/17 actually improved slightly** (28.9 s → 26.8 s, −7 %). Patch A skips the MoJ comparison + decomposition for promoted compounds. This is a small unintended bonus — not promised in §5.
 
 ---
 
