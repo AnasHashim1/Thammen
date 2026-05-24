@@ -369,6 +369,47 @@ deferred to a follow-up Sprint.
 
 ---
 
+## 12. Post-deploy verification timeline (Rule #51 + Rule #11 + Rule #52 inverse)
+
+| Heroku | Engine / Config | Event |
+|---|---|---|
+| v114 | sprint2p21p3-t2-apartments-lusail | First Sprint deploy. /api/health confirms version. |
+| v114 | (no flag set) | **H2** ✅ 52/903/90 (apt non-Lusail "اللقطة") → insufficient_data (D10 gate correctly rejects non-Lusail) |
+| v114 | (no flag set) | **H1 round 1** ❌ 69/329/20 (Lusail apt, district="غار ثعيلب") → insufficient_data. D10 substring `'لوسيل'` didn't match Lusail sub-district `'غار ثعيلب'`. |
+| v114 | (no flag set) | **H4** ✅ 69/329/20 + rent=50K → income_approach_only, val=7.1M, no hybrid (DCF precedence works regardless of D10 bug) |
+| v115 | flag=false | First flag test — needed for H8 (per spec) |
+| v116 | (flag unset) | Restored default; brief evaluation pause for analysis |
+| v117 | + probe_lusail_districts.py | Probe pushed (Rule #34, Rule E13). Spatial query of Districts/MapServer/0 on Lusail bbox + 6 anchor points → captured authoritative ANAME values: `'لوسيل 69'`, `'لوسيل 70'`, `'وادي لوسيل'` (all contain substring `'لوسيل'`) + `'غار ثعيلب'` (Fox Hills, separate token, Anas-confirmed via PIN 69/329/20) |
+| v118 | sprint2p21p3 + D10 polish | Probe removed (Rule #34). Patch: new `_is_lusail_district(ar, en)` helper with token sets `{'لوسيل', 'غار ثعيلب'}` AR and `{'lusail', 'ghar thuaileb', 'fox hills'}` EN. + test_27 (Fox Hills) + test_28 (Lusail 69). 28/28 isolated + 28/28 regression. |
+| v118 | (no flag) | **H1 round 2** ❌ HTTP 503 in 31.2s. D10 fix worked (gate accepts غار ثعيلب) but connector latency exceeded Heroku 30s router. Detail-fetch loop math: 3 list × ~1.5s + 24 details × 1.5s = ~40s > 30s. |
+| v119 | flag=false | **Rule #11 rollback executed**. Lusail apt evaluations restored to pre-2.21.3 fallback (insufficient_data) in 5.6s. Users protected from 503s while we redesign the connector. |
+| v120 | + probe_list_page_pairing.py | Audit probe pushed. List-page HTML structure analysis — confirmed PF list pages embed ONE JSON-LD ItemList with 27 RealEstateListing entries per page. **Each entry has** `offers[0].priceSpecification.price` + `priceCurrency` + `floorSize.value` + `unitText="sqm"` + `address.addressLocality/addressRegion` + canonical `url`. **No detail fetch needed.** |
+| v121 | sprint2p21p3 + list-page refactor | Probe removed. Connector rewritten: `_extract_jsonld_listings()` + `_walk_real_estate_listings()` + `_entity_to_row()`. Old detail-page helpers (`_extract_listing_urls`, `_listing_id`, `_parse_jsonld`, `_fetch_detail`) deleted. Test file rewritten with realistic JSON-LD fixtures (32 tests / 32 PASS). 28-file regression preserved. New wall budget: ~5s for 3 list pages. |
+| v122 | (flag unset) | Default flag restored. |
+| v122 | (no flag) | **H1 round 3** ✅ 69/329/20 → `valuation.method = hybrid_t2`, `value_per_m2 = 11,368 QAR/m²` (range ±20%: 9,094–13,641), **n_used = 79** (3 pages × ~27), `sample_size_band = strong_indicative`, `accuracy.score = 3`, `confidence = indicative` (Rule E3 §4 ceiling), `muc_required = True`, `muc_range_pct = 0.20` (Rule E3 §5 hard). Wall time **10.6s** under 30s router. |
+| v122 | (no flag) | **H4** ✅ 69/329/20 + rent=50K → income_approach_only, val=7.1M, no hybrid. DCF precedence preserved. |
+| v123 | flag=false | **H8** ✅ 69/329/20 → insufficient_data, no hybrid. H1 vs H8 method divergence (hybrid_t2 ≠ insufficient_data) proves D11 flag mechanism works as designed. |
+| v124 | (flag unset) | Production state: flag default true. All Lusail apartment evaluations now return hybrid responses with value_per_m2 + band-adaptive UX. |
+
+### Rules invoked during post-deploy
+
+- **Rule #11** rollback protocol — executed at v119 after H1 round 2 failed; engaged within 90s of issue surfacing.
+- **Rule #34** file-based probes — v117 (Lusail districts), v120 (list-page pairing); both cleaned up next push.
+- **Rule #39** deviation justification — scope shrink (PF-only), MUC band amendment, D10 sub-district whitelist, list-page refactor — each with `why necessary` + `what's lost` + `what user needs to know`.
+- **Rule #51** audit-driven Sprint pattern — TWO audit→patch→measure cycles within Sprint 2.21.3 (D10 fix at v117→v118; latency fix at v120→v121). Both surfaced bugs that isolated tests didn't catch because they mocked the GIS+network layers.
+- **Rule #52 inverse** (latency unmasks methodology in REVERSE): methodology fix (D10 sub-district acceptance, v118) unmasked latency issue (connector exceeded 30s router timeout). Symmetric pattern to 2.18.1 → 2.18.1.1 but with the two concerns swapped. Now codified as a project-wide pattern: methodology fixes can ALSO unmask latency issues on previously-unreached paths.
+- **Rule E13** — pull coded-value domains (Districts ANAME) empirically via probe before encoding whitelist.
+
+### Final production state
+
+- **Heroku v124**, code = sprint2p21p3-t2-apartments-lusail
+- `HYBRID_APARTMENTS_ENABLED` env var: **unset** (code default 'true' applies)
+- Lusail apartment_building evaluations: **fully active** (hybrid_t2 response with value_per_m2)
+- Non-Lusail apartments / villas / lands / compounds: **unchanged from v101 baseline** (verified H2, H4, H5)
+- Emergency rollback path: `heroku config:set HYBRID_APARTMENTS_ENABLED=false` (verified working, H8)
+
+---
+
 ## 10. Rules cited / applied in this Sprint
 
 - **Rule #32** push & commit discipline — wait for Anas approval before deploy
