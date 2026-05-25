@@ -1,0 +1,126 @@
+================================================================================
+PRE-SPRINT 2.22.0 BRIEF v2 AUDIT — 5-stage architecture refresh
+Started: 2026-05-25 20:04:48 UTC
+Target:  https://thammen.qa/api
+Cases:   11 · Reps: 3 · Total: 33
+Sleep:   7s between any two requests
+================================================================================
+
+  /api/health engine_version: 'thammen-sprint2p21p4-t3-aryan-lusail'
+  freshness age_days: None
+
+
+----- REP 1 of 3 -----
+  [1/33] villa_56_565_21_bouHamour                   HTTP 503  ttlb=30.35s  asset=None                    val=None  ERR:HTTPError 503
+  [2/33] villa_53_240_12_dahil                       HTTP 200  ttlb=2.99s  asset='unknown'               val=None
+  [3/33] villa_31_918_99_ummLekhba                   HTTP 200  ttlb=22.06s  asset='standalone_villa'      val=3200000
+  [4/33] fastbase_52_903_90                          HTTP 200  ttlb=5.15s  asset='apartment_building'    val=None
+  [5/33] a11_61_875_20_ashghal                       HTTP 200  ttlb=5.05s  asset='apartment_building'    val=None
+  [6/33] compoundL_51_835_17_A6                      HTTP 200  ttlb=25.01s  asset='compound_large'        val=None
+  [7/33] compoundL_pin_66030258                      HTTP 200  ttlb=4.29s  asset='unknown'               val=None
+  [8/33] lusail_apt_69_255_75_cityAvenues_H1         HTTP 200  ttlb=5.14s  asset='apartment_building'    val=None
+  [9/33] lusail_apt_69_329_20_foxHills_H11           HTTP 200  ttlb=5.17s  asset='apartment_building'    val=None
+  [10/33] lusail_apt_69_112_36                        HTTP 200  ttlb=5.12s  asset='apartment_building'    val=None
+  [11/33] rawland_pin_74328443_khor                   HTTP 200  ttlb=20.92s  asset='raw_land'              val=1200000
+
+----- REP 2 of 3 -----
+  [12/33] villa_56_565_21_bouHamour                   HTTP 200  ttlb=22.28s  asset='standalone_villa'      val=2500000
+  [13/33] villa_53_240_12_dahil                       HTTP 200  ttlb=3.04s  asset='unknown'               val=None
+  [14/33] villa_31_918_99_ummLekhba                   HTTP 200  ttlb=21.59s  asset='standalone_villa'      val=3200000
+  [15/33] fastbase_52_903_90                          HTTP 200  ttlb=4.78s  asset='apartment_building'    val=None
+  [16/33] a11_61_875_20_ashghal                       HTTP 200  ttlb=4.86s  asset='apartment_building'    val=None
+  [17/33] compoundL_51_835_17_A6                      HTTP 200  ttlb=25.21s  asset='compound_large'        val=None
+  [18/33] compoundL_pin_66030258                      HTTP 200  ttlb=4.30s  asset='unknown'               val=None
+  [19/33] lusail_apt_69_255_75_cityAvenues_H1         HTTP 200  ttlb=4.96s  asset='apartment_building'    val=None
+  [20/33] lusail_apt_69_329_20_foxHills_H11           HTTP 200  ttlb=5.14s  asset='apartment_building'    val=None
+  [21/33] lusail_apt_69_112_36                        HTTP 200  ttlb=5.07s  asset='apartment_building'    val=None
+  [22/33] rawland_pin_74328443_khor                   HTTP 200  ttlb=20.66s  asset='raw_land'              val=1200000
+
+----- REP 3 of 3 -----
+  [23/33] villa_56_565_21_bouHamour                   HTTP 200  ttlb=22.07s  asset='standalone_villa'      val=2500000
+  [24/33] villa_53_240_12_dahil                       HTTP 200  ttlb=3.16s  asset='unknown'               val=None
+  [25/33] villa_31_918_99_ummLekhba                   HTTP 200  ttlb=21.57s  asset='standalone_villa'      val=3200000
+  [26/33] fastbase_52_903_90                          HTTP 200  ttlb=4.91s  asset='apartment_building'    val=None
+  [27/33] a11_61_875_20_ashghal                       HTTP 200  ttlb=4.94s  asset='apartment_building'    val=None
+  [28/33] compoundL_51_835_17_A6                      HTTP 200  ttlb=24.98s  asset='compound_large'        val=None
+  [29/33] compoundL_pin_66030258                      HTTP 200  ttlb=4.37s  asset='unknown'               val=None
+  [30/33] lusail_apt_69_255_75_cityAvenues_H1         HTTP 200  ttlb=5.19s  asset='apartment_building'    val=None
+  [31/33] lusail_apt_69_329_20_foxHills_H11           HTTP 200  ttlb=5.06s  asset='apartment_building'    val=None
+  [32/33] lusail_apt_69_112_36                        HTTP 200  ttlb=5.04s  asset='apartment_building'    val=None
+  [33/33] rawland_pin_74328443_khor                   HTTP 200  ttlb=20.31s  asset='raw_land'              val=1200000
+
+Total requests: 33
+
+================================================================================
+ANALYSIS
+================================================================================
+
+### 3.1 Per-address summary
+
+case_id                                    asset_type             reps min/med/max ttlb (s)       val=None  
+--------------------------------------------------------------------------------------------------------------
+villa_56_565_21_bouHamour                  standalone_villa       3    22.07/22.18/22.28          1/3         
+villa_53_240_12_dahil                      unknown                3    2.99/3.04/3.16             3/3         
+villa_31_918_99_ummLekhba                  standalone_villa       3    21.57/21.59/22.06          0/3         
+fastbase_52_903_90                         apartment_building     3    4.78/4.91/5.15             3/3         
+a11_61_875_20_ashghal                      apartment_building     3    4.86/4.94/5.05             3/3         
+compoundL_51_835_17_A6                     compound_large         3    24.98/25.01/25.21          3/3         
+compoundL_pin_66030258                     unknown                3    4.29/4.30/4.37             3/3         
+lusail_apt_69_255_75_cityAvenues_H1        apartment_building     3    4.96/5.14/5.19             3/3         
+lusail_apt_69_329_20_foxHills_H11          apartment_building     3    5.06/5.14/5.17             3/3         
+lusail_apt_69_112_36                       apartment_building     3    5.04/5.07/5.12             3/3         
+rawland_pin_74328443_khor                  raw_land               3    20.31/20.66/20.92          0/3         
+
+### 3.2 Per-asset_type latency (across cases)
+
+asset_type               n   p50      p95      >5s?   >25s? 
+------------------------------------------------------------
+standalone_villa         5   22.06    22.24    YES    no    
+unknown                  6   3.72     4.35     no     no    
+apartment_building       15  5.06     5.18     YES    no    
+compound_large           3   25.01    25.19    YES    YES   
+raw_land                 3   20.66    20.89    YES    no    
+
+### 3.3 Field-speed classification per case
+
+case_id                                    fast   slow   unkn   %fast   
+----------------------------------------------------------------------------
+villa_56_565_21_bouHamour                  10     21     1      31.2    
+villa_53_240_12_dahil                      8      15     1      33.3    
+villa_31_918_99_ummLekhba                  9      19     1      31.0    
+fastbase_52_903_90                         10     18     1      34.5    
+a11_61_875_20_ashghal                      11     18     1      36.7    
+compoundL_51_835_17_A6                     9      17     1      33.3    
+compoundL_pin_66030258                     11     17     1      37.9    
+lusail_apt_69_255_75_cityAvenues_H1        10     18     3      32.3    
+lusail_apt_69_329_20_foxHills_H11          10     18     3      32.3    
+lusail_apt_69_112_36                       10     18     1      34.5    
+rawland_pin_74328443_khor                  9      19     1      31.0    
+
+### 3.4 Brief sections per case (H4)
+
+villa_56_565_21_bouHamour                   5 sec: ['negotiation', 'flags', 'due_diligence', 'material_uncertainty', 'cap_rate_provenance']
+villa_53_240_12_dahil                       4 sec: ['negotiation', 'flags', 'due_diligence', 'material_uncertainty']
+villa_31_918_99_ummLekhba                   4 sec: ['negotiation', 'flags', 'due_diligence', 'material_uncertainty']
+fastbase_52_903_90                          1 sec: ['next_steps']
+a11_61_875_20_ashghal                       1 sec: ['next_steps']
+compoundL_51_835_17_A6                      4 sec: ['negotiation', 'flags', 'due_diligence', 'material_uncertainty']
+compoundL_pin_66030258                      1 sec: ['asset_type_reality']
+lusail_apt_69_255_75_cityAvenues_H1         1 sec: ['next_steps']
+lusail_apt_69_329_20_foxHills_H11           1 sec: ['next_steps']
+lusail_apt_69_112_36                        1 sec: ['next_steps']
+rawland_pin_74328443_khor                   5 sec: ['negotiation', 'flags', 'due_diligence', 'material_uncertainty', 'comparable_grid']
+
+================================================================================
+PREDICTIONS H1–H8 (v2 BRIEF §6 — best-effort with measured data)
+================================================================================
+H1 (p95>5s for >=3 of 7 asset_types): TRUE (4 of 5 tested >5s)
+H2 (>=30% fast fields): TRUE (avg 33.5% across 11 cases)
+H3 (>=1 asset_type <=5s): TRUE
+H4 (brief has structural seams): TRUE (5 cases >=3 sections)
+H5 (post-hybrid apt failures latency-driven): ok=0/timeout-fail=0/data-fail=9 across 9 Lusail apt reps
+
+Total wall time: 602.7s (10.0 min)
+engine_version live: 'thammen-sprint2p21p4-t3-aryan-lusail'
+
+Wrote: latency_profile_2p22p0_v2.json (33 runs, ~912 KB body data)
