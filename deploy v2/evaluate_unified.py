@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p21p3-t2-apartments-lusail'
-SPRINT_TAG = '2.21.3'              # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p21p4-t3-aryan-lusail'
+SPRINT_TAG = '2.21.4'              # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
@@ -1867,12 +1867,33 @@ def _try_hybrid_apartments_response(
     if not listings or len(listings) < HYBRID_T2_MIN_N:
         return None
 
-    # Call hybrid framework — single tier (T2), Case B will fire
+    # Sprint 2.21.4: fetch T3 developer-inventory rows alongside T2.
+    # D10 env-flag gate mirrors HYBRID_APARTMENTS_ENABLED — emergency
+    # rollback via `heroku config:set T3_INVENTORY_ENABLED=false` (no
+    # redeploy). Defensive: any T3 connector failure → t3_rows=None →
+    # hybrid runs with T2-only (Sprint 2.21.3 baseline behaviour).
+    if os.getenv('T3_INVENTORY_ENABLED', 'true').lower() != 'false':
+        try:
+            from connectors.developer_inventory_t3 import fetch_for_district
+            t3_rows = fetch_for_district(
+                district=district_ar,
+                asset_type=asset_type,
+            )
+        except Exception as e:
+            print(f"[hybrid-apt] T3 connector failure: {e}", file=sys.stderr)
+            t3_rows = None
+    else:
+        t3_rows = None
+
+    # Call hybrid framework. With t3_rows present and T2 also present,
+    # Case B fires (no T1) and T3 contributes up to 0.15 × evidence_strength.
+    # With t3_rows=None (flag off, no DB, or no matching rows) the engine
+    # response shape is byte-identical to the Sprint 2.21.3 baseline.
     try:
         from hybrid_valuation import hybrid_valuation_v1
         hybrid = hybrid_valuation_v1(
             t1_values=None, t1_n_total=0,
-            t2_values=listings, t3_values=None,
+            t2_values=listings, t3_values=t3_rows,
         )
     except Exception as e:
         print(f"[hybrid-apt] hybrid_valuation_v1 exception: {e}", file=sys.stderr)
