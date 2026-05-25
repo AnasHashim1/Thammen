@@ -1079,7 +1079,191 @@ yesterday afternoon). Neither used.
 
 -----
 
-*Last updated: 2026-05-24 morning (Sprints 2.18.1 + 2.18.1.1 closed in
-unified narrative; first documented "latency-unmasks-methodology-bug"
-case; Operational_Rules #52 + EMPIRICAL_FINDINGS E20 codified).*
+## 16. 🆕 2026-05-24 evening → 2026-05-25 evening — Hybrid Arc complete (Sprints 2.21.2 → 2.21.3 → 2.21.4)
+
+> **One narrative for three coupled Sprints.** 2.21.2 built the foundation
+> (function exists, nothing called it). 2.21.3 wired the first connector
+> (T2 PropertyFinder Lusail apartments). 2.21.4 wired the second connector
+> (T3 Aryan developer inventory) + status-aware discount map + freshness.
+> End state: Lusail apartments now produce hybrid_t2 responses with T2+T3
+> weighted contribution per Rule E3's 8 constraints.
+
+### 16.1 Sprint 2.21.2 — Hybrid Foundation (Heroku v107, CHANGELOG_v47)
+
+`hybrid_valuation.py` shipped with `hybrid_valuation_v1()` + `HYBRID_TIER_CONFIG`.
+Cases A/B/C/D routing per BRIEF §4. Rule E3 expanded from one-sentence
+prohibition to **8 numbered constraints** permitting tier-weighted listing
+entry (T2 cap 0.40, T3 cap 0.15, T1 floor 0.45, mandatory MUC when T1
+absent, T3-alone refused per Case C). Function imported nowhere; production
+behaviour identical to v101 baseline. D5 / D6 discounts (`-12.5%` /
+`-17.5%`) tagged `provisional, broker-experience-grounded`. 22 isolated
+tests / 67 sub-checks PASS; 27/27 regression PASS.
+
+### 16.2 Sprint 2.21.3 — T2 PF Lusail apartments (Heroku v110→v124 audit-driven loop)
+
+First live-path coupling of hybrid framework. **Two audit loops were
+required** post-deploy — model case for Rule #51's audit-driven Sprint
+pattern in production.
+
+**Loop 1 — D10 Lusail sub-district whitelist (v118).** v114 deploy
+failed H1 on PIN 69/329/20 because the helper's gate read
+`'لوسيل' in district_ar` and the GIS canonical ANAME for Fox Hills is
+`'غار ثعيلب'` (no substring match). Probe `probe_lusail_districts.py`
+(v117) queried Districts/MapServer/0 with Lusail bbox + 6 anchor points
+to capture authoritative ANAME values (Rule E13). Patch v118 added
+`_is_lusail_district()` helper with token set `{'لوسيل', 'غار ثعيلب'}`.
+
+**Loop 2 — list-page-only connector refactor (v121).** v118 deploy
+made hybrid actually fire on Fox Hills → connector's detail-fetch loop
+(3 list pages + ~24 detail pages × 1.5 s each = ~40 s) overran the
+Heroku 30 s router timeout → HTTP 503. **Rule #11 rollback executed**:
+`heroku config:set HYBRID_APARTMENTS_ENABLED=false` (v119). Audit probe
+`probe_list_page_pairing.py` (v120) revealed PF list pages embed a
+JSON-LD `ItemList` of 27 `RealEstateListing` entries per page — all the
+data needed (price + area + URL + status + address) in one HTTP fetch.
+Refactor (v121) replaced detail-fetch loop with list-page JSON-LD
+parsing. New wall budget ~5 s for 3 list pages. v122: flag restored.
+
+**H1 PASS at v122**: PIN 69/329/20 → `tier_breakdown` with T2 contribution
+n=79, weight=1.0, value_per_m2 = 11,571.88 (T2-only since no T3 yet).
+Sprint 2.21.3 closed. CHANGELOG_v48.
+
+**New methodology pattern**: Rule #52 inverse case documented for the
+first time — *methodology fix unmasks latency*. v118's D10 correctness
+fix unmasked the connector latency that v114's incorrectness had hidden.
+Codified in CHANGELOG_v48 §12 (not promoted to Operational_Rules — it's
+the same #52 phenomenon in reverse direction).
+
+### 16.3 Sprint 2.21.4 — T3 Aryan / City Avenues (Heroku v125, CHANGELOG_v49)
+
+The cleaner Sprint of the three. Pre-Sprint design analysis (no probes
+needed — Aryan is a private/internal source per Q1+Q2). BRIEF_2p21p4_FINAL
+signed off with 8 RATIFIED + 4 AMENDED D-decisions:
+
+- D4 amended: `unit_type` added to required-fields set
+- D7 amended: stale rows carry explicit `freshness_status='stale'` annotation (Rule E10)
+- D8 amended: `UNIQUE(developer, project, unit_type, area_m2)` — `price_qar` excluded so revisions upsert rather than double-count
+- D9 amended: fetcher returns raw values; per-row status-aware discount applied inside `hybrid_valuation_v1` (single source of truth for tier math)
+
+**The meaningful function-logic change** (Step 7 / `hybrid_valuation.py`,
++289 / -12 lines): scalar `T3_discount_midpoint` replaced with
+`T3_status_discount_map` dict (off_plan / under_construction → -17.5%;
+ready → -10%). New `_process_t3_input()` helper performs 3-shape detection:
+**dict_new** (Sprint 2.21.4+ — has `status` or `value_per_m2_raw`),
+**dict_legacy** (Sprint 2.21.2 — has `value_per_m2` only),
+**float** (BRIEF anticipated, kept for back-compat). Per-row 7-field
+breakdown emitted under T3's `sources[]` array (D12 axis 18).
+`T3_discount_midpoint` preserved as back-compat alias so the 67/67
+Sprint 2.21.2 tests pass unchanged.
+
+**Local-import-then-commit workflow** (BRIEF amended ordering): the
+populated `developer_inventory.sqlite` is committed to git BEFORE deploy
+because Heroku slug filesystem is ephemeral. Pattern mirrors
+`building_age_cache.sqlite` (Sprint 2.15.1, 62 PINs imagery cache).
+
+**Pre-deploy Anas correction (§5.8)**: BRIEF §11.2 Assumption 2 had
+inferred `status='ready'` for the 4 City Avenues rows. Anas confirmed
+empirically that the project is **under construction** with ~Nov 2027
+handover. Status updated to `under_construction` for all 4 seed rows
+before Step 16 local import. D6 routes both `off_plan` and
+`under_construction` to -17.5% (same discount), so the bounded-error
+analysis from BRIEF §11.2 (~0.9% worst-case impact) was avoided pre-deploy.
+
+**GIS verification (Step 14)**: City Avenues GPS centroid
+(25.43128706407143, 51.489247481728576) resolves to canonical district
+ANAME `'لوسيل 69'` (DIST_NO 812, single feature). The seed CSV's
+`district` value is set to this exact GIS string (the T3 connector
+performs **exact-string-match**, not substring — verified live by
+H11 in §16.6 below).
+
+**H1 anchor PIN resolved Pre-Step-16**: 69/255/75 (PIN 69051988, subtype 6,
+184 m from City Avenues centroid). Via khazna QARS_Point envelope query.
+
+### 16.4 Sprint 2.21.4 H_WALK results (`2p21p4_brief/H_WALK_2p21p4.md`)
+
+| Hypothesis | Verdict | Evidence |
+|---|:---:|---|
+| **H1** (T3 invoked at City Avenues PIN) | ✅ PASS | Step 18 canary on 69/255/75: T3 weight=0.12 (=0.15 × 4/5), 4 sources, all status=under_construction, all discount=-0.175. value_per_m2 = 11,415.02 |
+| **H11** (partial-population, district exact-match) | ✅ PASS live | 69/329/20 Fox Hills → district='غار ثعيلب', T2-only weight=1.0, value=11,466.08. Proves connector district filter is exact-string-match (not substring, not zone-proximity) |
+| **H2** (kill switch live) | ✅ PASS live | `heroku config:set T3_INVENTORY_ENABLED=false` (v126) → T3 absent, value=11,466.08. `unset` (v127) → T3 back, value=11,415.02 matches canary to the cent |
+| H3 – H9 | ✅ PASS cited | 26 isolated tests + 29-file regression + Step 16 importer log |
+| **H10** (UI rendering) | ⏸️ PENDING | Sprint 2.21.5 owns formal `tier_breakdown` UI |
+
+**Architectural seal observation**: H11 (Fox Hills + flag on, no T3
+match) and H2-OFF (Lusail + flag off) produced **byte-identical T2-only
+responses** (both 11,466.08). The kill switch is functionally equivalent
+to "engine sees no T3 data for this micro-market" — clean rollback path
+from the user's perspective.
+
+### 16.5 Three-tier production state (post-Sprint-2.21.4)
+
+| Tier | Source | Status | Lusail apartment evidence |
+|---|---|---|---|
+| **T1** | MoJ + Confirmed Sales (+ MME future) | Apartments: empty | n=0 — apartments not registered individually by MoJ; MME deferred to 2.21.1 |
+| **T2** | PropertyFinder Sprint 2.21.3 | Live since v124 | n=78 listings on `/en/buy/lusail/apartments-for-sale.html`, weight 0.88 |
+| **T3** | Developer inventory Sprint 2.21.4 | Live since v125 | n=4 Aryan/City Avenues, weight 0.12 (=0.15 cap × 4/5 evidence) |
+
+For a typical Lusail apartment_building evaluation (e.g., PIN 69/255/75
+in `'لوسيل 69'` district):
+- Case B fires (T1 absent + T2 + T3 both present)
+- Confidence = indicative (Rule E3 §4 ceiling; reliable would need T1)
+- MUC required ±20% (Rule E3 §5)
+- Final value_per_m2 = weighted average of T2 discounted median × 0.88
+  + T3 discounted median × 0.12
+
+### 16.6 Heroku release timeline (Sprints 2.21.2 → 2.21.4)
+
+| v | Date | Engine code | What |
+|---|---|---|---|
+| v107 | 2026-05-24 | sprint2p21p2-hybrid-foundation | Sprint 2.21.2 deploy |
+| v108-v109 | 2026-05-24 | (same) | Pre-Sprint 2.21.3 smoke push + cleanup |
+| v110-v117 | 2026-05-24 | sprint2p21p3-t2-apartments-lusail | Sprint 2.21.3 audit-driven probe push cycles |
+| v118 | 2026-05-24 | (same) | D10 Lusail sub-district whitelist fix |
+| v119 | 2026-05-24 | (same code) + `HYBRID_APARTMENTS_ENABLED=false` | Rule #11 rollback after 503 |
+| v120 | 2026-05-24 | (same) | List-page-pairing audit probe |
+| v121 | 2026-05-24 | (same) | List-page connector refactor (the win) |
+| v122 | 2026-05-24 | (same) + flag restored | H1 PASS at v122 |
+| v123-v124 | 2026-05-24 | (same) | H8 kill-switch verify + restore |
+| v125 | 2026-05-25 | sprint2p21p4-t3-aryan-lusail | Sprint 2.21.4 deploy |
+| v126 | 2026-05-25 | (same code) + `T3_INVENTORY_ENABLED=false` | H2 kill-switch verify |
+| v127 | 2026-05-25 | (same code) + flag unset | Final state |
+
+### 16.7 Rules / patterns crystallised across the arc
+
+| Source Sprint | Where documented | Rule / pattern |
+|---|---|---|
+| 2.21.3 | CHANGELOG_v48 §12 | Inverse-#52 case: methodology fix unmasks latency. Not promoted to a new rule — the underlying mechanism is identical to #52, just direction-symmetric. |
+| 2.21.3 | CHANGELOG_v48 §2.1-§2.3 | Scope-shrink discipline: BRIEF anticipated arady + PF; arady deferred per BRIEF §12 contingency after schema audit found JS-hydrated content. Rule #38 single-purpose Sprint enforced. |
+| 2.21.4 | CHANGELOG_v49 §5.4 | `'(unspecified)'` sentinel for NULL project in importer — closes SQLite NULL-aware UNIQUE bypass (Step 2 soft-flag fix). |
+| 2.21.4 | CHANGELOG_v49 §5.8 | Pre-deploy correction discipline: when an inferred field can be empirically confirmed before deploy, the bounded-error analysis from the BRIEF is OBSOLETE — math is exactly right at first deploy. Avoids the post-deploy "off by 0.9%" budget. |
+| 2.21.4 | CHANGELOG_v49 §6.3 | Three-shape T3 taxonomy (dict_new / dict_legacy / float / empty) — replaces BRIEF's two-shape assumption. Honesty over BRIEF fidelity. |
+
+No new Operational_Rules # or Empirical_Findings E# entries added during
+2.21.3 or 2.21.4. The arc's discipline came from re-applying existing
+rules in new combinations: #51 audit-driven loop ran TWICE in 2.21.3
+(D10 → list-page); #11 rollback fired ONCE in 2.21.3 (v119); #38
+single-purpose enforced scope-shrink in both Sprints; #43 subtree push
+mechanism unchanged.
+
+### 16.8 What's queued next
+
+- **Sprint 2.21.5** — UI tier breakdown + MUC surfacing. Both T2 + T3
+  data shipped → 2.21.5 is the natural next step. Owns rendering of
+  `sources[]` array (per-row T3 7-field shape) + H10 visual verification
+  deferred from 2.21.4.
+- **Sprint 2.21.4.1/.2/…** — Data-only expansion Sprints to add more
+  developers/projects (UDC, Qetaifan, Qatari Diar, Msheireb, Dar Al-Arkan).
+  No code change; CSV import workflow per `2p21p4_brief/README.md`.
+- **Sprint 2.21.3.2 candidate** — arady connector (deferred from 2.21.3
+  per BRIEF §12). Conditional on `__NEXT_DATA__` JSON-blob extraction
+  probe OR headless-browser infrastructure decision.
+- Older deferred items remain: 2.18.2 GIS dedup, 2.22.0 3-stage UX,
+  2.21.0.10 wall-to-wall (E18), 2.21.1 MME apartments, 2.16.16 Confirmed Sales.
+
+-----
+
+*Last updated: 2026-05-25 evening (Sprint 2.21.4 closed; the hybrid arc
+2.21.2 → 2.21.3 → 2.21.4 complete; three-tier weighted evaluation live
+for Lusail apartments; first documented architectural seal at T3 weight
+= 0.12 matching BRIEF §9 to the digit on production engine v125).*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*

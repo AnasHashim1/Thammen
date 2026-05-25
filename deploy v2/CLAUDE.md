@@ -3,7 +3,7 @@
 > **Project:** thammen.qa — Qatar real-estate AVM (RICS VPS 4)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-24 evening (after Sprint 2.21.2 Hybrid Foundation deployed Heroku v107; Pre-Sprint 2.22.0 audit refuted 3-stage premise via H5 FALSE — apartments problem is data not latency; Pre-Sprint 2.21.3 smoke discovered arady `/listings` URL pattern + PropertyFinder DOM-duplication finding; Operational #53 codified; Rule E3 expanded to 8 constraints — see Empirical_Findings.md)
+> **Last update:** 2026-05-25 evening (Sprint 2.21.4 — T3 developer-inventory shipped Heroku v125; live H_WALK PASS; engine `thammen-sprint2p21p4-t3-aryan-lusail`. Hybrid arc 2.21.2 → 2.21.3 → 2.21.4 complete: foundation → T2 PF Lusail apartments → T3 Aryan/City Avenues 4 rows + status-aware discount map + freshness multiplier. PIN 69/255/75 = City Avenues H1 anchor; PIN 69/329/20 = Fox Hills H11 partial-population anchor.)
 
 ## Quick orientation
 
@@ -16,10 +16,14 @@ Read these files in order before any technical work:
 @./docs/Session_Update_2026-05-19.md
 @./docs/Operational_Rules.md
 
-**Most recent state = Sprint 2.21.2 Hybrid Foundation deployed Heroku v107
-on 2026-05-24 evening + two Pre-Sprint diagnostics flanking it.** Session_Log
-§15 still holds the most recent NARRATIVE entry (Sprints 2.18.1 + 2.18.1.1,
-parallel BFS + compound-misroute fix). Pre-Sprint artifacts since:
+**Most recent state = Sprint 2.21.4 T3 developer-inventory deployed Heroku
+v125 on 2026-05-25 evening. Full hybrid arc complete:** Sprint 2.21.2
+(foundation, v107) → Sprint 2.21.3 (T2 PF Lusail apartments, v124) →
+Sprint 2.21.4 (T3 Aryan/City Avenues + status-aware hybrid, v125). Live
+H_WALK PASS for H1 + H11 + H2 (kill switch). H10 UI rendering deferred
+to Sprint 2.21.5. Session_Log §15 still holds the most recent NARRATIVE
+(Sprints 2.18.1 + 2.18.1.1); §16 (the hybrid arc 2.21.2 → 2.21.3 →
+2.21.4) added 2026-05-25. Pre-Sprint artifacts since:
 
 - `2p21p1_pre/CHANGELOG_pre_2p21p1.md` — MME smoke (anonymous Directus
   token, kpi29 schema discovered, rent paths verified dead). Sprint 2.21.1
@@ -48,28 +52,35 @@ tier-weighted entry via `hybrid_valuation_v1()`).
 ## Current production state (snapshot)
 
 ```
-Engine version deployed:  thammen-sprint2p21p2-hybrid-foundation  (Heroku v107 code)
-                          Heroku slug now at v109 (v107 engine + smoke files removed).
-api/health version:       3.1.0-sprint2.21.2
-Latest CHANGELOG:         CHANGELOG_v47.md  (2.21.2 Hybrid Foundation; slot drift
-                          v43 → v47 documented per Rule #53 spirit)
-Latest Sprint:            2.21.2 Hybrid Valuation Foundation
-                          - Rule E3 expanded to 8 constraints
-                          - hybrid_valuation.py module: HYBRID_TIER_CONFIG +
-                            hybrid_valuation_v1() (Cases A/B/C/D + Constraint 7/8)
-                          - D5 T2 discount midpoint −12.5%,
-                            D6 T3 discount midpoint −17.5%,
-                            both `provisional, broker-experience-grounded`
-                          - Function exists; NO engine path calls it yet — production
-                            behavior identical to 2.18.1.1 (Bou Hamour 56/565/21
-                            re-evaluated post-deploy: identical output)
-                          - Connectors land in 2.21.3 (T2) + 2.21.4 (T3)
-Tests passing:            27 standalone files, all exit 0. Latest counts where
-                          reported: 11+12+19+37+67 = 146 sub-checks measured (older
-                          files don't print numeric summary). Sprint 2.21.2 added
-                          22 functions / 67 sub-checks (H1+H2+H3+H4+H6 all TRUE);
-                          H5 (no regression) verified via 27/27 pass.
-                          Run with PYTHONIOENCODING=utf-8.
+Engine version deployed:  thammen-sprint2p21p4-t3-aryan-lusail  (Heroku v125 code,
+                          v127 config — T3_INVENTORY_ENABLED unset, default true)
+api/health version:       3.1.0-sprint2.21.4
+Latest CHANGELOG:         CHANGELOG_v49.md  (2.21.4 T3 developer-inventory;
+                          slot v49 natural next, no drift)
+Latest Sprint:            2.21.4 T3 Developer-Inventory (Aryan, Lusail)
+                          - HYBRID_TIER_CONFIG: T3_status_discount_map dict
+                            (off_plan / under_construction → −17.5%; ready → −10%)
+                            + T3_discount_default scalar + T3_stale_evidence_multiplier=0.5
+                            + T3_discount_midpoint preserved as back-compat alias
+                          - hybrid_valuation._process_t3_input — 3-shape detection
+                            (dict_new with status / dict_legacy 2.21.2 / float / empty)
+                            + per-row status discount + 0.5× stale freshness multiplier
+                            + 7-field tier_breakdown sources per Rule E10
+                          - developer_inventory.sqlite (17 cols, idempotent migration,
+                            committed pre-deploy per ephemeral-FS workflow)
+                          - 4 Aryan/City Avenues rows seeded (status=under_construction
+                            post Anas pre-deploy correction §5.8; was inferred 'ready')
+                          - T3 weight ceiling 0.12 = 0.15 cap × 4/5 evidence_strength
+                            (BRIEF §9 architectural seal verified live)
+                          - D10 flag T3_INVENTORY_ENABLED (mirrors HYBRID_APARTMENTS_ENABLED)
+                          - H_WALK PASS: H1 canary + H11 live + H2 kill-switch live;
+                            H3-H9 cited from 26/26 isolated + 29/29 regression;
+                            H10 UI deferred to Sprint 2.21.5
+Tests passing:            29 standalone files (28 pre-existing + new
+                          test_sprint_2p21p4_t3_inventory.py @ 26 functions / 26 PASS).
+                          Full regression 29/29 in 35.0s.
+                          Sprint 2.21.2 tests (67/67) preserved via T3_discount_midpoint
+                          back-compat alias. Run with PYTHONIOENCODING=utf-8.
 Critical bugs open:       0
 High bugs open:           0  (A6 latency ✅ CLOSED via 2.18.0 + 2.18.1 + 2.18.1.1;
                           A8 closed by 2.20)
@@ -80,7 +91,19 @@ Recent Sprints (chronological):
   2.18.1   Parallel BFS upfront-prefetch (−60s compound_small, v100, kills 503)
   2.18.1.1 Compound-misroute fix Patches A+C (v101)
   2.21.2   Hybrid Foundation: Rule E3 → 8 constraints + hybrid_valuation.py (v107)
-  → all live; engine version reflects the most recent (2.21.2).
+  2.21.3   T2 PF Lusail apartments hybrid path (v124 = v121 code; first live
+           hybrid evaluation; Heroku v110→v118→v121 audit-driven loop; D10
+           Lusail sub-district whitelist; list-page-only connector refactor
+           after detail-fetch latency overran 30s router)
+  2.21.4   T3 Aryan/City Avenues + status-aware discount + freshness (v125;
+           4 seed rows under_construction; T3 weight 0.12 = 0.15 × 4/5)
+  → all live; engine version reflects the most recent (2.21.4).
+
+Hybrid arc (Sprints 2.21.2/2.21.3/2.21.4): full T2+T3 weighted evaluation
+                          path live for Lusail apartments. PIN 69/255/75 = H1
+                          anchor (City Avenues, district='لوسيل 69', T3 fires).
+                          PIN 69/329/20 = H11 anchor (Fox Hills, district='غار
+                          ثعيلب', T2-only — natural partial-population test).
 
 Pre-Sprints since (no engine change, diagnostic only):
   2.21.1 pre-MME smoke v1+v2 — Heroku reaches MME (P1 TRUE), but JWT is
@@ -123,15 +146,20 @@ Mthamen integration:      ⏸️ Deferred indefinitely (Project_Instructions §2
 MME apartments (2.21.1):  ⏸️ Deferred — awaits DevTools auth capture on
                           mme.gov.qa (see 2p21p1_pre/CHANGELOG)
 
-Roadmap (priority order, post-2.21.2):
-  1. Sprint 2.21.3 — T2 connectors (arady /listings + PropertyFinder).
-                     Inputs ready in 2p21p3_pre/. Needs BRIEF from Claude.ai
-                     (lane discipline). Connector MUST deduplicate per
-                     DOM finding above.
-  2. Sprint 2.21.4 — T3 schema (developer_inventory.sqlite + Aryan manual
-                     entry). Function is null-safe for T3 absence.
-  3. Sprint 2.21.5 — UI tier breakdown + MUC surfacing for hybrid outputs.
-                     Needs 2.21.3 + 2.21.4 shipped.
+Roadmap (priority order, post-2.21.4 — both hybrid tiers SHIPPED):
+  1. Sprint 2.21.5 — UI tier breakdown + MUC surfacing for hybrid outputs.
+                     Both 2.21.3 (T2) + 2.21.4 (T3) shipped → 2.21.5 is now
+                     UNBLOCKED. Owns rendering of sources[] (per-row T3
+                     7-field shape) + H10 visual verification (deferred
+                     from 2.21.4 H_WALK §5).
+  2. Sprint 2.21.4.1/.2/… — Data-only expansion Sprints adding more
+                     developers/projects (UDC, Qetaifan, Qatari Diar,
+                     Msheireb, Dar Al-Arkan) to developer_inventory.sqlite.
+                     Pure data Sprints — no code change; CSV import
+                     workflow per 2p21p4_brief/README.md.
+  3. Sprint 2.21.3.2 candidate — arady connector (deferred from 2.21.3 per
+                     BRIEF §12 single-purpose; needs __NEXT_DATA__ probe
+                     OR headless-browser infra to handle JS-hydrated content).
   4. Sprint 2.21.0.11/.12 — Cosmetic UX (rent-input deep-link;
                      negotiation-range box hide when val=None).
   5. Sprint 2.18.2 candidate — lite/full GIS dedup (Stage-1 ≤5s for
@@ -142,16 +170,15 @@ Roadmap (priority order, post-2.21.2):
   7. Sprint 2.21.0.10 — Stage 2 wall-to-wall (E18). Needs Building
                      Footprint layer probe.
   8. Sprint 2.21.1 — MME apartments. Awaits authenticated session.
-  9. Sprint 2.16.16 — Confirmed Sales DB. REDEFINED 2026-05-24 post
-                     secretary-source-closure (the supplying company is
-                     shutting down; this is permanent, NOT delayed arrival).
-                     Pipeline is brokerage-fed ONLY. Two viable paths:
-                     (a) consolidate with Sprint 2.21.4 T3 schema
-                     (developer_inventory.sqlite extended to brokerage
-                     closings), OR (b) defer until brokerage transaction
-                     velocity warrants its own DB (6-18 months for ≥30
-                     Lusail apartment closings). NOT a blocker for 2.21.2
-                     or anything depending on it.
+  9. Sprint 2.16.16 — Confirmed Sales DB. Trigger redefined 2026-05-24
+                     post secretary-source-closure (permanent, not delayed).
+                     Brokerage-fed only. Two paths: consolidate with
+                     developer_inventory.sqlite (now exists — Sprint 2.21.4
+                     ships the schema; Sprint 2.16.16 could extend it with
+                     a transaction_type discriminator OR keep separate table),
+                     OR defer until brokerage velocity reaches ≥30 Lusail
+                     apartment closings (6-18 months). NOT a blocker for
+                     anything else.
 
 D5/D6 calibration:        provisional, broker-experience-grounded.
                           Recalibration via brokerage Confirmed Sales pipeline
