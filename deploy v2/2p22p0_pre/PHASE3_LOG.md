@@ -56,7 +56,8 @@
 | 10 | Sub-sprint 2.22.0a/3 — `tier_breakdown` block + Y3 helper `build_tier_breakdown_section` | ✅ `55d9927` — 43 isolated tests; hybrid_t2 outputs render per-tier evidence + freshness footer. |
 | 11 | Sub-sprint 2.22.0a/4 — `use_case_banner` (§6.7 8 use cases → 3 buckets, refusal-gated) | ✅ `d884e34` — 64 isolated tests; banner prepended after tier_breakdown in 4 audience briefs. |
 | 12 | Sub-sprint 2.22.0a/5 — `refusal_reason` + 6 §5.3 precedence chain triggers | ✅ `b0c62b7` — 109 isolated tests + 33/33 regression. **/6 merged into /5** (density_gated_district trigger integration absorbed by §5.3 precedence chain implementation — KICKOFF §9.1 row 6 update flagged for /12 final consistency pass). |
-| 13 | Sub-sprint 2.22.0a/7 — `verification_url` universal injection via `_attach_scope` | ✅ (next commit) — R6 architectural finding: `_attach_scope` is the universal gate called on every response (6 call sites). Both `address` + `valuation_date` are uniformly populated before `_attach_scope` runs → single-site injection (1 location in `_attach_scope`) replaces hypothetical 6 per-site injections. Symmetric with existing `service_scope` pattern. Architectural divergence from /5 deliberate: /5 is per-site because refusal context varies; /7 is universal because verification_url is orthogonal to method/tier_label/refusal_reason gating. 64 isolated tests + 34/34 regression. |
+| 13 | Sub-sprint 2.22.0a/7 — `verification_url` universal injection via `_attach_scope` | ✅ `8de048e` — R6 architectural finding: `_attach_scope` is the universal gate called on every response (6 call sites). Both `address` + `valuation_date` are uniformly populated before `_attach_scope` runs → single-site injection (1 location in `_attach_scope`) replaces hypothetical 6 per-site injections. Symmetric with existing `service_scope` pattern. Architectural divergence from /5 deliberate: /5 is per-site because refusal context varies; /7 is universal because verification_url is orthogonal to method/tier_label/refusal_reason gating. 64 isolated tests + 34/34 regression. |
+| 14 | Sub-sprint 2.22.0a/8 — calculator-style visual + adjustment_ledger_directional placeholder | ✅ (next commit) — Q1 confirmed-with-refinement (monospace + tabular-nums scoped to `.rv` numeric values only; Arabic labels stay Tajawal); Q2 (b) with Anas copy refinement (pure Arabic, no Latin inline, no internal sprint nomenclature); Q3 confirmed (helper backend touch in `output_briefs.py`, position 4 after use_case_banner); Q4 (α) with badge refinement (Arabic `قريباً` not Latin `Stage 2`). `_adjustment_ledger_directional_section` helper added; 4 audience briefs prepend at position 4 (refusal-gated identical to /4). `.calc-block` CSS modifier applied to valuation card line 892. 62 isolated tests + 35/35 regression. |
 
 ### Verification side-checks (per Anas review note 3 items)
 
@@ -92,7 +93,8 @@
 | `55d9927` /3 | NOT YET PUSHED | (same) | `tier_breakdown` block + Y3 helper `build_tier_breakdown_section` |
 | `d884e34` /4 | NOT YET PUSHED | (same) | `use_case_banner` §6.7 8→3 buckets, refusal-gated |
 | `b0c62b7` /5 | NOT YET PUSHED | (same) | `refusal_reason` + 6 §5.3 precedence chain triggers (/6 merged in) |
-| `(pending)` /7 | NOT YET PUSHED | (same) | `verification_url` universal injection via `_attach_scope` (R6) |
+| `8de048e` /7 | NOT YET PUSHED | (same) | `verification_url` universal injection via `_attach_scope` (R6) |
+| `(pending)` /8 | NOT YET PUSHED | (same) | calculator-style visual + adjustment_ledger_directional placeholder |
 
 Future code-change commits land here with `git log -1 --oneline` snapshot + Heroku release number for rapid rollback.
 

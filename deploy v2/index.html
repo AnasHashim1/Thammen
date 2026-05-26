@@ -123,6 +123,16 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .verification-footer{text-align:center;margin-top:18px;padding:10px 14px;font-size:.78rem;color:var(--muted)}
 .verification-footer a{color:var(--muted);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
 .verification-footer a:hover{color:var(--primary);text-decoration-style:solid}
+/* Sprint 2.22.0a/8 — calculator-style visual on Stage-3 final output (M1 spec from /4) */
+/* Applied via `.rc.calc-block` modifier on the valuation card. Arabic labels stay Tajawal (parent inheritance); */
+/* monospace + tabular-nums scoped to `.rv` numeric values only — gives calculator alignment without breaking RTL Arabic. */
+.calc-block{background:var(--alt);border:2px dashed var(--border);box-shadow:none;line-height:1.6}
+.calc-block .rv{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;font-feature-settings:"tnum" 1;font-variant-numeric:tabular-nums}
+.calc-block .ri{background:var(--surface)} /* invert inner card bg for contrast vs --alt outer */
+@media(max-width:480px){.calc-block{padding:18px}.calc-block .rv{font-size:1.05rem}.calc-block .rv.hl{font-size:1.35rem}}
+/* Sprint 2.22.0a/8 — adjustment_ledger_directional placeholder badge (Q4 α + Anas refinement) */
+.alg-placeholder-badge{display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px;font-weight:600}
+.alg-placeholder-note{font-size:.86rem;color:var(--muted);line-height:1.8;padding:12px 14px;background:var(--alt);border-radius:8px}
 .br-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px dashed var(--border);font-size:.92rem}
 .br-row:last-child{border-bottom:none}
 .br-row .br-l{color:var(--muted);font-weight:500}
@@ -889,7 +899,10 @@ function show(d){
     }
 
     // ── Valuation card ──
-    h+='<div class="rc"><div class="rt" style="margin-bottom:14px">التقييم</div>';
+    // Sprint 2.22.0a/8 — calc-block modifier applies calculator-style M1 visual:
+    // light-grey bg, dashed border, no box-shadow, line-height 1.6 (whole card);
+    // monospace + tabular-nums (scoped to .rv numeric values via CSS).
+    h+='<div class="rc calc-block"><div class="rt" style="margin-bottom:14px">التقييم</div>';
     // Sprint 2.22.0a/2 — tier_label TYPE badge (defensive read; empty if absent or unknown).
     // For 2.22.0a, non-refusal responses emit 'analytical_range' → 'نطاق تحليلي' display.
     // Refusal responses emit None → no badge (refusal_reason in /5 will carry the surface).
@@ -1235,7 +1248,7 @@ function show(d){
 }
 
 // Sprint D: Section renderer for brief.sections
-const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮','tier_breakdown':'📊','use_case_banner':'⚖️','refusal_reason':'🛑'};
+const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮','tier_breakdown':'📊','use_case_banner':'⚖️','refusal_reason':'🛑','adjustment_ledger_directional':'🧮'};
 
 // Sprint 2.22.0a/3 — Arabic display maps for tier_breakdown T3 sources detail
 // (UI-side mapping per Anas Q1 Option (b) — backend stays in English machine values).
@@ -1621,6 +1634,17 @@ function renderSection(sec){
         body += '<div class="ucb-group ucb-stage5"><div class="ucb-head"><span class="ucb-mark">⭐</span> يتطلّب تقييم Stage 5:</div><ul class="br-opts ucb-list">';
         _stage5.forEach(it => { body += '<li>' + it + '</li>'; });
         body += '</ul></div>';
+      }
+      break;
+    case 'adjustment_ledger_directional':
+      // Sprint 2.22.0a/8 — directional adjustment ledger PLACEHOLDER (Q4 (α) + Q2 (b) refinement).
+      // Actual content lands in Sprint 2.22.0b when interactive Q&A captures user-confirmed
+      // attributes and engine renders 3σ inference ledger. For 2.22.0a, render an Arabic
+      // "قريباً" badge + muted body text. Pure Arabic copy per Anas Q2 refinement —
+      // no Latin inline, no internal sprint nomenclature surfaced to the user.
+      body += '<div class="alg-placeholder-badge">قريباً</div>';
+      if(c.note_ar){
+        body += '<div class="alg-placeholder-note">' + c.note_ar + '</div>';
       }
       break;
     default:

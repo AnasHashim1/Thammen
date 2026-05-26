@@ -377,6 +377,76 @@ def _use_case_banner_section(evaluation, audience=None):
     }
 
 
+# ─────────────────────────────────────────────────────────────────────
+# Sprint 2.22.0a/8: adjustment_ledger_directional brief section placeholder
+# (KICKOFF §9.1 row 8 + §1.4).
+#
+# Empty/informative placeholder shipped in 2.22.0a — actual directional
+# adjustment ledger content (3σ inference, attribute-by-attribute deltas,
+# tier-source attribution) lands in 2.22.0b when the interactive Q&A
+# phase is wired up. The `placeholder: true` flag in the content payload
+# is a marker for the Sprint 2.22.0a/12 final consistency pass scan.
+#
+# Emission gating: refusal-gated identically to use_case_banner —
+# _tier_label_for(method) returning None means refusal path, in which
+# case directional adjustments are meaningless (no value to adjust).
+# When refusal_reason fires, the user sees the refusal explanation
+# without a dangling "adjustments coming soon" card.
+#
+# User-facing copy (Anas Q2 refinement 2026-05-26):
+#   - Pure Arabic, no Latin inline ("Stage 2 Q&A" → "مرحلة الأسئلة التفاعلية")
+#   - No internal sprint nomenclature ("Sprint 2.22.0b" hidden from user)
+#   - Future-tense honest ("ستظهر قريباً عند تفعيل" — not "coming next week")
+# ─────────────────────────────────────────────────────────────────────
+def _adjustment_ledger_directional_section(evaluation, audience=None):
+    """Sprint 2.22.0a/8: directional adjustment ledger placeholder section.
+
+    Returns a brief-section dict to be prepended at position 4 in the
+    audience brief sections list (after use_case_banner), OR None when:
+      - evaluation is None / empty, OR
+      - valuation.method is a refusal trigger (gated via _tier_label_for
+        returning None — mirrors use_case_banner + tier_breakdown
+        refusal suppression).
+
+    The `audience` parameter is accepted for API compatibility but
+    NOT used — the placeholder content is identical across audiences
+    (it's a "coming soon" card, not an audience-tailored insight).
+
+    Schema (content):
+      {
+        'note_ar':     '<Arabic copy>',
+        'note_en':     '<English copy>',
+        'placeholder': True,   # marker for /12 final consistency scan
+      }
+
+    Actual directional-adjustment payload arrives in Sprint 2.22.0b
+    when the interactive Q&A captures user-confirmed property attributes
+    and the engine renders the 3σ inference ledger.
+    """
+    if not evaluation:
+        return None
+    # Refusal-gating via Sprint 2.22.0a/2 helper (identical pattern to /4)
+    from evaluate_unified import _tier_label_for
+    method = (evaluation.get('valuation') or {}).get('method')
+    if _tier_label_for(method) is None:
+        return None  # refusal path — placeholder suppressed
+    return {
+        'id': 'adjustment_ledger_directional',
+        'title_ar': 'سجل التعديلات الاتجاهية',
+        'content': {
+            'note_ar': (
+                'التعديلات التفصيلية ستظهر قريباً عند تفعيل مرحلة الأسئلة '
+                'التفاعلية.'
+            ),
+            'note_en': (
+                'Detailed adjustments will appear when the interactive '
+                'Q&A phase is activated.'
+            ),
+            'placeholder': True,
+        },
+    }
+
+
 def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     """Buyer-focused: Is the price fair? What to negotiate?"""
     base = _base_brief(evaluation, uncertainty)
@@ -411,6 +481,14 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     _ub = _use_case_banner_section(evaluation, audience='buyer')
     if _ub:
         sections.append(_ub)
+
+    # Sprint 2.22.0a/8 — adjustment_ledger_directional placeholder AFTER
+    # use_case_banner (position 4 in section order). Refusal-gated identically
+    # to /4 + /3. Actual content lands in Sprint 2.22.0b when interactive
+    # Q&A captures user-confirmed attributes.
+    _al = _adjustment_ledger_directional_section(evaluation, audience='buyer')
+    if _al:
+        sections.append(_al)
 
     # Section 1: VERDICT — only meaningful when user provided a listing_price.
     # Without it, there's no benchmark to evaluate. Skip the section entirely
@@ -536,6 +614,11 @@ def _seller_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
     if _ub:
         sections.append(_ub)
 
+    # Sprint 2.22.0a/8 — adjustment_ledger_directional placeholder. See _buyer_brief.
+    _al = _adjustment_ledger_directional_section(evaluation, audience='seller')
+    if _al:
+        sections.append(_al)
+
     # Section 1: YOUR PROPERTY VALUE
     sections.append({
         'id': 'valuation',
@@ -615,6 +698,11 @@ def _investor_brief(evaluation, rent_data, adjustments, uncertainty, income_valu
     _ub = _use_case_banner_section(evaluation, audience='investor')
     if _ub:
         sections.append(_ub)
+
+    # Sprint 2.22.0a/8 — adjustment_ledger_directional placeholder. See _buyer_brief.
+    _al = _adjustment_ledger_directional_section(evaluation, audience='investor')
+    if _al:
+        sections.append(_al)
 
     # Section 1: YIELD ANALYSIS
     rental = evaluation.get('rental_analysis') or {}
@@ -723,6 +811,11 @@ def _valuer_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
     _ub = _use_case_banner_section(evaluation, audience='valuer')
     if _ub:
         sections.append(_ub)
+
+    # Sprint 2.22.0a/8 — adjustment_ledger_directional placeholder. See _buyer_brief.
+    _al = _adjustment_ledger_directional_section(evaluation, audience='valuer')
+    if _al:
+        sections.append(_al)
 
     # Section 1: METHODOLOGY APPLIED
     blended = evaluation.get('blended') or {}
