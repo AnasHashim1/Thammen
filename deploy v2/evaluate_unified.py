@@ -85,6 +85,49 @@ def _tier_label_for(method):
     return _TIER_LABEL_BY_METHOD.get(method)
 
 
+# ════════════════════════════════════════════════════════════════════
+# Sprint 2.22.0a/4: USE_CASE_BANNER constant per BRIEF v3.1 §6.7
+# (use-case segmentation table). Single-dimension mapping (use case →
+# required stage), NO asset_type / audience / tier axes. Static
+# content identical for every non-refusal response.
+#
+# 3 buckets per Anas Q2 decision 2026-05-26 (deliberate redundancy
+# between not_suitable_for and stage5_required_for — same items,
+# warning framing vs path-forward framing).
+#
+# Q1 decision: §6.7 canonical — investment_underwriting in suitable_for
+# with caveats. Line 96 paraphrasing artifact flagged for /12.
+#
+# Q3 decision: Portfolio revaluation (B2B Basel 3.1) OMITTED —
+# D-strategy-5 dedicated track outside retail UI.
+#
+# Q4 decision: bank-aware disclaimer for mortgage pre-qualification
+# embedded inline in the suitable_for entry text.
+#
+# Emission gating happens in output_briefs._use_case_banner_section()
+# via _tier_label_for() refusal check — NO per-builder injection in
+# evaluate_unified (Rule #39 architecture refinement: avoid dumb
+# constant passthrough through engine logic).
+# ════════════════════════════════════════════════════════════════════
+USE_CASE_BANNER = {
+    'suitable_for': [
+        'الفضول السوقي / استطلاع الأسعار',
+        'التسعير قبل الإعلان (للبائعين)',
+        'مرجع للعروض الشرائية',
+        'التأهيل المسبق للرهن العقاري (مع تحفظات بنكية)',
+        'تحليل الاستثمار (مع تحفظات)',
+    ],
+    'not_suitable_for': [
+        'تمويل الرهن العقاري الرسمي (collateral للتمويل)',
+        'النزاعات القضائية / الميراث / الطلاق',
+    ],
+    'stage5_required_for': [
+        'تمويل الرهن العقاري الرسمي — يحتاج تقييم موقّع من مُقيّم معتمد',
+        'النزاعات القضائية والميراث — يحتاج تقييم موقّع من مُقيّم معتمد',
+    ],
+}
+
+
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
     _V2_OK = True

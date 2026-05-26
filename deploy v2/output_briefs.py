@@ -286,18 +286,56 @@ def build_tier_breakdown_section(evaluation):
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Sprint 2.22.0a/4 placeholder — use_case_banner section.
-# Stub returning None for now (full implementation lands in sub-sprint /4
-# per KICKOFF §9.1 row 4 + §6.7 content). Defined here so audience briefs
-# can call it preemptively without conditional imports later.
+# Sprint 2.22.0a/4: use_case_banner brief section (KICKOFF §6.7 + F4).
+#
+# Renders BRIEF v3.1 §6.7 use-case segmentation table as 3 bulleted
+# lists (suitable_for / not_suitable_for / stage5_required_for). Content
+# is STATIC per Anas R2 decision 2026-05-26 — single dimension (use
+# case → required stage), NO asset_type / audience / valuation tier
+# axes. Same banner for every non-refusal response across all 4
+# audience briefs.
+#
+# Emission gating: REUSE existing `_tier_label_for(method)` refusal
+# check from evaluate_unified.py (Sprint 2.22.0a/2 helper) — when
+# method is a refusal trigger (insufficient_data / out_of_scope_v1 /
+# asset_type_reality_stop), _tier_label_for() returns None, and this
+# section returns None too. No per-builder injection needed in
+# evaluate logic per Anas architecture refinement Rule #39.
 # ─────────────────────────────────────────────────────────────────────
 def _use_case_banner_section(evaluation, audience=None):
-    """Sprint 2.22.0a/4 placeholder — returns None until /4 implements.
+    """Sprint 2.22.0a/4: use_case_banner section per BRIEF v3.1 §6.7.
 
-    When implemented, returns a brief-section dict per KICKOFF §6.7
-    use-case mapping (suitable_for, not_suitable_for, stage5_required_for).
+    Returns a brief-section dict suitable for prepending to the audience
+    brief sections list (after tier_breakdown when present), OR None when:
+      - evaluation is None / empty, OR
+      - valuation.method is a refusal trigger (gated via _tier_label_for
+        returning None — mirrors tier_label suppression on refusal paths
+        per Sprint 2.22.0a/2 F1 acceptance criterion + F4 spec).
+
+    The `audience` parameter is accepted for API compatibility but
+    NOT used — §6.7 mapping is single-dimension (no audience axis).
+
+    Schema (content):
+      {
+        'suitable_for':         [<5 use cases>],
+        'not_suitable_for':     [<2 use cases>],
+        'stage5_required_for':  [<2 use cases>],
+      }
+    9 items total across 3 buckets per Q2 (b) deliberate-redundancy
+    decision (Anas 2026-05-26).
     """
-    return None
+    if not evaluation:
+        return None
+    # Refusal-gating via Sprint 2.22.0a/2 helper (avoids duplicate logic)
+    from evaluate_unified import _tier_label_for, USE_CASE_BANNER
+    method = (evaluation.get('valuation') or {}).get('method')
+    if _tier_label_for(method) is None:
+        return None  # refusal path — banner suppressed (refusal_reason in /5)
+    return {
+        'id': 'use_case_banner',
+        'title_ar': 'حالات الاستخدام',
+        'content': USE_CASE_BANNER,
+    }
 
 
 def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
@@ -316,6 +354,14 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     _tb = build_tier_breakdown_section(evaluation)
     if _tb:
         sections.append(_tb)
+
+    # Sprint 2.22.0a/4 — use_case_banner AFTER tier_breakdown, before remaining
+    # sections (cognitive flow per Anas: "how we got the value" → "when it
+    # applies" → "verdict/details"). Suppressed on refusal paths via
+    # _tier_label_for() check inside the helper.
+    _ub = _use_case_banner_section(evaluation, audience='buyer')
+    if _ub:
+        sections.append(_ub)
 
     # Section 1: VERDICT — only meaningful when user provided a listing_price.
     # Without it, there's no benchmark to evaluate. Skip the section entirely
@@ -431,6 +477,11 @@ def _seller_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
     if _tb:
         sections.append(_tb)
 
+    # Sprint 2.22.0a/4 — use_case_banner AFTER tier_breakdown. See _buyer_brief.
+    _ub = _use_case_banner_section(evaluation, audience='seller')
+    if _ub:
+        sections.append(_ub)
+
     # Section 1: YOUR PROPERTY VALUE
     sections.append({
         'id': 'valuation',
@@ -500,6 +551,11 @@ def _investor_brief(evaluation, rent_data, adjustments, uncertainty, income_valu
     _tb = build_tier_breakdown_section(evaluation)
     if _tb:
         sections.append(_tb)
+
+    # Sprint 2.22.0a/4 — use_case_banner AFTER tier_breakdown. See _buyer_brief.
+    _ub = _use_case_banner_section(evaluation, audience='investor')
+    if _ub:
+        sections.append(_ub)
 
     # Section 1: YIELD ANALYSIS
     rental = evaluation.get('rental_analysis') or {}
@@ -598,6 +654,11 @@ def _valuer_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
     _tb = build_tier_breakdown_section(evaluation)
     if _tb:
         sections.append(_tb)
+
+    # Sprint 2.22.0a/4 — use_case_banner AFTER tier_breakdown. See _buyer_brief.
+    _ub = _use_case_banner_section(evaluation, audience='valuer')
+    if _ub:
+        sections.append(_ub)
 
     # Section 1: METHODOLOGY APPLIED
     blended = evaluation.get('blended') or {}

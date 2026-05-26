@@ -154,6 +154,19 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   .tb-row.tb-header{font-size:.66rem}
   .tier-sources-detail .tb-sub-header,.tier-sources-detail .tb-sub-row{grid-template-columns:repeat(6,1fr);font-size:.62rem}
 }
+/* Sprint 2.22.0a/4 — use_case_banner 3 stacked lists (suit/notsuit/stage5).
+   Subtle accent colors on list markers (border-right per existing .br-opts li). */
+.ucb-group{margin-top:10px}
+.ucb-group:first-child{margin-top:0}
+.ucb-head{font-weight:600;font-size:.86rem;margin-bottom:6px;color:var(--text)}
+.ucb-head .ucb-mark{display:inline-block;width:18px;text-align:center;margin-left:4px;font-weight:700}
+.ucb-suit .ucb-head .ucb-mark{color:var(--ok)}
+.ucb-notsuit .ucb-head .ucb-mark{color:var(--bad)}
+.ucb-stage5 .ucb-head .ucb-mark{color:var(--bronze)}
+.ucb-suit .ucb-list li{border-right-color:var(--ok)}
+.ucb-notsuit .ucb-list li{border-right-color:var(--bad)}
+.ucb-stage5 .ucb-list li{border-right-color:var(--bronze)}
+.ucb-list{margin-top:0}
 /* Insufficient data card */
 .insuf{background:#FFF8EE;border:1.5px dashed var(--bronze);border-radius:var(--r);padding:24px;margin-bottom:14px;text-align:center;animation:fu .5s}
 .insuf-icon{font-size:2.5rem;margin-bottom:10px;color:var(--bronze)}
@@ -1200,7 +1213,7 @@ function show(d){
 }
 
 // Sprint D: Section renderer for brief.sections
-const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮','tier_breakdown':'📊'};
+const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮','tier_breakdown':'📊','use_case_banner':'⚖️'};
 
 // Sprint 2.22.0a/3 — Arabic display maps for tier_breakdown T3 sources detail
 // (UI-side mapping per Anas Q1 Option (b) — backend stays in English machine values).
@@ -1544,6 +1557,32 @@ function renderSection(sec){
         body += '<div class="br-note" style="margin-top:10px;font-size:.78rem;color:var(--muted)">تقدير مبني على ' + c.n_used + ' إعلان كما في ' + c.valuation_date + '</div>';
       } else if(c.n_used != null){
         body += '<div class="br-note" style="margin-top:10px;font-size:.78rem;color:var(--muted)">تقدير مبني على ' + c.n_used + ' إعلان</div>';
+      }
+      break;
+    case 'use_case_banner':
+      // Sprint 2.22.0a/4 — 3 bulleted lists per BRIEF v3.1 §6.7 use-case
+      // segmentation. Static content (single-dimension mapping, no axes).
+      // Refusal-gating handled backend-side via _tier_label_for() check;
+      // when section reaches UI, content is always present + complete.
+      // Q2 (b) deliberate redundancy: not_suitable_for + stage5_required_for
+      // share items by design — warning framing vs path-forward framing.
+      const _suit   = Array.isArray(c.suitable_for)        ? c.suitable_for        : [];
+      const _notsuit= Array.isArray(c.not_suitable_for)    ? c.not_suitable_for    : [];
+      const _stage5 = Array.isArray(c.stage5_required_for) ? c.stage5_required_for : [];
+      if(_suit.length){
+        body += '<div class="ucb-group ucb-suit"><div class="ucb-head"><span class="ucb-mark">✓</span> مناسب لـ:</div><ul class="br-opts ucb-list">';
+        _suit.forEach(it => { body += '<li>' + it + '</li>'; });
+        body += '</ul></div>';
+      }
+      if(_notsuit.length){
+        body += '<div class="ucb-group ucb-notsuit"><div class="ucb-head"><span class="ucb-mark">✗</span> غير مناسب لـ:</div><ul class="br-opts ucb-list">';
+        _notsuit.forEach(it => { body += '<li>' + it + '</li>'; });
+        body += '</ul></div>';
+      }
+      if(_stage5.length){
+        body += '<div class="ucb-group ucb-stage5"><div class="ucb-head"><span class="ucb-mark">⭐</span> يتطلّب تقييم Stage 5:</div><ul class="br-opts ucb-list">';
+        _stage5.forEach(it => { body += '<li>' + it + '</li>'; });
+        body += '</ul></div>';
       }
       break;
     default:
