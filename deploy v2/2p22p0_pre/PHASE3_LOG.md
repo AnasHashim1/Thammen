@@ -45,10 +45,12 @@
 | 3 | Housekeeping commit — `docs/SOURCE_EXCLUSIONS.md` (NEW) | `791a67a` — 91 insertions, 3 permanent exclusions (bayut + mzadqatar + huzoom.lusail.com) |
 | — | Anas reviews + approves both housekeeping commits | 2026-05-26 PM |
 | — | Anas amends scope: A5 Pearl re-introduced (ship-gate per BRIEF §1.7 — not deferrable) | Step 4 expanded to 5 cases + Pearl PIN self-discovery upstream |
-| 3.5 | Phase 3 worklog initialized — this file | (pending commit) |
-| 4 | §5 audit run — Pearl PIN discovery + 5 cases A1-A5 | (pending — about to start) |
-| 5 | `PHASE3_AUDIT_pre_2p22p0a.md` report | (pending) |
-| 6 | STOP and await Anas approval for 2.22.0a implementation | — |
+| 3.5 | Phase 3 worklog initialized — this file | ✅ `9a1c0a1` |
+| 4 | §5 audit run — Pearl PIN discovery + 5 cases A1-A5 | ✅ 5/5 cases consistent with Phase 1 baseline. Pearl PIN 66200197 self-extracted via GIS (Districts ANAME=جزيرة اللؤلؤة, DIST_NO=765) + arady T2 fallback (FGRealty/PF/Steps/QatarSale unreachable). 3 critical findings surfaced. |
+| 5 | `PHASE3_AUDIT_pre_2p22p0a.md` report | ✅ `53cace0` — 9 audit artifacts bundled (PHASE3_AUDIT report + 4 scripts + 4 JSONs + smoke logs) |
+| 6 | STOP and await Anas approval for 2.22.0a implementation | ✅ Anas reviewed `cbb2730` (BRIEF v3.1 housekeeping commit) + `53cace0` (audit artifacts) → green-lit Phase 3 Step 7 |
+| 7 | KICKOFF brief drafted + reviewed + signed | ✅ `33f7e33` "Housekeeping: BRIEF_2p22p0a_KICKOFF.md (signed) — 2.22.0a contract". Draft passed 5 mandatory + 4 minor edit rounds (E1-E5 + M1-M4); 2 cosmetic items (C1+C2) deferred to sub-sprint 2.22.0a/12 final consistency pass. **Gate 1 of 3 approval gates passed.** |
+| Next | Sub-sprint 2.22.0a/1 — ENGINE_VERSION bump + Pydantic schema additions | ⏸ About to start. Single-purpose commit per Rule #38; ~30 LOC; `api.py` + `evaluate_unified.py`. NO Heroku push (Gate 2 lock). STOP after this sub-sprint, report diff + tests-green, await Anas signal before 2.22.0a/2. |
 
 ### Verification side-checks (per Anas review note 3 items)
 
@@ -56,7 +58,7 @@
 |---|---|---|
 | V1 | `Operational_Rules.md` §42 cross-reference exists | ✅ PASS — Rule #42 "Deferred-Work Documentation" at line 969. Cross-reference in SOURCE_EXCLUSIONS valid. |
 | V2 | PHASE3_LOG.md exists + Δ2 backlog entry | ❌ FAIL → this file fixes it |
-| V3 | Huzoom syndication claim verifiable on FGRealty | ⏸️ Pending — incidental check during Pearl PIN discovery (Step 4) |
+| V3 | Huzoom syndication claim verifiable on T2 substitutes (FGRealty + 3 others) | ⚠️ PARTIAL PASS — arady confirmed Huzoom syndication via token `'huzoom'` in Pearl listings page. FGRealty/PropertyFinder/Steps/QatarSale all unreachable from sandbox today (404 + DNS fail). SOURCE_EXCLUSIONS substitute list update (add arady) deferred to next docs wave per Q3 — see §G follow-up below. |
 
 -----
 
@@ -69,6 +71,8 @@
 | 2026-05-26 | Lusail Marina + tower + compound_small remain deferred to 2.22.0.1 | Single-purpose Sprint discipline (Rule #38). These zones serve §11 90-day monitoring heartbeat, not 2.22.0a/b runtime paths. Including them = scope creep on MVP. | Documented as "deferred coverage" gap in PHASE3_AUDIT report; tracked in §F below. |
 | 2026-05-26 | Δ2 corner verification via ROADFlowlnA filed as backlog (NOT 2.22.0a) | Methodology change (verify before adjust), not empirical rate claim — different track from H_huzoom_1 (which IS empirical, n=1). Filed as post-2.22.0a sprint candidate per §F. | None — pure docs filing |
 | 2026-05-26 | Initialize PHASE3_LOG.md at `2p22p0_pre/PHASE3_LOG.md` (not `deploy v2/`) | BRIEF v3.1 §10 #7 specifies this canonical path. Anas's verification check at `deploy v2\PHASE3_LOG.md` interpreted as oversight — the brief governs. | Trivial — file is single-source-of-truth for Phase 3 worklog, location stable |
+| 2026-05-26 | **Defer `asset_uniqueness` refusal trigger + 3σ outlier compute to 2.22.y** (single logical unit) | Anas's "no dead code in production" discipline applied to §1.6 BRIEF v3.1 trigger #4: dead code = smell + test burden on inactive path + §1.6 contract promises active triggers + accidental activation risk on refactor. Cleaner partition: 2.22.0a ships 5 active triggers (4 inherited + 1 NEW `density_gated_district`); `asset_uniqueness` bundled with 3σ compute, both ship in 2.22.y. | Negligible — re-enabling later is additive (insert into §5.3 precedence chain between rows 3 and 4). |
+| 2026-05-26 | **Sign BRIEF_2p22p0a_KICKOFF.md as 2.22.0a contract** (commit `33f7e33`) | Gate 1 of 3 approval gates passed. Brief survived 5 mandatory + 4 minor edit rounds via Anas review (E1-E5 covering Marina inconsistency / Heroku app name placeholder concern / R1 ambiguity / 81-test count consistency / LOC reconciliation; M1-M4 covering calculator visual concreteness / format syntax / Pearl risk LOW→MEDIUM / extent magnitude strip). 2 cosmetic items C1+C2 deferred to sub-sprint 2.22.0a/12. | Trivial — brief revisions are docs-only; reverting the contract is a follow-up docs commit. |
 
 -----
 
@@ -154,13 +158,16 @@ Acceptance criteria
 
 ## §G — Open audit items (Phase 3-level, distinct from Sprint-level)
 
-| Item | Owner | Trigger |
+| Item | Owner | Status / Trigger |
 |---|---|---|
-| Pearl PIN discovery (FGRealty → GIS Districts → QARS_Point) | Claude Code (Step 4) | This Sprint — about to start |
-| Huzoom syndication FGRealty cross-check (incidental to Pearl) | Claude Code (Step 4) | This Sprint |
-| Lusail Marina, tower, compound_small PIN discovery | TBD | Sprint 2.22.0.1 §5 audit |
+| Pearl PIN discovery (FGRealty → GIS Districts → QARS_Point) | Claude Code (Step 4) | ✅ DONE — PIN 66200197 verified; commit `53cace0` artifacts |
+| Huzoom syndication FGRealty cross-check (incidental to Pearl) | Claude Code (Step 4) | ✅ PARTIAL DONE — arady confirms; FGRealty unreachable today |
+| Lusail Marina, tower-elsewhere, compound_small PIN discovery | TBD | Sprint 2.22.0.1 §5 audit |
 | Property graph density measurement against §1.7 baselines | 2.22.y engineering | Ship-gate validation |
 | Sensitivity-weighted inference audit (150+ identity verifications) | 2.22.y engineering | Ship-gate validation |
+| **C1 — §6.4 wording fix in KICKOFF brief** | Sub-sprint 2.22.0a/12 (final consistency pass) | Replace "(Phase 3 §5 audit cases A1+A3-equivalent)" with **"(per H_walk anchors H1=69/255/75 + H11=69/329/20)"** — Anas review feedback 2026-05-26. A3 = Umm Lekhba villa not Fox Hills; canonical anchors are H1+H11 from H_walk. |
+| **C2 — §5.1 footer wording fix in KICKOFF brief** | Sub-sprint 2.22.0a/12 (final consistency pass) | Replace `"Default event_name='' so the trigger fires correctly even with empty registry"` with **"Default event_name='' handles events without an event_name attribute without breaking template substitution. When registry is empty, the trigger doesn't fire (no event to match)."** — Anas review feedback 2026-05-26. Original phrasing was ambiguous about trigger activation semantics under empty-registry. |
+| **arady inclusion in `SOURCE_EXCLUSIONS.md` substitute list** | Next docs wave (NOT 2.22.0a per Q3 decision) | V3 PARTIAL PASS surfaced that `SOURCE_EXCLUSIONS.md` substitute list (FGRealty/PF/Steps/QatarSale) was incomplete — arady actually carries Huzoom syndication today; documented for future docs commit. |
 
 -----
 
