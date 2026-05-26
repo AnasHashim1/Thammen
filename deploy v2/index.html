@@ -134,6 +134,26 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .br-sens .br-cell .br-cap{color:var(--muted);font-size:.7rem;margin-bottom:3px}
 .br-sens .br-cell .br-val{font-weight:700;color:var(--text);font-size:.85rem}
 @media(max-width:600px){.br-sens{grid-template-columns:repeat(3,1fr);font-size:.7rem}}
+/* Sprint 2.22.0a/3 — tier_breakdown table (5 visual cols + stacked raw/adjusted in col 4) */
+.tb-table{margin-top:10px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.tb-row{display:grid;grid-template-columns:0.8fr 0.7fr 0.5fr 1.2fr 0.8fr;align-items:center;gap:6px;padding:9px 10px;border-bottom:1px dashed var(--border);font-size:.82rem;text-align:center}
+.tb-row:last-child{border-bottom:none}
+.tb-row.tb-header{background:var(--alt);font-weight:600;font-size:.74rem;color:var(--muted)}
+.tb-cell{padding:0 3px}
+.tb-cell-stacked{display:flex;flex-direction:column;justify-content:center;line-height:1.25}
+.tier-sources-wrap{padding:0 10px 8px;background:var(--alt-soft,#fafafa);border-bottom:1px dashed var(--border)}
+.tier-sources-toggle{display:inline-block;margin:6px 0;padding:4px 8px;font-size:.74rem;color:var(--bronze);background:transparent;border:1px dashed var(--bronze);border-radius:4px;text-decoration:none;cursor:pointer}
+.tier-sources-toggle:hover{background:var(--bronze-g)}
+.tier-sources-detail{margin-top:6px;font-size:.74rem}
+.tier-sources-detail .tb-sub-header,.tier-sources-detail .tb-sub-row{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:6px 4px;text-align:center}
+.tier-sources-detail .tb-sub-header{background:var(--alt);font-weight:600;color:var(--muted);border-radius:4px}
+.tier-sources-detail .tb-sub-row{border-bottom:1px dashed var(--border)}
+.tier-sources-detail .tb-sub-row:last-child{border-bottom:none}
+@media(max-width:600px){
+  .tb-row{grid-template-columns:0.7fr 0.5fr 0.4fr 1.1fr 0.7fr;font-size:.72rem;padding:7px 6px}
+  .tb-row.tb-header{font-size:.66rem}
+  .tier-sources-detail .tb-sub-header,.tier-sources-detail .tb-sub-row{grid-template-columns:repeat(6,1fr);font-size:.62rem}
+}
 /* Insufficient data card */
 .insuf{background:#FFF8EE;border:1.5px dashed var(--bronze);border-radius:var(--r);padding:24px;margin-bottom:14px;text-align:center;animation:fu .5s}
 .insuf-icon{font-size:2.5rem;margin-bottom:10px;color:var(--bronze)}
@@ -1180,7 +1200,22 @@ function show(d){
 }
 
 // Sprint D: Section renderer for brief.sections
-const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮'};
+const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮','tier_breakdown':'📊'};
+
+// Sprint 2.22.0a/3 — Arabic display maps for tier_breakdown T3 sources detail
+// (UI-side mapping per Anas Q1 Option (b) — backend stays in English machine values).
+const STATUS_AR={
+  'under_construction': 'قيد الإنشاء',
+  'off_plan':           'على المخطط',
+  'ready':              'جاهز للسكن',
+  'completed':          'مكتمل',
+  'planned':            'مخطّط',
+};
+const FRESHNESS_AR={
+  'fresh':       'حديث',
+  'stale':       'قديم',
+  'unknown':     '—',
+};
 function pctFmt(n){return n==null?'—':Number(n).toFixed(2)+'%'}
 function qarFmt(n){return n==null?'—':fmt(n)+' ر.ق'}
 function renderSection(sec){
@@ -1431,6 +1466,85 @@ function renderSection(sec){
       if(c.sample_size!=null)body+=row('حجم العيّنة',c.sample_size+' إعلان');
       if(c.last_updated)body+=row('آخر تحديث',String(c.last_updated).slice(0,10));
       if(c.body_ar)body+='<div class="br-note" style="margin-top:10px">'+c.body_ar+'</div>';
+      break;
+    case 'tier_breakdown':
+      // Sprint 2.22.0a/3 — render hybrid tier_breakdown (T2 + T3 rows) with
+      // optional T3 sources expandable detail (Q1 Option b — collapsed toggle).
+      // Discount displayed as percentage (Q2 Option b: "−12.5%"). Backend
+      // emits raw decimals; UI formats. Per Anas decisions 2026-05-26.
+      const _rows = Array.isArray(c.rows) ? c.rows : [];
+      if(_rows.length === 0){
+        body += '<div class="br-note">لا توجد بيانات tier_breakdown متاحة لهذا التقييم.</div>';
+        break;
+      }
+      // Mobile fallback (ii) per Anas: stack raw/adjusted vertically in 5-col
+      // grid (visual) — implemented via CSS class .tb-cell-stacked. The
+      // 6th col (discount) stays on its own. RTL preserved.
+      body += '<div class="tb-table">';
+      // Header row
+      body += '<div class="tb-row tb-header">';
+      body += '<div class="tb-cell">المصدر</div>';
+      body += '<div class="tb-cell">الوزن</div>';
+      body += '<div class="tb-cell">n</div>';
+      body += '<div class="tb-cell tb-cell-stacked"><div>خام</div><div>مُعدَّل</div></div>';
+      body += '<div class="tb-cell">الخصم</div>';
+      body += '</div>';
+      _rows.forEach((r, idx) => {
+        const tier = r.tier || '—';
+        const weightPct = (r.weight != null) ? (Math.round(r.weight * 100)) + '%' : '—';
+        const nVal = (r.n != null) ? r.n : '—';
+        const rawV = (r.raw_value != null) ? Math.round(r.raw_value).toLocaleString('ar-QA') : '—';
+        const adjV = (r.discounted_value != null) ? Math.round(r.discounted_value).toLocaleString('ar-QA') : '—';
+        const discRaw = r.discount_applied;
+        const discStr = (discRaw == null) ? '—'
+                       : ((discRaw < 0 ? '−' : '+') + Math.abs(discRaw * 100).toFixed(1) + '%');
+        body += '<div class="tb-row">';
+        body += '<div class="tb-cell"><strong>' + tier + '</strong></div>';
+        body += '<div class="tb-cell">' + weightPct + '</div>';
+        body += '<div class="tb-cell">' + nVal + '</div>';
+        body += '<div class="tb-cell tb-cell-stacked"><div style="color:var(--muted);font-size:.78rem">' + rawV + '</div><div style="font-weight:600">' + adjV + '</div></div>';
+        body += '<div class="tb-cell">' + discStr + '</div>';
+        body += '</div>';
+        // T3 sources expandable detail (Q1 Option b)
+        const sources = Array.isArray(r.sources) ? r.sources : [];
+        if(sources.length > 0){
+          const toggleId = 'tb-sources-' + idx + '-' + Date.now();
+          body += '<div class="tier-sources-wrap">';
+          body += '<a href="#" class="tier-sources-toggle" onclick="var el=document.getElementById(\'' + toggleId + '\');el.style.display=(el.style.display===\'block\'?\'none\':\'block\');return false;">';
+          body += 'تفاصيل المصادر (' + sources.length + ')';
+          body += '</a>';
+          body += '<div id="' + toggleId + '" class="tier-sources-detail" style="display:none">';
+          // Mini-table: developer | project | status | raw | adjusted | freshness
+          body += '<div class="tb-sub-header">';
+          body += '<div>المطوّر</div><div>المشروع</div><div>الحالة</div><div>خام</div><div>مُعدَّل</div><div>الجدّة</div>';
+          body += '</div>';
+          sources.forEach(s => {
+            const dev = s.developer || '—';
+            const proj = s.project || '—';
+            const statusAr = STATUS_AR[s.status] || s.status || '—';
+            const sRaw = (s.value_per_m2_raw != null) ? Math.round(s.value_per_m2_raw).toLocaleString('ar-QA') : '—';
+            const sAdj = (s.value_per_m2_adjusted != null) ? Math.round(s.value_per_m2_adjusted).toLocaleString('ar-QA') : '—';
+            const freshAr = FRESHNESS_AR[s.freshness_status] || s.freshness_status || '—';
+            body += '<div class="tb-sub-row">';
+            body += '<div>' + dev + '</div>';
+            body += '<div>' + proj + '</div>';
+            body += '<div>' + statusAr + '</div>';
+            body += '<div>' + sRaw + '</div>';
+            body += '<div>' + sAdj + '</div>';
+            body += '<div>' + freshAr + '</div>';
+            body += '</div>';
+          });
+          body += '</div>'; // detail
+          body += '</div>'; // wrap
+        }
+      });
+      body += '</div>'; // tb-table
+      // Freshness footer per Anas spec: "تقدير مبني على N إعلان كما في YYYY-MM-DD"
+      if(c.n_used != null && c.valuation_date){
+        body += '<div class="br-note" style="margin-top:10px;font-size:.78rem;color:var(--muted)">تقدير مبني على ' + c.n_used + ' إعلان كما في ' + c.valuation_date + '</div>';
+      } else if(c.n_used != null){
+        body += '<div class="br-note" style="margin-top:10px;font-size:.78rem;color:var(--muted)">تقدير مبني على ' + c.n_used + ' إعلان</div>';
+      }
       break;
     default:
       // Fallback: generic key/value dump

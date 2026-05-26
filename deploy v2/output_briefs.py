@@ -234,6 +234,72 @@ def build_comparable_grid_section(grid, audience='buyer'):
     }
 
 
+# ─────────────────────────────────────────────────────────────────────
+# Sprint 2.22.0a/3: tier_breakdown brief section (KICKOFF §1.3 + §4.3).
+# Renders body.hybrid.tier_breakdown array (T2 + T3 tier rows) with
+# n_used + valuation_date freshness footer. Only emitted when the engine
+# response carries a `hybrid` block (currently: Lusail hybrid_t2 path
+# per Sprint 2.21.3). Non-hybrid valuations (comparison_*, income, etc.)
+# skip this section per Anas R5 decision 2026-05-26.
+#
+# Schema: pass-through of hybrid.tier_breakdown to keep backend lean —
+# UI handles all formatting (discount % conversion, STATUS_AR map,
+# FRESHNESS_AR map, toggle interaction for T3 sources).
+# ─────────────────────────────────────────────────────────────────────
+def build_tier_breakdown_section(evaluation):
+    """Sprint 2.22.0a/3: render hybrid tier_breakdown for Lusail hybrid path.
+
+    Returns a brief-section dict suitable for prepending to the audience
+    brief sections list, OR None when:
+      - evaluation has no `hybrid` block (non-hybrid valuations); or
+      - `hybrid.tier_breakdown` is missing/empty/non-list.
+
+    Schema (content):
+      {
+        'rows': [<T2 row>, <T3 row>, ...],   # passed through from hybrid
+        'n_used': int,                         # bj.hybrid.n_used
+        'valuation_date': str (YYYY-MM-DD),    # bj.valuation_date (top-level)
+      }
+
+    Each row carries hybrid's native keys: tier, weight, raw_value,
+    discounted_value, discount_applied, n, and (T3 only) sources[] with
+    per-developer detail (developer, project, status, value_per_m2_raw,
+    value_per_m2_adjusted, discount_applied, freshness_status).
+    UI in `index.html` renderSection('tier_breakdown') handles display
+    + STATUS_AR / FRESHNESS_AR mapping + toggle for T3 sources.
+    """
+    if not evaluation:
+        return None
+    hybrid = evaluation.get('hybrid') or {}
+    rows = hybrid.get('tier_breakdown')
+    if not isinstance(rows, list) or len(rows) == 0:
+        return None
+    return {
+        'id': 'tier_breakdown',
+        'title_ar': 'تفصيل المصادر',
+        'content': {
+            'rows': rows,
+            'n_used': hybrid.get('n_used'),
+            'valuation_date': evaluation.get('valuation_date'),
+        },
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Sprint 2.22.0a/4 placeholder — use_case_banner section.
+# Stub returning None for now (full implementation lands in sub-sprint /4
+# per KICKOFF §9.1 row 4 + §6.7 content). Defined here so audience briefs
+# can call it preemptively without conditional imports later.
+# ─────────────────────────────────────────────────────────────────────
+def _use_case_banner_section(evaluation, audience=None):
+    """Sprint 2.22.0a/4 placeholder — returns None until /4 implements.
+
+    When implemented, returns a brief-section dict per KICKOFF §6.7
+    use-case mapping (suitable_for, not_suitable_for, stage5_required_for).
+    """
+    return None
+
+
 def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     """Buyer-focused: Is the price fair? What to negotiate?"""
     base = _base_brief(evaluation, uncertainty)
@@ -243,6 +309,13 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     market_pos = evaluation.get('market_position') or {}
 
     sections = []
+
+    # Sprint 2.22.0a/3 — tier_breakdown FIRST when hybrid path active (Lusail).
+    # Renders below valuation card per Anas R5 decision (2026-05-26).
+    # No-op for non-hybrid valuations (helper returns None).
+    _tb = build_tier_breakdown_section(evaluation)
+    if _tb:
+        sections.append(_tb)
 
     # Section 1: VERDICT — only meaningful when user provided a listing_price.
     # Without it, there's no benchmark to evaluate. Skip the section entirely
@@ -353,6 +426,11 @@ def _seller_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
     base = _base_brief(evaluation, uncertainty)
     sections = []
 
+    # Sprint 2.22.0a/3 — tier_breakdown FIRST when hybrid (Lusail). See _buyer_brief.
+    _tb = build_tier_breakdown_section(evaluation)
+    if _tb:
+        sections.append(_tb)
+
     # Section 1: YOUR PROPERTY VALUE
     sections.append({
         'id': 'valuation',
@@ -417,6 +495,11 @@ def _investor_brief(evaluation, rent_data, adjustments, uncertainty, income_valu
     """Investor-focused: Yield, payback, sensitivity."""
     base = _base_brief(evaluation, uncertainty)
     sections = []
+
+    # Sprint 2.22.0a/3 — tier_breakdown FIRST when hybrid (Lusail). See _buyer_brief.
+    _tb = build_tier_breakdown_section(evaluation)
+    if _tb:
+        sections.append(_tb)
 
     # Section 1: YIELD ANALYSIS
     rental = evaluation.get('rental_analysis') or {}
@@ -509,6 +592,12 @@ def _valuer_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
     """Valuer-focused (RICS): Full comparables, adjustments, method weights."""
     base = _base_brief(evaluation, uncertainty)
     sections = []
+
+    # Sprint 2.22.0a/3 — tier_breakdown FIRST when hybrid (Lusail). See _buyer_brief.
+    # Single rendering path per Q1 Option (b) — UI toggle handles depth.
+    _tb = build_tier_breakdown_section(evaluation)
+    if _tb:
+        sections.append(_tb)
 
     # Section 1: METHODOLOGY APPLIED
     blended = evaluation.get('blended') or {}
