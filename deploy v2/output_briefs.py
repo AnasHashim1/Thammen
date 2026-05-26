@@ -107,6 +107,11 @@ def _base_brief(evaluation, uncertainty):
         'material_uncertainty_banner': banner,
         'disclaimer': evaluation.get('disclaimer', ''),
         'valuation_date': evaluation.get('valuation_date', datetime.now().strftime('%Y-%m-%d')),
+        # Sprint 2.22.0a/2 — tier_label top-level surface (KICKOFF §4.3 + F1).
+        # Defensive .get() — engine emits at response root via _tier_label_for();
+        # None for refusal paths (insufficient_data / out_of_scope_v1 /
+        # asset_type_reality_stop), 'analytical_range' for 8 value-producing methods.
+        'tier_label': evaluation.get('tier_label'),
     }
 
 

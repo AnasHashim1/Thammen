@@ -44,6 +44,47 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 ENGINE_VERSION = 'thammen-sprint2p22p0a-content-and-refusal-templates'
 SPRINT_TAG = '2.22.0a'              # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
+# ════════════════════════════════════════════════════════════════════
+# Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
+#   tier_label = TYPE (analytical / indicative / broker-verified / signed);
+#   accuracy_score = STRENGTH within type (independent signal).
+# All 2.22.0a value-producing methods emit 'analytical_range' per Anas R2
+# decision 2026-05-26. 'indicative_estimate' reserved for 2.22.0b Stage 1
+# lite output. Refusal methods return None — refusal_reason carries
+# surface in sub-sprint /5.
+# ════════════════════════════════════════════════════════════════════
+_TIER_LABEL_BY_METHOD = {
+    # Value-producing methods → 'analytical_range'
+    'comparison_bracket':              'analytical_range',
+    'comparison_widened':              'analytical_range',
+    'comparison_widened_indicative':   'analytical_range',
+    'comparison_thin':                 'analytical_range',
+    'comparison_preliminary':          'analytical_range',  # per R4 — n<5 borderline still emits; accuracy_score carries warning
+    'hybrid_t2':                       'analytical_range',
+    'listing_only_implied_rent':       'analytical_range',
+    'income_approach_only':            'analytical_range',
+    # Refusal methods → None (refusal_reason in /5 carries the signal)
+    'insufficient_data':               None,
+    'out_of_scope_v1':                 None,
+    'asset_type_reality_stop':         None,
+}
+
+
+def _tier_label_for(method):
+    """Map valuation method to public tier_label category (Sprint 2.22.0a/2).
+
+    Returns 'analytical_range' for the 8 known value-producing methods.
+    Returns None for refusal methods (insufficient_data, out_of_scope_v1,
+    asset_type_reality_stop) — refusal_reason will carry surface in /5.
+    Returns None defensively for unknown methods (negative test in
+    test_sprint_2p22p0a_tier_labels.py guards against silent drift —
+    new methods MUST be added to _TIER_LABEL_BY_METHOD explicitly).
+
+    Per KICKOFF §4.3 + Anas R2/R4/R6 decisions 2026-05-26.
+    """
+    return _TIER_LABEL_BY_METHOD.get(method)
+
+
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
     _V2_OK = True
@@ -1609,6 +1650,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
     return _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
+        'tier_label': _tier_label_for('insufficient_data'),  # Sprint 2.22.0a/2 — refusal → None
         'methodology_ar': (
             'تصنيف سريع مبني على بيانات GIS — لا توجد مقارنة MoJ '
             f'مباشرة لفئة "{asset_label_ar}" في قطر'
@@ -1985,6 +2027,8 @@ def _try_hybrid_apartments_response(
         ],
         'rics_compliant': True,        # hybrid framework satisfies Rule E3
     })
+    # Sprint 2.22.0a/2 — tier_label top-level emission (Y3 helper, KICKOFF §4.3 + F1)
+    base['tier_label'] = _tier_label_for(base.get('valuation', {}).get('method'))
     return base
 
 
@@ -2022,6 +2066,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
     return _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
+        'tier_label': _tier_label_for('listing_only_implied_rent'),  # Sprint 2.22.0a/2 — 'analytical_range'
         'methodology_ar': (
             f'تحليل سعر الإعلان لـ "{asset_label_ar}" — تقدير الإيجار الضمني المطلوب '
             'لجعل السعر منطقياً وفق Cap Rate نموذجي.'
@@ -2252,6 +2297,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
     return _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
+        'tier_label': _tier_label_for('income_approach_only'),  # Sprint 2.22.0a/2 — 'analytical_range'
         'methodology_ar': (
             f'تقدير سريع بطريقة الدخل (RICS Income Approach) لـ "{asset_label_ar}". '
             'لا توجد مقارنة MoJ مباشرة لهذه الفئة في قطر — الدخل هو الطريقة المعيارية.'
@@ -2366,6 +2412,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
     return _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
+        'tier_label': _tier_label_for('out_of_scope_v1'),  # Sprint 2.22.0a/2 — refusal → None
         'methodology_ar': f'الإصدار الأول من ثمّن لا يدعم فئة "{asset_label_ar}"',
         'methodology_disclaimer_ar': (
             'ثمّن في إصداره الأول مُصمَّم خصيصاً للفلل والأراضي والقصور والكومباوندات. '
@@ -2506,6 +2553,7 @@ def _build_reality_stop_response(loc, plot, audience, reality):
     return _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
+        'tier_label': _tier_label_for('asset_type_reality_stop'),  # Sprint 2.22.0a/2 — refusal → None
         'methodology_ar': 'فحص نوع الأصل (Asset Type Reality Check)',
         'address': _addr,
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
@@ -3734,6 +3782,13 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'method_label_ar': 'بيانات غير كافية للتقييم',
             'source_ar': 'لم نجد عينة كافية من معاملات المقارنة',
         }
+
+    # Sprint 2.22.0a/2 — tier_label top-level emission (Y3 helper, KICKOFF §4.3 + F1).
+    # This is the Type-A bracket wrapper consuming _choose_primary_valuation()
+    # outputs (comparison_bracket / _widened / _widened_indicative / _thin /
+    # _preliminary). primary['method'] varies; helper dispatches to 'analytical_range'
+    # for value-producing methods, None for insufficient_data fallback.
+    output['tier_label'] = _tier_label_for(output.get('valuation', {}).get('method'))
 
     # ── Frontend compatibility: keep moj_sample_size field ──
     output['moj_sample_size'] = primary['n'] if primary else 0

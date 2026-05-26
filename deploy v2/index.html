@@ -350,6 +350,18 @@ let dOpen=false,audience='buyer';
 
 const ASSET_AR={'standalone_villa':'فيلا منفردة','raw_land':'أرض فضاء','palace':'قصر','compound_small':'مجمع فلل صغير','compound_large':'مجمع فلل كبير','apartment_building':'عمارة سكنية','tower':'برج سكني','commercial':'تجاري','industrial':'صناعي','agricultural':'مزرعة','unknown':'غير محدد'};
 
+// Sprint 2.22.0a/2 — tier_label TYPE category Arabic display map
+// Backend emits English machine values via _tier_label_for() in evaluate_unified.py
+// (KICKOFF §4.3 + R5). UI reads d.tier_label defensively and maps to Arabic.
+// 'indicative_estimate' reserved for 2.22.0b Stage 1 lite output; current
+// 2.22.0a non-refusal responses emit 'analytical_range' uniformly.
+const TIER_LABEL_AR={
+  'indicative_estimate':   'تقدير إرشادي',
+  'analytical_range':      'نطاق تحليلي',
+  'broker_verified_range': 'نطاق محقّق من الوسيط',
+  'signed_valuation':      'تقييم موقّع'
+};
+
 function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(n+'Screen').classList.add('active');window.scrollTo(0,0);if(n==='form')chk()}
 
 // Sprint 2.16.10 — surface tower-specific input fields and update the rental
@@ -834,6 +846,13 @@ function show(d){
 
     // ── Valuation card ──
     h+='<div class="rc"><div class="rt" style="margin-bottom:14px">التقييم</div>';
+    // Sprint 2.22.0a/2 — tier_label TYPE badge (defensive read; empty if absent or unknown).
+    // For 2.22.0a, non-refusal responses emit 'analytical_range' → 'نطاق تحليلي' display.
+    // Refusal responses emit None → no badge (refusal_reason in /5 will carry the surface).
+    const _tierAr=TIER_LABEL_AR[d.tier_label]||'';
+    if(_tierAr){
+      h+='<div style="display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px">'+_tierAr+'</div>';
+    }
     h+='<div class="ri full" style="margin-bottom:10px"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.amount)+' ر.ق</div></div>';
     if(v.low&&v.high){
       h+='<div class="rg"><div class="ri"><div class="rl">الحد الأدنى</div><div class="rv">'+fmt(v.low)+' ر.ق</div></div>';
