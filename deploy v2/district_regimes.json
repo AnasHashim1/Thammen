@@ -1,0 +1,12 @@
+{
+  "events": [],
+  "_schema_doc": {
+    "events": "List of district-level regime events. Empty in Sprint 2.22.0a per KICKOFF §5.4 — populated by operational track in Sprint 2.22.0b.",
+    "_event_shape": {
+      "district": "<district_ar from GIS Districts/MapServer/0 ANAME, e.g., 'لوسيل 69'>",
+      "name": "<short Arabic description, prepended with ' — ' separator when injected into regime_shift template, e.g., ' — إعلان مشروع X'>",
+      "start_date": "<ISO date YYYY-MM-DD when event was announced/began>",
+      "end_date": "<ISO date YYYY-MM-DD when transition window expires; regime_shift trigger fires only between start_date and end_date>"
+    }
+  }
+}

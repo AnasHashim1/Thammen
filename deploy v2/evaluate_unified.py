@@ -128,6 +128,146 @@ USE_CASE_BANNER = {
 }
 
 
+# ════════════════════════════════════════════════════════════════════
+# Sprint 2.22.0a/5: refusal_reason emission per BRIEF v3.1 §1.6 + §5.3
+# precedence chain. 6 active triggers (5 §1.6 methodology-driven + 1
+# 2.22.0a engine-capability for out_of_scope_v1 path per Anas Q1 (d)).
+# Templates live in refusal_templates.py module.
+#
+# _compute_refusal_reason() dispatches by §5.3 precedence with defensive
+# symmetry to _tier_label_for() — unknown method → silent (None).
+# ════════════════════════════════════════════════════════════════════
+
+# Density-gated districts per BRIEF v3.1 §1.7 + Phase 3 audit A5 Pearl
+# self-discovery (Anas Q2 (α) decision 2026-05-26). Currently Pearl-only;
+# 2.22.0b §1.7 density measurement work will expand the set as more
+# zones fail the baseline floors.
+_DENSITY_GATED_DISTRICTS = frozenset({'جزيرة اللؤلؤة'})
+
+# E20 threshold (per EMPIRICAL_FINDINGS — MoJ "مجمع فلل" sampling max
+# = 15,027 m²). Patch-A (qatar_gis.full_property_lookup) promotes
+# compound_small → compound_large at this boundary. At the refusal site,
+# asset_type='compound_large' is the post-Patch-A signal; we also accept
+# explicit plot_area_m2 ≥ 15K as a stronger guarantee.
+_ASSET_SCALE_EXTREME_M2 = 15000
+
+# District regimes registry — empty skeleton in Sprint 2.22.0a per
+# KICKOFF §5.4 ("live, not inert" pattern). Lazy-loaded + module cache.
+_DISTRICT_REGIMES_CACHE: Optional[dict] = None
+
+
+def _load_district_regimes() -> dict:
+    """Sprint 2.22.0a/5: lazy-load district_regimes.json with module cache.
+
+    Mirrors _RENT_REF_CACHE pattern (line 408-418). On 2.22.0a load, the
+    file is `{"events": []}` per KICKOFF §5.4 — regime_shift trigger
+    never fires. 2.22.0b operational track populates events; reading is
+    fault-tolerant (FileNotFoundError / JSONDecodeError → empty events).
+    """
+    global _DISTRICT_REGIMES_CACHE
+    if _DISTRICT_REGIMES_CACHE is not None:
+        return _DISTRICT_REGIMES_CACHE
+    try:
+        from pathlib import Path
+        path = Path(__file__).parent / 'district_regimes.json'
+        with open(path, 'r', encoding='utf-8') as f:
+            _DISTRICT_REGIMES_CACHE = json.load(f) or {'events': []}
+    except Exception as e:
+        print(f"[district_regimes] load failed, using empty: {e}", file=sys.stderr)
+        _DISTRICT_REGIMES_CACHE = {'events': []}
+    return _DISTRICT_REGIMES_CACHE
+
+
+def _compute_refusal_reason(method, asset_type=None, district_ar=None,
+                            district_en=None, plot_area_m2=None, **extra_context):
+    """Sprint 2.22.0a/5: §5.3 precedence chain dispatcher.
+
+    Returns refusal_reason dict {trigger_id, message_ar, message_en,
+    recommendation_ar, context} per refusal_templates.get_refusal_template(),
+    OR None for non-refusal paths.
+
+    THREE None cases (defensive symmetry with _tier_label_for() in /2):
+      1. Unknown method (not in _TIER_LABEL_BY_METHOD) → None (silent)
+      2. Value-producing method (tier_label is not None) → None (silent —
+         use_case_banner + tier_label fire instead)
+      3. Refusal method with no precedence-chain match → falls through to
+         comp_density_sparse default (§5.3 row 6)
+
+    Precedence chain (§5.3, post-asset_uniqueness-deferral renumber):
+      1. density_gated_district  — district in _DENSITY_GATED_DISTRICTS
+                                    (Pearl in 2.22.0a per Q2 (α))
+      2. spatial_ambiguity       — method == 'asset_type_reality_stop'
+      3. asset_scale_extreme     — asset_type=='compound_large' AND
+                                    plot_area_m2 >= 15K m² (E20 boundary)
+      4. asset_class_out_of_scope — method == 'out_of_scope_v1' (NEW Q1 d)
+      5. regime_shift            — district matches event in registry
+                                    (always inert in 2.22.0a — empty
+                                    registry)
+      6. comp_density_sparse     — default fallback for sparse MoJ data
+
+    First-match wins. Engine emits exactly one trigger_id per refusal.
+
+    Context (Q3 (ii) standard fields): asset_type, district_ar are always
+    forwarded when provided; plot_area_m2 forwarded for compound paths;
+    extra_context forwarded as-is for trigger-specific signals.
+    """
+    # Defensive: unknown method → silent (mirrors /2 + /4 gating)
+    if method not in _TIER_LABEL_BY_METHOD:
+        return None
+    # Value-producing method → silent (refusal_reason mutually exclusive
+    # with tier_label per F5 + §5.3 spec)
+    if _TIER_LABEL_BY_METHOD[method] is not None:
+        return None
+
+    from refusal_templates import get_refusal_template
+
+    # Standard context kwargs (Q3 (ii)) — caller passes when available
+    base_ctx = {}
+    if asset_type is not None:
+        base_ctx['asset_type'] = asset_type
+    if district_ar is not None:
+        base_ctx['district_ar'] = district_ar
+    if plot_area_m2 is not None:
+        base_ctx['plot_area_m2'] = plot_area_m2
+    base_ctx.update(extra_context)
+
+    # §5.3 precedence chain:
+
+    # 1. density_gated_district overrides all (Pearl in 2.22.0a)
+    if district_ar in _DENSITY_GATED_DISTRICTS:
+        return get_refusal_template('density_gated_district', **base_ctx)
+
+    # 2. spatial_ambiguity (Sprint 2.21.0.7 reality-check path)
+    if method == 'asset_type_reality_stop':
+        return get_refusal_template('spatial_ambiguity', **base_ctx)
+
+    # 3. asset_scale_extreme (E20 Patch-A boundary)
+    if asset_type == 'compound_large' and plot_area_m2 is not None \
+            and plot_area_m2 >= _ASSET_SCALE_EXTREME_M2:
+        return get_refusal_template('asset_scale_extreme', **base_ctx)
+
+    # 4. asset_class_out_of_scope (NEW per Q1 d — out_of_scope_v1 path)
+    if method == 'out_of_scope_v1':
+        return get_refusal_template('asset_class_out_of_scope', **base_ctx)
+
+    # 5. regime_shift (registry lookup — always inert in 2.22.0a)
+    if district_ar:
+        regimes = _load_district_regimes()
+        events = regimes.get('events') or []
+        for event in events:
+            if event.get('district') == district_ar:
+                # Inject event_name with leading separator for clean formatting
+                event_name = event.get('name', '')
+                if event_name and not event_name.startswith(' '):
+                    event_name = ' — ' + event_name
+                return get_refusal_template(
+                    'regime_shift', event_name=event_name, **base_ctx
+                )
+
+    # 6. comp_density_sparse (default fallback for any refusal not matched above)
+    return get_refusal_template('comp_density_sparse', **base_ctx)
+
+
 try:
     from evaluate_property import evaluate_property, PropertyEvaluation, BuaBreakdown
     _V2_OK = True
@@ -1694,6 +1834,16 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
         'tier_label': _tier_label_for('insufficient_data'),  # Sprint 2.22.0a/2 — refusal → None
+        # Sprint 2.22.0a/5 — refusal_reason via §5.3 precedence dispatcher.
+        # At this site, asset_type may be compound_large (Patch-A promoted)
+        # → asset_scale_extreme; or Pearl district → density_gated_district;
+        # default → comp_density_sparse.
+        'refusal_reason': _compute_refusal_reason(
+            method='insufficient_data',
+            asset_type=asset_type,
+            district_ar=_ctx.get('district'),
+            plot_area_m2=getattr(plot, 'pdarea', None),
+        ),
         'methodology_ar': (
             'تصنيف سريع مبني على بيانات GIS — لا توجد مقارنة MoJ '
             f'مباشرة لفئة "{asset_label_ar}" في قطر'
@@ -2456,6 +2606,12 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
         'tier_label': _tier_label_for('out_of_scope_v1'),  # Sprint 2.22.0a/2 — refusal → None
+        # Sprint 2.22.0a/5 — asset_class_out_of_scope trigger (Q1 (d) NEW 6th).
+        'refusal_reason': _compute_refusal_reason(
+            method='out_of_scope_v1',
+            asset_type=asset_type,
+            district_ar=_ctx.get('district'),
+        ),
         'methodology_ar': f'الإصدار الأول من ثمّن لا يدعم فئة "{asset_label_ar}"',
         'methodology_disclaimer_ar': (
             'ثمّن في إصداره الأول مُصمَّم خصيصاً للفلل والأراضي والقصور والكومباوندات. '
@@ -2597,6 +2753,13 @@ def _build_reality_stop_response(loc, plot, audience, reality):
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
         'tier_label': _tier_label_for('asset_type_reality_stop'),  # Sprint 2.22.0a/2 — refusal → None
+        # Sprint 2.22.0a/5 — spatial_ambiguity trigger per §5.3 row 2.
+        'refusal_reason': _compute_refusal_reason(
+            method='asset_type_reality_stop',
+            asset_type='unknown',
+            district_ar=_district,
+            plot_area_m2=plot.pdarea if plot else None,
+        ),
         'methodology_ar': 'فحص نوع الأصل (Asset Type Reality Check)',
         'address': _addr,
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
@@ -3832,6 +3995,18 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     # _preliminary). primary['method'] varies; helper dispatches to 'analytical_range'
     # for value-producing methods, None for insufficient_data fallback.
     output['tier_label'] = _tier_label_for(output.get('valuation', {}).get('method'))
+
+    # Sprint 2.22.0a/5 — refusal_reason emission for Type-A else branch
+    # (when primary is None, method=='insufficient_data'). When primary is
+    # set (value-producing), _compute_refusal_reason returns None defensively.
+    # district + plot_area_m2 from output where available.
+    _method = output.get('valuation', {}).get('method')
+    output['refusal_reason'] = _compute_refusal_reason(
+        method=_method,
+        asset_type=output.get('asset_type'),
+        district_ar=output.get('district'),
+        plot_area_m2=output.get('plot_area_m2'),
+    )
 
     # ── Frontend compatibility: keep moj_sample_size field ──
     output['moj_sample_size'] = primary['n'] if primary else 0

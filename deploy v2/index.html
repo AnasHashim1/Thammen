@@ -154,6 +154,13 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   .tb-row.tb-header{font-size:.66rem}
   .tier-sources-detail .tb-sub-header,.tier-sources-detail .tb-sub-row{grid-template-columns:repeat(6,1fr);font-size:.62rem}
 }
+/* Sprint 2.22.0a/5 — refusal_reason prominent warning card (first section
+   when refusal path active). Distinct from MUC/accuracy badges — this is
+   the FIRST card users see explaining "why no value". */
+.rr-trigger-badge{display:inline-block;padding:3px 10px;background:var(--bad-bg);color:var(--bad);border-radius:4px;font-size:.7rem;font-family:'Courier New',monospace;margin-bottom:10px;font-weight:600;letter-spacing:.3px}
+.rr-message{font-size:.95rem;line-height:1.65;color:var(--text);margin-bottom:12px;padding:10px 14px;background:var(--warn-bg);border-right:3px solid var(--warn);border-radius:6px}
+.rr-recommendation{font-size:.88rem;line-height:1.6;color:var(--text);padding:8px 12px;background:var(--alt);border-radius:6px}
+.rr-recommendation strong{color:var(--bronze)}
 /* Sprint 2.22.0a/4 — use_case_banner 3 stacked lists (suit/notsuit/stage5).
    Subtle accent colors on list markers (border-right per existing .br-opts li). */
 .ucb-group{margin-top:10px}
@@ -1213,7 +1220,7 @@ function show(d){
 }
 
 // Sprint D: Section renderer for brief.sections
-const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮','tier_breakdown':'📊','use_case_banner':'⚖️'};
+const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮','tier_breakdown':'📊','use_case_banner':'⚖️','refusal_reason':'🛑'};
 
 // Sprint 2.22.0a/3 — Arabic display maps for tier_breakdown T3 sources detail
 // (UI-side mapping per Anas Q1 Option (b) — backend stays in English machine values).
@@ -1479,6 +1486,22 @@ function renderSection(sec){
       if(c.sample_size!=null)body+=row('حجم العيّنة',c.sample_size+' إعلان');
       if(c.last_updated)body+=row('آخر تحديث',String(c.last_updated).slice(0,10));
       if(c.body_ar)body+='<div class="br-note" style="margin-top:10px">'+c.body_ar+'</div>';
+      break;
+    case 'refusal_reason':
+      // Sprint 2.22.0a/5 — render refusal_reason dict per BRIEF v3.1 §1.6 + §5.
+      // Content fields: {trigger_id, message_ar, message_en, recommendation_ar, context}.
+      // UI surfaces message_ar prominently + recommendation_ar; trigger_id visible as
+      // small badge for transparency; context omitted from visual (JSON-only per
+      // Anas spec — context lives for telemetry/debugging).
+      if(c.trigger_id){
+        body += '<div class="rr-trigger-badge">'+c.trigger_id+'</div>';
+      }
+      if(c.message_ar){
+        body += '<div class="rr-message">'+c.message_ar+'</div>';
+      }
+      if(c.recommendation_ar){
+        body += '<div class="rr-recommendation"><strong>التوصية:</strong> '+c.recommendation_ar+'</div>';
+      }
       break;
     case 'tier_breakdown':
       // Sprint 2.22.0a/3 — render hybrid tier_breakdown (T2 + T3 rows) with

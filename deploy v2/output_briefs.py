@@ -286,6 +286,45 @@ def build_tier_breakdown_section(evaluation):
 
 
 # ─────────────────────────────────────────────────────────────────────
+# Sprint 2.22.0a/5: refusal_reason brief section (KICKOFF §1.6 + F5).
+#
+# Renders the refusal_reason dict emitted by evaluate_unified
+# _compute_refusal_reason() (§5.3 precedence chain dispatch) as a
+# user-facing brief section. Section is PREPENDED FIRST in audience
+# brief sections list — refusal_reason appearing means tier_breakdown
+# + use_case_banner are also absent (gated identically), so this is
+# the natural first card.
+#
+# Returns None when evaluation has no refusal_reason key (non-refusal
+# path) — defensive symmetry with the engine-side dispatcher.
+# ─────────────────────────────────────────────────────────────────────
+def _refusal_reason_section(evaluation):
+    """Sprint 2.22.0a/5: refusal_reason brief section.
+
+    Returns brief-section dict from evaluation['refusal_reason'], OR
+    None when:
+      - evaluation is None / empty, OR
+      - refusal_reason key absent or None (non-refusal path)
+
+    Schema content mirrors refusal_templates.get_refusal_template():
+      {trigger_id, message_ar, message_en, recommendation_ar, context}.
+    UI's renderSection('refusal_reason') renders message_ar + recommendation_ar
+    prominently; trigger_id surfaces for telemetry; context typically
+    omitted from visual rendering (JSON-only for debugging).
+    """
+    if not evaluation:
+        return None
+    rr = evaluation.get('refusal_reason')
+    if not rr or not isinstance(rr, dict):
+        return None
+    return {
+        'id': 'refusal_reason',
+        'title_ar': 'سبب عدم التقدير',
+        'content': rr,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────
 # Sprint 2.22.0a/4: use_case_banner brief section (KICKOFF §6.7 + F4).
 #
 # Renders BRIEF v3.1 §6.7 use-case segmentation table as 3 bulleted
@@ -347,6 +386,16 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     market_pos = evaluation.get('market_position') or {}
 
     sections = []
+
+    # Sprint 2.22.0a/5 — refusal_reason FIRST when refusal path active.
+    # Mutually exclusive with tier_breakdown + use_case_banner (both gate
+    # via _tier_label_for() returning None too) — so when refusal_reason
+    # is present, the other two are absent. Refusal_reason is the natural
+    # first card per cognitive flow ("why no value" first, before anything
+    # else).
+    _rr = _refusal_reason_section(evaluation)
+    if _rr:
+        sections.append(_rr)
 
     # Sprint 2.22.0a/3 — tier_breakdown FIRST when hybrid path active (Lusail).
     # Renders below valuation card per Anas R5 decision (2026-05-26).
@@ -472,6 +521,11 @@ def _seller_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
     base = _base_brief(evaluation, uncertainty)
     sections = []
 
+    # Sprint 2.22.0a/5 — refusal_reason FIRST when refusal path. See _buyer_brief.
+    _rr = _refusal_reason_section(evaluation)
+    if _rr:
+        sections.append(_rr)
+
     # Sprint 2.22.0a/3 — tier_breakdown FIRST when hybrid (Lusail). See _buyer_brief.
     _tb = build_tier_breakdown_section(evaluation)
     if _tb:
@@ -546,6 +600,11 @@ def _investor_brief(evaluation, rent_data, adjustments, uncertainty, income_valu
     """Investor-focused: Yield, payback, sensitivity."""
     base = _base_brief(evaluation, uncertainty)
     sections = []
+
+    # Sprint 2.22.0a/5 — refusal_reason FIRST when refusal path. See _buyer_brief.
+    _rr = _refusal_reason_section(evaluation)
+    if _rr:
+        sections.append(_rr)
 
     # Sprint 2.22.0a/3 — tier_breakdown FIRST when hybrid (Lusail). See _buyer_brief.
     _tb = build_tier_breakdown_section(evaluation)
@@ -648,6 +707,11 @@ def _valuer_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
     """Valuer-focused (RICS): Full comparables, adjustments, method weights."""
     base = _base_brief(evaluation, uncertainty)
     sections = []
+
+    # Sprint 2.22.0a/5 — refusal_reason FIRST when refusal path. See _buyer_brief.
+    _rr = _refusal_reason_section(evaluation)
+    if _rr:
+        sections.append(_rr)
 
     # Sprint 2.22.0a/3 — tier_breakdown FIRST when hybrid (Lusail). See _buyer_brief.
     # Single rendering path per Q1 Option (b) — UI toggle handles depth.
