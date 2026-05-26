@@ -1727,6 +1727,18 @@ def _attach_scope(response: dict) -> dict:
     The frontend uses this to show users WHAT level of valuation they're
     getting (supported = full Sales Comparison; limited = requires user
     input; unsupported = explicitly declined).
+
+    Sprint 2.22.0a/7 — also attach universal `verification_url` here
+    (R6 architectural finding: this function is the single universal gate
+    called on every response — 5 early-exit sites + main `_build_unified_output`
+    via line 4446 = 6 call sites). Both `address` + `valuation_date` are
+    uniformly populated at response top-level before `_attach_scope`
+    runs, so universal injection here is symmetric with the existing
+    `service_scope` pattern. Architectural divergence from /5 is
+    deliberate: /5's `refusal_reason` is per-site because each refusal
+    site carries different `method`/`asset_type`/`plot_area_m2` context;
+    `verification_url` only needs the two top-level fields and is
+    therefore orthogonal to method/tier_label/refusal_reason gating.
     """
     try:
         asset_type = response.get('asset_type') or 'unknown'
@@ -1735,6 +1747,19 @@ def _attach_scope(response: dict) -> dict:
     except Exception:
         # Never break the response if scope module errors.
         pass
+    # Sprint 2.22.0a/7 — universal verification_url injection.
+    # Returns None when address or valuation_date is falsy (Q4 (a)),
+    # mirroring the tier_label=None / refusal_reason=None opt-out pattern.
+    # The /verify endpoint returns 404 in 2.22.0a — UI deferred to 2.22.0.1.
+    try:
+        from verification_url import build_verification_url
+        response['verification_url'] = build_verification_url(
+            response.get('address'),
+            response.get('valuation_date'),
+        )
+    except Exception:
+        # Defensive: never break a response on the audit-trail URL.
+        response['verification_url'] = None
     return response
 
 

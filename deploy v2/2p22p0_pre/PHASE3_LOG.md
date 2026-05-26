@@ -51,6 +51,12 @@
 | 6 | STOP and await Anas approval for 2.22.0a implementation | ✅ Anas reviewed `cbb2730` (BRIEF v3.1 housekeeping commit) + `53cace0` (audit artifacts) → green-lit Phase 3 Step 7 |
 | 7 | KICKOFF brief drafted + reviewed + signed | ✅ `33f7e33` "Housekeeping: BRIEF_2p22p0a_KICKOFF.md (signed) — 2.22.0a contract". Draft passed 5 mandatory + 4 minor edit rounds (E1-E5 + M1-M4); 2 cosmetic items (C1+C2) deferred to sub-sprint 2.22.0a/12 final consistency pass. **Gate 1 of 3 approval gates passed.** |
 | Next | Sub-sprint 2.22.0a/1 — ENGINE_VERSION bump + Pydantic schema additions | ⏸ About to start. Single-purpose commit per Rule #38; ~30 LOC; `api.py` + `evaluate_unified.py`. NO Heroku push (Gate 2 lock). STOP after this sub-sprint, report diff + tests-green, await Anas signal before 2.22.0a/2. |
+| 8 | Sub-sprint 2.22.0a/1 — ENGINE_VERSION + SPRINT_TAG bumped | ✅ `ce972be` — single-purpose, 30 LOC. `thammen-sprint2p22p0a-content-and-refusal-templates`. Tests green. |
+| 9 | Sub-sprint 2.22.0a/2 — `tier_label` field via centralized `_tier_label_for` dispatch (Y3 helper pattern) | ✅ `8c16f82` — 32 isolated tests PASS. 8 value-producing methods → `'analytical_range'`; 3 refusal methods → `None` (silent unknown). |
+| 10 | Sub-sprint 2.22.0a/3 — `tier_breakdown` block + Y3 helper `build_tier_breakdown_section` | ✅ `55d9927` — 43 isolated tests; hybrid_t2 outputs render per-tier evidence + freshness footer. |
+| 11 | Sub-sprint 2.22.0a/4 — `use_case_banner` (§6.7 8 use cases → 3 buckets, refusal-gated) | ✅ `d884e34` — 64 isolated tests; banner prepended after tier_breakdown in 4 audience briefs. |
+| 12 | Sub-sprint 2.22.0a/5 — `refusal_reason` + 6 §5.3 precedence chain triggers | ✅ `b0c62b7` — 109 isolated tests + 33/33 regression. **/6 merged into /5** (density_gated_district trigger integration absorbed by §5.3 precedence chain implementation — KICKOFF §9.1 row 6 update flagged for /12 final consistency pass). |
+| 13 | Sub-sprint 2.22.0a/7 — `verification_url` universal injection via `_attach_scope` | ✅ (next commit) — R6 architectural finding: `_attach_scope` is the universal gate called on every response (6 call sites). Both `address` + `valuation_date` are uniformly populated before `_attach_scope` runs → single-site injection (1 location in `_attach_scope`) replaces hypothetical 6 per-site injections. Symmetric with existing `service_scope` pattern. Architectural divergence from /5 deliberate: /5 is per-site because refusal context varies; /7 is universal because verification_url is orthogonal to method/tier_label/refusal_reason gating. 64 isolated tests + 34/34 regression. |
 
 ### Verification side-checks (per Anas review note 3 items)
 
@@ -81,7 +87,12 @@
 | Marker | Heroku version | Engine | Description |
 |---|---|---|---|
 | **PHASE3_ENTRY** | v127 → v128 | `thammen-sprint2p21p4-t3-aryan-lusail` | Phase 3 entry baseline; docs-only push only |
-| (none yet for code changes) | — | — | No 2.22.0 code commits yet |
+| `ce972be` /1 | NOT YET PUSHED (Gate 2 lock) | `thammen-sprint2p22p0a-content-and-refusal-templates` | ENGINE_VERSION + SPRINT_TAG bumped; first 2.22.0a code commit |
+| `8c16f82` /2 | NOT YET PUSHED | (same) | `tier_label` field via Y3 helper `_tier_label_for` |
+| `55d9927` /3 | NOT YET PUSHED | (same) | `tier_breakdown` block + Y3 helper `build_tier_breakdown_section` |
+| `d884e34` /4 | NOT YET PUSHED | (same) | `use_case_banner` §6.7 8→3 buckets, refusal-gated |
+| `b0c62b7` /5 | NOT YET PUSHED | (same) | `refusal_reason` + 6 §5.3 precedence chain triggers (/6 merged in) |
+| `(pending)` /7 | NOT YET PUSHED | (same) | `verification_url` universal injection via `_attach_scope` (R6) |
 
 Future code-change commits land here with `git log -1 --oneline` snapshot + Heroku release number for rapid rollback.
 

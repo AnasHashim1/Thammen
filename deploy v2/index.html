@@ -119,6 +119,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .br-sec h3{font-size:1rem;font-weight:800;color:var(--primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--bronze-g);display:flex;align-items:center;gap:8px}
 .br-sec .br-icon{display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;background:var(--bronze-g);border-radius:50%;font-size:.95rem}
 .br-note{font-size:.86rem;color:var(--muted);line-height:1.7;margin-bottom:12px;padding:10px 14px;background:var(--alt);border-radius:8px}
+/* Sprint 2.22.0a/7 — verification_url footer (subtle, non-critical; URL returns 404 in 2.22.0a, UI deferred to 2.22.0.1) */
+.verification-footer{text-align:center;margin-top:18px;padding:10px 14px;font-size:.78rem;color:var(--muted)}
+.verification-footer a{color:var(--muted);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+.verification-footer a:hover{color:var(--primary);text-decoration-style:solid}
 .br-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px dashed var(--border);font-size:.92rem}
 .br-row:last-child{border-bottom:none}
 .br-row .br-l{color:var(--muted);font-weight:500}
@@ -1214,6 +1218,17 @@ function show(d){
   // ── Disclaimer ──
   if(d.disclaimer){
     h+='<div class="rc" style="border-color:var(--warn-bg)"><div class="rn" style="font-size:.8rem">'+d.disclaimer+'</div></div>';
+  }
+
+  // ── Sprint 2.22.0a/7: verification_url footer ──
+  // Universal audit-trail link, present on every response (value-producing
+  // AND refusal — orthogonal to tier_label/refusal_reason gating per §5.2).
+  // Hidden when verification_url is null (Q4 (a) — falsy address/date).
+  // The /verify endpoint returns 404 in 2.22.0a; UI deferred to 2.22.0.1.
+  if(d.verification_url){
+    h+='<div class="verification-footer">';
+    h+='<a href="'+d.verification_url+'" target="_blank" rel="noopener">تحقّق من التقدير ←</a>';
+    h+='</div>';
   }
 
   o.innerHTML=h;
