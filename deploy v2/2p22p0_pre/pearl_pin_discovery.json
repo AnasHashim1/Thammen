@@ -1,0 +1,3492 @@
+{
+  "started_utc": "2026-05-26T07:52:16Z",
+  "fgrealty": null,
+  "district": {
+    "aname": "جزيرة اللؤلؤة",
+    "ename": "The Pearl Island",
+    "dist_no": 765,
+    "attributes": {
+      "OBJECTID": 130549,
+      "DIST_KEY": 765,
+      "DIST_NO": 765,
+      "EMP_NUM": 8837,
+      "STARTDATE": 1589296039000,
+      "ENDDATE": null,
+      "GFCODE": "PDGVDIST",
+      "CODE": "PDGVDIST",
+      "ANAME": "جزيرة اللؤلؤة",
+      "ENAME": "The Pearl Island",
+      "SOURCE": 0,
+      "RELIABLE": 0,
+      "KEY_NO": 66.0,
+      "GLOBALID": "{817E28EE-5594-4B2E-B77E-04F30BD8E2E9}",
+      "SHAPE.AREA": 13312922.3495663,
+      "SHAPE.LEN": 15453.255539241
+    },
+    "geometry": {
+      "rings": [
+        [
+          [
+            51.559180316352396,
+            25.379890256642334
+          ],
+          [
+            51.58001459354865,
+            25.373236819089495
+          ],
+          [
+            51.582797155703695,
+            25.375665534779547
+          ],
+          [
+            51.583364819340304,
+            25.375333483789014
+          ],
+          [
+            51.58406642029267,
+            25.374923083320446
+          ],
+          [
+            51.58542760288229,
+            25.37294511535617
+          ],
+          [
+            51.58601062240118,
+            25.368610662109123
+          ],
+          [
+            51.58592320506055,
+            25.368010944259307
+          ],
+          [
+            51.58324449433682,
+            25.363193949683392
+          ],
+          [
+            51.57947206202861,
+            25.355095408848
+          ],
+          [
+            51.5792209284618,
+            25.354812364877027
+          ],
+          [
+            51.567675733553926,
+            25.352662674313297
+          ],
+          [
+            51.53666013285948,
+            25.361468926559166
+          ],
+          [
+            51.53259767088387,
+            25.36790191834665
+          ],
+          [
+            51.53087215028132,
+            25.37063407863987
+          ],
+          [
+            51.53057663150864,
+            25.371627689083443
+          ],
+          [
+            51.530590075742005,
+            25.371770228243435
+          ],
+          [
+            51.53031229297809,
+            25.37230544824665
+          ],
+          [
+            51.52997267949191,
+            25.3724345116573
+          ],
+          [
+            51.529187681211496,
+            25.37264935677287
+          ],
+          [
+            51.52920992579398,
+            25.372718096187484
+          ],
+          [
+            51.52928158746889,
+            25.372939577824543
+          ],
+          [
+            51.52928912957359,
+            25.372963017870546
+          ],
+          [
+            51.52931247574178,
+            25.373035064267963
+          ],
+          [
+            51.529312614956964,
+            25.3730354936631
+          ],
+          [
+            51.52938108799648,
+            25.373247109955987
+          ],
+          [
+            51.53054968658079,
+            25.372902587322784
+          ],
+          [
+            51.53059888258686,
+            25.37303096992695
+          ],
+          [
+            51.53059894359278,
+            25.3730311232579
+          ],
+          [
+            51.53064904888824,
+            25.373157972911205
+          ],
+          [
+            51.53050562194018,
+            25.375315264971942
+          ],
+          [
+            51.53132117811318,
+            25.37646664864092
+          ],
+          [
+            51.53137356677754,
+            25.376456909505368
+          ],
+          [
+            51.53156682516021,
+            25.376435473047476
+          ],
+          [
+            51.531761362170926,
+            25.376428197121545
+          ],
+          [
+            51.531955906087994,
+            25.37643511152094
+          ],
+          [
+            51.53214922472527,
+            25.37645616471724
+          ],
+          [
+            51.53290556668547,
+            25.376327067552968
+          ],
+          [
+            51.53437659829321,
+            25.37851191609303
+          ],
+          [
+            51.53999071424364,
+            25.383207028063936
+          ],
+          [
+            51.54298952962827,
+            25.384522867307314
+          ],
+          [
+            51.551653287857086,
+            25.384774813371234
+          ],
+          [
+            51.560453593378256,
+            25.383215357413697
+          ],
+          [
+            51.560123780721064,
+            25.38235408819659
+          ],
+          [
+            51.559180316352396,
+            25.379890256642334
+          ]
+        ]
+      ]
+    }
+  },
+  "qars": {
+    "n_total": 200,
+    "n_subtype_11_tower": 24,
+    "n_subtype_6_flats": 104,
+    "tower_features": [
+      {
+        "attributes": {
+          "OBJECTID": 9131245,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200197,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 6,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": null,
+          "QARS": "6601400006",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{465F5156-E69B-4595-9273-5C9A76C5F462}"
+        },
+        "geometry": {
+          "x": 51.55356821716886,
+          "y": 25.368849196421824
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9132475,
+          "ZONE_NO": 66,
+          "STREET_NO": 100,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190025,
+          "PLOT_NO_OLD": 0,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 121,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1521606253000,
+          "QARS": "6601000121",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{B3EE90BD-E19B-40FA-A7F2-209E022496C0}"
+        },
+        "geometry": {
+          "x": 51.533145104732945,
+          "y": 25.372570516992173
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9132476,
+          "ZONE_NO": 66,
+          "STREET_NO": 122,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200112,
+          "PLOT_NO_OLD": 0,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 25,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1521606979000,
+          "QARS": "6601220025",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{363137AB-F143-48EF-A545-5EC1D55256A3}"
+        },
+        "geometry": {
+          "x": 51.5478735649035,
+          "y": 25.366191389218017
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9132477,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200196,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 5,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1521524865000,
+          "QARS": "6601400005",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{28698864-BD35-4F3A-A4B1-F904AEF6B2F5}"
+        },
+        "geometry": {
+          "x": 51.55319132091554,
+          "y": 25.368026913635237
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9132481,
+          "ZONE_NO": 66,
+          "STREET_NO": 118,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200099,
+          "PLOT_NO_OLD": 0,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 18,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1521965468000,
+          "QARS": "6601180018",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{F3B2E72F-0232-4A6A-998F-4D4A7835FD06}"
+        },
+        "geometry": {
+          "x": 51.548705428003146,
+          "y": 25.371353744281645
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9132484,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": 1209679,
+          "WATER_NO": "149469",
+          "QTEL_ID": null,
+          "PIN": 66200211,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 20,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1521524865000,
+          "QARS": "6601400020",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{DD403BEE-2D0E-43D2-A6AF-05EB35E4B4F2}"
+        },
+        "geometry": {
+          "x": 51.561409431329075,
+          "y": 25.366747905324928
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9132487,
+          "ZONE_NO": 66,
+          "STREET_NO": 123,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200116,
+          "PLOT_NO_OLD": 0,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 28,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1521606978000,
+          "QARS": "6601230028",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{D93D15CB-9192-4914-B976-C88CD86FAE19}"
+        },
+        "geometry": {
+          "x": 51.54648598229222,
+          "y": 25.365147314378692
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9132759,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200212,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 21,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1522022400000,
+          "QARS": "6601400021",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{51644339-A77D-4A88-9D54-69FA588B5F35}"
+        },
+        "geometry": {
+          "x": 51.56133077321832,
+          "y": 25.366120966128243
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9133263,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200194,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 3,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1521524865000,
+          "QARS": "6601400003",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{EF480153-D215-477D-8B0E-79482AC5771F}"
+        },
+        "geometry": {
+          "x": 51.55293442193019,
+          "y": 25.36661972452018
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9133369,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200195,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 4,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1521524865000,
+          "QARS": "6601400004",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{D357BA09-18EF-4601-9537-0D0B15991862}"
+        },
+        "geometry": {
+          "x": 51.552935543277165,
+          "y": 25.367359521447256
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9133373,
+          "ZONE_NO": 66,
+          "STREET_NO": 100,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200861,
+          "PLOT_NO_OLD": 0,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 122,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1521606253000,
+          "QARS": "6601000122",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{2FC15517-5F8E-46CB-953D-382F97D12588}"
+        },
+        "geometry": {
+          "x": 51.53304174146373,
+          "y": 25.371450304655678
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9138194,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200198,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 7,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1500768002000,
+          "QARS": "6601400007",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{BD8E633E-6169-4925-88A5-C3AA52A15834}"
+        },
+        "geometry": {
+          "x": 51.55398176735533,
+          "y": 25.369410045525633
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9153693,
+          "ZONE_NO": 66,
+          "STREET_NO": 237,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200332,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 27,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1618204155000,
+          "QARS": "6602370027",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1618272000000,
+          "GLOBALID": "{1FE88D28-FAD8-4A48-9759-09CF77FF894D}"
+        },
+        "geometry": {
+          "x": 51.55877534249791,
+          "y": 25.363043409561744
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9153696,
+          "ZONE_NO": 66,
+          "STREET_NO": 237,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200332,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 28,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1618204155000,
+          "QARS": "6602370028",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1618272000000,
+          "GLOBALID": "{79657BAB-F49C-4D18-AFC9-77AD13FC0166}"
+        },
+        "geometry": {
+          "x": 51.557811165006214,
+          "y": 25.36276635045596
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9162323,
+          "ZONE_NO": 66,
+          "STREET_NO": 227,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190342,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 6,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1610347187000,
+          "QARS": "6602270006",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1611014400000,
+          "GLOBALID": "{D2BB9963-2E28-4DE3-B4EE-933659388B0E}"
+        },
+        "geometry": {
+          "x": 51.53727397882603,
+          "y": 25.373532931895245
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9162325,
+          "ZONE_NO": 66,
+          "STREET_NO": 231,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190343,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 168,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1610348944000,
+          "QARS": "6602310168",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1611014400000,
+          "GLOBALID": "{60840C79-8CD1-4F76-85FE-1F193B311075}"
+        },
+        "geometry": {
+          "x": 51.534237150440816,
+          "y": 25.373038956578725
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9162327,
+          "ZONE_NO": 66,
+          "STREET_NO": 226,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190342,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 13,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1610342682000,
+          "QARS": "6602260013",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1611014400000,
+          "GLOBALID": "{A3721A21-5EE6-43B7-BF31-BC421DB46D34}"
+        },
+        "geometry": {
+          "x": 51.53917305673397,
+          "y": 25.374732690879913
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9162328,
+          "ZONE_NO": 66,
+          "STREET_NO": 227,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190343,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 5,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1610347203000,
+          "QARS": "6602270005",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1611014400000,
+          "GLOBALID": "{8BE172AD-DDDE-4A93-B68D-B565B1E1B783}"
+        },
+        "geometry": {
+          "x": 51.53696674507782,
+          "y": 25.373383717742744
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9165211,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200402,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 109,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1668211200000,
+          "QARS": "6601400109",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1668211200000,
+          "GLOBALID": "{6A835316-211A-4618-BEA9-6AB3FC45E705}"
+        },
+        "geometry": {
+          "x": 51.561838685915426,
+          "y": 25.36781574547827
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9165991,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200408,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 105,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1668211201000,
+          "QARS": "6601400105",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1668211200000,
+          "GLOBALID": "{00D110DC-BE56-4A25-81D9-C0A7DF05C205}"
+        },
+        "geometry": {
+          "x": 51.56143395278136,
+          "y": 25.364743004605455
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9165992,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200409,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 104,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1668211200000,
+          "QARS": "6601400104",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1668211200000,
+          "GLOBALID": "{70FE4787-A422-4D96-9B45-4A3503CFF391}"
+        },
+        "geometry": {
+          "x": 51.56113226456375,
+          "y": 25.36430267872391
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9165993,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200407,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 106,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1668211201000,
+          "QARS": "6601400106",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1668211201000,
+          "GLOBALID": "{4732C76A-842D-4845-9F4E-D39F11A801B6}"
+        },
+        "geometry": {
+          "x": 51.56166330930863,
+          "y": 25.365144974933663
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9165994,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200410,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 103,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1668211200000,
+          "QARS": "6601400103",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1668211200000,
+          "GLOBALID": "{DE7ACBB6-7088-4ACE-B322-293C758CACBF}"
+        },
+        "geometry": {
+          "x": 51.560881429863606,
+          "y": 25.363994168181996
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9166043,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": 1157322,
+          "WATER_NO": "1122083",
+          "QTEL_ID": null,
+          "PIN": 66200193,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 2,
+          "BUILDING_NO_SUBTYPE": 11,
+          "SURVEYED_DATE": 1645339304000,
+          "QARS": "6601400002",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1646611200000,
+          "GLOBALID": "{606B7DA3-88B9-4DB7-A710-33A8219EBBF6}"
+        },
+        "geometry": {
+          "x": 51.55299447973508,
+          "y": 25.36586760240965
+        }
+      }
+    ],
+    "flat_features": [
+      {
+        "attributes": {
+          "OBJECTID": 9134279,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200213,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 22,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1381276800000,
+          "QARS": "6601400022",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1599350400000,
+          "GLOBALID": "{B5B14193-5DAF-457D-A967-7449FD916711}"
+        },
+        "geometry": {
+          "x": 51.56120918548967,
+          "y": 25.365459611984
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9134539,
+          "ZONE_NO": 66,
+          "STREET_NO": 108,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200076,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 3,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601080003",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{999FAA0A-564F-45BF-BD73-235B871C8915}"
+        },
+        "geometry": {
+          "x": 51.53915583234449,
+          "y": 25.367841317885066
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9134803,
+          "ZONE_NO": 66,
+          "STREET_NO": 114,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200090,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 13,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601140013",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{5B4E97F7-31AC-4D42-BEA1-8BECD64E3E4A}"
+        },
+        "geometry": {
+          "x": 51.544229085949084,
+          "y": 25.373934994374977
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9135123,
+          "ZONE_NO": 66,
+          "STREET_NO": 107,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200003,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 2,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601070002",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{796D7F65-DD6B-41D9-BA4D-F0665E581C41}"
+        },
+        "geometry": {
+          "x": 51.53968826402191,
+          "y": 25.366777470928334
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9135692,
+          "ZONE_NO": 66,
+          "STREET_NO": 114,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200088,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 12,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1592870400000,
+          "QARS": "6601140012",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1592870400000,
+          "GLOBALID": "{E2161423-501D-4C7C-BF48-D0D161AC8A2A}"
+        },
+        "geometry": {
+          "x": 51.54399444505313,
+          "y": 25.373935570203408
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9135710,
+          "ZONE_NO": 66,
+          "STREET_NO": 106,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200327,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 1,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601060001",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254401000,
+          "GLOBALID": "{73C7FF07-E648-493A-8F1B-F8B18D40F13B}"
+        },
+        "geometry": {
+          "x": 51.54041299292479,
+          "y": 25.365822949078357
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9135824,
+          "ZONE_NO": 66,
+          "STREET_NO": 110,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200005,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 7,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601100007",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254401000,
+          "GLOBALID": "{036C5096-13BF-43E3-8DAA-808A34239ECC}"
+        },
+        "geometry": {
+          "x": 51.53912149116772,
+          "y": 25.370850511498872
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9136237,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200208,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 17,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1381276800000,
+          "QARS": "6601400017",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1599350400000,
+          "GLOBALID": "{BF3D3BFF-7E81-43CC-AF03-03236B498BDE}"
+        },
+        "geometry": {
+          "x": 51.560756211536905,
+          "y": 25.36889044491705
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9136810,
+          "ZONE_NO": 66,
+          "STREET_NO": 124,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200117,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 29,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601240029",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{A536AB14-4658-49C9-A10C-65AA2D61E56D}"
+        },
+        "geometry": {
+          "x": 51.54523452656613,
+          "y": 25.364729652419122
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9136865,
+          "ZONE_NO": 66,
+          "STREET_NO": 115,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200093,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 15,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601150015",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254401000,
+          "GLOBALID": "{BE0C0908-D73F-4655-B950-D3685DB301F4}"
+        },
+        "geometry": {
+          "x": 51.5458178100455,
+          "y": 25.373740186151622
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9139066,
+          "ZONE_NO": 66,
+          "STREET_NO": 123,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200114,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 27,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601230027",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{0A95E4C6-9A37-4B01-9A74-4EE21AF42ED5}"
+        },
+        "geometry": {
+          "x": 51.54662813215933,
+          "y": 25.365291224435307
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9139874,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200201,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 10,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1381276800000,
+          "QARS": "6601400010",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1599350400000,
+          "GLOBALID": "{9DE25C55-6943-4349-A5DD-B1AE93CA38BA}"
+        },
+        "geometry": {
+          "x": 51.55600784480546,
+          "y": 25.370544677233354
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9140730,
+          "ZONE_NO": 66,
+          "STREET_NO": 115,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200091,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 14,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601150014",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{41EE7B39-A9C9-4004-8E85-25DC9A4A417A}"
+        },
+        "geometry": {
+          "x": 51.545488501761184,
+          "y": 25.37373142215771
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9141214,
+          "ZONE_NO": 66,
+          "STREET_NO": 112,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200084,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 10,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601120010",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{79779153-E068-4023-8892-83D2E1F35071}"
+        },
+        "geometry": {
+          "x": 51.54154631094313,
+          "y": 25.373266629275655
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9141238,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200202,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 11,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1381276800000,
+          "QARS": "6601400011",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1599350400000,
+          "GLOBALID": "{FE4CFC74-6999-45E5-9C59-E65FAF38E887}"
+        },
+        "geometry": {
+          "x": 51.55667064175374,
+          "y": 25.37065779534479
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9141310,
+          "ZONE_NO": 66,
+          "STREET_NO": 118,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200101,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 19,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601180019",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{9E5518D2-7B4B-4890-83AD-962A1AF23DE1}"
+        },
+        "geometry": {
+          "x": 51.54891745185437,
+          "y": 25.37119636615451
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9141311,
+          "ZONE_NO": 66,
+          "STREET_NO": 111,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200084,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 8,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601110008",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{D323F83B-EDBB-43B4-8B2C-7C465DB91061}"
+        },
+        "geometry": {
+          "x": 51.539988604730105,
+          "y": 25.37206848834941
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9141523,
+          "ZONE_NO": 66,
+          "STREET_NO": 119,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200104,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 21,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1582761601000,
+          "QARS": "6601190021",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{A51E4F3F-B3E9-4771-84A2-72F294A1DA65}"
+        },
+        "geometry": {
+          "x": 51.549137229673924,
+          "y": 25.36983551766888
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9141548,
+          "ZONE_NO": 66,
+          "STREET_NO": 112,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200084,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 9,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601120009",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{BF6336F0-1E4B-42F0-AE59-D411B5B07EEA}"
+        },
+        "geometry": {
+          "x": 51.540562918378136,
+          "y": 25.373012347787267
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9141898,
+          "ZONE_NO": 66,
+          "STREET_NO": 125,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200120,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 30,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601250030",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254401000,
+          "GLOBALID": "{45925265-774D-41C9-803D-83A3394FA1C1}"
+        },
+        "geometry": {
+          "x": 51.54368916611542,
+          "y": 25.364555708676523
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9141963,
+          "ZONE_NO": 66,
+          "STREET_NO": 122,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200113,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 26,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601220026",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544400001000,
+          "GLOBALID": "{EC9ECF04-7AA3-4656-B1E2-644900069C26}"
+        },
+        "geometry": {
+          "x": 51.547671577827934,
+          "y": 25.36602205800752
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9142104,
+          "ZONE_NO": 66,
+          "STREET_NO": 108,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200078,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 4,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601080004",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254402000,
+          "GLOBALID": "{E28BE666-DF2C-4DA7-8BD0-1D345F7BEC8C}"
+        },
+        "geometry": {
+          "x": 51.53909871547309,
+          "y": 25.368019907633638
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9142323,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200210,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 19,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1582761601000,
+          "QARS": "6601400019",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{FBBD8DAB-422F-4255-B9B5-3484E642982F}"
+        },
+        "geometry": {
+          "x": 51.56129777889398,
+          "y": 25.36750509051004
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9142777,
+          "ZONE_NO": 66,
+          "STREET_NO": 119,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200102,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 20,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1582761601000,
+          "QARS": "6601190020",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{7A3D578F-5927-4488-BCAB-AD99828794D6}"
+        },
+        "geometry": {
+          "x": 51.54903221352486,
+          "y": 25.370008251228683
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9143004,
+          "ZONE_NO": 66,
+          "STREET_NO": 125,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200308,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 31,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601250031",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{60BFAE72-FC5C-4DAA-A7EB-53CFA5B7AFD7}"
+        },
+        "geometry": {
+          "x": 51.54321874425351,
+          "y": 25.364241830739832
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9144035,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": "1175602",
+          "QTEL_ID": null,
+          "PIN": 66200200,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 9,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1543897472000,
+          "QARS": "6601400009",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1544572800000,
+          "GLOBALID": "{45FE0380-0516-4265-9382-C51E3DCF4A5C}"
+        },
+        "geometry": {
+          "x": 51.55507991521974,
+          "y": 25.370204889414318
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9145037,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200214,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 23,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1381276800000,
+          "QARS": "6601400023",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1599350400000,
+          "GLOBALID": "{654A4290-47CD-451C-9CEB-8BBF1FE98AE5}"
+        },
+        "geometry": {
+          "x": 51.56089208623831,
+          "y": 25.364877577300685
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9145373,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200209,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 18,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1381276801000,
+          "QARS": "6601400018",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1431388800000,
+          "GLOBALID": "{96A88DC6-5EE3-4BD2-8634-3773C060ECBD}"
+        },
+        "geometry": {
+          "x": 51.5611744476951,
+          "y": 25.368048744417777
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9145543,
+          "ZONE_NO": 66,
+          "STREET_NO": 121,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200110,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 24,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601210024",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{23967B37-9A3D-4587-9D7D-6B67577BE8FF}"
+        },
+        "geometry": {
+          "x": 51.548592359370474,
+          "y": 25.367139695872588
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9146221,
+          "ZONE_NO": 66,
+          "STREET_NO": 109,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200079,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 5,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601090005",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{3853C7CC-2037-45A6-94D3-A4E69A56A9DF}"
+        },
+        "geometry": {
+          "x": 51.538890542888616,
+          "y": 25.369182966555815
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9146840,
+          "ZONE_NO": 66,
+          "STREET_NO": 113,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200086,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 11,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601130011",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254401000,
+          "GLOBALID": "{0A4666E3-361B-4FF9-90F3-EDD57E5B70C1}"
+        },
+        "geometry": {
+          "x": 51.542165627589654,
+          "y": 25.37349664859446
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9146909,
+          "ZONE_NO": 66,
+          "STREET_NO": 110,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200004,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 6,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601100006",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{3A6878A4-AD9C-4227-96D7-8A847749B680}"
+        },
+        "geometry": {
+          "x": 51.53905076229111,
+          "y": 25.370625852429853
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9155247,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200206,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 15,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1581485314000,
+          "QARS": "6601400015",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{5679CE1A-7A9D-4209-8896-D1BDEB03F5BE}"
+        },
+        "geometry": {
+          "x": 51.559693353158124,
+          "y": 25.36986135237924
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9155248,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200203,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 12,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1581485314000,
+          "QARS": "6601400012",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{C0E2A1D5-139E-45F1-9FF1-F332482D06B0}"
+        },
+        "geometry": {
+          "x": 51.55775564677851,
+          "y": 25.370667097453456
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9155249,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200204,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 13,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1581485314000,
+          "QARS": "6601400013",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{90E5B595-4931-4E77-B2CE-0C673022D8FC}"
+        },
+        "geometry": {
+          "x": 51.55844054671979,
+          "y": 25.37048997166205
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9155250,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": "1173042",
+          "QTEL_ID": null,
+          "PIN": 66200205,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 14,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1581485314000,
+          "QARS": "6601400014",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{DA470DD1-D3E1-4D3C-8C5E-7AE89F8057CE}"
+        },
+        "geometry": {
+          "x": 51.55899008327287,
+          "y": 25.37025449249075
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9155251,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": 1294903,
+          "WATER_NO": "1240705",
+          "QTEL_ID": null,
+          "PIN": 66200199,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 8,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1582690685000,
+          "QARS": "6601400008",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{696C4E18-AAEB-4BA2-9895-17D1134A1AAF}"
+        },
+        "geometry": {
+          "x": 51.55442405470572,
+          "y": 25.369762977000036
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9155252,
+          "ZONE_NO": 66,
+          "STREET_NO": 237,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200217,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 26,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1582761600000,
+          "QARS": "6602370026",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{46F8CD1A-3E3D-454E-A41E-374B0BA9C915}"
+        },
+        "geometry": {
+          "x": 51.55919309313133,
+          "y": 25.3632650243499
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9156599,
+          "ZONE_NO": 66,
+          "STREET_NO": 201,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190329,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 81,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1586922717000,
+          "QARS": "6602010081",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{10F710E2-8843-4A64-ACB0-C34FEC281D58}"
+        },
+        "geometry": {
+          "x": 51.545796212034574,
+          "y": 25.375825784065935
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9157521,
+          "ZONE_NO": 66,
+          "STREET_NO": 263,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190331,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 79,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1586923609000,
+          "QARS": "6602630079",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{1DDF9CAD-7530-4A8E-999A-5EA39E46CEB0}"
+        },
+        "geometry": {
+          "x": 51.54582060351821,
+          "y": 25.377007353104332
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9157538,
+          "ZONE_NO": 66,
+          "STREET_NO": 213,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190323,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 62,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1587014532000,
+          "QARS": "6602130062",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{78FDB4DD-752F-481E-B525-99E36238E1EB}"
+        },
+        "geometry": {
+          "x": 51.54456999759394,
+          "y": 25.37853866077134
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9157541,
+          "ZONE_NO": 66,
+          "STREET_NO": 263,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190330,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 80,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1586923361000,
+          "QARS": "6602630080",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{DF222A50-154A-40B6-A1CE-8F769E311DB3}"
+        },
+        "geometry": {
+          "x": 51.545732606115635,
+          "y": 25.376818453569044
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9157542,
+          "ZONE_NO": 66,
+          "STREET_NO": 213,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190291,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 76,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1587269557000,
+          "QARS": "6602130076",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{7D7B6B4B-08CC-4B13-B0F2-94855CA783C3}"
+        },
+        "geometry": {
+          "x": 51.54341170293069,
+          "y": 25.377138512391607
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9157610,
+          "ZONE_NO": 66,
+          "STREET_NO": 213,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190326,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 77,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1587269929000,
+          "QARS": "6602130077",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{73025051-D7FF-4A47-87B2-883B2590A215}"
+        },
+        "geometry": {
+          "x": 51.54357505731596,
+          "y": 25.376448367047523
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9157616,
+          "ZONE_NO": 66,
+          "STREET_NO": 213,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190324,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 75,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1587267639000,
+          "QARS": "6602130075",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{BDA1DC11-CC44-4B1C-98C1-7FCE8EA67954}"
+        },
+        "geometry": {
+          "x": 51.54349136399067,
+          "y": 25.377430240423575
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9157617,
+          "ZONE_NO": 66,
+          "STREET_NO": 213,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190325,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 78,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1587269712000,
+          "QARS": "6602130078",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{FFB8AC0D-4572-424F-9907-E2AA524A44A3}"
+        },
+        "geometry": {
+          "x": 51.543796483505794,
+          "y": 25.37652800428637
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9157618,
+          "ZONE_NO": 66,
+          "STREET_NO": 224,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190288,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 84,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1586928208000,
+          "QARS": "6602240084",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{3C275E4D-8F23-4939-91DB-889B08C317E2}"
+        },
+        "geometry": {
+          "x": 51.542193734610514,
+          "y": 25.375642606646103
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9157919,
+          "ZONE_NO": 66,
+          "STREET_NO": 213,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190316,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 51,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1586926864000,
+          "QARS": "6602130051",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{5FBA786E-20BC-4266-9134-A02552F7CA9E}"
+        },
+        "geometry": {
+          "x": 51.54564310815577,
+          "y": 25.379338166596025
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9158134,
+          "ZONE_NO": 66,
+          "STREET_NO": 213,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190327,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 83,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1586928044000,
+          "QARS": "6602130083",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{832542E8-C4BE-44AD-AFEE-A2596B84C5E0}"
+        },
+        "geometry": {
+          "x": 51.5434891525894,
+          "y": 25.375862300161884
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9158135,
+          "ZONE_NO": 66,
+          "STREET_NO": 262,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190328,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 82,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1586927565000,
+          "QARS": "6602620082",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1590710400000,
+          "GLOBALID": "{22D02EBF-4A04-42D3-A394-9AC5D39AE0B9}"
+        },
+        "geometry": {
+          "x": 51.544709763422304,
+          "y": 25.37578346472511
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9162217,
+          "ZONE_NO": 66,
+          "STREET_NO": 225,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191003,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 31,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1610342493000,
+          "QARS": "6602250031",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1638230402000,
+          "GLOBALID": "{B1C0E28B-F25E-490E-8466-1A0A78024DCD}"
+        },
+        "geometry": {
+          "x": 51.539654460200495,
+          "y": 25.375215576739073
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9162230,
+          "ZONE_NO": 66,
+          "STREET_NO": 231,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190343,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 158,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1610349095000,
+          "QARS": "6602310158",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1611014400000,
+          "GLOBALID": "{56A55D1C-42C6-4999-AC2C-9FCA27802BB5}"
+        },
+        "geometry": {
+          "x": 51.53463485823463,
+          "y": 25.372877345474336
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9162231,
+          "ZONE_NO": 66,
+          "STREET_NO": 226,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190342,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 7,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1610342781000,
+          "QARS": "6602260007",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1611014400000,
+          "GLOBALID": "{33519C9A-4A84-4FA1-BEB6-6DF9FB655D66}"
+        },
+        "geometry": {
+          "x": 51.53927990112407,
+          "y": 25.37439146417125
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9162239,
+          "ZONE_NO": 66,
+          "STREET_NO": 225,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190343,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 50,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1610348396000,
+          "QARS": "6602250050",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1638230402000,
+          "GLOBALID": "{ACA24BBB-3A49-49E1-9F60-48A3483835C0}"
+        },
+        "geometry": {
+          "x": 51.536194591152594,
+          "y": 25.37333656073685
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9162321,
+          "ZONE_NO": 66,
+          "STREET_NO": 225,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190342,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 40,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1610347658000,
+          "QARS": "6602250040",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1638230402000,
+          "GLOBALID": "{EE8910C4-B505-4632-BF32-D51DFDF64D9D}"
+        },
+        "geometry": {
+          "x": 51.537949038082495,
+          "y": 25.374058201845973
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9162322,
+          "ZONE_NO": 66,
+          "STREET_NO": 225,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191003,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 32,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1610342212000,
+          "QARS": "6602250032",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1638230402000,
+          "GLOBALID": "{5D33E7BF-8C52-4505-AA4A-56C123BBEC0D}"
+        },
+        "geometry": {
+          "x": 51.5404324219207,
+          "y": 25.375066079081613
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9165218,
+          "ZONE_NO": 66,
+          "STREET_NO": 185,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": 37586,
+          "PIN": 66190464,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 12,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1658820459000,
+          "QARS": "6601850012",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1658880000000,
+          "GLOBALID": "{5DC16E59-DD47-4547-9831-2E983010F5C1}"
+        },
+        "geometry": {
+          "x": 51.55947300225719,
+          "y": 25.37334942378982
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9166042,
+          "ZONE_NO": 66,
+          "STREET_NO": 183,
+          "ELECTRICITY_NO": 1319107,
+          "WATER_NO": "1226957",
+          "QTEL_ID": null,
+          "PIN": 66190392,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 18,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1645340107000,
+          "QARS": "6601830018",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1647388800000,
+          "GLOBALID": "{1027EFA1-C0B0-4DCA-AD02-0342DC48CB57}"
+        },
+        "geometry": {
+          "x": 51.56089581368565,
+          "y": 25.37122231361715
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9167236,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200215,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 24,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1632208836000,
+          "QARS": "6601400024",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1633392000000,
+          "GLOBALID": "{8C53F387-F731-4BE5-BE4A-DDF4936410AE}"
+        },
+        "geometry": {
+          "x": 51.56041945912389,
+          "y": 25.36427636781887
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9168845,
+          "ZONE_NO": 66,
+          "STREET_NO": 182,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190468,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 89,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1689227007000,
+          "QARS": "6601820089",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1690156800000,
+          "GLOBALID": "{676C47FF-F79C-4C51-840E-4669D725090A}"
+        },
+        "geometry": {
+          "x": 51.55856904897291,
+          "y": 25.37270762582921
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9168871,
+          "ZONE_NO": 66,
+          "STREET_NO": 185,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190467,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 22,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1658820776000,
+          "QARS": "6601850022",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1673481601000,
+          "GLOBALID": "{227892CD-488D-46CE-91C5-67D17101B08B}"
+        },
+        "geometry": {
+          "x": 51.55890061782074,
+          "y": 25.372820051271525
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9170164,
+          "ZONE_NO": 66,
+          "STREET_NO": 152,
+          "ELECTRICITY_NO": 1315064,
+          "WATER_NO": "1194129",
+          "QTEL_ID": null,
+          "PIN": 66200342,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 4,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1664857760000,
+          "QARS": "6601520004",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1666828800000,
+          "GLOBALID": "{15CC50E8-D9B6-4D1D-9E3D-3FC30111FB86}"
+        },
+        "geometry": {
+          "x": 51.567993289962665,
+          "y": 25.357046630836336
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9171020,
+          "ZONE_NO": 66,
+          "STREET_NO": 183,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190485,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 58,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1696464001000,
+          "QARS": "6601830058",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1696464002000,
+          "GLOBALID": "{B7D8610A-E06C-4C75-882D-564C3CC49441}"
+        },
+        "geometry": {
+          "x": 51.561505322858146,
+          "y": 25.371861733892203
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9171561,
+          "ZONE_NO": 66,
+          "STREET_NO": 183,
+          "ELECTRICITY_NO": 1435797,
+          "WATER_NO": "1271148",
+          "QTEL_ID": null,
+          "PIN": 66190488,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 61,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1700631884000,
+          "QARS": "6601830061",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1700611200000,
+          "GLOBALID": "{3A53D607-B075-4099-A267-B7C423C57100}"
+        },
+        "geometry": {
+          "x": 51.56094763344429,
+          "y": 25.37148324882831
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9174084,
+          "ZONE_NO": 66,
+          "STREET_NO": 116,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200319,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 16,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601160016",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{EBAE07F9-BE35-4FB0-8C22-1B653B9F7FE1}"
+        },
+        "geometry": {
+          "x": 51.54694330671372,
+          "y": 25.373134341539178
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9174409,
+          "ZONE_NO": 66,
+          "STREET_NO": 182,
+          "ELECTRICITY_NO": 1445980,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190395,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 15,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1717665656000,
+          "QARS": "6601820015",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1717891200000,
+          "GLOBALID": "{B6842BA8-6383-4450-87D1-5102962F99C5}"
+        },
+        "geometry": {
+          "x": 51.56009230181775,
+          "y": 25.37179079753954
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9174410,
+          "ZONE_NO": 66,
+          "STREET_NO": 182,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190401,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 9,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1717646071000,
+          "QARS": "6601820009",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1717891200000,
+          "GLOBALID": "{147DC1C9-A755-40AA-B33E-96057AE6AD1F}"
+        },
+        "geometry": {
+          "x": 51.558327628875844,
+          "y": 25.372431825384027
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9174411,
+          "ZONE_NO": 66,
+          "STREET_NO": 182,
+          "ELECTRICITY_NO": 1442597,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190396,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 14,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1717665656000,
+          "QARS": "6601820014",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1717891200000,
+          "GLOBALID": "{A1C3C95C-2507-4149-BFA9-A07DC72B24FD}"
+        },
+        "geometry": {
+          "x": 51.55979228411569,
+          "y": 25.371842501379298
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9174412,
+          "ZONE_NO": 66,
+          "STREET_NO": 183,
+          "ELECTRICITY_NO": 1452147,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190388,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 22,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1717646456000,
+          "QARS": "6601830022",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1717891200000,
+          "GLOBALID": "{EDEFBA83-9958-4C8D-815E-4FEBB23A6E34}"
+        },
+        "geometry": {
+          "x": 51.56185964928768,
+          "y": 25.370889220651
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9174664,
+          "ZONE_NO": 66,
+          "STREET_NO": 182,
+          "ELECTRICITY_NO": 1439430,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190400,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 10,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1716873816000,
+          "QARS": "6601820010",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1716940800000,
+          "GLOBALID": "{246AD33B-BD84-4D36-BDC2-AEDAC33C5E56}"
+        },
+        "geometry": {
+          "x": 51.55856285964198,
+          "y": 25.372303453261498
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9177335,
+          "ZONE_NO": 66,
+          "STREET_NO": 316,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190612,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 14,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": null,
+          "QARS": "6603160014",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1733702400000,
+          "GLOBALID": "{BB5CCB70-899D-4F8E-83A1-C3B08C5003CA}"
+        },
+        "geometry": {
+          "x": 51.54048855260733,
+          "y": 25.379931781071228
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9177429,
+          "ZONE_NO": 66,
+          "STREET_NO": 317,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190548,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 26,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": null,
+          "QARS": "6603170026",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1733702400000,
+          "GLOBALID": "{63BD7D86-3650-4C58-9382-78973BBA34E8}"
+        },
+        "geometry": {
+          "x": 51.53460015515527,
+          "y": 25.37694240633382
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9177430,
+          "ZONE_NO": 66,
+          "STREET_NO": 317,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190549,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 24,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": null,
+          "QARS": "6603170024",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1733702400000,
+          "GLOBALID": "{026EFB4D-5B6E-4BCA-BFF7-E32224CDD4F2}"
+        },
+        "geometry": {
+          "x": 51.535210572519276,
+          "y": 25.377446614164974
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178571,
+          "ZONE_NO": 66,
+          "STREET_NO": 151,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200340,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 2,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1734434573000,
+          "QARS": "6601510002",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{C410A624-E1BF-458B-9F0E-F304B3F7F766}"
+        },
+        "geometry": {
+          "x": 51.56617930353195,
+          "y": 25.358222054346978
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178572,
+          "ZONE_NO": 66,
+          "STREET_NO": 317,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191455,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 16,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603170016",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{569F89FF-64BC-440C-9AD7-9EE52BCB3FBC}"
+        },
+        "geometry": {
+          "x": 51.53700643624775,
+          "y": 25.377826760797266
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178573,
+          "ZONE_NO": 66,
+          "STREET_NO": 301,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191457,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 4,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603010004",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{8FF6032D-70A9-4FD7-9F88-4CB5FDE86673}"
+        },
+        "geometry": {
+          "x": 51.53724295636206,
+          "y": 25.377564459536437
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178574,
+          "ZONE_NO": 66,
+          "STREET_NO": 301,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191458,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 2,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603010002",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{DB8958DF-F3BE-4CEE-84A8-9F32D3F8A462}"
+        },
+        "geometry": {
+          "x": 51.536650870000926,
+          "y": 25.377066738016893
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178575,
+          "ZONE_NO": 66,
+          "STREET_NO": 317,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191459,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 18,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603170018",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{9B3FE166-11ED-4FEA-B856-EDAFD549904A}"
+        },
+        "geometry": {
+          "x": 51.53639023325617,
+          "y": 25.377377723177407
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178576,
+          "ZONE_NO": 66,
+          "STREET_NO": 304,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191460,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 4,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603040004",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{EF616F9B-1297-493E-8200-9F62B3C880CE}"
+        },
+        "geometry": {
+          "x": 51.53745704947928,
+          "y": 25.378128031283364
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178577,
+          "ZONE_NO": 66,
+          "STREET_NO": 305,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191462,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 3,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603050003",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{D5F8181D-1D7D-4C7A-BAFA-200936E2B88C}"
+        },
+        "geometry": {
+          "x": 51.53868632862581,
+          "y": 25.37893746817209
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178578,
+          "ZONE_NO": 66,
+          "STREET_NO": 305,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191463,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 1,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603050001",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{EB032ADA-D8F3-47D7-86B4-081A87276CB9}"
+        },
+        "geometry": {
+          "x": 51.53906715456874,
+          "y": 25.378495257700493
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178579,
+          "ZONE_NO": 66,
+          "STREET_NO": 301,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191464,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 6,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603010006",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{114E5508-8FA1-4585-9865-3057D369496B}"
+        },
+        "geometry": {
+          "x": 51.53806960238396,
+          "y": 25.377856533428442
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178630,
+          "ZONE_NO": 66,
+          "STREET_NO": 306,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191466,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 3,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603060003",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{66559B35-C22C-468E-ADEE-70B1379F2D9D}"
+        },
+        "geometry": {
+          "x": 51.53938904543542,
+          "y": 25.379363451935152
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178634,
+          "ZONE_NO": 66,
+          "STREET_NO": 306,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191467,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 1,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603060001",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{ED6AAEE8-4B0D-43F1-A171-CEE2FE03594D}"
+        },
+        "geometry": {
+          "x": 51.53975016960869,
+          "y": 25.379044773419253
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178635,
+          "ZONE_NO": 66,
+          "STREET_NO": 301,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191468,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 8,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603010008",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{70422587-023F-4699-8449-24AE2893FFB3}"
+        },
+        "geometry": {
+          "x": 51.5399326844298,
+          "y": 25.37844528623562
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178639,
+          "ZONE_NO": 66,
+          "STREET_NO": 301,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191470,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 7,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603010007",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{93C8B7E3-9755-4009-A169-084496D53235}"
+        },
+        "geometry": {
+          "x": 51.53935125533513,
+          "y": 25.377921187880812
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178641,
+          "ZONE_NO": 66,
+          "STREET_NO": 301,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191471,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 5,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603010005",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{E14FD889-B61F-46FF-89FF-D9600E1765CD}"
+        },
+        "geometry": {
+          "x": 51.538471180976664,
+          "y": 25.377505039423912
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178643,
+          "ZONE_NO": 66,
+          "STREET_NO": 301,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191473,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 3,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603010003",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{47770A26-D8D9-4043-A8AF-66E100524B8E}"
+        },
+        "geometry": {
+          "x": 51.53745225800992,
+          "y": 25.37711421161103
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9178644,
+          "ZONE_NO": 66,
+          "STREET_NO": 301,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191474,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 1,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1736294400000,
+          "QARS": "6603010001",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1736294400000,
+          "GLOBALID": "{04BDF893-CEA1-41BC-90FF-65465285B12B}"
+        },
+        "geometry": {
+          "x": 51.5370314719221,
+          "y": 25.376745706569807
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9179293,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200411,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 102,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1721806736000,
+          "QARS": "6601400102",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1721865600000,
+          "GLOBALID": "{065790E2-C789-454E-8856-51FCCAD40E1E}"
+        },
+        "geometry": {
+          "x": 51.56042282637893,
+          "y": 25.36358916685733
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9179294,
+          "ZONE_NO": 66,
+          "STREET_NO": 182,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": "1347102",
+          "QTEL_ID": null,
+          "PIN": 66190397,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 13,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1717665656000,
+          "QARS": "6601820013",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1721865600000,
+          "GLOBALID": "{B17A9D55-9E2F-4574-9D38-8FC221AB7F4A}"
+        },
+        "geometry": {
+          "x": 51.55950682576833,
+          "y": 25.371983596710287
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9179295,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200401,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 110,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1721807079000,
+          "QARS": "6601400110",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1721865600000,
+          "GLOBALID": "{44346722-96F5-4A3C-9377-A4B2B8E50397}"
+        },
+        "geometry": {
+          "x": 51.56167101488399,
+          "y": 25.36819259620141
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9179296,
+          "ZONE_NO": 66,
+          "STREET_NO": 183,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": "135429",
+          "QTEL_ID": null,
+          "PIN": 66190483,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 62,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1721805243000,
+          "QARS": "6601830062",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1721865600000,
+          "GLOBALID": "{E088387B-D98D-4006-BF58-B911B9594A02}"
+        },
+        "geometry": {
+          "x": 51.56070202224072,
+          "y": 25.371617805424
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9179297,
+          "ZONE_NO": 66,
+          "STREET_NO": 242,
+          "ELECTRICITY_NO": 1461597,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200414,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 101,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1721806372000,
+          "QARS": "6602420101",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1721865600000,
+          "GLOBALID": "{6576C81E-18B5-4D97-BE0C-FA5BB8F5D7A7}"
+        },
+        "geometry": {
+          "x": 51.56172619900052,
+          "y": 25.36331092566824
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9182759,
+          "ZONE_NO": 66,
+          "STREET_NO": 183,
+          "ELECTRICITY_NO": 1441542,
+          "WATER_NO": "1283512",
+          "QTEL_ID": null,
+          "PIN": 66190391,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 19,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1717646456000,
+          "QARS": "6601830019",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1731283200000,
+          "GLOBALID": "{CDB3D075-7D63-4FAB-AA15-BDA3E561B31A}"
+        },
+        "geometry": {
+          "x": 51.56123366383318,
+          "y": 25.370955050741603
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9183789,
+          "ZONE_NO": 66,
+          "STREET_NO": 182,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66191383,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 2,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1758427596000,
+          "QARS": "6601820002",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1758499200000,
+          "GLOBALID": "{B8ACF113-FA5F-4E2E-B098-B586310E597E}"
+        },
+        "geometry": {
+          "x": 51.55780362957757,
+          "y": 25.372598703991
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9183790,
+          "ZONE_NO": 66,
+          "STREET_NO": 183,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66190387,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 23,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1758428097000,
+          "QARS": "6601830023",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1758499200000,
+          "GLOBALID": "{77756A70-D151-4840-BDCE-6D8A6C8B4E71}"
+        },
+        "geometry": {
+          "x": 51.56184018113769,
+          "y": 25.37130650085275
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9184802,
+          "ZONE_NO": 66,
+          "STREET_NO": 120,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200107,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 22,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1750204800000,
+          "QARS": "6601200022",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1750204800000,
+          "GLOBALID": "{DB81E949-5584-4D27-AB74-23C5235892D5}"
+        },
+        "geometry": {
+          "x": 51.54915552587124,
+          "y": 25.368432514884674
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9184804,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200437,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 107,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1750135463000,
+          "QARS": "6601400107",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1750204800000,
+          "GLOBALID": "{24991256-5754-475D-B9E9-5ABACBB45BFD}"
+        },
+        "geometry": {
+          "x": 51.561922724551984,
+          "y": 25.367012837344213
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9184805,
+          "ZONE_NO": 66,
+          "STREET_NO": 140,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200437,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 108,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1750135463000,
+          "QARS": "6601400108",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1750204800000,
+          "GLOBALID": "{991BDAEB-CF43-44F0-AA03-1984764D6C0B}"
+        },
+        "geometry": {
+          "x": 51.56191231760443,
+          "y": 25.36709403962169
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9184806,
+          "ZONE_NO": 66,
+          "STREET_NO": 121,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200108,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 23,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1750204800000,
+          "QARS": "6601210023",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1750204800000,
+          "GLOBALID": "{D005063A-5185-45B7-B3D0-A312C5E2AF73}"
+        },
+        "geometry": {
+          "x": 51.548644267238316,
+          "y": 25.367306247336128
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9186139,
+          "ZONE_NO": 66,
+          "STREET_NO": 182,
+          "ELECTRICITY_NO": 1460212,
+          "WATER_NO": "1347116",
+          "QTEL_ID": null,
+          "PIN": 66191270,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 11,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1766551082000,
+          "QARS": "6601820011",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1766534400000,
+          "GLOBALID": "{49FC64F3-0531-4FCB-8A22-AF628A622F0D}"
+        },
+        "geometry": {
+          "x": 51.55900230253605,
+          "y": 25.37216027563522
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9189108,
+          "ZONE_NO": 66,
+          "STREET_NO": 117,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200320,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 17,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1776556800000,
+          "QARS": "6601170017",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1776556800000,
+          "GLOBALID": "{AB62280B-FD84-4DED-866E-AFB4F3C741D9}"
+        },
+        "geometry": {
+          "x": 51.547453556777,
+          "y": 25.37280019617847
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9189110,
+          "ZONE_NO": 66,
+          "STREET_NO": 150,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200339,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 1,
+          "BUILDING_NO_SUBTYPE": 6,
+          "SURVEYED_DATE": 1776556800000,
+          "QARS": "6601500001",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1776556800000,
+          "GLOBALID": "{67A3FCD2-A539-4092-A3AD-4BEF6C5BE787}"
+        },
+        "geometry": {
+          "x": 51.56731731309676,
+          "y": 25.358830059699958
+        }
+      }
+    ],
+    "all_features_sample": [
+      {
+        "attributes": {
+          "OBJECTID": 9096123,
+          "ZONE_NO": 66,
+          "STREET_NO": 142,
+          "ELECTRICITY_NO": 1107364,
+          "WATER_NO": "1043276",
+          "QTEL_ID": null,
+          "PIN": 66190229,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 41,
+          "BUILDING_NO_SUBTYPE": 1,
+          "SURVEYED_DATE": 1574657954000,
+          "QARS": "6601420041",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761600000,
+          "GLOBALID": "{06AC3E3F-EB7B-42B0-9994-5C4BE1144C3F}"
+        },
+        "geometry": {
+          "x": 51.56456602564719,
+          "y": 25.364788172836523
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9096126,
+          "ZONE_NO": 66,
+          "STREET_NO": 172,
+          "ELECTRICITY_NO": 1107361,
+          "WATER_NO": "1043273",
+          "QTEL_ID": null,
+          "PIN": 66190232,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 38,
+          "BUILDING_NO_SUBTYPE": 1,
+          "SURVEYED_DATE": 1574658313000,
+          "QARS": "6601720038",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1582761601000,
+          "GLOBALID": "{310D9B25-08C0-41DA-8279-0D97C519D565}"
+        },
+        "geometry": {
+          "x": 51.5653470579917,
+          "y": 25.364593462730078
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9103121,
+          "ZONE_NO": 66,
+          "STREET_NO": 113,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200087,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 5,
+          "BUILDING_NO_SUBTYPE": 99,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601130005",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254401000,
+          "GLOBALID": "{C83C4894-BFE9-470D-A029-2B20E2E3F69D}"
+        },
+        "geometry": {
+          "x": 51.54278239961158,
+          "y": 25.374092392802854
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9103122,
+          "ZONE_NO": 66,
+          "STREET_NO": 117,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200396,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 25,
+          "BUILDING_NO_SUBTYPE": 99,
+          "SURVEYED_DATE": 1380758401000,
+          "QARS": "6601170025",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{EFE3123D-DC69-41B8-800A-6D53F4D1C763}"
+        },
+        "geometry": {
+          "x": 51.54723009033932,
+          "y": 25.372283916688975
+        }
+      },
+      {
+        "attributes": {
+          "OBJECTID": 9103123,
+          "ZONE_NO": 66,
+          "STREET_NO": 117,
+          "ELECTRICITY_NO": null,
+          "WATER_NO": null,
+          "QTEL_ID": null,
+          "PIN": 66200098,
+          "PLOT_NO_OLD": null,
+          "PLOT_NO_OLD_SUFFIX": null,
+          "BUILDING_NO": 7,
+          "BUILDING_NO_SUBTYPE": 99,
+          "SURVEYED_DATE": 1380758400000,
+          "QARS": "6601170007",
+          "BUILDING_NO_SUFFIX": null,
+          "DATE_LUPD": 1425254400000,
+          "GLOBALID": "{A21E2D4B-F898-4161-A565-E9F398D0702E}"
+        },
+        "geometry": {
+          "x": 51.54819295268733,
+          "y": 25.372464157701767
+        }
+      }
+    ],
+    "schema_sample": [
+      {
+        "ZONE_NO": 66,
+        "STREET_NO": 142,
+        "BUILDING_NO": 41,
+        "BUILDING_NO_SUBTYPE": 1,
+        "PIN": 66190229
+      },
+      {
+        "ZONE_NO": 66,
+        "STREET_NO": 172,
+        "BUILDING_NO": 38,
+        "BUILDING_NO_SUBTYPE": 1,
+        "PIN": 66190232
+      },
+      {
+        "ZONE_NO": 66,
+        "STREET_NO": 113,
+        "BUILDING_NO": 5,
+        "BUILDING_NO_SUBTYPE": 99,
+        "PIN": 66200087
+      },
+      {
+        "ZONE_NO": 66,
+        "STREET_NO": 117,
+        "BUILDING_NO": 25,
+        "BUILDING_NO_SUBTYPE": 99,
+        "PIN": 66200396
+      },
+      {
+        "ZONE_NO": 66,
+        "STREET_NO": 117,
+        "BUILDING_NO": 7,
+        "BUILDING_NO_SUBTYPE": 99,
+        "PIN": 66200098
+      }
+    ]
+  },
+  "match": {
+    "match_type": "first_zsb_complete",
+    "feature": {
+      "attributes": {
+        "OBJECTID": 9131245,
+        "ZONE_NO": 66,
+        "STREET_NO": 140,
+        "ELECTRICITY_NO": null,
+        "WATER_NO": null,
+        "QTEL_ID": null,
+        "PIN": 66200197,
+        "PLOT_NO_OLD": null,
+        "PLOT_NO_OLD_SUFFIX": null,
+        "BUILDING_NO": 6,
+        "BUILDING_NO_SUBTYPE": 11,
+        "SURVEYED_DATE": null,
+        "QARS": "6601400006",
+        "BUILDING_NO_SUFFIX": null,
+        "DATE_LUPD": 1582761600000,
+        "GLOBALID": "{465F5156-E69B-4595-9273-5C9A76C5F462}"
+      },
+      "geometry": {
+        "x": 51.55356821716886,
+        "y": 25.368849196421824
+      }
+    }
+  },
+  "schema_assessment": "qars_zsb",
+  "stop_condition": null,
+  "verified_pearl_pin": {
+    "PIN": 66200197,
+    "ZONE_NO": 66,
+    "STREET_NO": 140,
+    "BUILDING_NO": 6,
+    "BUILDING_NO_SUBTYPE": 11,
+    "match_type": "first_zsb_complete",
+    "fgrealty_token": null
+  },
+  "finished_utc": "2026-05-26T07:52:23Z"
+}

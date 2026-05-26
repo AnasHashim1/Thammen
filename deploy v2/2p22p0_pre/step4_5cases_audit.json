@@ -1,0 +1,928 @@
+{
+  "started_utc": "2026-05-26T07:57:05Z",
+  "engine_version": "thammen-sprint2p21p4-t3-aryan-lusail",
+  "freshness": null,
+  "cases_total": 5,
+  "cases_with_drift": 1,
+  "runs": [
+    {
+      "case_id": "A1_lusail_apt_69_255_75_cityAvenues_H1",
+      "label": "Lusail City Avenues H1 anchor",
+      "body": {
+        "zone": 69,
+        "street": 255,
+        "building": 75
+      },
+      "expected": {
+        "asset_type": "apartment_building",
+        "method": "hybrid_t2",
+        "value_per_m2": 11415.02,
+        "val_amount": null
+      },
+      "http_status": 200,
+      "ttlb_s": 10.054255962371826,
+      "error": null,
+      "extracted": {
+        "asset_type": "apartment_building",
+        "asset_type_ar": "عمارة سكنية",
+        "district": "لوسيل 69",
+        "val.amount": null,
+        "val.value_per_m2": 11425.17,
+        "val.value_per_m2_low": 9140.14,
+        "val.value_per_m2_high": 13710.2,
+        "val.method": "hybrid_t2",
+        "val.low": null,
+        "val.high": null,
+        "brief.sections": [
+          "next_steps"
+        ],
+        "hybrid.case": "B",
+        "hybrid.confidence": "indicative",
+        "hybrid.n_used": 79,
+        "hybrid.muc_range_pct": 0.2,
+        "hybrid.tier_breakdown": [
+          {
+            "tier": "T2",
+            "weight": 0.88,
+            "raw_value": 13117.28,
+            "discounted_value": 11477.62,
+            "discount_applied": -0.125,
+            "n": 79
+          },
+          {
+            "tier": "T3",
+            "weight": 0.12,
+            "raw_value": 13382.48,
+            "discounted_value": 11040.54,
+            "discount_applied": -0.175,
+            "n": 4,
+            "n_effective": 4.0,
+            "shape": "dict_new",
+            "sources": [
+              {
+                "developer": "Aryan",
+                "project": "City Avenues",
+                "status": "under_construction",
+                "value_per_m2_raw": 13372.09,
+                "discount_applied": -0.175,
+                "value_per_m2_adjusted": 11031.97,
+                "freshness_status": "fresh"
+              },
+              {
+                "developer": "Aryan",
+                "project": "City Avenues",
+                "status": "under_construction",
+                "value_per_m2_raw": 13281.25,
+                "discount_applied": -0.175,
+                "value_per_m2_adjusted": 10957.03,
+                "freshness_status": "fresh"
+              },
+              {
+                "developer": "Aryan",
+                "project": "City Avenues",
+                "status": "under_construction",
+                "value_per_m2_raw": 13432.84,
+                "discount_applied": -0.175,
+                "value_per_m2_adjusted": 11082.09,
+                "freshness_status": "fresh"
+              },
+              {
+                "developer": "Aryan",
+                "project": "City Avenues",
+                "status": "under_construction",
+                "value_per_m2_raw": 13392.86,
+                "discount_applied": -0.175,
+                "value_per_m2_adjusted": 11049.11,
+                "freshness_status": "fresh"
+              }
+            ]
+          }
+        ],
+        "sources_tiers": [
+          "T2"
+        ],
+        "accuracy.score": 3,
+        "accuracy.label": "🟢 إرشادي قوي — عينة كبيرة (T2 n≥20)",
+        "has_subtype_zoning_mismatch": false,
+        "has_asset_type_reality": false,
+        "has_multi_qars": false,
+        "engine_version": "thammen-sprint2p21p4-t3-aryan-lusail"
+      },
+      "drift_issues": [],
+      "body_json": {
+        "status": "ok",
+        "engine_version": "thammen-sprint2p21p4-t3-aryan-lusail",
+        "methodology_ar": "منهجية هجينة (Hybrid v1) — وسيط أسعار الإعلانات (T2) من PropertyFinder بعد خصم تفاوضي مرجعي ~12.5%. n=79 إعلان شقة للبيع في لوسيل (عينة strong_indicative).",
+        "methodology_disclaimer_ar": "هذا التقدير من إعلانات بحجم عينة قوي (n≥20)، لكنه يبقى T2 — للوصول لـ \"موثوق\" يلزم تأكيد T1 (Confirmed Sales أو MME). Rule E3 §4 يثبّت السقف عند \"إرشادي\" بدون T1.",
+        "address": "69/255/75",
+        "valuation_date": "2026-05-26",
+        "district": "لوسيل 69",
+        "plot_area_m2": 2195.0,
+        "gps": {
+          "lat": 25.430051263145362,
+          "lon": 51.4880281385695
+        },
+        "asset_type": "apartment_building",
+        "asset_type_ar": "عمارة سكنية",
+        "audience": "buyer",
+        "user_inputs": {
+          "listing_price": null,
+          "rental_income": null
+        },
+        "valuation": {
+          "amount": null,
+          "low": null,
+          "high": null,
+          "method": "hybrid_t2",
+          "value_per_m2": 11425.17,
+          "value_per_m2_low": 9140.14,
+          "value_per_m2_high": 13710.2,
+          "reason_ar": "القيمة الإرشادية للمتر المربع لشقق عمارة سكنية في لوسيل ≈ 11,425 ر.ق/م² (نطاق ±20%: 9,140 – 13,710 ر.ق/م²). لقيمة شقة محددة، اضرب في مساحتها م² الفعلية."
+        },
+        "moj_sample_size": 0,
+        "cost_approach": null,
+        "income_approach": null,
+        "reconciliation": {
+          "status": "hybrid_indicative",
+          "message_ar": "تقدير من مصدر T2 واحد (PropertyFinder، n=79، عينة strong_indicative). وزارة العدل لا تسجّل الشقق الفردية (تُحفظ تحت الأبراج). لتقدير \"موثوق\" يلزم Confirmed Sales أو MME."
+        },
+        "accuracy": {
+          "score": 3,
+          "label": "🟢 إرشادي قوي — عينة كبيرة (T2 n≥20)"
+        },
+        "trend": null,
+        "location_features": null,
+        "geometric_factors": {
+          "polygon_available": true,
+          "plot_area_m2_verified": 2195.0,
+          "pd_no": "PD/4598/2019"
+        },
+        "material_uncertainty": {
+          "level": "low",
+          "banner_ar": "تحفظ مادي: عينة قوية (n=79≥20) لكن السقف يبقى إرشادي بدون تأكيد وزارة العدل (Rule E3 §4). النطاق ±20%.",
+          "known_unknowns_ar": [
+            "مساحة الشقة المحددة",
+            "الطابق + الإطلالة + التشطيب",
+            "حالة الصيانة الفعلية",
+            "مدى تطابق الإعلانات مع الصفقات المنجزة"
+          ],
+          "rics_compliant": true,
+          "muc_clause_ar": "⚠️ تحفظ مادي وفق RICS VPS 5 (Material Uncertainty Clause)\n\nتواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات.\n\nبناءً عليه — ووفق المعيار المعترف به في RICS VPS 5 — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.",
+          "muc_clause_en": "⚠️ Material Valuation Uncertainty (RICS VPS 5)\n\nThe Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards). Accordingly — and in line with RICS VPS 5 — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.",
+          "muc_basis_ar": "بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.",
+          "muc_review_recommendation_ar": "هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق."
+        },
+        "brief": {
+          "audience": "buyer",
+          "title_ar": "تقرير عمارة سكنية — تحتاج بيانات إضافية",
+          "sections": [
+            {
+              "id": "next_steps",
+              "title_ar": "الخطوات المقترحة",
+              "content": {
+                "note_ar": "العنوان 69/255/75 تابع لمساحة 2,195 م² مُصنَّف كـ \"عمارة سكنية\". لتقييم كامل يرجى تزويدنا بأحد التاليين:",
+                "options_ar": [
+                  "إفادة الإيجار الشهري الفعلي (لتقييم بطريقة الدخل)",
+                  "سعر الإعلان أو سعر المالك (لمقارنة سوقية)"
+                ]
+              }
+            }
+          ]
+        },
+        "disclaimer": "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.",
+        "active_listings": {
+          "available": false,
+          "reason": "تصنيف سريع — لم يُجرَ بحث إعلانات"
+        },
+        "service_scope": {
+          "asset_type": "apartment_building",
+          "tier": "limited",
+          "label_ar": "عمارة شقق",
+          "methodology_ar": "منهج الدخل (Income Approach)",
+          "methodology_en": "Income Approach",
+          "requires_user_input_ar": "الإيجار السنوي الإجمالي",
+          "disclaimer_ar": "عمارات الشقق تُقيَّم بمنهج الدخل. وزارة العدل لا تسجل وحدات الشقق فردياً بشكل قابل للمقارنة. الإيجار السنوي مطلوب.",
+          "reason_ar": "MoJ لا تسجل وحدات الشقق فردياً"
+        },
+        "hybrid": {
+          "case": "B",
+          "confidence": "indicative",
+          "sample_size_band": "strong_indicative",
+          "n_used": 79,
+          "tier_breakdown": [
+            {
+              "tier": "T2",
+              "weight": 0.88,
+              "raw_value": 13117.28,
+              "discounted_value": 11477.62,
+              "discount_applied": -0.125,
+              "n": 79
+            },
+            {
+              "tier": "T3",
+              "weight": 0.12,
+              "raw_value": 13382.48,
+              "discounted_value": 11040.54,
+              "discount_applied": -0.175,
+              "n": 4,
+              "n_effective": 4.0,
+              "shape": "dict_new",
+              "sources": [
+                {
+                  "developer": "Aryan",
+                  "project": "City Avenues",
+                  "status": "under_construction",
+                  "value_per_m2_raw": 13372.09,
+                  "discount_applied": -0.175,
+                  "value_per_m2_adjusted": 11031.97,
+                  "freshness_status": "fresh"
+                },
+                {
+                  "developer": "Aryan",
+                  "project": "City Avenues",
+                  "status": "under_construction",
+                  "value_per_m2_raw": 13281.25,
+                  "discount_applied": -0.175,
+                  "value_per_m2_adjusted": 10957.03,
+                  "freshness_status": "fresh"
+                },
+                {
+                  "developer": "Aryan",
+                  "project": "City Avenues",
+                  "status": "under_construction",
+                  "value_per_m2_raw": 13432.84,
+                  "discount_applied": -0.175,
+                  "value_per_m2_adjusted": 11082.09,
+                  "freshness_status": "fresh"
+                },
+                {
+                  "developer": "Aryan",
+                  "project": "City Avenues",
+                  "status": "under_construction",
+                  "value_per_m2_raw": 13392.86,
+                  "discount_applied": -0.175,
+                  "value_per_m2_adjusted": 11049.11,
+                  "freshness_status": "fresh"
+                }
+              ]
+            }
+          ],
+          "muc_required": true,
+          "muc_range_pct": 0.2,
+          "rule_e3_compliance": "compliant"
+        },
+        "sources": [
+          {
+            "source": "propertyfinder",
+            "tier": "T2",
+            "n_raw": 79,
+            "role_ar": "إعلانات بيع شقق — لوسيل",
+            "url_template": "propertyfinder.qa/en/buy/lusail/apartments-for-sale.html",
+            "calibration_status": "provisional_broker_experience_grounded"
+          }
+        ],
+        "sanity_warnings": [],
+        "data_freshness": {
+          "latest_record": "2025-12-31",
+          "latest_record_ar": "31 ديسمبر 2025",
+          "days_old": 146,
+          "tier": "stale",
+          "severity": "warning",
+          "caveat_ar": "المرجع مبني على بيانات حتى 31 ديسمبر 2025. للحالات الحساسة، تحقق من السوق الحالي قبل اتخاذ القرار."
+        }
+      }
+    },
+    {
+      "case_id": "A2_compoundL_51_835_17_A6",
+      "label": "Gharaffa compound_large Patch-A",
+      "body": {
+        "zone": 51,
+        "street": 835,
+        "building": 17
+      },
+      "expected": {
+        "asset_type": "compound_large",
+        "method": "insufficient_data",
+        "value_per_m2": null,
+        "val_amount": null
+      },
+      "http_status": 200,
+      "ttlb_s": 25.64844059944153,
+      "error": null,
+      "extracted": {
+        "asset_type": "compound_large",
+        "asset_type_ar": null,
+        "district": "الغرافة",
+        "val.amount": null,
+        "val.value_per_m2": null,
+        "val.value_per_m2_low": null,
+        "val.value_per_m2_high": null,
+        "val.method": "insufficient_data",
+        "val.low": null,
+        "val.high": null,
+        "brief.sections": [
+          "negotiation",
+          "flags",
+          "due_diligence",
+          "material_uncertainty"
+        ],
+        "hybrid.case": null,
+        "hybrid.confidence": null,
+        "hybrid.n_used": null,
+        "hybrid.muc_range_pct": null,
+        "hybrid.tier_breakdown": null,
+        "sources_tiers": [],
+        "accuracy.score": 0,
+        "accuracy.label": "❌ بيانات غير كافية",
+        "has_subtype_zoning_mismatch": false,
+        "has_asset_type_reality": false,
+        "has_multi_qars": false,
+        "engine_version": "thammen-sprint2p21p4-t3-aryan-lusail"
+      },
+      "drift_issues": [],
+      "body_json": {
+        "status": "ok",
+        "engine_version": "thammen-sprint2p21p4-t3-aryan-lusail",
+        "methodology_ar": "AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق",
+        "methodology_disclaimer_ar": "تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. لا يحلّ محل التقييم المعتمد من مُقيِّم مُرخّص للأغراض الرسمية (قروض بنكية، نزاعات قضائية، تقارير محاسبية).",
+        "address": "51/835/17",
+        "valuation_date": "2026-05-26",
+        "district": "الغرافة",
+        "plot_area_m2": 67536.0,
+        "asset_type": "compound_large",
+        "audience": "buyer",
+        "user_inputs": {
+          "listing_price": null,
+          "rental_income": null,
+          "floors": null,
+          "condition": null,
+          "annexes": 0,
+          "basement": null,
+          "footprint_m2": null,
+          "external_majlis": null,
+          "building_age_years": null,
+          "age_source": "unknown",
+          "is_luxury": null
+        },
+        "gps": {
+          "lon": 51.45419083056478,
+          "lat": 25.346261791337017
+        },
+        "valuation": {
+          "amount": null,
+          "method": "insufficient_data",
+          "method_label_ar": "بيانات غير كافية للتقييم",
+          "source_ar": "لم نجد عينة كافية من معاملات المقارنة"
+        },
+        "moj_sample_size": 0,
+        "reconciliation": {
+          "status": "no_primary",
+          "message_ar": "لا توجد قيمة مقارنة — عينة غير كافية"
+        },
+        "accuracy": {
+          "score": 0,
+          "label": "❌ بيانات غير كافية",
+          "tier": "none",
+          "explanation_ar": "لا توجد صفقات بيع كافية لعقارات مشابهة في وزارة العدل. لم يتم إنتاج تقييم."
+        },
+        "location_features": [],
+        "geometric_factors": {
+          "polygon_available": true,
+          "plot_area_m2_verified": 67536,
+          "pd_no": "0",
+          "corner_analysis": {
+            "is_corner": false,
+            "main_road_adjacent": true,
+            "main_streets": [
+              835
+            ],
+            "local_streets": [
+              835
+            ],
+            "evidence_ar": "مطل على شارع رئيسي (شوارع رئيسية: [835]، شوارع داخلية: [835])",
+            "confidence": "medium",
+            "note_ar": "هذه الخصائص قد تَفرض علاوة سوقية. النقطة المركزية محافظة (وسيط المقارنات) — الحد الأعلى للنطاق يَعكس الاحتمال."
+          },
+          "named_landmarks": {
+            "malls": [
+              {
+                "name_ar": "باديل -  جلف مول",
+                "name_en": "Padel - Gulf Mall",
+                "category_ar": "رياضي",
+                "distance_m": 1602.0,
+                "walkable": false
+              },
+              {
+                "name_ar": "بوتس - جلف مول",
+                "name_en": "Boots - Gulf Mall",
+                "category_ar": "صحي",
+                "distance_m": 1657.0,
+                "walkable": false
+              }
+            ],
+            "mixed_use_venues": [],
+            "metros": [],
+            "closest_mall_m": 1602.0,
+            "closest_mixed_use_m": null,
+            "closest_metro_m": null,
+            "walkable_mall": false,
+            "walkable_mixed_use": false,
+            "walkable_metro": false
+          }
+        },
+        "material_uncertainty": {
+          "level": "critical",
+          "banner_ar": "⛔ تحفظ مادي جوهري — البيانات المتاحة غير كافية لإنتاج تقييم موثوق. النتائج للاسترشاد الأوّلي فقط ولا تصلح لاتخاذ قرار.",
+          "banner_en": "⛔ CRITICAL Material Uncertainty — Insufficient data for a reliable valuation. Results are for preliminary guidance only.",
+          "factors": [
+            "تفاصيل البناء غير مُقدَّمة (الطوابق، السرداب، الترميم، الملاحق) — التقييم يفترض بناءً نموذجياً وقد يختلف عن الواقع بـ ±20-40% إذا كان للعقار سرداب أو طوابق متعددة أو ملاحق مهمة.",
+            "لا توجد صفقات مقارنة في وزارة العدل",
+            "لا توجد بيانات إيجار — منهج الدخل غير مطبَّق",
+            "لا يوجد اتجاه زمني كافٍ — التعديل الزمني غير مطبَّق",
+            "لم يتم فحص العقار ميدانياً — تقييم مكتبي فقط",
+            "المساحة المبنية غير معروفة — تقدير بنسبة من القطعة",
+            "رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى"
+          ],
+          "known_unknowns": [
+            "مكوّنات البناء الفعلية (سرداب، طوابق، مجلس خارجي، حالة التشطيب)",
+            "حالة المبنى الفعلية من الداخل",
+            "التشطيبات والإطلالة والضوضاء",
+            "حالة المبنى (MoJ لا تفصل بين جديد ومتهالك)",
+            "عمر البناء الدقيق",
+            "المساحة المبنية الفعلية (BUA)"
+          ],
+          "recommendations": [
+            "أدخل تفاصيل العقار (طوابق، سرداب، حالة) للحصول على تقييم أدق",
+            "ابحث في مناطق مجاورة أو وسّع النافذة الزمنية",
+            "معاينة ميدانية قبل اتخاذ قرار شراء/بيع",
+            "للتوافق مع معايير RICS Red Book: يلزم فحص ميداني + تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement."
+          ],
+          "rics_compliant": false,
+          "muc_clause_ar": "⚠️ تحفظ مادي وفق RICS VPS 5 (Material Uncertainty Clause)\n\nتواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات.\n\nبناءً عليه — ووفق المعيار المعترف به في RICS VPS 5 — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.",
+          "muc_clause_en": "⚠️ Material Valuation Uncertainty (RICS VPS 5)\n\nThe Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards). Accordingly — and in line with RICS VPS 5 — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.",
+          "muc_basis_ar": "بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.",
+          "muc_review_recommendation_ar": "هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق."
+        },
+        "brief": {
+          "audience": "buyer",
+          "title_ar": "تقرير المشتري",
+          "title_en": "Buyer Brief",
+          "address": "51/835/17",
+          "asset_type": "compound_large",
+          "plot_area_m2": 67536.0,
+          "district": "الغرافة",
+          "valuation_total": null,
+          "valuation_low": null,
+          "valuation_high": null,
+          "material_uncertainty_banner": "⛔ تحفظ مادي جوهري — البيانات المتاحة غير كافية لإنتاج تقييم موثوق. النتائج للاسترشاد الأوّلي فقط ولا تصلح لاتخاذ قرار.",
+          "disclaimer": "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق RICS/IVS. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.",
+          "valuation_date": "2026-05-26",
+          "sections": [
+            {
+              "id": "negotiation",
+              "title_ar": "نطاق التفاوض المقترح",
+              "content": {
+                "floor": null,
+                "ceiling": null,
+                "opening_offer": null,
+                "note": "لا تدفع أكثر من وسيط MoJ + 10%. ابدأ بعرض أقل 10% من التقييم."
+              }
+            },
+            {
+              "id": "flags",
+              "title_ar": "المخاطر والإشارات",
+              "content": {
+                "red_flags": [],
+                "green_flags": [],
+                "has_excluding": false
+              }
+            },
+            {
+              "id": "due_diligence",
+              "title_ar": "أسئلة يجب طرحها قبل الشراء",
+              "content": [
+                "اطلب بيان عقاري من وزارة العدل (يكشف الرهونات والخلافات)",
+                "اسأل عن عمر البناء الحقيقي (ليس ما يقوله البائع)",
+                "تحقق من تصنيف المنطقة (R1/R2/R3) — يحدد ما يمكنك بناؤه",
+                "اطلب فواتير الخدمات (كهرباء/ماء) لآخر سنة",
+                "إن كان مؤجراً: اطلب عقود الإيجار الحالية"
+              ]
+            },
+            {
+              "id": "material_uncertainty",
+              "title_ar": "تحفظات مادية وفق RICS VPS 4/5",
+              "title_en": "Material Uncertainty Declaration (RICS VPS 4 §3.2 + VPS 5)",
+              "content": {
+                "level": "critical",
+                "factors": [
+                  "لا توجد صفقات مقارنة في وزارة العدل",
+                  "لا توجد بيانات إيجار — منهج الدخل غير مطبَّق",
+                  "لا يوجد اتجاه زمني كافٍ — التعديل الزمني غير مطبَّق",
+                  "لم يتم فحص العقار ميدانياً — تقييم مكتبي فقط",
+                  "المساحة المبنية غير معروفة — تقدير بنسبة من القطعة",
+                  "رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى"
+                ],
+                "known_unknowns": [
+                  "حالة المبنى الفعلية من الداخل",
+                  "التشطيبات والإطلالة والضوضاء",
+                  "حالة المبنى (MoJ لا تفصل بين جديد ومتهالك)",
+                  "عمر البناء الدقيق",
+                  "المساحة المبنية الفعلية (BUA)"
+                ],
+                "recommendations": [
+                  "ابحث في مناطق مجاورة أو وسّع النافذة الزمنية",
+                  "معاينة ميدانية قبل اتخاذ قرار شراء/بيع",
+                  "للتوافق مع معايير RICS Red Book: يلزم فحص ميداني + تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement."
+                ],
+                "rics_compliant": false,
+                "muc_clause_ar": "⚠️ تحفظ مادي وفق RICS VPS 5 (Material Uncertainty Clause)\n\nتواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات.\n\nبناءً عليه — ووفق المعيار المعترف به في RICS VPS 5 — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.",
+                "muc_clause_en": "⚠️ Material Valuation Uncertainty (RICS VPS 5)\n\nThe Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards). Accordingly — and in line with RICS VPS 5 — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.",
+                "muc_basis_ar": "بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.",
+                "muc_review_recommendation_ar": "هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق."
+              }
+            }
+          ]
+        },
+        "disclaimer": "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق RICS/IVS. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.",
+        "valuation_id": "THM-20260526-075553-5183517",
+        "reasoning_trace": {
+          "valuation_id": "THM-20260526-075553-5183517",
+          "generated_at": "2026-05-26T07:55:53",
+          "steps": [
+            {
+              "step": 1,
+              "category": "identification",
+              "fact": "الأصل: compound_large، منطقة GIS: الغرافة، مساحة الأرض: 67536.0 م²",
+              "source": "gisqatar.org.qa",
+              "source_date": "2026-05-26",
+              "confidence": "medium",
+              "details": {}
+            }
+          ],
+          "sources_consulted": [
+            {
+              "name": "gisqatar.org.qa",
+              "url": "https://services.gisqatar.org.qa",
+              "accessed_at": "2026-05-26T07:55:53",
+              "record_count": null
+            }
+          ],
+          "data_freshness": {
+            "gisqatar.org.qa": "2026-05-26"
+          },
+          "known_unknowns": [
+            "حالة العقار الداخلية الفعلية (تشطيبات، صيانة، تكييف)",
+            "أي التزامات قانونية (رهون، خلافات، إرث، حصص غير مفروزة)",
+            "تاريخ آخر تجديد فعلي أو حالة الأنظمة (سباكة، كهرباء)",
+            "وضع المستأجر الحالي (إن وُجد) ومدة العقد",
+            "الإطلالة الفعلية والطابق",
+            "ضوضاء البرج/المحيط أو مشاكل خاصة"
+          ],
+          "disclaimer": "ثمّن يجمع البيانات السوقية من المصادر الحكومية (وزارة العدل، وزارة البلدية والبيئة) والإعلانات النشطة (FGRealty، PropertyFinder، arady، Mzad). هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق معايير RICS أو IVS. القرار النهائي ومسؤوليته على العميل. للأغراض الرسمية (قروض بنكية، محاكم، تقارير محاسبية) يلزم تقييم من مُقيِّم معتمد."
+        },
+        "active_listings": {
+          "available": false,
+          "reason": "لا توجد إعلانات نشطة مطابقة"
+        },
+        "service_scope": {
+          "asset_type": "compound_large",
+          "tier": "limited",
+          "label_ar": "مجمع كبير (≥50K م²)",
+          "methodology_ar": "منهج الدخل (Income Approach) — معدّل الرسملة على إيجار سنوي",
+          "methodology_en": "Income Approach — capitalisation rate applied to annual rent",
+          "requires_user_input_ar": "الإيجار السنوي الإجمالي للمجمع (Gross Annual Income)",
+          "disclaimer_ar": "المجمعات الكبيرة لا توجد لها مقارنات مباشرة في وزارة العدل. التقييم يعتمد على منهج الدخل ويتطلب إفادة الإيجار السنوي الإجمالي. بدون هذه الإفادة، يقدّم ثمّن تصنيفاً فقط دون رقم.",
+          "reason_ar": "لا توجد مقارنات MoJ لأصول ≥50K م²، المنهج المعياري هو الدخل"
+        },
+        "sanity_warnings": [],
+        "data_freshness": {
+          "latest_record": "2025-12-31",
+          "latest_record_ar": "31 ديسمبر 2025",
+          "days_old": 146,
+          "tier": "stale",
+          "severity": "warning",
+          "caveat_ar": "المرجع مبني على بيانات حتى 31 ديسمبر 2025. للحالات الحساسة، تحقق من السوق الحالي قبل اتخاذ القرار."
+        }
+      }
+    },
+    {
+      "case_id": "A3_villa_31_918_99_ummLekhba",
+      "label": "Umm Lekhba villa",
+      "body": {
+        "zone": 31,
+        "street": 918,
+        "building": 99
+      },
+      "expected": {
+        "asset_type": "standalone_villa",
+        "method": "comparison_thin",
+        "value_per_m2": null,
+        "val_amount": 3200000
+      },
+      "http_status": 503,
+      "ttlb_s": 30.35655903816223,
+      "error": "HTTPError 503",
+      "extracted": {},
+      "drift_issues": [
+        "asset_type drift: expected='standalone_villa' actual=None",
+        "val.method drift: expected='comparison_thin' actual=None"
+      ],
+      "body_json": null
+    },
+    {
+      "case_id": "A4_compoundL_pin_66030258",
+      "label": "Reality-check unknown PIN 66030258",
+      "body": {
+        "pin": "66030258"
+      },
+      "expected": {
+        "asset_type": "unknown",
+        "method": "asset_type_reality_stop",
+        "value_per_m2": null,
+        "val_amount": null
+      },
+      "http_status": 200,
+      "ttlb_s": 4.3835508823394775,
+      "error": null,
+      "extracted": {
+        "asset_type": "unknown",
+        "asset_type_ar": "فيلا سكنية",
+        "district": "عنيزة 66",
+        "val.amount": null,
+        "val.value_per_m2": null,
+        "val.value_per_m2_low": null,
+        "val.value_per_m2_high": null,
+        "val.method": "asset_type_reality_stop",
+        "val.low": null,
+        "val.high": null,
+        "brief.sections": [
+          "asset_type_reality"
+        ],
+        "hybrid.case": null,
+        "hybrid.confidence": null,
+        "hybrid.n_used": null,
+        "hybrid.muc_range_pct": null,
+        "hybrid.tier_breakdown": null,
+        "sources_tiers": [],
+        "accuracy.score": 0,
+        "accuracy.label": "— خارج النطاق",
+        "has_subtype_zoning_mismatch": false,
+        "has_asset_type_reality": true,
+        "has_multi_qars": false,
+        "engine_version": "thammen-sprint2p21p4-t3-aryan-lusail"
+      },
+      "drift_issues": [],
+      "body_json": {
+        "status": "ok",
+        "engine_version": "thammen-sprint2p21p4-t3-aryan-lusail",
+        "methodology_ar": "فحص نوع الأصل (Asset Type Reality Check)",
+        "address": "أرض في عنيزة 66 — PIN 66030258",
+        "valuation_date": "2026-05-26",
+        "district": "عنيزة 66",
+        "plot_area_m2": 59501.0,
+        "gps": {
+          "lat": 25.338741389712943,
+          "lon": 51.51578464601671
+        },
+        "asset_type": "unknown",
+        "asset_type_ar": "فيلا سكنية",
+        "audience": "buyer",
+        "user_inputs": {
+          "pin": "66030258"
+        },
+        "valuation": {
+          "amount": null,
+          "low": null,
+          "high": null,
+          "method": "asset_type_reality_stop",
+          "reason_ar": "⚠ هذه القطعة (PIN 66030258) عليها مبنى — ليست أرض فضاء.\n\nالمعلومات المكتشفة:\n- المساحة: 59,501 م²\n- التصنيف: سكني — فلل/بيوت\n- الارتفاع المسموح: G+1+P\n- البناء: موجود ✓\n\nلتقييم العقار المبني عليها:\nاستخدم تبويب 'العنوان' مع Zone/Street/Building.\n\nالنظام لا يحوّل تلقائياً لضمان وعي المستخدم بالاكتشاف."
+        },
+        "moj_sample_size": 0,
+        "cost_approach": null,
+        "income_approach": null,
+        "reconciliation": {
+          "status": "out_of_scope",
+          "message_ar": "قطعة عليها مبنى — ليست أرض فضاء"
+        },
+        "accuracy": {
+          "score": 0,
+          "label": "— خارج النطاق"
+        },
+        "trend": null,
+        "location_features": null,
+        "geometric_factors": {
+          "polygon_available": true,
+          "plot_area_m2_verified": 59501.0,
+          "pd_no": "PD/1074/2007"
+        },
+        "material_uncertainty": {
+          "level": "critical",
+          "banner_ar": "قطعة عليها مبنى — ليست أرض فضاء",
+          "known_unknowns_ar": [],
+          "rics_compliant": false,
+          "muc_clause_ar": "⚠️ تحفظ مادي وفق RICS VPS 5 (Material Uncertainty Clause)\n\nتواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات.\n\nبناءً عليه — ووفق المعيار المعترف به في RICS VPS 5 — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.",
+          "muc_clause_en": "⚠️ Material Valuation Uncertainty (RICS VPS 5)\n\nThe Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards). Accordingly — and in line with RICS VPS 5 — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.",
+          "muc_basis_ar": "بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.",
+          "muc_review_recommendation_ar": "هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق."
+        },
+        "asset_type_reality": {
+          "kind": "asset_type_reality",
+          "action": "stop",
+          "reason": "building_present",
+          "ruleid": 1,
+          "ruleid_label_en": "Single-Family Residential",
+          "ruleid_label_ar": "سكني — فلل/بيوت",
+          "qars_in_polygon": 1,
+          "building_height": "G+1+P",
+          "area_m2": 59501.0,
+          "message_ar": "⚠ هذه القطعة (PIN 66030258) عليها مبنى — ليست أرض فضاء.\n\nالمعلومات المكتشفة:\n- المساحة: 59,501 م²\n- التصنيف: سكني — فلل/بيوت\n- الارتفاع المسموح: G+1+P\n- البناء: موجود ✓\n\nلتقييم العقار المبني عليها:\nاستخدم تبويب 'العنوان' مع Zone/Street/Building.\n\nالنظام لا يحوّل تلقائياً لضمان وعي المستخدم بالاكتشاف."
+        },
+        "brief": {
+          "audience": "buyer",
+          "title_ar": "قطعة عليها مبنى — ليست أرض فضاء",
+          "sections": [
+            {
+              "id": "asset_type_reality",
+              "title_ar": "قطعة عليها مبنى — ليست أرض فضاء",
+              "content": {
+                "note_ar": "⚠ هذه القطعة (PIN 66030258) عليها مبنى — ليست أرض فضاء.\n\nالمعلومات المكتشفة:\n- المساحة: 59,501 م²\n- التصنيف: سكني — فلل/بيوت\n- الارتفاع المسموح: G+1+P\n- البناء: موجود ✓\n\nلتقييم العقار المبني عليها:\nاستخدم تبويب 'العنوان' مع Zone/Street/Building.\n\nالنظام لا يحوّل تلقائياً لضمان وعي المستخدم بالاكتشاف."
+              }
+            }
+          ]
+        },
+        "sanity_warnings": [],
+        "disclaimer": "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.",
+        "active_listings": {
+          "available": false,
+          "reason": "خارج النطاق"
+        },
+        "service_scope": {
+          "asset_type": "unknown",
+          "tier": "unsupported",
+          "label_ar": "نوع غير معروف",
+          "methodology_ar": "غير مطبَّق",
+          "methodology_en": "Not applicable",
+          "requires_user_input_ar": null,
+          "disclaimer_ar": "لم نتمكن من تصنيف هذا العقار. التصنيف الصحيح للأصل ضروري لتطبيق المنهجية المناسبة. يرجى مراجعة العنوان المُدخَل.",
+          "reason_ar": "تصنيف غير مطابق لأي فئة مدعومة"
+        },
+        "data_freshness": {
+          "latest_record": "2025-12-31",
+          "latest_record_ar": "31 ديسمبر 2025",
+          "days_old": 146,
+          "tier": "stale",
+          "severity": "warning",
+          "caveat_ar": "المرجع مبني على بيانات حتى 31 ديسمبر 2025. للحالات الحساسة، تحقق من السوق الحالي قبل اتخاذ القرار."
+        }
+      }
+    },
+    {
+      "case_id": "A5_pearl_66_140_6_NEW",
+      "label": "Pearl tower 66/140/6 (NEW from pearl_pin_discovery, ship-gate)",
+      "body": {
+        "zone": 66,
+        "street": 140,
+        "building": 6
+      },
+      "expected": {
+        "asset_type": null,
+        "method": null,
+        "value_per_m2": null,
+        "val_amount": null
+      },
+      "http_status": 200,
+      "ttlb_s": 4.192680597305298,
+      "error": null,
+      "extracted": {
+        "asset_type": "tower",
+        "asset_type_ar": "برج سكني",
+        "district": "جزيرة اللؤلؤة",
+        "val.amount": null,
+        "val.value_per_m2": null,
+        "val.value_per_m2_low": null,
+        "val.value_per_m2_high": null,
+        "val.method": "insufficient_data",
+        "val.low": null,
+        "val.high": null,
+        "brief.sections": [
+          "next_steps"
+        ],
+        "hybrid.case": null,
+        "hybrid.confidence": null,
+        "hybrid.n_used": null,
+        "hybrid.muc_range_pct": null,
+        "hybrid.tier_breakdown": null,
+        "sources_tiers": [],
+        "accuracy.score": 0,
+        "accuracy.label": "⚠️ بيانات غير كافية",
+        "has_subtype_zoning_mismatch": false,
+        "has_asset_type_reality": false,
+        "has_multi_qars": false,
+        "engine_version": "thammen-sprint2p21p4-t3-aryan-lusail"
+      },
+      "drift_issues": [],
+      "body_json": {
+        "status": "ok",
+        "engine_version": "thammen-sprint2p21p4-t3-aryan-lusail",
+        "methodology_ar": "تصنيف سريع مبني على بيانات GIS — لا توجد مقارنة MoJ مباشرة لفئة \"برج سكني\" في قطر",
+        "methodology_disclaimer_ar": "تقدير الأصول من هذه الفئة يحتاج طريقة الدخل (Income Approach) أو سعر إعلان قابل للمقارنة. يرجى إعادة الطلب مع إفادة بالإيجار الشهري أو سعر الإعلان للحصول على تقييم كامل.",
+        "address": "66/140/6",
+        "valuation_date": "2026-05-26",
+        "district": "جزيرة اللؤلؤة",
+        "plot_area_m2": 7236.0,
+        "gps": {
+          "lat": 25.368849196421824,
+          "lon": 51.55356821716886
+        },
+        "asset_type": "tower",
+        "asset_type_ar": "برج سكني",
+        "audience": "buyer",
+        "user_inputs": {
+          "listing_price": null,
+          "rental_income": null
+        },
+        "valuation": {
+          "amount": null,
+          "low": null,
+          "high": null,
+          "method": "insufficient_data",
+          "reason_ar": "هذا الأصل من نوع \"برج سكني\" — لا توجد عينة مقارنة في سجلات وزارة العدل لهذه الفئة (الكومباوندات الكبيرة والأبراج تُسجَّل بأرقام مرجعية موحَّدة بدلاً من مقارنات سعر/م²). لتقييم دقيق، أضف الإيجار الشهري الفعلي أو سعر الإعلان وأعد الطلب."
+        },
+        "moj_sample_size": 0,
+        "cost_approach": null,
+        "income_approach": null,
+        "reconciliation": {
+          "status": "no_primary",
+          "message_ar": "تصنيف فقط — التقييم يحتاج إفادة الإيجار أو سعر الإعلان"
+        },
+        "accuracy": {
+          "score": 0,
+          "label": "⚠️ بيانات غير كافية"
+        },
+        "trend": null,
+        "location_features": null,
+        "geometric_factors": {
+          "polygon_available": true,
+          "plot_area_m2_verified": 7236.0,
+          "pd_no": "PD/1974/2010"
+        },
+        "material_uncertainty": {
+          "level": "critical",
+          "banner_ar": "تحفظ مادي حرج: لا توجد بيانات بيع مقارنة لهذه الفئة",
+          "known_unknowns_ar": [
+            "الإيجار الشهري للوحدات",
+            "حالة المبنى والعمر",
+            "مساحة البناء الإجمالية",
+            "عدد الوحدات الفعلي"
+          ],
+          "rics_compliant": false,
+          "muc_clause_ar": "⚠️ تحفظ مادي وفق RICS VPS 5 (Material Uncertainty Clause)\n\nتواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات.\n\nبناءً عليه — ووفق المعيار المعترف به في RICS VPS 5 — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.",
+          "muc_clause_en": "⚠️ Material Valuation Uncertainty (RICS VPS 5)\n\nThe Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards). Accordingly — and in line with RICS VPS 5 — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.",
+          "muc_basis_ar": "بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.",
+          "muc_review_recommendation_ar": "هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق."
+        },
+        "brief": {
+          "audience": "buyer",
+          "title_ar": "تقرير برج سكني — تحتاج بيانات إضافية",
+          "sections": [
+            {
+              "id": "next_steps",
+              "title_ar": "الخطوات المقترحة",
+              "content": {
+                "note_ar": "العنوان 66/140/6 تابع لمساحة 7,236 م² مُصنَّف كـ \"برج سكني\". لتقييم كامل يرجى تزويدنا بأحد التاليين:",
+                "options_ar": [
+                  "إفادة الإيجار الشهري الفعلي (لتقييم بطريقة الدخل)",
+                  "سعر الإعلان أو سعر المالك (لمقارنة سوقية)"
+                ]
+              }
+            }
+          ]
+        },
+        "disclaimer": "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.",
+        "active_listings": {
+          "available": false,
+          "reason": "تصنيف سريع — لم يُجرَ بحث إعلانات"
+        },
+        "service_scope": {
+          "asset_type": "tower",
+          "tier": "limited",
+          "label_ar": "برج كامل",
+          "methodology_ar": "منهج الدخل (Income Approach)",
+          "methodology_en": "Income Approach",
+          "requires_user_input_ar": "الإيجار السنوي الإجمالي للبرج",
+          "disclaimer_ar": "الأبراج تُسجَّل بأرقام مرجعية موحَّدة في وزارة العدل بدلاً من مقارنات سعر/م². التقييم يتطلب إفادة الدخل التشغيلي السنوي.",
+          "reason_ar": "لا توجد مقارنات MoJ سعر/م² للأبراج"
+        },
+        "sanity_warnings": [],
+        "data_freshness": {
+          "latest_record": "2025-12-31",
+          "latest_record_ar": "31 ديسمبر 2025",
+          "days_old": 146,
+          "tier": "stale",
+          "severity": "warning",
+          "caveat_ar": "المرجع مبني على بيانات حتى 31 ديسمبر 2025. للحالات الحساسة، تحقق من السوق الحالي قبل اتخاذ القرار."
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "started_utc": "2026-05-26T07:53:52Z",
+  "pearl_listings_confirmed_on": [
+    "arady"
+  ],
+  "huzoom_syndication_confirmed_on": [
+    "arady"
+  ],
+  "all_attempts": [
+    {
+      "source": "propertyfinder",
+      "url": "https://www.propertyfinder.qa/en/buy/the-pearl/apartments-for-sale.html",
+      "status": 404,
+      "error": "HTTPError 404"
+    },
+    {
+      "source": "propertyfinder",
+      "url": "https://www.propertyfinder.qa/en/buy/the-pearl-qatar/apartments-for-sale.html",
+      "status": 404,
+      "error": "HTTPError 404"
+    },
+    {
+      "source": "steps",
+      "url": "https://www.steps.qa/for-sale/apartments/the-pearl",
+      "status": null,
+      "error": "URLError: <urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "source": "steps",
+      "url": "https://www.steps.qa/for-sale/the-pearl",
+      "status": null,
+      "error": "URLError: <urlopen error [Errno 11001] getaddrinfo failed>"
+    },
+    {
+      "source": "qatarsale",
+      "url": "https://www.qatarsale.com/properties/sale/apartments/the-pearl",
+      "status": 404,
+      "error": "HTTPError 404"
+    },
+    {
+      "source": "arady",
+      "url": "https://arady.qa/listings?location=the+pearl&type=apartment",
+      "status": 200,
+      "html_len": 456592,
+      "pearl_tokens_found": [
+        "the pearl",
+        "اللؤلؤة",
+        "قنوات"
+      ],
+      "huzoom_tokens_found": [
+        "huzoom"
+      ]
+    },
+    {
+      "source": "arady",
+      "url": "https://arady.qa/the-pearl",
+      "status": 404,
+      "error": "HTTPError 404"
+    }
+  ]
+}
