@@ -163,10 +163,12 @@ Frontend additions in 2.22.0a:
 - **Heartbeat metric drift:** 2.22.0b owns; 2.22.0a renders the result if density-gated.
 - **Screenshot propagation patterns:** 2.22.0.1 owns; 2.22.0a generates verification URL token to enable.
 
-### §3.4 ENGINE_VERSION bump
-- Suggested slug: `thammen-sprint2p22p0a-content-and-refusal-templates`
-- Bump in `evaluate_unified.py` `ENGINE_VERSION = ...` line + `api.py` `version = "3.2.0-sprint2.22.0a"` (or similar to follow `3.1.0-sprint2.21.4` convention).
-- `/api/health` returns the new version on deploy.
+### §3.4 ENGINE_VERSION + SPRINT_TAG bump (R2 amendment 2026-05-26)
+- **`ENGINE_VERSION` slug** (`evaluate_unified.py:44`): `'thammen-sprint2p21p4-t3-aryan-lusail'` → `'thammen-sprint2p22p0a-content-and-refusal-templates'`
+- **`SPRINT_TAG`** (`evaluate_unified.py:45`): `'2.21.4'` → `'2.22.0a'`
+- **`api.py:100` `version="3.1.0"` UNCHANGED** — this is the FastAPI app spec version, NOT sprint-tagged. The sprint identifier is concatenated at `/api/health` response time via the existing line-45 comment convention: `"3.1.0-sprint" + SPRINT_TAG`.
+- KICKOFF original draft assumed `api.py` `version` bumps each Sprint to `"3.2.0-sprint2.22.0a"`; **R2 reconnaissance (2026-05-26) found this contradicts existing project convention** — the FastAPI `version` field has stayed at `"3.1.0"` across multiple sprints. Amendment per R2: do not touch `api.py:100`.
+- `/api/health` returns `version: "3.1.0-sprint2.22.0a"` on deploy via the existing concatenation logic — no `api.py` change needed.
 
 ---
 
@@ -197,25 +199,34 @@ Frontend additions in 2.22.0a:
 
 **Total new code estimate (per §9.1 sub-sprint breakdown):**
 
-- **Production code (Python core logic):** ~610 LOC across sub-sprints /1, /2, /5, /6, /7, /9
+- **Production code (Python core logic):** ~580 LOC across sub-sprints /1, /2, /5, /6, /7, /9 (adjusted from ~610 pre-amendment after /1 shrunk from ~30 to ~3 LOC per R2+R3 reconnaissance)
 - **Frontend rendering (`index.html` CSS + `renderSection()` switch cases):** ~400 LOC across sub-sprints /3, /4, /8 (+ shares of /2, /5)
 - **Tests:** ~700 LOC (sub-sprint /10 batch — 6+ new test files)
 - **Docs / CHANGELOG / PHASE3_LOG appends:** ~160 LOC across sub-sprints /11, /12
-- **Schema additions** (~50 LOC) included within /1 production count above
+- *(Schema additions line removed — per A2 amendment, response fields are dict-key additions embedded in /2-/9 logic, not a separate Pydantic-declaration count)*
 
-**Total: ~1700-1900 LOC including production + frontend + tests + docs (per §9.1 sub-sprint breakdown).** Earlier "~1030 LOC" figure undercounted by omitting frontend `index.html` work (~400 LOC) and docs sub-sprints (~160 LOC); revised here for honesty. Production-only delta is ~610 LOC (per Anas observed-vs-expected discipline Rule #36 + #51).
+**Total: ~1670-1870 LOC including production + frontend + tests + docs (per §9.1 sub-sprint breakdown — adjusted from ~1700-1900 pre-amendment after sub-sprint /1 scope shrinkage).** Earlier "~1030 LOC" figure undercounted by omitting frontend `index.html` work (~400 LOC) and docs sub-sprints (~160 LOC); revised here for honesty. Production-only delta is ~580 LOC (per Anas observed-vs-expected discipline Rule #36 + #51).
 
-### §4.3 Schema changes (response root)
+### §4.3 Response field additions (R3 amendment 2026-05-26)
 
-```python
-# api.py — additions to evaluation response (all optional, backward-compatible)
-tier_label: Optional[str]                       # NEW
-verification_url: Optional[str]                 # NEW
-refusal_reason: Optional[Dict[str, Any]]        # NEW (dict shape per §5)
-use_case_banner: Optional[Dict[str, Any]]       # NEW (dict shape per §6.7 BRIEF v3.1)
-```
+**`api.py` contains Pydantic models for REQUESTS only** (`EvaluateRequest` at line 263, `EvaluateDetailsRequest` at line 304). **NO Pydantic response models exist** in the codebase as of v128. `/api/evaluate` and `/api/evaluate/details` return raw `dict` payloads (via `evaluate_thammen()` → `_simplify_evaluation()` → `_attach_freshness()`). FastAPI serialises the dict directly without schema enforcement.
 
-`tier_label` allowed values: `'indicative_estimate' | 'analytical_range' | 'broker_verified_range' | 'signed_valuation'`. Backend emits English; UI maps to Arabic.
+**R3 reconnaissance (2026-05-26)** uncovered this. KICKOFF original draft assumed Pydantic response schema additions, which is not actionable as written.
+
+**Amendment §4.3:** the 4 new response fields are **dict-key additions emitted in sub-sprints /2-/9** as the corresponding logic lands:
+
+| Field | Emitted in sub-sprint | Source files |
+|---|---|---|
+| `tier_label: str` | 2.22.0a/2 | `evaluate_unified.py` + `output_briefs.py` |
+| `tier_breakdown` (renders existing `hybrid.tier_breakdown` block) | 2.22.0a/3 | `output_briefs.py` + `index.html` |
+| `n_used` (int) + `freshness_date` (str, YYYY-MM-DD) | 2.22.0a/3 | `evaluate_unified.py` + `output_briefs.py` — emitted alongside tier_breakdown rendering; `n_used` mirrors `body.hybrid.n_used` (already present in response root per Phase 3 audit); `freshness_date` is NEW (engine emits current UTC date at evaluation time) |
+| `use_case_banner: dict` | 2.22.0a/4 | `evaluate_unified.py` + `output_briefs.py` |
+| `refusal_reason: dict` | 2.22.0a/5 | `refusal_templates.py` + `evaluate_unified.py` |
+| `verification_url: str` | 2.22.0a/7 | `verification_url.py` + `evaluate_unified.py` |
+
+`tier_label` allowed values: `'indicative_estimate' | 'analytical_range' | 'broker_verified_range' | 'signed_valuation'`. Backend emits English; UI maps to Arabic. UI layer (`index.html` `renderSection()` switch) reads `data.tier_label` defensively (`?.` optional-chaining for missing field) per existing pattern.
+
+**Pydantic response model enforcement deferred** as a separate future concern (potential "API schema hardening" Sprint, post-2.22.0). Adding `EvaluateResponse(BaseModel)` would require declaring ~50+ existing response fields and could break current ad-hoc dict shapes under FastAPI strict mode — out of 2.22.0a scope per Rule #38 single-purpose discipline.
 
 ### §4.4 No new endpoints
 - No new `POST /api/...` or `GET /api/...` routes
@@ -395,7 +406,7 @@ Each is a single-purpose commit per Rule #38. Same disciplined commit pattern (m
 
 | Sub-sprint | Description | Files | LOC estimate |
 |---|---|---|---|
-| 2.22.0a/1 | ENGINE_VERSION bump + Pydantic schema additions (response root fields optional) | `api.py` + `evaluate_unified.py` | ~30 LOC |
+| 2.22.0a/1 | **ENGINE_VERSION + SPRINT_TAG bump only** (per R2+R3 amendments 2026-05-26: `api.py:100 version="3.1.0"` UNCHANGED — sprint identifier via SPRINT_TAG concatenation; no Pydantic response model exists, so "schema additions" reinterpreted as dict-key additions emitted in /2-/9 as logic lands) | `evaluate_unified.py:44-45` only | ~3 LOC |
 | 2.22.0a/2 | Tier renaming + `tier_label` emission per asset_type / valuation path | `evaluate_unified.py` + `output_briefs.py` | ~80 LOC |
 | 2.22.0a/3 | `tier_breakdown` UI section + `n_used` + freshness rendering | `output_briefs.py` + `index.html` | ~150 LOC |
 | 2.22.0a/4 | `use_case_banner` per BRIEF v3.1 §6.7 + Arabic copy review | `output_briefs.py` + `index.html` | ~100 LOC |
