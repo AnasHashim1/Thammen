@@ -221,4 +221,76 @@ of truth for the contract.
 
 -----
 
-*Last updated: 2026-05-27 — Sprint 2.22.0a/10 establishment.*
+## 8. Known technical debt
+
+### TD-1 — Pattern B callsite signature drift in /7 + /8 (Sprint 2.22.0a/10)
+
+**Status:** Documented + deferred (NOT in /12 final consistency pass scope
+per Anas 2026-05-27 — /12 stays cosmetic + the 13-site citation
+propagation only).
+
+**Files affected:**
+- `test_sprint_2p22p0a_verification_url.py` (67 callsites)
+- `test_sprint_2p22p0a_calc_visual_and_ledger.py` (44 callsites)
+- Total: **111 callsites** use Pattern B `check(name, cond)` via thin
+  file-local adapter.
+
+**Canonical convention (Pattern A, established by /2-/5):**
+```python
+_check(condition, name, detail='')   # _REPORTER.check signature
+```
+
+**Current Pattern B adapter in /7 + /8:**
+```python
+def check(name, cond):
+    _REPORTER.check(cond, name)   # arg-swap inside adapter
+```
+
+**Behavior impact:** **ZERO** — the adapter routes through the canonical
+Reporter. Coverage gate `run_sprint_2p22p0a_suite.py` verifies
+374/374 assertions pass through unchanged. The drift is at callsite
+signature visibility ONLY.
+
+**Why deferred (the original AST attempt):**
+- An AST-driven one-shot reorder script (`2p22p0_pre/_2p22p0a_10_reorder_check_calls.py`,
+  transient — removed pre-commit) was attempted first in /10 per Anas
+  Mitigation A's explicit "argument-reorder" instruction.
+- It failed on **JoinedStr (f-string) positions for Arabic content**
+  in /8 + an arg-span overlap warning in /7.
+- Python's `ast` module reports correct line/col positions for f-string
+  *containers* but the internal positions of Arabic-bearing format
+  specifiers are unreliable for surgical string-level reorder.
+- Manual reorder of 111 callsites (60 of which are multi-line) carries
+  high typo risk + ~60 Edit-tool round-trips with potential
+  regression-introduction probability non-trivial.
+
+**Resolution path (when revived):**
+1. Build/locate an **Arabic-aware AST refactor utility** that handles
+   JoinedStr (f-string) positions reliably across Unicode content.
+   Candidate: `libcst` library (concrete syntax tree, preserves
+   formatting + handles f-strings robustly). Not currently a project
+   dependency.
+2. Re-run the reorder transformation: swap args + rename `check` →
+   `_check` across the 111 callsites.
+3. Verify per-file counts (64/64 + 62/62) preserved.
+4. Drop the file-local `check(name, cond)` adapter in /7 + /8.
+5. Update this section to mark TD-1 resolved.
+
+**Suggested deferral venues** (any of):
+- **Sprint 2.22.y** (validation hardening) — natural fit because
+  /7 + /8 are validation-related (verification_url + adjustment_ledger).
+  Could pair with the larger validation refactoring.
+- **A dedicated tooling Sprint** — adds `libcst` to `requirements.txt`,
+  builds a reusable Arabic-aware refactor utility, applies it here
+  + future test files.
+- **Sprint 2.22.0a.1 / 2.22.0a.2** — single-purpose follow-up Sprint
+  after 2.22.0a ships, when there's no production risk.
+
+**Rule reference:** Operational_Rules #39 (deviation justification
+protocol) — the 3-sentence justification appears in Sprint 2.22.0a/10's
+commit message (`72f5972`).
+
+-----
+
+*Last updated: 2026-05-27 — Sprint 2.22.0a/10 establishment. TD-1 added
+2026-05-27 PM as part of Sprint 2.22.0a/11 prep per Anas course-correction.*
