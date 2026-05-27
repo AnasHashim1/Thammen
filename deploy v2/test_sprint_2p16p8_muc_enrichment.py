@@ -103,12 +103,16 @@ def test_helper(helper):
         print("  \u2717 T2: original mu keys lost")
         failed += 1
 
-    # T3: muc_clause_ar contains 'VPS 5'
-    if 'VPS 5' in (out.get('muc_clause_ar') or ''):
-        print("  \u2713 T3: muc_clause_ar contains 'VPS 5'")
+    # T3: muc_clause_ar carries a RICS citation
+    # Sprint 2.22.0a/9 \u2014 relaxed from brittle 'VPS 5' literal pin (same anti-
+    # pattern Sprint 2.19.1 corrected across 4 other Sprint test files,
+    # Operational_Rules #36). The 2024-edition citation is "VPGA 10 + VPS 3";
+    # 'RICS' substring covers any future edition rename too.
+    if 'RICS' in (out.get('muc_clause_ar') or ''):
+        print("  \u2713 T3: muc_clause_ar contains RICS citation")
         passed += 1
     else:
-        print("  \u2717 T3: muc_clause_ar missing 'VPS 5'")
+        print("  \u2717 T3: muc_clause_ar missing RICS citation")
         failed += 1
 
     # T4: caller-set muc_clause_ar NOT overwritten

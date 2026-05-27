@@ -1,12 +1,26 @@
 #!/usr/bin/env python3
 """
-material_uncertainty.py — RICS VPS 4 §3.2 Material Uncertainty declarations.
+material_uncertainty.py — Material Valuation Uncertainty (MVU) declarations.
 
-When any data source has insufficient sample size, the valuation must carry
-an explicit Material Uncertainty banner — not buried in footnotes.
+Canonical standards (Sprint 2.22.0a/9 audit — RICS Red Book Global Standards
+2024 + IVS 2024, both effective 31 January 2024):
 
-This module generates the appropriate caveat based on the weakest link
-in the data chain.
+  - RICS Red Book Global Standards 2024 — VPGA 10 (Material Valuation
+    Uncertainty) + VPS 3 (Valuation Reports — reporting requirements).
+  - IVS 2024 — IVS 103 (Reporting).
+
+VPGA 10 is the canonical RICS guidance on Material Valuation Uncertainty;
+VPS 3 carries the reporting obligations. The earlier "RICS VPS 5"
+references that appeared in this module (Sprint 2.14.0 era) reflected
+2014-edition / COVID-19-era informal industry usage. VPS 5 in the 2024
+edition is "Valuation Approaches and Methods" — a different topic — so
+the citation has been corrected throughout.
+
+When any data source has insufficient sample size, OR the active market
+regime is materially disrupted, the valuation must carry an explicit
+Material Valuation Uncertainty banner — not buried in footnotes. This
+module generates the appropriate caveat based on the weakest link in
+the data chain and the active regime.
 
 Usage:
     from material_uncertainty import assess_uncertainty, UncertaintyLevel
@@ -37,30 +51,74 @@ class UncertaintyLevel:
     rics_compliant: bool          # whether RICS Red Book would accept this
     known_unknowns: List[str]     # what we explicitly don't know
     recommendations: List[str]    # what should be done to reduce uncertainty
-    # Sprint 2.14.0 — formal RICS VPS 5 Material Uncertainty Clause text.
-    # Set by regime_muc() when the market regime is non-normal. None means
-    # no market-wide MUC applies (normal market conditions).
+    # Sprint 2.14.0 — formal Material Valuation Uncertainty (MVU) clause text.
+    # Sprint 2.22.0a/9 — citation corrected to RICS VPGA 10 + VPS 3 (Red Book
+    # Global Standards 2024) and IVS 103 (IVS 2024). Set by regime_muc()
+    # when the market regime is non-normal. None means no market-wide MVU
+    # applies (normal market conditions).
     muc_clause_ar: Optional[str] = None
     muc_clause_en: Optional[str] = None
-    muc_basis_ar: Optional[str] = None    # what makes the MUC applicable
+    muc_basis_ar: Optional[str] = None    # what makes the MVU applicable
     muc_review_recommendation_ar: Optional[str] = None
 
 
+# Sprint 2.22.0a/9 — Arabic → English mapping for the 4 known ShockLayer
+# instances defined in `market_regime.py`. Used by regime_muc() to render
+# `shock_summary_en` in the English MVU clause (RICS VPGA 10 §6 requires
+# the cause of uncertainty to be identified — Sprint 2.22.0a/9 R3 element 2).
+# Future shock layers added to market_regime.py without an English mapping
+# here fall back to the Arabic name_ar (graceful degradation — emission
+# never raises). Lives in this module so the audit-trail surface stays
+# self-contained; market_regime.py is unmodified in /9 (strict scope).
+_SHOCK_LAYER_NAME_EN_BY_AR = {
+    'تصحيح ما بعد المونديال':       'post-World-Cup correction',
+    'الحرب الإقليمية وإغلاق هرمز':  'regional war and Hormuz Strait closure',
+    'نزوح سكاني':                    'population outflow',
+    'انهيار حجم المعاملات':          'transaction-volume collapse',
+}
+
+
+def _shock_layer_name_en(layer) -> str:
+    """Render a ShockLayer's name in English for the MVU clause.
+
+    Falls back to `name_ar` (the Arabic name) when no English mapping is
+    registered for this layer — keeps the English clause well-formed even
+    when a new shock layer ships before its English name reaches this dict.
+    """
+    return _SHOCK_LAYER_NAME_EN_BY_AR.get(
+        getattr(layer, 'name_ar', '') or '',
+        getattr(layer, 'name_ar', '') or '',
+    )
+
+
 def regime_muc(regime=None) -> dict:
-    """Generate the RICS VPS 5 Material Uncertainty Clause for the
+    """Generate the Material Valuation Uncertainty (MVU) clause for the
     current market regime.
 
-    RICS Red Book VPS 5 requires a formal MUC declaration when market
-    conditions during the valuation period are materially disrupted. The
-    declaration must:
-      1. Identify the cause of uncertainty
-      2. State that less certainty applies — and higher caution is needed
-      3. Recommend frequent review of the valuation
+    Canonical standards (Sprint 2.22.0a/9 citation audit):
+      - RICS Red Book Global Standards 2024 — VPGA 10 (Material Valuation
+        Uncertainty, the canonical RICS guidance) + VPS 3 (Valuation Reports —
+        reporting requirements).
+      - IVS 2024 — IVS 103 (Reporting).
+      The earlier "RICS VPS 5" citation that appeared in this module
+      (Sprint 2.14.0 era) reflected 2014-edition / COVID-19-era informal
+      industry usage. VPS 5 in the 2024 edition is "Valuation Approaches
+      and Methods" — a different topic — so the citation has been
+      corrected throughout.
 
-    The wording below follows the recognised VPS 5 format (as used by
-    Cushman & Wakefield, Knight Frank, JLL during the COVID-19 outbreak
-    and other regional crises). We do not copy any single firm's exact
-    text; the structure and key phrases are the RICS-recognised standard.
+    The MVU declaration follows the four structural elements required by
+    RICS VPGA 10 + IVS 103:
+      1. Statement of material valuation uncertainty (with edition citation)
+      2. Cause of uncertainty (regime + shock layers identified by name)
+      3. Scope of uncertainty (Sprint 2.22.0a/9 R3 strengthening — what
+         is affected: value, range, methodology applicability)
+      4. Recommendation that less reliance be placed + frequent review
+
+    The wording follows the RICS-recognised template (widely used during the
+    COVID-19 outbreak by Cushman & Wakefield, Knight Frank, JLL etc.). We
+    do not copy any single firm's exact text; the structure and key phrases
+    ("less certainty / higher caution / kept under frequent review") are
+    the RICS-recognised standard from VPGA 10's recommended wording.
 
     Args:
         regime: a MarketRegime instance. If None, imports the active one
@@ -68,7 +126,7 @@ def regime_muc(regime=None) -> dict:
 
     Returns:
         dict with muc_clause_ar/en, muc_basis_ar, muc_review_recommendation_ar.
-        For NORMAL_REGIME, returns all-None (no MUC needed).
+        For NORMAL_REGIME, returns all-None (no MVU needed).
     """
     if regime is None:
         try:
@@ -81,7 +139,7 @@ def regime_muc(regime=None) -> dict:
                 'muc_review_recommendation_ar': None,
             }
 
-    # Normal regime → no MUC
+    # Normal regime → no MVU
     if getattr(regime, 'label_en', None) == 'normal':
         return {
             'muc_clause_ar': None,
@@ -90,33 +148,47 @@ def regime_muc(regime=None) -> dict:
             'muc_review_recommendation_ar': None,
         }
 
-    # Build the formal MUC text
-    shock_summary_ar = '، '.join(
-        s.name_ar for s in getattr(regime, 'shock_layers', ())
-    )
+    # Build the formal MVU text — Sprint 2.22.0a/9 verified per Anas 2026-05-26
+    # (citation corrected from "VPS 5" → "VPGA 10 + VPS 3 + IVS 103"; scope-of-
+    # uncertainty paragraph added per R3 element 3 strengthening).
+    layers = getattr(regime, 'shock_layers', ())
+    shock_summary_ar = '، '.join(s.name_ar for s in layers)
+    shock_summary_en = ', '.join(_shock_layer_name_en(s) for s in layers)
     active_since = getattr(regime, 'active_since', None)
     moj_last = getattr(regime, 'moj_last_known_date', None)
+    _since_iso_ar = active_since.isoformat() if active_since else '؟'
+    _since_iso_en = active_since.isoformat() if active_since else '?'
 
     muc_clause_ar = (
-        f'⚠️ تحفظ مادي وفق RICS VPS 5 (Material Uncertainty Clause)\n\n'
+        f'⚠️ تحفظ مادي وفق RICS Red Book Global Standards 2024 '
+        f'(VPGA 10 — Material Valuation Uncertainty، و VPS 3 — Valuation Reports) '
+        f'و IVS 2024 (IVS 103 — Reporting)\n\n'
         f'تواجه السوق العقاري القطري في تاريخ هذا التقدير '
-        f'({active_since.isoformat() if active_since else "؟"} وما بعده) '
+        f'({_since_iso_ar} وما بعده) '
         f'اضطراباً جوهرياً نشطاً: {shock_summary_ar}.\n\n'
-        f'بناءً عليه — ووفق المعيار المعترف به في RICS VPS 5 — '
+        f'نطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن '
+        f'(الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف '
+        f'السوق الحالية.\n\n'
+        f'بناءً عليه — ووفق المعايير المذكورة أعلاه — '
         f'يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، '
         f'وتطبيق درجة حذر أعلى عند الاعتماد عليه. '
         f'يُوصى بمراجعة هذا التقدير على فترات متقاربة.'
     )
 
     muc_clause_en = (
-        f'⚠️ Material Valuation Uncertainty (RICS VPS 5)\n\n'
+        f'⚠️ Material Valuation Uncertainty per RICS Red Book Global '
+        f'Standards 2024 (VPGA 10 — Material Valuation Uncertainty; '
+        f'VPS 3 — Valuation Reports) and IVS 2024 (IVS 103 — Reporting)\n\n'
         f'The Qatari real estate market is experiencing material disruption '
         f'at the valuation date '
-        f'({active_since.isoformat() if active_since else "?"} onwards). '
-        f'Accordingly — and in line with RICS VPS 5 — less certainty, and '
-        f'a consequently higher degree of caution, should be attached to '
-        f'this estimate than would normally be the case. The valuation '
-        f'should be kept under frequent review.'
+        f'({_since_iso_en} onwards): {shock_summary_en}.\n\n'
+        f'Scope of uncertainty: this affects the reported value, the '
+        f'disclosed range (low/high), and the applicability of the Sales '
+        f'Comparison approach under current market conditions.\n\n'
+        f'Accordingly — and in line with the standards cited above — less '
+        f'certainty, and a consequently higher degree of caution, should '
+        f'be attached to this estimate than would normally be the case. '
+        f'The valuation should be kept under frequent review.'
     )
 
     # MoJ lag specifically — explain WHY the uncertainty bites
@@ -282,14 +354,19 @@ def assess_uncertainty(
 
     if not rics_compliant:
         recommendations.append(
-            'للتوافق مع معايير RICS Red Book: يلزم فحص ميداني + '
-            'تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement.'
+            'للتوافق مع معايير RICS Red Book Global Standards 2024 '
+            'و IVS 2024: يلزم فحص ميداني + تعديل فردي للمقارنات + '
+            'توثيق حالة المبنى + Terms of Engagement (VPS 1).'
         )
 
-    # Sprint 2.14.0 — automatically attach RICS VPS 5 MUC if active regime
-    # is non-normal. This is INDEPENDENT of per-property uncertainty above:
-    # even a well-supported valuation (low per-property uncertainty) carries
-    # market-wide MUC during the current regime.
+    # Sprint 2.14.0 — automatically attach the market-wide Material Valuation
+    # Uncertainty (MVU) clause if active regime is non-normal. This is
+    # INDEPENDENT of per-property uncertainty above: even a well-supported
+    # valuation (low per-property uncertainty) carries market-wide MVU during
+    # the current regime.
+    # Sprint 2.22.0a/9 — citation corrected from "RICS VPS 5" to the canonical
+    # 2024-edition references (VPGA 10 + VPS 3 + IVS 103). See regime_muc()
+    # docstring for the standards audit trail.
     muc = regime_muc()
 
     return UncertaintyLevel(
