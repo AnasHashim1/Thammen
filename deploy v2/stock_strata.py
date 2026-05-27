@@ -89,8 +89,12 @@ STRATUM_LABELS_AR = {
 
 STRATUM_DESC_AR = {
     'land_priced':
+        # Sprint 2.22.0a.2 Pattern C2 mechanical drop: removed
+        # "(Project Instructions §3)" internal-doc reference. The
+        # methodology is documented in the user-facing reasoning trace
+        # and does not require an internal-doc citation in the user copy.
         'فلل قديمة جداً تُباع بسعر الأرض تقريباً. تنطبق عليها قاعدة الـ10-Year-Rule '
-        'في قطر (Project Instructions §3): البناء عبء معماري، ليس قيمة مضافة.',
+        'في قطر: البناء عبء معماري، ليس قيمة مضافة.',
     'aging_stock':
         'فلل عمرها 10+ سنوات بتشطيب متوسط أو تجديد جزئي. '
         'الفئة الأكثر تكراراً في معظم مناطق قطر، وتميل إلى أن تكون مهيمنة على median المدمج.',
