@@ -161,6 +161,13 @@ def regime_muc(regime=None) -> dict:
     # VPGA 10 + VPS 6 + IVS 106; scope-of-uncertainty paragraph added in
     # Sprint 2.22.0a/9 per R3 element 3 strengthening preserved).
     layers = getattr(regime, 'shock_layers', ())
+    # Sprint 2.22.0a.2 C1 neutralization: shock_summary_ar/en assignments
+    # KEPT for back-compat (test_material_uncertainty.py imports the helpers)
+    # but NO LONGER interpolated into the user-visible MUC clause. Internal
+    # audit trail of shock layers preserved in market_regime.py data model
+    # per KICKOFF directive; user-visible copy reframed to neutral VPGA 10
+    # language naming the verifiable cause (constrained market evidence +
+    # MoJ data-freshness gap) rather than specific political events.
     shock_summary_ar = '، '.join(s.name_ar for s in layers)
     shock_summary_en = ', '.join(_shock_layer_name_en(s) for s in layers)
     active_since = getattr(regime, 'active_since', None)
@@ -170,6 +177,10 @@ def regime_muc(regime=None) -> dict:
 
     # Sprint 2.22.0a.2 Pattern A: Latin tokens wrapped with U+200E (LRM) to
     # prevent bidi reversal under RTL rendering (Operational_Rules #25).
+    # Sprint 2.22.0a.2 C1: cause-of-uncertainty paragraph (per VPGA 10 §6)
+    # reframed to verifiable constraint (data-freshness gap + sparse recent
+    # transactions) instead of geopolitical narration. Gemini-approved
+    # verbatim per docs/MULTI_AI_VALIDATION_BATCH_2p22p0a2.md §1.
     muc_clause_ar = (
         f'⚠️ تحفظ مادي وفق ‎RICS Red Book Global Standards‎ '
         f'(‎effective 31 January 2025‎) — ‎VPGA 10‎ '
@@ -179,7 +190,8 @@ def regime_muc(regime=None) -> dict:
         f'(‎Documentation and Reporting‎)\n\n'
         f'تواجه السوق العقاري القطري في تاريخ هذا التقدير '
         f'({_since_iso_ar} وما بعده) '
-        f'اضطراباً جوهرياً نشطاً: {shock_summary_ar}.\n\n'
+        f'قيوداً جوهرية على شواهد السوق المتاحة، في ظل فجوة طويلة في '
+        f'تحديث بيانات وزارة العدل وضعف في حجم المعاملات الحديثة المنشورة.\n\n'
         f'نطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن '
         f'(الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف '
         f'السوق الحالية.\n\n'
@@ -195,9 +207,11 @@ def regime_muc(regime=None) -> dict:
         f'Valuation Uncertainty) and VPS 6 (Valuation Reports) — and '
         f'IVS (effective 31 January 2025) — IVS 106 (Documentation '
         f'and Reporting)\n\n'
-        f'The Qatari real estate market is experiencing material disruption '
-        f'at the valuation date '
-        f'({_since_iso_en} onwards): {shock_summary_en}.\n\n'
+        f'The Qatari real estate market is experiencing, at the valuation '
+        f'date ({_since_iso_en} onwards), material constraints on available '
+        f'market evidence, given an extended gap in the publication of '
+        f'Ministry of Justice transaction data and a low volume of recently '
+        f'published transactions.\n\n'
         f'Scope of uncertainty: this affects the reported value, the '
         f'disclosed range (low/high), and the applicability of the Sales '
         f'Comparison approach under current market conditions.\n\n'

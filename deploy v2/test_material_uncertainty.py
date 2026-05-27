@@ -127,11 +127,20 @@ class TestMUCStructuralCompliance(unittest.TestCase):
         self.muc = regime_muc(CURRENT_REGIME)['muc_clause_ar']
 
     def test_identifies_cause(self):
-        # Should mention at least one shock layer by name (element 2)
-        layer_names = [s.name_ar for s in CURRENT_REGIME.shock_layers]
+        # VPGA 10 §6 element 2: identify the cause of uncertainty.
+        # Sprint 2.22.0a.2 C1: shifted from naming specific shock layers
+        # (e.g., regional war, Hormuz closure) to naming the verifiable
+        # data-evidence cause (data-freshness gap + sparse recent
+        # transactions). Both forms satisfy "identifies the cause";
+        # this Sprint chose the latter for regulatory neutrality.
         self.assertTrue(
-            any(name in self.muc for name in layer_names),
-            f'MUC should mention at least one shock layer. Layers: {layer_names}'
+            any(needle in self.muc for needle in (
+                'قيوداً جوهرية على شواهد السوق المتاحة',
+                'فجوة طويلة في تحديث بيانات وزارة العدل',
+                'ضعف في حجم المعاملات الحديثة',
+            )),
+            f'MUC should identify the cause of uncertainty (post-2.22.0a.2 C1: '
+            f'data-freshness / sparse-transactions language). Got: {self.muc[:300]}'
         )
 
     def test_states_less_certainty(self):
@@ -253,8 +262,10 @@ class TestRICS2025Compliance(unittest.TestCase):
         clause = self.muc['muc_clause_ar']
         # (1) statement of MVU — title with citation
         self.assertIn('تحفظ مادي', clause)
-        # (2) cause/reasons
-        self.assertIn('اضطراباً جوهرياً', clause)
+        # (2) cause/reasons (Sprint 2.22.0a.2 C1: reframed from naming
+        # specific shock layers to naming the data-evidence cause —
+        # both forms satisfy VPGA 10 §6 element 2)
+        self.assertIn('قيوداً جوهرية', clause)
         # (3) scope of uncertainty (R3 strengthening)
         self.assertIn('نطاق التحفّظ', clause)
         # (4) less reliance + review recommendation
@@ -265,8 +276,9 @@ class TestRICS2025Compliance(unittest.TestCase):
         clause = self.muc['muc_clause_en']
         # (1) statement of MVU — title with citation
         self.assertIn('Material Valuation Uncertainty', clause)
-        # (2) cause/reasons
-        self.assertIn('material disruption', clause)
+        # (2) cause/reasons (Sprint 2.22.0a.2 C1: "material disruption"
+        # reframed to "material constraints on available market evidence")
+        self.assertIn('material constraints', clause)
         # (3) scope of uncertainty (R3 strengthening)
         self.assertIn('Scope of uncertainty', clause)
         # (4) less reliance + review recommendation
@@ -317,15 +329,22 @@ class TestShockLayerEnglishMapping(unittest.TestCase):
         result = _shock_layer_name_en(_BrokenLayer())
         self.assertEqual(result, '')
 
-    def test_en_clause_contains_english_shock_names_not_arabic(self):
-        # The English clause should render shock layers in English
+    def test_en_clause_renders_in_english_no_arabic_fallback(self):
+        # Sprint 2.22.0a.2 C1 update: the English MUC clause used to be
+        # tested via "must mention at least one English shock name" to
+        # guard against Arabic-fallback when an English mapping was
+        # missing. Post-C1, NO shock names appear in either clause
+        # (regulatory neutrality — see test_identifies_cause above).
+        # The intent that the English clause stays in English is
+        # preserved here by asserting that no Arabic letters appear in
+        # the user-visible English copy — which is the underlying
+        # property the original test was protecting.
         en_clause = regime_muc(CURRENT_REGIME)['muc_clause_en']
-        # At least one known English shock name should appear
-        english_names = list(_SHOCK_LAYER_NAME_EN_BY_AR.values())
-        self.assertTrue(
-            any(name in en_clause for name in english_names),
-            f'English clause should mention at least one English shock '
-            f'name. Looking for any of: {english_names}'
+        arabic_chars = [c for c in en_clause if '؀' <= c <= 'ۿ']
+        self.assertFalse(
+            arabic_chars,
+            f'English MUC clause must be fully English; found Arabic '
+            f'characters: {arabic_chars[:10]!r} ...'
         )
 
 

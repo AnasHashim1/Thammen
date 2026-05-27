@@ -304,14 +304,20 @@ def regime_recommendation(
         )
 
     # MoJ lag warning
+    # Sprint 2.22.0a.2 C1 defensive companion: the lag-warning prose is
+    # surfaced through RegimeRecommendation.moj_lag_warning_ar (currently
+    # not rendered through the live API path but defensively neutralized
+    # for the same reason as the muc_clause: never name specific political
+    # events in user-visible copy). Calibration math (buyer ceiling × 1.00
+    # etc.) is unchanged — only the prose explaining the lag is reframed.
     lag_warning = None
     if regime.moj_data_predates_regime:
         lag_days = (regime.active_since - regime.moj_last_known_date).days
         lag_warning = (
             f'⚠️ آخر معاملة في وزارة العدل: '
             f'{regime.moj_last_known_date.isoformat()}. '
-            f'الوضع الحالي بدأ بعدها بـ {lag_days} يوماً. '
-            f'البيانات لا تعكس صدمات الحرب وهرمز والنزوح السكاني'
+            f'مرّ على هذا التاريخ {lag_days} يوماً. '
+            f'البيانات الأساسية لا تعكس تطوّرات السوق منذ آخر تحديث منشور.'
         )
 
     return RegimeRecommendation(
