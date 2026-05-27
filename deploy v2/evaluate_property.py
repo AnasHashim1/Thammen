@@ -469,9 +469,11 @@ class PropertyEvaluation:
     # ── v2 new fields ──
     market_position: Optional[dict] = None   # MarketPosition.to_dict() — descriptive
     reasoning_trace: Optional[dict] = None   # ReasoningTrace.to_dict() — full transparency
+    # Sprint 2.22.0a.2 C4: reframe defensive negation to descriptive provenance.
     disclaimer: str = (
         "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. "
-        "هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق RICS/IVS. "
+        "هذا تحليل معلوماتي للقرار، "
+        "ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS. "
         "للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد."
     )
     valuation_id: str = ''                   # unique ID for audit trail

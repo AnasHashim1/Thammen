@@ -1957,7 +1957,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         },
         'disclaimer': (
             'ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. '
-            'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
+            'هذا تحليل معلوماتي، ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS.'
         ),
         'active_listings': {
             'available': False,
@@ -2401,7 +2401,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
         'sanity_warnings': [],
         'disclaimer': (
             'ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. '
-            'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
+            'هذا تحليل معلوماتي، ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS.'
         ),
         'active_listings': {
             'available': False,
@@ -2615,7 +2615,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         },
         'disclaimer': (
             'ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. '
-            'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
+            'هذا تحليل معلوماتي، ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS.'
         ),
         'active_listings': {
             'available': False,
@@ -2721,7 +2721,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
         'sanity_warnings': [],
         'disclaimer': (
             'ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. '
-            'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
+            'هذا تحليل معلوماتي، ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS.'
         ),
         'active_listings': {'available': False, 'reason': 'خارج نطاق الإصدار'},
     })
@@ -2854,7 +2854,7 @@ def _build_reality_stop_response(loc, plot, audience, reality):
         'sanity_warnings': [],
         'disclaimer': (
             'ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. '
-            'هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.'
+            'هذا تحليل معلوماتي، ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS.'
         ),
         'active_listings': {'available': False, 'reason': 'خارج النطاق'},
     })

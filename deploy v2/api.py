@@ -779,13 +779,19 @@ async def calibration():
 async def disclaimer():
     """إخلاء المسؤولية الموحَّد لثمّن. يُعرض في الـ frontend بشكل دائم."""
     return {
+        # Sprint 2.22.0a.2 C4: reframe defensive negation ("ليس تقييماً
+        # معتمداً") to descriptive provenance ("ولا يُعتبر تقرير تثمين
+        # رسمي صادر عن مثمّن مرخّص"). Gemini-approved verbatim per
+        # docs/MULTI_AI_VALIDATION_BATCH_2p22p0a2.md §4. Key phrase
+        # kept on a single source line so substring searches don't trip
+        # over Python string-concat boundaries.
         "disclaimer_ar": (
             "ثمّن يجمع البيانات السوقية من المصادر الحكومية (وزارة العدل، "
             "وزارة البلدية والبيئة) والإعلانات النشطة (FGRealty، PropertyFinder، "
-            "arady، Mzad). هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً "
-            "معتمداً وفق معايير RICS أو IVS. القرار النهائي ومسؤوليته على "
-            "العميل. للأغراض الرسمية (قروض بنكية، محاكم، تقارير محاسبية) "
-            "يلزم تقييم من مُقيِّم معتمد."
+            "arady، Mzad). هذا تحليل معلوماتي للقرار، "
+            "ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS. "
+            "القرار النهائي ومسؤوليته على العميل. للأغراض الرسمية "
+            "(قروض بنكية، محاكم، تقارير محاسبية) يلزم تقييم من مُقيِّم معتمد."
         ),
         "disclaimer_en": (
             "Thammen aggregates market data from government sources (Ministry "
@@ -840,7 +846,8 @@ async def about():
             "يعرض كل خطوة منطقية مع مصدرها",
         ],
         "what_thammen_does_not": [
-            "لا يُصدر تقييماً عقارياً معتمداً (RICS/IVS)",
+            # Sprint 2.22.0a.2 C4: reframe to descriptive provenance.
+            "لا يُصدر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS",
             "لا يُقدّم توصيات شرائية أو بيعية",
             "لا يحلّ محل المعاينة الميدانية",
             "لا يصلح كمستند رسمي للبنوك أو المحاكم",
