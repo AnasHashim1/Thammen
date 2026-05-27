@@ -1,0 +1,214 @@
+{
+  "anchor_label": "tower_t2_t3",
+  "anchor_slug": "69_255_75",
+  "payload": {
+    "zone": 69,
+    "street": 255,
+    "building": 75
+  },
+  "status": 200,
+  "elapsed_s": 5.78,
+  "ok": true,
+  "body_parsed": {
+    "status": "ok",
+    "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+    "tier_label": "analytical_range",
+    "refusal_reason": {
+      "trigger_id": "comp_density_sparse",
+      "message_ar": "هذه المنطقة فيها أقل من 5 صفقات بيع مقارنة خلال آخر 6 أشهر لعقارات بهذا الحجم والنوع. التقدير الآلي لا يصل إلى مستوى الموثوقية المطلوب.",
+      "message_en": "This district has fewer than 5 comparable transactions in the past 6 months for properties of this size and type. An automated estimate cannot reach reliable confidence.",
+      "recommendation_ar": "نوصي بتقييم متخصص لعقارك من خلال مُقيِّم معتمد.",
+      "context": {
+        "asset_type": "apartment_building",
+        "district_ar": "لوسيل 69",
+        "plot_area_m2": 2195.0
+      }
+    },
+    "methodology_ar": "منهجية هجينة (Hybrid v1) — وسيط أسعار الإعلانات (T2) من PropertyFinder بعد خصم تفاوضي مرجعي ~12.5%. n=77 إعلان شقة للبيع في لوسيل (عينة strong_indicative).",
+    "methodology_disclaimer_ar": "هذا التقدير من إعلانات بحجم عينة قوي (n≥20)، لكنه يبقى T2 — للوصول لـ \"موثوق\" يلزم تأكيد T1 (Confirmed Sales أو MME). Rule E3 §4 يثبّت السقف عند \"إرشادي\" بدون T1.",
+    "address": "69/255/75",
+    "valuation_date": "2026-05-27",
+    "district": "لوسيل 69",
+    "plot_area_m2": 2195.0,
+    "gps": {
+      "lat": 25.430051263145362,
+      "lon": 51.4880281385695
+    },
+    "asset_type": "apartment_building",
+    "asset_type_ar": "عمارة سكنية",
+    "audience": "buyer",
+    "user_inputs": {
+      "listing_price": null,
+      "rental_income": null
+    },
+    "valuation": {
+      "amount": null,
+      "low": null,
+      "high": null,
+      "method": "hybrid_t2",
+      "value_per_m2": 11702.76,
+      "value_per_m2_low": 9362.21,
+      "value_per_m2_high": 14043.31,
+      "reason_ar": "القيمة الإرشادية للمتر المربع لشقق عمارة سكنية في لوسيل ≈ 11,702 ر.ق/م² (نطاق ±20%: 9,362 – 14,043 ر.ق/م²). لقيمة شقة محددة، اضرب في مساحتها م² الفعلية."
+    },
+    "moj_sample_size": 0,
+    "cost_approach": null,
+    "income_approach": null,
+    "reconciliation": {
+      "status": "hybrid_indicative",
+      "message_ar": "تقدير من مصدر T2 واحد (PropertyFinder، n=77، عينة strong_indicative). وزارة العدل لا تسجّل الشقق الفردية (تُحفظ تحت الأبراج). لتقدير \"موثوق\" يلزم Confirmed Sales أو MME."
+    },
+    "accuracy": {
+      "score": 3,
+      "label": "🟢 إرشادي قوي — عينة كبيرة (T2 n≥20)"
+    },
+    "trend": null,
+    "location_features": null,
+    "geometric_factors": {
+      "polygon_available": true,
+      "plot_area_m2_verified": 2195.0,
+      "pd_no": "PD/4598/2019"
+    },
+    "material_uncertainty": {
+      "level": "low",
+      "banner_ar": "تحفظ مادي: عينة قوية (n=77≥20) لكن السقف يبقى إرشادي بدون تأكيد وزارة العدل (Rule E3 §4). النطاق ±20%.",
+      "known_unknowns_ar": [
+        "مساحة الشقة المحددة",
+        "الطابق + الإطلالة + التشطيب",
+        "حالة الصيانة الفعلية",
+        "مدى تطابق الإعلانات مع الصفقات المنجزة"
+      ],
+      "rics_compliant": true,
+      "muc_clause_ar": "⚠️ تحفظ مادي وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) و VPS 6 (Valuation Reports) — و IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)\n\nتواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات.\n\nنطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن (الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف السوق الحالية.\n\nبناءً عليه — ووفق المعايير المذكورة أعلاه — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.",
+      "muc_clause_en": "⚠️ Material Valuation Uncertainty per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)\n\nThe Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards): post-World-Cup correction, regional war and Hormuz Strait closure, population outflow, transaction-volume collapse.\n\nScope of uncertainty: this affects the reported value, the disclosed range (low/high), and the applicability of the Sales Comparison approach under current market conditions.\n\nAccordingly — and in line with the standards cited above — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.",
+      "muc_basis_ar": "بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.",
+      "muc_review_recommendation_ar": "هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق."
+    },
+    "brief": {
+      "audience": "buyer",
+      "title_ar": "تقرير عمارة سكنية — تحتاج بيانات إضافية",
+      "sections": [
+        {
+          "id": "next_steps",
+          "title_ar": "الخطوات المقترحة",
+          "content": {
+            "note_ar": "العنوان 69/255/75 تابع لمساحة 2,195 م² مُصنَّف كـ \"عمارة سكنية\". لتقييم كامل يرجى تزويدنا بأحد التاليين:",
+            "options_ar": [
+              "إفادة الإيجار الشهري الفعلي (لتقييم بطريقة الدخل)",
+              "سعر الإعلان أو سعر المالك (لمقارنة سوقية)"
+            ]
+          }
+        }
+      ]
+    },
+    "disclaimer": "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.",
+    "active_listings": {
+      "available": false,
+      "reason": "تصنيف سريع — لم يُجرَ بحث إعلانات"
+    },
+    "service_scope": {
+      "asset_type": "apartment_building",
+      "tier": "limited",
+      "label_ar": "عمارة شقق",
+      "methodology_ar": "منهج الدخل (Income Approach)",
+      "methodology_en": "Income Approach",
+      "requires_user_input_ar": "الإيجار السنوي الإجمالي",
+      "disclaimer_ar": "عمارات الشقق تُقيَّم بمنهج الدخل. وزارة العدل لا تسجل وحدات الشقق فردياً بشكل قابل للمقارنة. الإيجار السنوي مطلوب.",
+      "reason_ar": "MoJ لا تسجل وحدات الشقق فردياً"
+    },
+    "verification_url": "https://thammen.qa/verify/VNPD4RCZJKZB",
+    "hybrid": {
+      "case": "B",
+      "confidence": "indicative",
+      "sample_size_band": "strong_indicative",
+      "n_used": 77,
+      "tier_breakdown": [
+        {
+          "tier": "T2",
+          "weight": 0.88,
+          "raw_value": 13477.78,
+          "discounted_value": 11793.06,
+          "discount_applied": -0.125,
+          "n": 77
+        },
+        {
+          "tier": "T3",
+          "weight": 0.12,
+          "raw_value": 13382.48,
+          "discounted_value": 11040.54,
+          "discount_applied": -0.175,
+          "n": 4,
+          "n_effective": 4.0,
+          "shape": "dict_new",
+          "sources": [
+            {
+              "developer": "Aryan",
+              "project": "City Avenues",
+              "status": "under_construction",
+              "value_per_m2_raw": 13372.09,
+              "discount_applied": -0.175,
+              "value_per_m2_adjusted": 11031.97,
+              "freshness_status": "fresh"
+            },
+            {
+              "developer": "Aryan",
+              "project": "City Avenues",
+              "status": "under_construction",
+              "value_per_m2_raw": 13281.25,
+              "discount_applied": -0.175,
+              "value_per_m2_adjusted": 10957.03,
+              "freshness_status": "fresh"
+            },
+            {
+              "developer": "Aryan",
+              "project": "City Avenues",
+              "status": "under_construction",
+              "value_per_m2_raw": 13432.84,
+              "discount_applied": -0.175,
+              "value_per_m2_adjusted": 11082.09,
+              "freshness_status": "fresh"
+            },
+            {
+              "developer": "Aryan",
+              "project": "City Avenues",
+              "status": "under_construction",
+              "value_per_m2_raw": 13392.86,
+              "discount_applied": -0.175,
+              "value_per_m2_adjusted": 11049.11,
+              "freshness_status": "fresh"
+            }
+          ]
+        }
+      ],
+      "muc_required": true,
+      "muc_range_pct": 0.2,
+      "rule_e3_compliance": "compliant"
+    },
+    "sources": [
+      {
+        "source": "propertyfinder",
+        "tier": "T2",
+        "n_raw": 77,
+        "role_ar": "إعلانات بيع شقق — لوسيل",
+        "url_template": "propertyfinder.qa/en/buy/lusail/apartments-for-sale.html",
+        "calibration_status": "provisional_broker_experience_grounded"
+      }
+    ],
+    "sanity_warnings": [],
+    "data_freshness": {
+      "latest_record": "2025-12-31",
+      "latest_record_ar": "31 ديسمبر 2025",
+      "days_old": 147,
+      "tier": "stale",
+      "severity": "warning",
+      "caveat_ar": "المرجع مبني على بيانات حتى 31 ديسمبر 2025. للحالات الحساسة، تحقق من السوق الحالي قبل اتخاذ القرار."
+    }
+  },
+  "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+  "asset_type": "apartment_building",
+  "asset_type_ar": "عمارة سكنية",
+  "valuation_amount": null,
+  "decomp_status": null,
+  "body_parsed_error": "'charmap' codec can't encode characters in position 51-55: character maps to <undefined>",
+  "body_raw": "{\"status\":\"ok\",\"engine_version\":\"thammen-sprint2p22p0a1-qars-envelope-fallback\",\"tier_label\":\"analytical_range\",\"refusal_reason\":{\"trigger_id\":\"comp_density_sparse\",\"message_ar\":\"هذه المنطقة فيها أقل من 5 صفقات بيع مقارنة خلال آخر 6 أشهر لعقارات بهذا الحجم والنوع. التقدير الآلي لا يصل إلى مستوى الموثوقية المطلوب.\",\"message_en\":\"This district has fewer than 5 comparable transactions in the past 6 months for properties of this size and type. An automated estimate cannot reach reliable confidence.\",\"recommendation_ar\":\"نوصي بتقييم متخصص لعقارك من خلال مُقيِّم معتمد.\",\"context\":{\"asset_type\":\"apartment_building\",\"district_ar\":\"لوسيل 69\",\"plot_area_m2\":2195.0}},\"methodology_ar\":\"منهجية هجينة (Hybrid v1) — وسيط أسعار الإعلانات (T2) من PropertyFinder بعد خصم تفاوضي مرجعي ~12.5%. n=77 إعلان شقة للبيع في لوسيل (عينة strong_indicative).\",\"methodology_disclaimer_ar\":\"هذا التقدير من إعلانات بحجم عينة قوي (n≥20)، لكنه يبقى T2 — للوصول لـ \\\"موثوق\\\" يلزم تأكيد T1 (Confirmed Sales أو MME). Rule E3 §4 يثبّت السقف عند \\\"إرشادي\\\" بدون T1.\",\"address\":\"69/255/75\",\"valuation_date\":\"2026-05-27\",\"district\":\"لوسيل 69\",\"plot_area_m2\":2195.0,\"gps\":{\"lat\":25.430051263145362,\"lon\":51.4880281385695},\"asset_type\":\"apartment_building\",\"asset_type_ar\":\"عمارة سكنية\",\"audience\":\"buyer\",\"user_inputs\":{\"listing_price\":null,\"rental_income\":null},\"valuation\":{\"amount\":null,\"low\":null,\"high\":null,\"method\":\"hybrid_t2\",\"value_per_m2\":11702.76,\"value_per_m2_low\":9362.21,\"value_per_m2_high\":14043.31,\"reason_ar\":\"القيمة الإرشادية للمتر المربع لشقق عمارة سكنية في لوسيل ≈ 11,702 ر.ق/م² (نطاق ±20%: 9,362 – 14,043 ر.ق/م²). لقيمة شقة محددة، اضرب في مساحتها م² الفعلية.\"},\"moj_sample_size\":0,\"cost_approach\":null,\"income_approach\":null,\"reconciliation\":{\"status\":\"hybrid_indicative\",\"message_ar\":\"تقدير من مصدر T2 واحد (PropertyFinder، n=77، عينة strong_indicative). وزارة العدل لا تسجّل الشقق الفردية (تُحفظ تحت الأبراج). لتقدير \\\"موثوق\\\" يلزم Confirmed Sales أو MME.\"},\"accuracy\":{\"score\":3,\"label\":\"🟢 إرشادي قوي — عينة كبيرة (T2 n≥20)\"},\"trend\":null,\"location_features\":null,\"geometric_factors\":{\"polygon_available\":true,\"plot_area_m2_verified\":2195.0,\"pd_no\":\"PD/4598/2019\"},\"material_uncertainty\":{\"level\":\"low\",\"banner_ar\":\"تحفظ مادي: عينة قوية (n=77≥20) لكن السقف يبقى إرشادي بدون تأكيد وزارة العدل (Rule E3 §4). النطاق ±20%.\",\"known_unknowns_ar\":[\"مساحة الشقة المحددة\",\"الطابق + الإطلالة + التشطيب\",\"حالة الصيانة الفعلية\",\"مدى تطابق الإعلانات مع الصفقات المنجزة\"],\"rics_compliant\":true,\"muc_clause_ar\":\"⚠️ تحفظ مادي وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) و VPS 6 (Valuation Reports) — و IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)\\n\\nتواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات.\\n\\nنطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن (الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف السوق الحالية.\\n\\nبناءً عليه — ووفق المعايير المذكورة أعلاه — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.\",\"muc_clause_en\":\"⚠️ Material Valuation Uncertainty per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)\\n\\nThe Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards): post-World-Cup correction, regional war and Hormuz Strait closure, population outflow, transaction-volume collapse.\\n\\nScope of uncertainty: this affects the reported value, the disclosed range (low/high), and the applicability of the Sales Comparison approach under current market conditions.\\n\\nAccordingly — and in line with the standards cited above — less certainty, and a consequently higher "
+}

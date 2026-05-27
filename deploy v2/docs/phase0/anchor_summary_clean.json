@@ -1,0 +1,98 @@
+[
+  {
+    "file": "brief_52_903_90.json",
+    "anchor": "apartment_building",
+    "payload": {
+      "zone": 52,
+      "street": 903,
+      "building": 90
+    },
+    "status": 200,
+    "elapsed_s": 5.88,
+    "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+    "asset_type": "apartment_building",
+    "asset_type_ar": "عمارة سكنية",
+    "valuation_amount": null,
+    "decomp_status": null,
+    "refusal_trigger_id": "comp_density_sparse",
+    "refusal_message_ar_present": true,
+    "methodology_ar_present": true,
+    "methodology_disclaimer_ar_present": true,
+    "subtype_zoning_mismatch": false,
+    "material_uncertainty_present": true,
+    "brief_section_count": 1,
+    "scope_of_service_status": null
+  },
+  {
+    "file": "brief_56_565_21.json",
+    "anchor": "villa",
+    "payload": {
+      "zone": 56,
+      "street": 565,
+      "building": 21
+    },
+    "status": 200,
+    "elapsed_s": 24.32,
+    "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+    "asset_type": "standalone_villa",
+    "asset_type_ar": null,
+    "valuation_amount": null,
+    "decomp_status": null,
+    "refusal_trigger_id": null,
+    "refusal_message_ar_present": false,
+    "methodology_ar_present": true,
+    "methodology_disclaimer_ar_present": true,
+    "subtype_zoning_mismatch": false,
+    "material_uncertainty_present": true,
+    "brief_section_count": 5,
+    "scope_of_service_status": null
+  },
+  {
+    "file": "brief_69_255_75.json",
+    "anchor": "tower_t2_t3",
+    "payload": {
+      "zone": 69,
+      "street": 255,
+      "building": 75
+    },
+    "status": 200,
+    "elapsed_s": 5.78,
+    "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+    "asset_type": "apartment_building",
+    "asset_type_ar": "عمارة سكنية",
+    "valuation_amount": null,
+    "decomp_status": null,
+    "refusal_trigger_id": "comp_density_sparse",
+    "refusal_message_ar_present": true,
+    "methodology_ar_present": true,
+    "methodology_disclaimer_ar_present": true,
+    "subtype_zoning_mismatch": false,
+    "material_uncertainty_present": true,
+    "brief_section_count": 1,
+    "scope_of_service_status": null
+  },
+  {
+    "file": "brief_70_300_25.json",
+    "anchor": "refusal_unknown",
+    "payload": {
+      "zone": 70,
+      "street": 300,
+      "building": 25
+    },
+    "status": 200,
+    "elapsed_s": 5.48,
+    "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+    "asset_type": "unknown",
+    "asset_type_ar": null,
+    "valuation_amount": null,
+    "decomp_status": null,
+    "refusal_trigger_id": "comp_density_sparse",
+    "refusal_message_ar_present": true,
+    "methodology_ar_present": true,
+    "methodology_disclaimer_ar_present": true,
+    "subtype_zoning_mismatch": false,
+    "material_uncertainty_present": true,
+    "brief_section_count": 4,
+    "scope_of_service_status": null
+  }
+]

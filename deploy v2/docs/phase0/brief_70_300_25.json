@@ -1,0 +1,210 @@
+{
+  "anchor_label": "refusal_unknown",
+  "anchor_slug": "70_300_25",
+  "payload": {
+    "zone": 70,
+    "street": 300,
+    "building": 25
+  },
+  "status": 200,
+  "elapsed_s": 5.48,
+  "ok": true,
+  "body_parsed": {
+    "status": "ok",
+    "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+    "methodology_ar": "AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق",
+    "methodology_disclaimer_ar": "تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. لا يحلّ محل التقييم المعتمد من مُقيِّم مُرخّص للأغراض الرسمية (قروض بنكية، نزاعات قضائية، تقارير محاسبية).",
+    "address": "70/300/25",
+    "valuation_date": null,
+    "district": null,
+    "plot_area_m2": null,
+    "asset_type": "unknown",
+    "audience": "buyer",
+    "user_inputs": {
+      "listing_price": null,
+      "rental_income": null,
+      "floors": null,
+      "condition": null,
+      "annexes": 0,
+      "basement": null,
+      "footprint_m2": null,
+      "external_majlis": null,
+      "building_age_years": null,
+      "age_source": "unknown",
+      "is_luxury": null
+    },
+    "valuation": {
+      "amount": null,
+      "method": "insufficient_data",
+      "method_label_ar": "بيانات غير كافية للتقييم",
+      "source_ar": "لم نجد عينة كافية من معاملات المقارنة"
+    },
+    "tier_label": null,
+    "refusal_reason": {
+      "trigger_id": "comp_density_sparse",
+      "message_ar": "هذه المنطقة فيها أقل من 5 صفقات بيع مقارنة خلال آخر 6 أشهر لعقارات بهذا الحجم والنوع. التقدير الآلي لا يصل إلى مستوى الموثوقية المطلوب.",
+      "message_en": "This district has fewer than 5 comparable transactions in the past 6 months for properties of this size and type. An automated estimate cannot reach reliable confidence.",
+      "recommendation_ar": "نوصي بتقييم متخصص لعقارك من خلال مُقيِّم معتمد.",
+      "context": {
+        "asset_type": "unknown"
+      }
+    },
+    "moj_sample_size": 0,
+    "reconciliation": {
+      "status": "no_primary",
+      "message_ar": "لا توجد قيمة مقارنة — عينة غير كافية"
+    },
+    "accuracy": {
+      "score": 0,
+      "label": "❌ بيانات غير كافية",
+      "tier": "none",
+      "explanation_ar": "لا توجد صفقات بيع كافية لعقارات مشابهة في وزارة العدل. لم يتم إنتاج تقييم."
+    },
+    "location_features": [],
+    "material_uncertainty": {
+      "level": "critical",
+      "banner_ar": "⛔ تحفظ مادي جوهري — البيانات المتاحة غير كافية لإنتاج تقييم موثوق. النتائج للاسترشاد الأوّلي فقط ولا تصلح لاتخاذ قرار.",
+      "banner_en": "⛔ CRITICAL Material Uncertainty — Insufficient data for a reliable valuation. Results are for preliminary guidance only.",
+      "factors": [
+        "تفاصيل البناء غير مُقدَّمة (الطوابق، السرداب، الترميم، الملاحق) — التقييم يفترض بناءً نموذجياً وقد يختلف عن الواقع بـ ±20-40% إذا كان للعقار سرداب أو طوابق متعددة أو ملاحق مهمة.",
+        "لا توجد صفقات مقارنة في وزارة العدل",
+        "لا توجد بيانات إيجار — منهج الدخل غير مطبَّق",
+        "لا يوجد اتجاه زمني كافٍ — التعديل الزمني غير مطبَّق",
+        "لم يتم فحص العقار ميدانياً — تقييم مكتبي فقط",
+        "المساحة المبنية غير معروفة — تقدير بنسبة من القطعة",
+        "رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى"
+      ],
+      "known_unknowns": [
+        "مكوّنات البناء الفعلية (سرداب، طوابق، مجلس خارجي، حالة التشطيب)",
+        "حالة المبنى الفعلية من الداخل",
+        "التشطيبات والإطلالة والضوضاء",
+        "حالة المبنى (MoJ لا تفصل بين جديد ومتهالك)",
+        "عمر البناء الدقيق",
+        "المساحة المبنية الفعلية (BUA)"
+      ],
+      "recommendations": [
+        "أدخل تفاصيل العقار (طوابق، سرداب، حالة) للحصول على تقييم أدق",
+        "ابحث في مناطق مجاورة أو وسّع النافذة الزمنية",
+        "معاينة ميدانية قبل اتخاذ قرار شراء/بيع",
+        "للتوافق مع معايير RICS Red Book Global Standards (effective 31 January 2025) و IVS (effective 31 January 2025): يلزم فحص ميداني + تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement (VPS 1)."
+      ],
+      "rics_compliant": false,
+      "muc_clause_ar": "⚠️ تحفظ مادي وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) و VPS 6 (Valuation Reports) — و IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)\n\nتواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات.\n\nنطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن (الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف السوق الحالية.\n\nبناءً عليه — ووفق المعايير المذكورة أعلاه — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.",
+      "muc_clause_en": "⚠️ Material Valuation Uncertainty per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)\n\nThe Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards): post-World-Cup correction, regional war and Hormuz Strait closure, population outflow, transaction-volume collapse.\n\nScope of uncertainty: this affects the reported value, the disclosed range (low/high), and the applicability of the Sales Comparison approach under current market conditions.\n\nAccordingly — and in line with the standards cited above — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.",
+      "muc_basis_ar": "بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.",
+      "muc_review_recommendation_ar": "هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق."
+    },
+    "brief": {
+      "audience": "buyer",
+      "title_ar": "تقرير المشتري",
+      "title_en": "Buyer Brief",
+      "address": "70/300/25",
+      "asset_type": "unknown",
+      "plot_area_m2": null,
+      "district": null,
+      "valuation_total": null,
+      "valuation_low": null,
+      "valuation_high": null,
+      "material_uncertainty_banner": "⛔ تحفظ مادي جوهري — البيانات المتاحة غير كافية لإنتاج تقييم موثوق. النتائج للاسترشاد الأوّلي فقط ولا تصلح لاتخاذ قرار.",
+      "disclaimer": "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق RICS/IVS. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.",
+      "valuation_date": null,
+      "tier_label": null,
+      "sections": [
+        {
+          "id": "negotiation",
+          "title_ar": "نطاق التفاوض المقترح",
+          "content": {
+            "floor": null,
+            "ceiling": null,
+            "opening_offer": null,
+            "note": "لا تدفع أكثر من وسيط MoJ + 10%. ابدأ بعرض أقل 10% من التقييم."
+          }
+        },
+        {
+          "id": "flags",
+          "title_ar": "المخاطر والإشارات",
+          "content": {
+            "red_flags": [],
+            "green_flags": [],
+            "has_excluding": false
+          }
+        },
+        {
+          "id": "due_diligence",
+          "title_ar": "أسئلة يجب طرحها قبل الشراء",
+          "content": [
+            "اطلب بيان عقاري من وزارة العدل (يكشف الرهونات والخلافات)",
+            "اسأل عن عمر البناء الحقيقي (ليس ما يقوله البائع)",
+            "تحقق من تصنيف المنطقة (R1/R2/R3) — يحدد ما يمكنك بناؤه",
+            "اطلب فواتير الخدمات (كهرباء/ماء) لآخر سنة",
+            "إن كان مؤجراً: اطلب عقود الإيجار الحالية"
+          ]
+        },
+        {
+          "id": "material_uncertainty",
+          "title_ar": "تحفظات مادية وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 و VPS 6 — و IVS (effective 31 January 2025) — IVS 106",
+          "title_en": "Material Uncertainty Declaration per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)",
+          "content": {
+            "level": "critical",
+            "factors": [
+              "لا توجد صفقات مقارنة في وزارة العدل",
+              "لا توجد بيانات إيجار — منهج الدخل غير مطبَّق",
+              "لا يوجد اتجاه زمني كافٍ — التعديل الزمني غير مطبَّق",
+              "لم يتم فحص العقار ميدانياً — تقييم مكتبي فقط",
+              "المساحة المبنية غير معروفة — تقدير بنسبة من القطعة",
+              "رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى"
+            ],
+            "known_unknowns": [
+              "حالة المبنى الفعلية من الداخل",
+              "التشطيبات والإطلالة والضوضاء",
+              "حالة المبنى (MoJ لا تفصل بين جديد ومتهالك)",
+              "عمر البناء الدقيق",
+              "المساحة المبنية الفعلية (BUA)"
+            ],
+            "recommendations": [
+              "ابحث في مناطق مجاورة أو وسّع النافذة الزمنية",
+              "معاينة ميدانية قبل اتخاذ قرار شراء/بيع",
+              "للتوافق مع معايير RICS Red Book Global Standards (effective 31 January 2025) و IVS (effective 31 January 2025): يلزم فحص ميداني + تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement (VPS 1)."
+            ],
+            "rics_compliant": false,
+            "muc_clause_ar": "⚠️ تحفظ مادي وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) و VPS 6 (Valuation Reports) — و IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)\n\nتواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات.\n\nنطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن (الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف السوق الحالية.\n\nبناءً عليه — ووفق المعايير المذكورة أعلاه — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.",
+            "muc_clause_en": "⚠️ Material Valuation Uncertainty per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)\n\nThe Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards): post-World-Cup correction, regional war and Hormuz Strait closure, population outflow, transaction-volume collapse.\n\nScope of uncertainty: this affects the reported value, the disclosed range (low/high), and the applicability of the Sales Comparison approach under current market conditions.\n\nAccordingly — and in line with the standards cited above — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.",
+            "muc_basis_ar": "بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.",
+            "muc_review_recommendation_ar": "هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق."
+          }
+        }
+      ]
+    },
+    "disclaimer": "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق RICS/IVS. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.",
+    "valuation_id": "",
+    "active_listings": {
+      "available": false,
+      "reason": "لا توجد إعلانات نشطة مطابقة"
+    },
+    "service_scope": {
+      "asset_type": "unknown",
+      "tier": "unsupported",
+      "label_ar": "نوع غير معروف",
+      "methodology_ar": "غير مطبَّق",
+      "methodology_en": "Not applicable",
+      "requires_user_input_ar": null,
+      "disclaimer_ar": "لم نتمكن من تصنيف هذا العقار. التصنيف الصحيح للأصل ضروري لتطبيق المنهجية المناسبة. يرجى مراجعة العنوان المُدخَل.",
+      "reason_ar": "تصنيف غير مطابق لأي فئة مدعومة"
+    },
+    "verification_url": null,
+    "sanity_warnings": [],
+    "data_freshness": {
+      "latest_record": "2025-12-31",
+      "latest_record_ar": "31 ديسمبر 2025",
+      "days_old": 147,
+      "tier": "stale",
+      "severity": "warning",
+      "caveat_ar": "المرجع مبني على بيانات حتى 31 ديسمبر 2025. للحالات الحساسة، تحقق من السوق الحالي قبل اتخاذ القرار."
+    }
+  },
+  "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+  "asset_type": "unknown",
+  "asset_type_ar": null,
+  "valuation_amount": null,
+  "decomp_status": null
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "label": "villa",
+    "slug": "56_565_21",
+    "status": 200,
+    "elapsed_s": 24.32,
+    "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+    "asset_type": "standalone_villa",
+    "asset_type_ar": null
+  },
+  {
+    "label": "apartment_building",
+    "slug": "52_903_90",
+    "status": 200,
+    "elapsed_s": 5.88,
+    "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+    "asset_type": "apartment_building",
+    "asset_type_ar": "عمارة سكنية"
+  },
+  {
+    "label": "tower_t2_t3",
+    "slug": "69_255_75",
+    "status": 200,
+    "elapsed_s": 5.78,
+    "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+    "asset_type": "apartment_building",
+    "asset_type_ar": "عمارة سكنية"
+  },
+  {
+    "label": "refusal_unknown",
+    "slug": "70_300_25",
+    "status": 200,
+    "elapsed_s": 5.48,
+    "engine_version": "thammen-sprint2p22p0a1-qars-envelope-fallback",
+    "asset_type": "unknown",
+    "asset_type_ar": null
+  }
+]

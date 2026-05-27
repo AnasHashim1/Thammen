@@ -1,0 +1,84 @@
+status	ok
+engine_version	thammen-sprint2p22p0a1-qars-envelope-fallback
+tier_label	analytical_range
+refusal_reason.trigger_id	comp_density_sparse
+refusal_reason.message_ar	هذه المنطقة فيها أقل من 5 صفقات بيع مقارنة خلال آخر 6 أشهر لعقارات بهذا الحجم والنوع. التقدير الآلي لا يصل إلى مستوى الموثوقية المطلوب.
+refusal_reason.message_en	This district has fewer than 5 comparable transactions in the past 6 months for properties of this size and type. An automated estimate cannot reach reliable confidence.
+refusal_reason.recommendation_ar	نوصي بتقييم متخصص لعقارك من خلال مُقيِّم معتمد.
+refusal_reason.context.asset_type	apartment_building
+refusal_reason.context.district_ar	لوسيل 69
+methodology_ar	منهجية هجينة (Hybrid v1) — وسيط أسعار الإعلانات (T2) من PropertyFinder بعد خصم تفاوضي مرجعي ~12.5%. n=77 إعلان شقة للبيع في لوسيل (عينة strong_indicative).
+methodology_disclaimer_ar	هذا التقدير من إعلانات بحجم عينة قوي (n≥20)، لكنه يبقى T2 — للوصول لـ "موثوق" يلزم تأكيد T1 (Confirmed Sales أو MME). Rule E3 §4 يثبّت السقف عند "إرشادي" بدون T1.
+address	69/255/75
+valuation_date	2026-05-27
+district	لوسيل 69
+asset_type	apartment_building
+asset_type_ar	عمارة سكنية
+audience	buyer
+valuation.method	hybrid_t2
+valuation.reason_ar	القيمة الإرشادية للمتر المربع لشقق عمارة سكنية في لوسيل ≈ 11,702 ر.ق/م² (نطاق ±20%: 9,362 – 14,043 ر.ق/م²). لقيمة شقة محددة، اضرب في مساحتها م² الفعلية.
+reconciliation.status	hybrid_indicative
+reconciliation.message_ar	تقدير من مصدر T2 واحد (PropertyFinder، n=77، عينة strong_indicative). وزارة العدل لا تسجّل الشقق الفردية (تُحفظ تحت الأبراج). لتقدير "موثوق" يلزم Confirmed Sales أو MME.
+accuracy.label	🟢 إرشادي قوي — عينة كبيرة (T2 n≥20)
+geometric_factors.pd_no	PD/4598/2019
+material_uncertainty.level	low
+material_uncertainty.banner_ar	تحفظ مادي: عينة قوية (n=77≥20) لكن السقف يبقى إرشادي بدون تأكيد وزارة العدل (Rule E3 §4). النطاق ±20%.
+material_uncertainty.known_unknowns_ar[0]	مساحة الشقة المحددة
+material_uncertainty.known_unknowns_ar[1]	الطابق + الإطلالة + التشطيب
+material_uncertainty.known_unknowns_ar[2]	حالة الصيانة الفعلية
+material_uncertainty.known_unknowns_ar[3]	مدى تطابق الإعلانات مع الصفقات المنجزة
+material_uncertainty.muc_clause_ar	⚠️ تحفظ مادي وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) و VPS 6 (Valuation Reports) — و IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting) \n  \n تواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات. \n  \n نطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن (الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف السوق الحالية. \n  \n بناءً عليه — ووفق المعايير المذكورة أعلاه — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.
+material_uncertainty.muc_clause_en	⚠️ Material Valuation Uncertainty per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting) \n  \n The Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards): post-World-Cup correction, regional war and Hormuz Strait closure, population outflow, transaction-volume collapse. \n  \n Scope of uncertainty: this affects the reported value, the disclosed range (low/high), and the applicability of the Sales Comparison approach under current market conditions. \n  \n Accordingly — and in line with the standards cited above — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.
+material_uncertainty.muc_basis_ar	بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.
+material_uncertainty.muc_review_recommendation_ar	هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق.
+brief.audience	buyer
+brief.title_ar	تقرير عمارة سكنية — تحتاج بيانات إضافية
+brief.sections[0].id	next_steps
+brief.sections[0].title_ar	الخطوات المقترحة
+brief.sections[0].content.note_ar	العنوان 69/255/75 تابع لمساحة 2,195 م² مُصنَّف كـ "عمارة سكنية". لتقييم كامل يرجى تزويدنا بأحد التاليين:
+brief.sections[0].content.options_ar[0]	إفادة الإيجار الشهري الفعلي (لتقييم بطريقة الدخل)
+brief.sections[0].content.options_ar[1]	سعر الإعلان أو سعر المالك (لمقارنة سوقية)
+disclaimer	ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي، وليس تقييماً معتمداً وفق RICS/IVS.
+active_listings.reason	تصنيف سريع — لم يُجرَ بحث إعلانات
+service_scope.asset_type	apartment_building
+service_scope.tier	limited
+service_scope.label_ar	عمارة شقق
+service_scope.methodology_ar	منهج الدخل (Income Approach)
+service_scope.methodology_en	Income Approach
+service_scope.requires_user_input_ar	الإيجار السنوي الإجمالي
+service_scope.disclaimer_ar	عمارات الشقق تُقيَّم بمنهج الدخل. وزارة العدل لا تسجل وحدات الشقق فردياً بشكل قابل للمقارنة. الإيجار السنوي مطلوب.
+service_scope.reason_ar	MoJ لا تسجل وحدات الشقق فردياً
+verification_url	https://thammen.qa/verify/VNPD4RCZJKZB
+hybrid.case	B
+hybrid.confidence	indicative
+hybrid.sample_size_band	strong_indicative
+hybrid.tier_breakdown[0].tier	T2
+hybrid.tier_breakdown[1].tier	T3
+hybrid.tier_breakdown[1].shape	dict_new
+hybrid.tier_breakdown[1].sources[0].developer	Aryan
+hybrid.tier_breakdown[1].sources[0].project	City Avenues
+hybrid.tier_breakdown[1].sources[0].status	under_construction
+hybrid.tier_breakdown[1].sources[0].freshness_status	fresh
+hybrid.tier_breakdown[1].sources[1].developer	Aryan
+hybrid.tier_breakdown[1].sources[1].project	City Avenues
+hybrid.tier_breakdown[1].sources[1].status	under_construction
+hybrid.tier_breakdown[1].sources[1].freshness_status	fresh
+hybrid.tier_breakdown[1].sources[2].developer	Aryan
+hybrid.tier_breakdown[1].sources[2].project	City Avenues
+hybrid.tier_breakdown[1].sources[2].status	under_construction
+hybrid.tier_breakdown[1].sources[2].freshness_status	fresh
+hybrid.tier_breakdown[1].sources[3].developer	Aryan
+hybrid.tier_breakdown[1].sources[3].project	City Avenues
+hybrid.tier_breakdown[1].sources[3].status	under_construction
+hybrid.tier_breakdown[1].sources[3].freshness_status	fresh
+hybrid.rule_e3_compliance	compliant
+sources[0].source	propertyfinder
+sources[0].tier	T2
+sources[0].role_ar	إعلانات بيع شقق — لوسيل
+sources[0].url_template	propertyfinder.qa/en/buy/lusail/apartments-for-sale.html
+sources[0].calibration_status	provisional_broker_experience_grounded
+data_freshness.latest_record	2025-12-31
+data_freshness.latest_record_ar	31 ديسمبر 2025
+data_freshness.tier	stale
+data_freshness.severity	warning
+data_freshness.caveat_ar	المرجع مبني على بيانات حتى 31 ديسمبر 2025. للحالات الحساسة، تحقق من السوق الحالي قبل اتخاذ القرار.

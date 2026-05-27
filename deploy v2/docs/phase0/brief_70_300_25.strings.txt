@@ -1,0 +1,100 @@
+status	ok
+engine_version	thammen-sprint2p22p0a1-qars-envelope-fallback
+methodology_ar	AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق
+methodology_disclaimer_ar	تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. لا يحلّ محل التقييم المعتمد من مُقيِّم مُرخّص للأغراض الرسمية (قروض بنكية، نزاعات قضائية، تقارير محاسبية).
+address	70/300/25
+asset_type	unknown
+audience	buyer
+user_inputs.age_source	unknown
+valuation.method	insufficient_data
+valuation.method_label_ar	بيانات غير كافية للتقييم
+valuation.source_ar	لم نجد عينة كافية من معاملات المقارنة
+refusal_reason.trigger_id	comp_density_sparse
+refusal_reason.message_ar	هذه المنطقة فيها أقل من 5 صفقات بيع مقارنة خلال آخر 6 أشهر لعقارات بهذا الحجم والنوع. التقدير الآلي لا يصل إلى مستوى الموثوقية المطلوب.
+refusal_reason.message_en	This district has fewer than 5 comparable transactions in the past 6 months for properties of this size and type. An automated estimate cannot reach reliable confidence.
+refusal_reason.recommendation_ar	نوصي بتقييم متخصص لعقارك من خلال مُقيِّم معتمد.
+refusal_reason.context.asset_type	unknown
+reconciliation.status	no_primary
+reconciliation.message_ar	لا توجد قيمة مقارنة — عينة غير كافية
+accuracy.label	❌ بيانات غير كافية
+accuracy.tier	none
+accuracy.explanation_ar	لا توجد صفقات بيع كافية لعقارات مشابهة في وزارة العدل. لم يتم إنتاج تقييم.
+material_uncertainty.level	critical
+material_uncertainty.banner_ar	⛔ تحفظ مادي جوهري — البيانات المتاحة غير كافية لإنتاج تقييم موثوق. النتائج للاسترشاد الأوّلي فقط ولا تصلح لاتخاذ قرار.
+material_uncertainty.banner_en	⛔ CRITICAL Material Uncertainty — Insufficient data for a reliable valuation. Results are for preliminary guidance only.
+material_uncertainty.factors[0]	تفاصيل البناء غير مُقدَّمة (الطوابق، السرداب، الترميم، الملاحق) — التقييم يفترض بناءً نموذجياً وقد يختلف عن الواقع بـ ±20-40% إذا كان للعقار سرداب أو طوابق متعددة أو ملاحق مهمة.
+material_uncertainty.factors[1]	لا توجد صفقات مقارنة في وزارة العدل
+material_uncertainty.factors[2]	لا توجد بيانات إيجار — منهج الدخل غير مطبَّق
+material_uncertainty.factors[3]	لا يوجد اتجاه زمني كافٍ — التعديل الزمني غير مطبَّق
+material_uncertainty.factors[4]	لم يتم فحص العقار ميدانياً — تقييم مكتبي فقط
+material_uncertainty.factors[5]	المساحة المبنية غير معروفة — تقدير بنسبة من القطعة
+material_uncertainty.factors[6]	رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى
+material_uncertainty.known_unknowns[0]	مكوّنات البناء الفعلية (سرداب، طوابق، مجلس خارجي، حالة التشطيب)
+material_uncertainty.known_unknowns[1]	حالة المبنى الفعلية من الداخل
+material_uncertainty.known_unknowns[2]	التشطيبات والإطلالة والضوضاء
+material_uncertainty.known_unknowns[3]	حالة المبنى (MoJ لا تفصل بين جديد ومتهالك)
+material_uncertainty.known_unknowns[4]	عمر البناء الدقيق
+material_uncertainty.known_unknowns[5]	المساحة المبنية الفعلية (BUA)
+material_uncertainty.recommendations[0]	أدخل تفاصيل العقار (طوابق، سرداب، حالة) للحصول على تقييم أدق
+material_uncertainty.recommendations[1]	ابحث في مناطق مجاورة أو وسّع النافذة الزمنية
+material_uncertainty.recommendations[2]	معاينة ميدانية قبل اتخاذ قرار شراء/بيع
+material_uncertainty.recommendations[3]	للتوافق مع معايير RICS Red Book Global Standards (effective 31 January 2025) و IVS (effective 31 January 2025): يلزم فحص ميداني + تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement (VPS 1).
+material_uncertainty.muc_clause_ar	⚠️ تحفظ مادي وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) و VPS 6 (Valuation Reports) — و IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting) \n  \n تواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات. \n  \n نطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن (الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف السوق الحالية. \n  \n بناءً عليه — ووفق المعايير المذكورة أعلاه — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.
+material_uncertainty.muc_clause_en	⚠️ Material Valuation Uncertainty per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting) \n  \n The Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards): post-World-Cup correction, regional war and Hormuz Strait closure, population outflow, transaction-volume collapse. \n  \n Scope of uncertainty: this affects the reported value, the disclosed range (low/high), and the applicability of the Sales Comparison approach under current market conditions. \n  \n Accordingly — and in line with the standards cited above — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.
+material_uncertainty.muc_basis_ar	بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.
+material_uncertainty.muc_review_recommendation_ar	هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق.
+brief.audience	buyer
+brief.title_ar	تقرير المشتري
+brief.title_en	Buyer Brief
+brief.address	70/300/25
+brief.asset_type	unknown
+brief.material_uncertainty_banner	⛔ تحفظ مادي جوهري — البيانات المتاحة غير كافية لإنتاج تقييم موثوق. النتائج للاسترشاد الأوّلي فقط ولا تصلح لاتخاذ قرار.
+brief.disclaimer	ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق RICS/IVS. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.
+brief.sections[0].id	negotiation
+brief.sections[0].title_ar	نطاق التفاوض المقترح
+brief.sections[0].content.note	لا تدفع أكثر من وسيط MoJ + 10%. ابدأ بعرض أقل 10% من التقييم.
+brief.sections[1].id	flags
+brief.sections[1].title_ar	المخاطر والإشارات
+brief.sections[2].id	due_diligence
+brief.sections[2].title_ar	أسئلة يجب طرحها قبل الشراء
+brief.sections[2].content[0]	اطلب بيان عقاري من وزارة العدل (يكشف الرهونات والخلافات)
+brief.sections[2].content[1]	اسأل عن عمر البناء الحقيقي (ليس ما يقوله البائع)
+brief.sections[2].content[2]	تحقق من تصنيف المنطقة (R1/R2/R3) — يحدد ما يمكنك بناؤه
+brief.sections[2].content[3]	اطلب فواتير الخدمات (كهرباء/ماء) لآخر سنة
+brief.sections[2].content[4]	إن كان مؤجراً: اطلب عقود الإيجار الحالية
+brief.sections[3].id	material_uncertainty
+brief.sections[3].title_ar	تحفظات مادية وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 و VPS 6 — و IVS (effective 31 January 2025) — IVS 106
+brief.sections[3].title_en	Material Uncertainty Declaration per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)
+brief.sections[3].content.level	critical
+brief.sections[3].content.factors[0]	لا توجد صفقات مقارنة في وزارة العدل
+brief.sections[3].content.factors[1]	لا توجد بيانات إيجار — منهج الدخل غير مطبَّق
+brief.sections[3].content.factors[2]	لا يوجد اتجاه زمني كافٍ — التعديل الزمني غير مطبَّق
+brief.sections[3].content.factors[3]	لم يتم فحص العقار ميدانياً — تقييم مكتبي فقط
+brief.sections[3].content.factors[4]	المساحة المبنية غير معروفة — تقدير بنسبة من القطعة
+brief.sections[3].content.factors[5]	رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى
+brief.sections[3].content.known_unknowns[0]	حالة المبنى الفعلية من الداخل
+brief.sections[3].content.known_unknowns[1]	التشطيبات والإطلالة والضوضاء
+brief.sections[3].content.known_unknowns[2]	حالة المبنى (MoJ لا تفصل بين جديد ومتهالك)
+brief.sections[3].content.known_unknowns[3]	عمر البناء الدقيق
+brief.sections[3].content.known_unknowns[4]	المساحة المبنية الفعلية (BUA)
+brief.sections[3].content.recommendations[0]	ابحث في مناطق مجاورة أو وسّع النافذة الزمنية
+brief.sections[3].content.recommendations[1]	معاينة ميدانية قبل اتخاذ قرار شراء/بيع
+brief.sections[3].content.recommendations[2]	للتوافق مع معايير RICS Red Book Global Standards (effective 31 January 2025) و IVS (effective 31 January 2025): يلزم فحص ميداني + تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement (VPS 1).
+brief.sections[3].content.muc_clause_ar	⚠️ تحفظ مادي وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) و VPS 6 (Valuation Reports) — و IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting) \n  \n تواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات. \n  \n نطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن (الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف السوق الحالية. \n  \n بناءً عليه — ووفق المعايير المذكورة أعلاه — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.
+brief.sections[3].content.muc_clause_en	⚠️ Material Valuation Uncertainty per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting) \n  \n The Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards): post-World-Cup correction, regional war and Hormuz Strait closure, population outflow, transaction-volume collapse. \n  \n Scope of uncertainty: this affects the reported value, the disclosed range (low/high), and the applicability of the Sales Comparison approach under current market conditions. \n  \n Accordingly — and in line with the standards cited above — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.
+brief.sections[3].content.muc_basis_ar	بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.
+brief.sections[3].content.muc_review_recommendation_ar	هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق.
+disclaimer	ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق RICS/IVS. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.
+active_listings.reason	لا توجد إعلانات نشطة مطابقة
+service_scope.asset_type	unknown
+service_scope.tier	unsupported
+service_scope.label_ar	نوع غير معروف
+service_scope.methodology_ar	غير مطبَّق
+service_scope.methodology_en	Not applicable
+service_scope.disclaimer_ar	لم نتمكن من تصنيف هذا العقار. التصنيف الصحيح للأصل ضروري لتطبيق المنهجية المناسبة. يرجى مراجعة العنوان المُدخَل.
+service_scope.reason_ar	تصنيف غير مطابق لأي فئة مدعومة
+data_freshness.latest_record	2025-12-31
+data_freshness.latest_record_ar	31 ديسمبر 2025
+data_freshness.tier	stale
+data_freshness.severity	warning
+data_freshness.caveat_ar	المرجع مبني على بيانات حتى 31 ديسمبر 2025. للحالات الحساسة، تحقق من السوق الحالي قبل اتخاذ القرار.

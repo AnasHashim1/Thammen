@@ -1,0 +1,230 @@
+status	ok
+engine_version	thammen-sprint2p22p0a1-qars-envelope-fallback
+methodology_ar	AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق
+methodology_disclaimer_ar	تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. لا يحلّ محل التقييم المعتمد من مُقيِّم مُرخّص للأغراض الرسمية (قروض بنكية، نزاعات قضائية، تقارير محاسبية).
+address	56/565/21
+valuation_date	2026-05-27
+district	بو هامور
+asset_type	standalone_villa
+audience	buyer
+user_inputs.age_source	unknown
+valuation.method	comparison_bracket
+valuation.method_label_ar	مقارنة شريحية مباشرة (RICS VPS 4)
+valuation.source_ar	وسيط 29 معاملة في نفس الشريحة والمنطقة
+valuation.range_expansion.methodology_note_ar	النقطة المركزية تَستخدم وسيط المقارنات (محافظ). الحد الأعلى يَتسع لِيَعكس الخصائص الفريدة المُكتشَفة. HBU (إن وُجد) يُؤثر على النقطة المركزية لأنه قيمة-إضافية غير مُتضمَّنة في عقارات المقارنة.
+valuation.value_decomposition.land.confidence	reliable
+valuation.value_decomposition.land.confidence_ar	موثوق
+valuation.value_decomposition.land.source_ar	وسيط معاملات بيع الأراضي في نفس المنطقة (n=33 صفقة، نافذة 24 شهراً)
+valuation.value_decomposition.building_implied.interpretation_ar	البناء يساهم بنسبة 32.0% من القيمة — مساهمة طبيعية لبناء بحالة جيدة على هذه الأرض.
+valuation.value_decomposition.building_implied.status	normal
+valuation.value_decomposition.methodology_note_ar	يفصل ثمّن قيمة الأرض (من معاملات بيع أراضٍ نقية في نفس المنطقة) عن قيمة البناء الضمنية (الفرق بين القيمة الكلية وقيمة الأرض). هذا الفصل يكشف للمستخدم نسبة مساهمة كل عنصر — حسب RICS Red Book.
+tier_label	analytical_range
+income_approach.rent_source	rent_reference_municipality
+income_approach.rent_source_ar	وسيط البلدية (n=1344)
+income_approach.cap_rate_label_ar	معدل رسملة 4.0% (نموذجي لـ standalone_villa)
+income_approach.caveats[0]	الإيجار من وسيط البلدية — قد يختلف للمنطقة الفرعية بـ ±30%
+income_approach.method_label_ar	طريقة الدخل (RICS Income Approach)
+income_approach.role_ar	تأكيد منهجي — لا تدخل في القيمة النهائية لعقار سكني
+stock_strata.version	2.16.0
+stock_strata.rule_source	EMPIRICAL_FINDINGS Rule E4 (2026-05-13)
+stock_strata.methodology_ar	كل معاملة فيلا تُصنَّف بنسبة سعرها لـ وسيط الأراضي في نفس المنطقة. هذي النسبة تفصل بين فئات العمر والتشطيب: فيلا قديمة تُباع بسعر الأرض تقريباً (نسبة ~1.0)، فيلا حديثة جيدة (نسبة ~1.7)، فيلا فاخرة جديدة (نسبة ~2.3+). القيمة الرئيسية المعروضة في الأعلى تستخدم median المدمج لكل الفئات وهذا محافظ. الـ stratification في الأسفل شفافية إضافية للمستخدم.
+stock_strata.land_reference.bracket	400-600
+stock_strata.land_reference.source_ar	وسيط معاملات بيع أراضي مسجَّلة في نفس المنطقة (MoJ)
+stock_strata.strata.land_priced.ratio_band	<1.15
+stock_strata.strata.land_priced.label_ar	بسعر الأرض
+stock_strata.strata.land_priced.description_ar	فلل قديمة جداً تُباع بسعر الأرض تقريباً. تنطبق عليها قاعدة الـ10-Year-Rule في قطر (Project Instructions §3): البناء عبء معماري، ليس قيمة مضافة.
+stock_strata.strata.land_priced.reliability_label_ar	إرشادي (n=6)
+stock_strata.strata.aging_stock.ratio_band	1.15-1.5
+stock_strata.strata.aging_stock.label_ar	بناء متوسط العمر
+stock_strata.strata.aging_stock.description_ar	فلل عمرها 10+ سنوات بتشطيب متوسط أو تجديد جزئي. الفئة الأكثر تكراراً في معظم مناطق قطر، وتميل إلى أن تكون مهيمنة على median المدمج.
+stock_strata.strata.aging_stock.reliability_label_ar	موثوق (n≥10)
+stock_strata.strata.modern_stock.ratio_band	1.5-2.2
+stock_strata.strata.modern_stock.label_ar	بناء حديث جيد
+stock_strata.strata.modern_stock.description_ar	فلل عمرها 2-10 سنوات، تشطيب جيد، حالة جاهزة للسكن بدون ترميم. كثيراً ما تكون قيمتها الحقيقية أعلى من median المدمج بنسبة 20-40%.
+stock_strata.strata.modern_stock.reliability_label_ar	إرشادي (n=3)
+stock_strata.strata.luxury_new.ratio_band	≥2.2
+stock_strata.strata.luxury_new.label_ar	فاخر / حديث البناء
+stock_strata.strata.luxury_new.description_ar	فلل جديدة (1-3 سنوات) مع تشطيب فاخر، أو مشاريع طور التطوير. في بعض المناطق تكون عينة هذه الفئة ضعيفة (n<5) فلا يُعتمد على median لها مباشرة.
+stock_strata.strata.luxury_new.reliability_label_ar	عينة ضعيفة جداً
+stock_strata.dominant_stratum.name	aging_stock
+stock_strata.dominant_stratum.label_ar	بناء متوسط العمر
+stock_strata.dominant_stratum.note_ar	الفئة المسيطرة على عينة المنطقة. median المدمج يميل لتمثيلها أكثر من غيرها — فإن كانت فيلتك من فئة مختلفة، الرقم الرئيسي قد لا يعكس قيمتها بدقة.
+stock_strata.sprint_scope_caveat_ar	Sprint 2.16.0 (الإصدار الحالي): الـ stratification شفافية فقط — القيمة الرئيسية في الأعلى لم تتغير. اختيار الـ stratum المناسب لفيلتك حسب العمر والتشطيب يبقى قراراً للمستخدم. الإصدارات القادمة قد تتيح اختيار stratum مباشرة.
+reconciliation.status	strong_convergence
+reconciliation.label_ar	تقارب قوي بين الطرق ✓
+reconciliation.message_ar	الطرق الثلاث تتقارب — ثقة عالية في القيمة
+accuracy.label	🟢 تقدير موثوق
+accuracy.tier	high
+accuracy.explanation_ar	مبني على 29 صفقة بيع فعلية مسجلة في وزارة العدل لعقارات مشابهة بنفس الحجم.
+trend.label	استقرار
+trend.years[0].year	2020
+trend.years[1].year	2021
+trend.years[2].year	2022
+trend.years[3].year	2023
+trend.years[4].year	2024
+trend.years[5].year	2025
+location_features[0].label	منطقة سكنية خاصة (R1)
+location_features[1].label	قرب عيادة/مركز صحي
+location_features[2].label	ارتفاع مسموح: أرضي + أول + سطح
+location_features[3].label	قطعة منتظمة الشكل
+geometric_factors.pd_no	0
+geometric_factors.corner_analysis.evidence_ar	مطل على شارع داخلي (شوارع داخلية: [565])
+geometric_factors.corner_analysis.confidence	medium
+geometric_factors.corner_analysis.note_ar	هذه الخصائص قد تَفرض علاوة سوقية. النقطة المركزية محافظة (وسيط المقارنات) — الحد الأعلى للنطاق يَعكس الاحتمال.
+geometric_factors.named_landmarks.malls[0].name_ar	صيدلية ويل كير ، مارزا هايبر ماركت
+geometric_factors.named_landmarks.malls[0].name_en	Well Care Pharmacy, Marza Hypermarket
+geometric_factors.named_landmarks.malls[0].category_ar	صحي
+geometric_factors.named_landmarks.mixed_use_venues[0].name_ar	دار السلام
+geometric_factors.named_landmarks.mixed_use_venues[0].name_en	Dar Al Salam
+geometric_factors.named_landmarks.mixed_use_venues[0].category_ar	فندقي
+geometric_factors.named_landmarks.mixed_use_venues[1].name_ar	المشتل المركزى, إدارة الحدائق العامة, بلدية الدوحة, السوق المركزى - وزارة البلدية
+geometric_factors.named_landmarks.mixed_use_venues[1].name_en	Nursery, Public Park Dep., Doha Municipality, Soouq Markazi - MM
+geometric_factors.named_landmarks.mixed_use_venues[1].category_ar	حكومي
+geometric_factors.named_landmarks.mixed_use_venues[2].name_ar	سوق الخميس والجمعة
+geometric_factors.named_landmarks.mixed_use_venues[2].name_en	Thursday and Friday Souq
+geometric_factors.named_landmarks.mixed_use_venues[2].category_ar	تجاري
+material_uncertainty.level	moderate
+material_uncertainty.banner_ar	ℹ️ تحفظ مادي متوسط — تقييم مكتبي بدون فحص ميداني. النتائج معقولة لكنها لا تحل محل معاينة ميدانية.
+material_uncertainty.banner_en	ℹ️ MODERATE Material Uncertainty — Desktop valuation without physical inspection. Results are reasonable but do not replace site inspection.
+material_uncertainty.factors[0]	تفاصيل البناء غير مُقدَّمة (الطوابق، السرداب، الترميم، الملاحق) — التقييم يفترض بناءً نموذجياً وقد يختلف عن الواقع بـ ±20-40% إذا كان للعقار سرداب أو طوابق متعددة أو ملاحق مهمة.
+material_uncertainty.factors[1]	لم يتم فحص العقار ميدانياً — تقييم مكتبي فقط
+material_uncertainty.factors[2]	المساحة المبنية غير معروفة — تقدير بنسبة من القطعة
+material_uncertainty.factors[3]	رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى
+material_uncertainty.known_unknowns[0]	مكوّنات البناء الفعلية (سرداب، طوابق، مجلس خارجي، حالة التشطيب)
+material_uncertainty.known_unknowns[1]	حالة المبنى الفعلية من الداخل
+material_uncertainty.known_unknowns[2]	التشطيبات والإطلالة والضوضاء
+material_uncertainty.known_unknowns[3]	حالة المبنى (MoJ لا تفصل بين جديد ومتهالك)
+material_uncertainty.known_unknowns[4]	عمر البناء الدقيق
+material_uncertainty.known_unknowns[5]	المساحة المبنية الفعلية (BUA)
+material_uncertainty.recommendations[0]	أدخل تفاصيل العقار (طوابق، سرداب، حالة) للحصول على تقييم أدق
+material_uncertainty.recommendations[1]	معاينة ميدانية قبل اتخاذ قرار شراء/بيع
+material_uncertainty.recommendations[2]	للتوافق مع معايير RICS Red Book Global Standards (effective 31 January 2025) و IVS (effective 31 January 2025): يلزم فحص ميداني + تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement (VPS 1).
+material_uncertainty.muc_clause_ar	⚠️ تحفظ مادي وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) و VPS 6 (Valuation Reports) — و IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting) \n  \n تواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات. \n  \n نطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن (الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف السوق الحالية. \n  \n بناءً عليه — ووفق المعايير المذكورة أعلاه — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.
+material_uncertainty.muc_clause_en	⚠️ Material Valuation Uncertainty per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting) \n  \n The Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards): post-World-Cup correction, regional war and Hormuz Strait closure, population outflow, transaction-volume collapse. \n  \n Scope of uncertainty: this affects the reported value, the disclosed range (low/high), and the applicability of the Sales Comparison approach under current market conditions. \n  \n Accordingly — and in line with the standards cited above — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.
+material_uncertainty.muc_basis_ar	بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.
+material_uncertainty.muc_review_recommendation_ar	هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق.
+cap_rate_provenance.source	hardcoded
+cap_rate_provenance.confidence	fallback
+cap_rate_provenance.asset_type	standalone_villa
+cap_rate_provenance.reason_ar	الفيلات السكنية سكن مالكي، عائدها الإيجاري منخفض لأن الموقع ونمط الحياة يغلبان على الإيجار في تسعيرها — لذا يُستخدم معدل رسملة افتراضي منخفض (4%). طريقة الدخل هنا تأكيد منهجي ولا تدخل القيمة النهائية لعقار سكني.
+brief.audience	buyer
+brief.title_ar	تقرير المشتري
+brief.title_en	Buyer Brief
+brief.address	56/565/21
+brief.asset_type	standalone_villa
+brief.district	بو هامور
+brief.material_uncertainty_banner	ℹ️ تحفظ مادي متوسط — تقييم مكتبي بدون فحص ميداني. النتائج معقولة لكنها لا تحل محل معاينة ميدانية.
+brief.disclaimer	ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق RICS/IVS. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.
+brief.valuation_date	2026-05-27
+brief.sections[0].id	negotiation
+brief.sections[0].title_ar	نطاق التفاوض المقترح
+brief.sections[0].content.note	لا تدفع أكثر من وسيط MoJ + 10%. ابدأ بعرض أقل 10% من التقييم.
+brief.sections[1].id	flags
+brief.sections[1].title_ar	المخاطر والإشارات
+brief.sections[2].id	due_diligence
+brief.sections[2].title_ar	أسئلة يجب طرحها قبل الشراء
+brief.sections[2].content[0]	اطلب بيان عقاري من وزارة العدل (يكشف الرهونات والخلافات)
+brief.sections[2].content[1]	اسأل عن عمر البناء الحقيقي (ليس ما يقوله البائع)
+brief.sections[2].content[2]	تحقق من تصنيف المنطقة (R1/R2/R3) — يحدد ما يمكنك بناؤه
+brief.sections[2].content[3]	اطلب فواتير الخدمات (كهرباء/ماء) لآخر سنة
+brief.sections[2].content[4]	إن كان مؤجراً: اطلب عقود الإيجار الحالية
+brief.sections[3].id	material_uncertainty
+brief.sections[3].title_ar	تحفظات مادية وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 و VPS 6 — و IVS (effective 31 January 2025) — IVS 106
+brief.sections[3].title_en	Material Uncertainty Declaration per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)
+brief.sections[3].content.level	moderate
+brief.sections[3].content.factors[0]	لم يتم فحص العقار ميدانياً — تقييم مكتبي فقط
+brief.sections[3].content.factors[1]	المساحة المبنية غير معروفة — تقدير بنسبة من القطعة
+brief.sections[3].content.factors[2]	رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى
+brief.sections[3].content.known_unknowns[0]	حالة المبنى الفعلية من الداخل
+brief.sections[3].content.known_unknowns[1]	التشطيبات والإطلالة والضوضاء
+brief.sections[3].content.known_unknowns[2]	حالة المبنى (MoJ لا تفصل بين جديد ومتهالك)
+brief.sections[3].content.known_unknowns[3]	عمر البناء الدقيق
+brief.sections[3].content.known_unknowns[4]	المساحة المبنية الفعلية (BUA)
+brief.sections[3].content.recommendations[0]	معاينة ميدانية قبل اتخاذ قرار شراء/بيع
+brief.sections[3].content.recommendations[1]	للتوافق مع معايير RICS Red Book Global Standards (effective 31 January 2025) و IVS (effective 31 January 2025): يلزم فحص ميداني + تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement (VPS 1).
+brief.sections[3].content.muc_clause_ar	⚠️ تحفظ مادي وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) و VPS 6 (Valuation Reports) — و IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting) \n  \n تواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) اضطراباً جوهرياً نشطاً: تصحيح ما بعد المونديال، الحرب الإقليمية وإغلاق هرمز، نزوح سكاني، انهيار حجم المعاملات. \n  \n نطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن (الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف السوق الحالية. \n  \n بناءً عليه — ووفق المعايير المذكورة أعلاه — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.
+brief.sections[3].content.muc_clause_en	⚠️ Material Valuation Uncertainty per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting) \n  \n The Qatari real estate market is experiencing material disruption at the valuation date (2026-02-28 onwards): post-World-Cup correction, regional war and Hormuz Strait closure, population outflow, transaction-volume collapse. \n  \n Scope of uncertainty: this affects the reported value, the disclosed range (low/high), and the applicability of the Sales Comparison approach under current market conditions. \n  \n Accordingly — and in line with the standards cited above — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.
+brief.sections[3].content.muc_basis_ar	بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.
+brief.sections[3].content.muc_review_recommendation_ar	هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق.
+brief.sections[4].id	cap_rate_provenance
+brief.sections[4].title_ar	مصدر معدل الرسملة
+brief.sections[4].content.source	hardcoded
+brief.sections[4].content.confidence	fallback
+brief.sections[4].content.source_ar	معدل افتراضي (غير مُعايَر)
+brief.sections[4].content.confidence_ar	غير كافية — استُخدم معدل افتراضي
+brief.sections[4].content.body_ar	معدل الرسملة المستخدم (4.0%) معدل نموذجي (غير معايَر) — لا توجد بيانات إيجار/بيع كافية لهذه المنطقة والشريحة. الفيلات السكنية سكن مالكي، عائدها الإيجاري منخفض لأن الموقع ونمط الحياة يغلبان على الإيجار في تسعيرها — لذا يُستخدم معدل رسملة افتراضي منخفض (4%). طريقة الدخل هنا تأكيد منهجي ولا تدخل القيمة النهائية لعقار سكني.
+disclaimer	ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق RICS/IVS. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.
+valuation_id	THM-20260527-163816-5656521
+reasoning_trace.valuation_id	THM-20260527-163816-5656521
+reasoning_trace.generated_at	2026-05-27T16:38:16
+reasoning_trace.steps[0].category	identification
+reasoning_trace.steps[0].fact	الأصل: standalone_villa، منطقة GIS: بو هامور، مساحة الأرض: 450.0 م²
+reasoning_trace.steps[0].source	gisqatar.org.qa
+reasoning_trace.steps[0].source_date	2026-05-27
+reasoning_trace.steps[0].confidence	high
+reasoning_trace.steps[1].category	ground_truth
+reasoning_trace.steps[1].fact	وزارة العدل سجّلت 29 صفقة لشريحة 400-600م² في 24 شهر؛ الوسيط 5,333 ر.ق/م² (القيمة الإجمالية 2,380,000 ر.ق)
+reasoning_trace.steps[1].source	data.gov.qa weekly-real-estates-sales-bulletin
+reasoning_trace.steps[1].confidence	high
+reasoning_trace.steps[1].details.bracket	400-600
+reasoning_trace.steps[2].category	adjustment
+reasoning_trace.steps[2].fact	تعديلات GIS: +3.5% بناءً على 3 عامل إيجابي
+reasoning_trace.steps[2].source	services.gisqatar.org.qa
+reasoning_trace.steps[2].confidence	medium
+reasoning_trace.steps[2].details.factors[0].code	zoning
+reasoning_trace.steps[2].details.factors[0].label_ar	تنظيم R1
+reasoning_trace.steps[2].details.factors[0].label_en	zoning
+reasoning_trace.steps[2].details.factors[0].direction	positive
+reasoning_trace.steps[2].details.factors[0].evidence	تصنيف R1
+reasoning_trace.steps[2].details.factors[0].source	Vector/Zoning
+reasoning_trace.steps[2].details.factors[1].code	landmark_صحي_عيادة
+reasoning_trace.steps[2].details.factors[1].label_ar	قرب عيادة/مركز صحي
+reasoning_trace.steps[2].details.factors[1].label_en	landmark_صحي_عيادة
+reasoning_trace.steps[2].details.factors[1].direction	positive
+reasoning_trace.steps[2].details.factors[1].evidence	2× ضمن 500م — أقرب: دايت كافيه مركز التغذية (374م)
+reasoning_trace.steps[2].details.factors[1].source	Vector/Landmarks
+reasoning_trace.steps[2].details.factors[2].code	permitted_height
+reasoning_trace.steps[2].details.factors[2].label_ar	ارتفاع مسموح: G+1+P
+reasoning_trace.steps[2].details.factors[2].label_en	permitted_height
+reasoning_trace.steps[2].details.factors[2].direction	positive
+reasoning_trace.steps[2].details.factors[2].evidence	الارتفاع المسموح G+1+P — إمكانية تطوير مستقبلية
+reasoning_trace.steps[2].details.factors[2].source	Vector/General_Landuse
+reasoning_trace.steps[2].details.factors[3].code	plot_shape
+reasoning_trace.steps[2].details.factors[3].label_ar	قطعة منتظمة الشكل
+reasoning_trace.steps[2].details.factors[3].label_en	plot_shape
+reasoning_trace.steps[2].details.factors[3].direction	neutral
+reasoning_trace.steps[2].details.factors[3].evidence	4 رؤوس، نسبة انتظام 1.00
+reasoning_trace.steps[2].details.factors[3].source	CadastrePlots/polygon
+reasoning_trace.steps[3].category	market_trend
+reasoning_trace.steps[3].fact	اتجاه الأسعار: +1.9%/سنة (آخر 6 سنوات)
+reasoning_trace.steps[3].source	data.gov.qa weekly bulletin (computed)
+reasoning_trace.steps[3].confidence	medium
+reasoning_trace.sources_consulted[0].name	gisqatar.org.qa
+reasoning_trace.sources_consulted[0].url	https://services.gisqatar.org.qa
+reasoning_trace.sources_consulted[0].accessed_at	2026-05-27T16:38:16
+reasoning_trace.sources_consulted[1].name	data.gov.qa
+reasoning_trace.sources_consulted[1].url	https://www.data.gov.qa
+reasoning_trace.sources_consulted[1].accessed_at	2026-05-27T16:38:16
+reasoning_trace.data_freshness.gisqatar.org.qa	2026-05-27
+reasoning_trace.known_unknowns[0]	حالة العقار الداخلية الفعلية (تشطيبات، صيانة، تكييف)
+reasoning_trace.known_unknowns[1]	أي التزامات قانونية (رهون، خلافات، إرث، حصص غير مفروزة)
+reasoning_trace.known_unknowns[2]	تاريخ آخر تجديد فعلي أو حالة الأنظمة (سباكة، كهرباء)
+reasoning_trace.known_unknowns[3]	وضع المستأجر الحالي (إن وُجد) ومدة العقد
+reasoning_trace.known_unknowns[4]	حالة الحديقة وحوض السباحة (إن وُجد)
+reasoning_trace.known_unknowns[5]	حالة الجدران الخارجية والسقف
+reasoning_trace.disclaimer	ثمّن يجمع البيانات السوقية من المصادر الحكومية (وزارة العدل، وزارة البلدية والبيئة) والإعلانات النشطة (FGRealty، PropertyFinder، arady، Mzad). هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً وفق معايير RICS أو IVS. القرار النهائي ومسؤوليته على العميل. للأغراض الرسمية (قروض بنكية، محاكم، تقارير محاسبية) يلزم تقييم من مُقيِّم معتمد.
+active_listings.reason	لا توجد إعلانات نشطة مطابقة
+service_scope.asset_type	standalone_villa
+service_scope.tier	supported
+service_scope.label_ar	فلة مستقلة
+service_scope.methodology_ar	مقارنة المبيعات (Sales Comparison) من سجلات وزارة العدل
+service_scope.methodology_en	Sales Comparison from MoJ registered transactions
+service_scope.disclaimer_ar	تقييم الفلل المستقلة يستخدم مقارنة مع صفقات وزارة العدل في نفس المنطقة والشريحة (نافذة 24 شهراً). لا يدخل في التقييم تأثير حالة المبنى الداخلية، التشطيبات، أو الإطلالة.
+service_scope.reason_ar	تغطية MoJ كافية في 10+ مناطق سكنية رئيسية
+verification_url	https://thammen.qa/verify/HVOVC72CTBZG
+multi_qars.split_basis	equal_by_count_default
+data_freshness.latest_record	2025-12-31
+data_freshness.latest_record_ar	31 ديسمبر 2025
+data_freshness.tier	stale
+data_freshness.severity	warning
+data_freshness.caveat_ar	المرجع مبني على بيانات حتى 31 ديسمبر 2025. للحالات الحساسة، تحقق من السوق الحالي قبل اتخاذ القرار.
