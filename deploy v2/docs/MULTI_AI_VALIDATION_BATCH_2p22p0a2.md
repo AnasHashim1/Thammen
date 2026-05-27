@@ -176,12 +176,39 @@ APPROVED / FLAGGED / REVISE — be specific.
 
 ## §3. C3 — `موثوق` tier badge relabel
 
-### Inventory (Phase 0 grep — to be expanded in Phase 1 step 4)
+### Inventory (Phase 1 grep complete — full site list per rendered surface)
 
-Phase 0 found `موثوق` in all 4 anchors (52_903_90:1, 56_565_21:3, 69_255_75:3, 70_300_25:3). The label is set at multiple sites; full Phase 1 grep pending — preliminary list:
-- `tier_label` rendering in `output_briefs.py`
-- `confidence` field labels across the engine
-- companion `إرشادي` (indicative) appears 2× and 4× in 56/565/21 and 69/255/75
+Phase 0 grep + Phase 1 deep trace identified **two distinct categories** of `موثوق` usage:
+
+**Category A — pure tier-badge sites (relabel target):**
+
+| Site                                                | What it emits today              | Source                       |
+|-----------------------------------------------------|-----------------------------------|------------------------------|
+| `valuation.value_decomposition.land.confidence_ar`  | `موثوق` / `إرشادي`               | evaluate_unified.py:1089-1093 |
+| `stock_strata.strata.<X>.reliability_label_ar`      | `موثوق (n≥10)` / `إرشادي (n=N)`  | stock_strata.py (builder, exact line TBD in commit) |
+| `accuracy.label`                                    | `🟢 تقدير موثوق` / `🟡 إرشادي ...` | evaluate_unified.py (accuracy computation) |
+
+**Category B — prose sites that REFERENCE the tier by quoted name:**
+
+| Site                                  | Example text                                              |
+|---------------------------------------|------------------------------------------------------------|
+| `methodology_disclaimer_ar` (T2 path) | `'...للوصول لـ "موثوق" يلزم تأكيد T1...'` (evaluate_unified.py:2074) |
+| `reconciliation.message_ar` (T2 path) | `'...لتقدير "موثوق" يلزم Confirmed Sales أو MME.'` (evaluate_unified.py:2241) |
+
+**Category C — generic-adjective sites (out of scope):**
+
+| Site                                  | Example text                                                                      |
+|---------------------------------------|-----------------------------------------------------------------------------------|
+| `refusal_reason.message_ar`           | `'...لا يصل إلى مستوى الموثوقية المطلوب.'` (using الموثوقية as the noun "reliability") |
+| `material_uncertainty.banner_ar`      | `'...غير كافية لإنتاج تقييم موثوق.'` (generic adjective for "a reliable estimate")   |
+| Various comments + log messages       | Internal-only, not rendered                                                       |
+
+**Relabel strategy:**
+- **Category A:** RELABEL per KICKOFF (the tier-badge change).
+- **Category B:** UPDATE the quoted reference to use the new label name (so the prose stays internally consistent with the badge).
+- **Category C:** **LEAVE ALONE.** These use موثوق/الموثوقية as ordinary Arabic adjectives/nouns, not as named labels — relabelling would over-extend the scope and risk awkward phrasings.
+
+This three-way taxonomy is a Phase 1 finding worth surfacing to validators before they commit on the relabel.
 
 ### Original tier vocabulary
 
@@ -350,7 +377,29 @@ APPROVED / FLAGGED / REVISE — propose alternative wording where useful.
 
 > لا تدفع أكثر من وسيط MoJ + 10%. ابدأ بعرض أقل 10% من التقييم.
 
-### Origin: pending Phase 1 grep (anticipated: `output_briefs.py` negotiation section builder)
+### Origin (Phase 1 grep complete)
+
+**Single site:** `output_briefs.py:515` inside the negotiation-range section builder (`fair_range['note']`).
+
+```python
+# output_briefs.py:509-521 — Section 2: NEGOTIATION RANGE
+buyer_ceiling = round(base['valuation_total'] * 1.10) if base['valuation_total'] else None
+fair_range = {
+    'floor': base['valuation_low'],
+    'ceiling': buyer_ceiling,
+    'opening_offer': round(base['valuation_total'] * 0.90) if base['valuation_total'] else None,
+    'note': 'لا تدفع أكثر من وسيط MoJ + 10%. ابدأ بعرض أقل 10% من التقييم.',
+}
+sections.append({
+    'id': 'negotiation',
+    'title_ar': 'نطاق التفاوض المقترح',
+    'content': fair_range,
+})
+```
+
+The numerical thresholds (`× 1.10` ceiling, `× 0.90` opening offer) are
+in the code logic, not in the prose. Only the `note` string changes;
+math stays exact.
 
 ### Proposed replacement
 
