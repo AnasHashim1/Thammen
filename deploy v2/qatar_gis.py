@@ -53,16 +53,24 @@ from typing import Optional
 
 GIS_BASE = "https://services.gisqatar.org.qa/server/rest/services"
 
-# Sprint 2.16.5: GIS Qatar deprecated the public `services.gisqatar.org.qa/.../QARS_Search/MapServer`
-# endpoint (reduced from ~24M records to 14 bookkeeping rows during a 2026-05-17 ETL migration).
-# The active address layer is now on `khazna.gisqatar.org.qa/fed/rest/services/QARS/QARS_Point/FeatureServer/0`,
-# which is what the official `gisqatar.org.qa/qarssearch/` portal uses today.
+# Sprint 2.16.5: GIS Qatar migrated the address layer to
+# `khazna.gisqatar.org.qa/fed/rest/services/QARS/QARS_Point/FeatureServer/0`,
+# while the legacy `services.gisqatar.org.qa/Vector/QARS_Search/MapServer/0`
+# remained populated as a fallback. Both carry the IDENTICAL schema
+# (ZONE_NO, STREET_NO, BUILDING_NO, PIN, QARS, BUILDING_NO_SUBTYPE) and
+# accept the same query parameters.
 #
-# We verified via direct service info that QARS_Point has the IDENTICAL schema we depend on
-# (ZONE_NO, STREET_NO, BUILDING_NO, PIN, QARS, BUILDING_NO_SUBTYPE) and supports the same
-# query parameters (where, outFields, f, returnGeometry, outSR with datum transformation).
-#
-# Heroku can reach `khazna.gisqatar.org.qa` (public DNS, IP 89.211.33.46).
+# Sprint 2.22.0a.1 (2026-05-27): khazna's QARS_Point service became
+# inaccessible — both FeatureServer and MapServer slugs return HTTP 200
+# carrying an ArcGIS auth-error envelope (`{"error":{"code":503,
+# "message":"User couldn't access this resource 'qars/qars_point.mapserver'"}}`).
+# Phase 0 probes confirmed the legacy endpoint is fully populated
+# (162,201 features) with the same schema. Production address lookups had
+# been failing silently because the previous fallback only triggered on
+# Python exceptions, not on ArcGIS error envelopes. The `_qars_query`
+# helper below tries khazna first (so the optimization auto-restores
+# whenever access is granted again) and falls back to legacy on either
+# Python exceptions OR ArcGIS error envelopes.
 KHAZNA_BASE = "https://khazna.gisqatar.org.qa/fed/rest/services"
 
 # ─── Sprint 2.15.1: Feature flag for inline imagery ───────────────────────
@@ -87,8 +95,12 @@ ENDPOINTS = {
     # to khazna.gisqatar.org.qa/fed/rest/services/QARS/QARS_Point/FeatureServer/0.
     # Same schema (ZONE_NO/STREET_NO/BUILDING_NO/PIN/QARS); FeatureServer supports
     # the exact attribute query patterns this module already issues.
+    # Sprint 2.22.0a.1: prefer `_qars_query()` (defined below) over direct
+    # ENDPOINTS['qars'] access — the helper handles primary-first /
+    # legacy-fallback transparently for both Python exceptions and ArcGIS
+    # error envelopes. Direct access is still safe (e.g. the /api/health
+    # probe queries both endpoints independently to report status).
     'qars': f'{KHAZNA_BASE}/QARS/QARS_Point/FeatureServer/0/query',
-    # Kept for diagnostics; current behavior is "depleted to 14 records".
     'qars_legacy': f'{GIS_BASE}/Vector/QARS_Search/MapServer/0/query',
     'cadastre': f'{GIS_BASE}/Vector/CadastrePlots/MapServer/0/query',
     'districts': f'{GIS_BASE}/Vector/Districts/MapServer/0/query',
@@ -288,6 +300,86 @@ def _http_get_json(url, params=None, timeout=30):
             import time
             time.sleep(2 ** attempt)
     raise last_err
+
+
+# ─── Sprint 2.22.0a.1: ArcGIS server-side error handling ─────────────────
+#
+# Background: ArcGIS Server signals application-level failures (ACL
+# revocation, invalid `where` clauses, query timeouts) via HTTP 200 with
+# a body of shape `{"error": {"code": N, "message": "...", "details": []}}`,
+# NOT via HTTP status codes. Before this Sprint, `_http_get_json`
+# successfully returned that envelope as a parsed dict, and callers
+# computed `res.get('features', [])` which returned `[]` — silently
+# masquerading as "no features matched" instead of "the server refused
+# the request". On 2026-05-27 khazna's QARS_Point service started
+# returning this envelope for every request, and the existing
+# exception-based legacy fallback never triggered.
+#
+# The helpers below convert envelopes into catchable exceptions and
+# centralize the primary→legacy fallback for the three QARS callsites
+# (find_property, _qars_count_in_polygon, count_qars_within_polygon).
+
+
+class _GISServerError(Exception):
+    """Raised when an ArcGIS endpoint returns HTTP 200 + `{"error": {...}}`.
+
+    Not a subclass of `urllib.error.URLError` so `_http_get_json`'s retry
+    loop does not retry envelope errors — they are deterministic (ACL,
+    bad query, missing service), not transient network glitches.
+    """
+
+
+def _arcgis_envelope_to_exception(res, source_url: str = "") -> None:
+    """Raise `_GISServerError` when the parsed response carries an
+    `{"error": {...}}` envelope. No-op otherwise.
+
+    Centralizes the detection so a future Sprint can extend it (e.g.
+    surfacing the error code in /api/health) without retouching every
+    caller. `source_url` is appended to the error message for
+    debuggability when both primary and legacy fail.
+    """
+    if not isinstance(res, dict):
+        return
+    err = res.get('error')
+    if not err:
+        return
+    code = err.get('code', '?')
+    msg = err.get('message') or '(no message)'
+    src = f' [{source_url}]' if source_url else ''
+    raise _GISServerError(f'ArcGIS error code={code}: {msg}{src}')
+
+
+def _qars_query(params, timeout: float = 30.0, logger=None):
+    """QARS query with primary-first / legacy-fallback.
+
+    Tries `ENDPOINTS['qars']` (khazna). On either a Python exception OR
+    an ArcGIS `{"error": ...}` envelope, falls back to
+    `ENDPOINTS['qars_legacy']` (services.gisqatar.org.qa). Both endpoints
+    carry the same schema including `BUILDING_NO_SUBTYPE` (verified
+    2026-05-27 Phase 0 probe).
+
+    Returns the parsed JSON dict from whichever endpoint succeeded.
+    Raises only when BOTH endpoints fail — the primary exception is
+    logged (if `logger` is callable) but not re-raised.
+
+    `params` is the inner ArcGIS query dict (`where` / `outFields` /
+    `geometry` / etc.); this helper picks the URL.
+    """
+    primary = ENDPOINTS['qars']
+    legacy = ENDPOINTS['qars_legacy']
+    try:
+        res = _http_get_json(primary, params, timeout=timeout)
+        _arcgis_envelope_to_exception(res, primary)
+        return res
+    except Exception as e_primary:
+        if callable(logger):
+            try:
+                logger(f'qars primary failed ({e_primary}); trying legacy endpoint')
+            except Exception:
+                pass
+    res = _http_get_json(legacy, params, timeout=timeout)
+    _arcgis_envelope_to_exception(res, legacy)
+    return res
 
 
 def _project_2932_to_4326(points_2932):
@@ -545,7 +637,8 @@ def _qars_count_in_polygon(ring, timeout: float = 8.0):
         return None
     try:
         geom = json.dumps({'rings': [ring], 'spatialReference': {'wkid': 4326}})
-        res = _http_get_json(ENDPOINTS['qars'], {
+        # Sprint 2.22.0a.1: use _qars_query for primary→legacy fallback.
+        res = _qars_query({
             'geometry': geom, 'geometryType': 'esriGeometryPolygon',
             'inSR': '4326', 'spatialRel': 'esriSpatialRelIntersects',
             'returnCountOnly': 'true', 'f': 'json',
@@ -580,7 +673,8 @@ def count_qars_within_polygon(polygon_geometry, timeout: float = 10.0) -> list:
         return []
     try:
         geom = json.dumps({'rings': rings, 'spatialReference': {'wkid': 4326}})
-        res = _http_get_json(ENDPOINTS['qars'], {
+        # Sprint 2.22.0a.1: use _qars_query for primary→legacy fallback.
+        res = _qars_query({
             'geometry': geom,
             'geometryType': 'esriGeometryPolygon',
             'inSR': '4326',
@@ -1184,19 +1278,20 @@ class QatarGIS:
             'outFields': '*', 'f': 'json',
             'returnGeometry': 'true', 'outSR': 4326,
         }
-        # Sprint 2.16.5: try the new khazna endpoint first; fall back to legacy
-        # only if the request itself errors out (network/HTTP/JSON failure).
-        # NOTE: we do NOT fall back on "0 features" — that's a legitimate
-        # "address not found" answer and the legacy endpoint is depleted anyway.
+        # Sprint 2.16.5: try khazna QARS_Point first; fall back to legacy
+        # QARS_Search on failure. Sprint 2.22.0a.1: the fallback now also
+        # covers ArcGIS error envelopes (HTTP 200 with `{"error": ...}`),
+        # which khazna started returning when its QARS_Point service
+        # became inaccessible 2026-05-27. Legacy is fully populated
+        # (162,201 features verified) with full schema incl.
+        # BUILDING_NO_SUBTYPE. We still do NOT fall back on `features: []`
+        # — that remains a legitimate "address not found" answer from
+        # whichever endpoint responded successfully.
         try:
-            res = _http_get_json(ENDPOINTS['qars'], params)
+            res = _qars_query(params, logger=self._log)
         except Exception as e:
-            self._log(f'qars primary failed ({e}); trying legacy endpoint')
-            try:
-                res = _http_get_json(ENDPOINTS['qars_legacy'], params)
-            except Exception as e2:
-                self._log(f'qars legacy also failed ({e2})')
-                return None
+            self._log(f'qars primary+legacy both failed ({e})')
+            return None
         feats = res.get('features', [])
         if not feats:
             return None
