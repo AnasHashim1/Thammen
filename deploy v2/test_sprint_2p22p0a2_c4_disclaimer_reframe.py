@@ -35,6 +35,11 @@ PRODUCTION_FILES = [
     'evaluate_unified.py',
     'evaluate_v3.py',
     'evaluate_property.py',
+    # Sprint 2.22.0a.2 Gate 2 post-deploy fix: reasoning_trace.py was
+    # missed in the original 8-site sweep (live anchor 56/565/21
+    # surfaced `reasoning_trace.disclaimer` with the older long-form
+    # variant). Added as the 9th C4 site.
+    'reasoning_trace.py',
 ]
 
 
@@ -111,6 +116,18 @@ def test_new_long_form_in_evaluate_property():
     print('  PASS test_new_long_form_in_evaluate_property')
 
 
+def test_new_long_form_in_reasoning_trace():
+    """Sprint 2.22.0a.2 Gate 2 post-deploy fix: reasoning_trace.py was
+    the 9th C4 site, missed in the original sweep."""
+    src = (REPO_ROOT / 'reasoning_trace.py').read_text(encoding='utf-8')
+    assert NEW_SHORT_SUBSTR in src, "C4 9th site: reasoning_trace.py disclaimer not updated"
+    # And the OLD long-form variant must not remain
+    assert 'وليس تقييماً عقارياً معتمداً وفق معايير RICS أو IVS' not in src, (
+        "C4 9th site regression: old long-form variant still in reasoning_trace.py"
+    )
+    print('  PASS test_new_long_form_in_reasoning_trace')
+
+
 def main():
     tests = [
         test_no_old_long_form_phrasings_in_production,
@@ -121,6 +138,7 @@ def main():
         test_new_list_item_form_in_api,
         test_new_long_form_in_evaluate_v3,
         test_new_long_form_in_evaluate_property,
+        test_new_long_form_in_reasoning_trace,
     ]
     failed = 0
     for t in tests:

@@ -421,12 +421,16 @@ def build_stock_strata_result(
         'applied':         True,
         'version':         STRATA_VERSION,
         'rule_source':     RULE_SOURCE,
+        # Sprint 2.22.0a.2 Gate 2 post-deploy fix: remove user-visible
+        # English/Arabic code-switching ('الـ stratification') from
+        # methodology_ar. Replaced with native Arabic 'التصنيف بحسب
+        # الفئات' to keep the substantive disclosure intact.
         'methodology_ar': (
             'كل معاملة فيلا تُصنَّف بنسبة سعرها لـ وسيط الأراضي في نفس المنطقة. '
             'هذي النسبة تفصل بين فئات العمر والتشطيب: فيلا قديمة تُباع بسعر الأرض '
             'تقريباً (نسبة ~1.0)، فيلا حديثة جيدة (نسبة ~1.7)، فيلا فاخرة جديدة (نسبة ~2.3+). '
-            'القيمة الرئيسية المعروضة في الأعلى تستخدم median المدمج لكل الفئات وهذا محافظ. '
-            'الـ stratification في الأسفل شفافية إضافية للمستخدم.'
+            'القيمة الرئيسية المعروضة في الأعلى تستخدم الوسيط المدمج لكل الفئات وهذا محافظ. '
+            'التصنيف بحسب الفئات في الأسفل شفافية إضافية للمستخدم.'
         ),
         'land_reference': {
             **land_ref,

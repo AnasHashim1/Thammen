@@ -97,11 +97,20 @@ class ReasoningTrace:
     valuation_id: str = ''
 
     # إخلاء المسؤولية الموحَّد لكل تقرير
+    # Sprint 2.22.0a.2 Gate 2 post-deploy fix (C4 9th site): this
+    # reasoning_trace.disclaimer field was a C4 miss in the original
+    # 8-site sweep — same defensive-negation → descriptive-provenance
+    # reframe per docs/MULTI_AI_VALIDATION_BATCH_2p22p0a2.md §4.
+    # Note: this site used the older long-form variant
+    # ("وفق معايير RICS أو IVS") rather than the short form, but the
+    # reframe is identical — name the role + artefact, not the absence
+    # of certification.
     disclaimer: str = (
         "ثمّن يجمع البيانات السوقية من المصادر الحكومية (وزارة العدل، "
         "وزارة البلدية والبيئة) والإعلانات النشطة (FGRealty، PropertyFinder، "
-        "arady، Mzad). هذا تحليل معلوماتي للقرار، وليس تقييماً عقارياً معتمداً "
-        "وفق معايير RICS أو IVS. القرار النهائي ومسؤوليته على العميل. "
+        "arady، Mzad). هذا تحليل معلوماتي للقرار، "
+        "ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS. "
+        "القرار النهائي ومسؤوليته على العميل. "
         "للأغراض الرسمية (قروض بنكية، محاكم، تقارير محاسبية) يلزم تقييم من "
         "مُقيِّم معتمد."
     )

@@ -56,6 +56,34 @@ def test_other_strata_descriptions_unchanged():
     print('  PASS test_other_strata_descriptions_unchanged')
 
 
+def test_no_user_visible_stratification_codeswitch():
+    """Sprint 2.22.0a.2 Gate 2 post-deploy fix: stock_strata.methodology_ar
+    (line ~424) emitted 'الـ stratification' code-switching to users —
+    same kind of English/Arabic jargon C2 was supposed to remove from
+    sprint_scope_caveat_ar (line ~445). Caught live on 56/565/21 Gate 2
+    smoke; fixed by replacing 'الـ stratification' with native Arabic
+    'التصنيف بحسب الفئات' and 'median المدمج' with 'الوسيط المدمج'."""
+    src = (REPO_ROOT / 'stock_strata.py').read_text(encoding='utf-8')
+    # Find the methodology_ar value block (between 'methodology_ar': ( and ),
+    # roughly lines 428-434). Enforce no code-switching tokens in user-
+    # visible strings only — module-level docstring + variable names like
+    # 'STRATUM_LABELS_AR' / 'classify_ratio' / etc are OK.
+    meth_start = src.find("'methodology_ar': (")
+    assert meth_start > 0, "methodology_ar field not found in stock_strata.py"
+    meth_end = src.find('),', meth_start)
+    meth_block = src[meth_start:meth_end]
+    assert 'الـ stratification' not in meth_block, (
+        "C2 Gate-2 regression: 'الـ stratification' code-switching "
+        "still in stock_strata.methodology_ar user-visible value"
+    )
+    assert 'median المدمج' not in meth_block, (
+        "C2 Gate-2 regression: 'median المدمج' English jargon still "
+        "in stock_strata.methodology_ar user-visible value (should be "
+        "'الوسيط المدمج')"
+    )
+    print('  PASS test_no_user_visible_stratification_codeswitch')
+
+
 def test_sprint_scope_caveat_replaced_post_validation():
     """Post-C2 commit 7 (Sprint 2.22.0a.2): the sprint_scope_caveat_ar
     field now carries the Gemini-approved neutral copy. The Sprint 2.16.0
@@ -105,6 +133,7 @@ def main():
     tests = [
         test_land_priced_description_no_internal_doc_reference,
         test_other_strata_descriptions_unchanged,
+        test_no_user_visible_stratification_codeswitch,
         test_sprint_scope_caveat_replaced_post_validation,
     ]
     failed = 0
