@@ -138,7 +138,7 @@ Frontend additions in 2.22.0a:
 | F2 | `tier_breakdown` UI rendering | When `body.hybrid.tier_breakdown` is present and non-empty (Lusail hybrid path), brief includes a `tier_breakdown` section that renders T1/T2/T3 rows with `weight`, `n`, `value_per_m2_raw`, `value_per_m2_adjusted`. |
 | F3 | `n_used` + freshness | When `body.hybrid.n_used` is present, brief surfaces it with a date stamp. Format: "تقدير مبني على N إعلان كما في YYYY-MM-DD". |
 | F4 | Use-case banner | Every non-refusal response includes `use_case_banner` with `suitable_for[]`, `not_suitable_for[]`, `stage5_required_for[]`. Content per BRIEF v3.1 §6.7 table. |
-| F5 | §1.6 dynamic refusal templates (6 active) | Every refusal response includes `refusal_reason = {trigger_id, message_ar, message_en, recommendation_ar}`. **6 active trigger_ids** in 2.22.0a (4 inherited + 1 NEW `density_gated_district` [BRIEF v3.1 §1.6 + Finding §3.1] + 1 NEW `asset_class_out_of_scope` [engine-capability for `out_of_scope_v1`, added Sprint 2.22.0a/5 per Q1 d decision]). The 6 are enumerated in §5 of this brief. `asset_uniqueness` trigger deferred to 2.22.y per §2.3 (single logical unit with 3σ compute). |
+| F5 | §1.6 dynamic refusal templates (5 active) | Every refusal response includes `refusal_reason = {trigger_id, message_ar, message_en, recommendation_ar}`. The **5 trigger_ids** enumerated in §5 of this brief. `asset_uniqueness` trigger deferred to 2.22.y per §2.3 (single logical unit with 3σ compute). |
 | F6 | Density-gated district refusal (NEW) | Pearl (`district == 'جزيرة اللؤلؤة'`) returns `refusal_reason.trigger_id = 'density_gated_district'`. Lusail D10 zones continue hybrid path (no density-gating). |
 | F7 | Verification URL generation | Every Stage-2/Stage-3 response includes `verification_url = '<base>/verify/<token>'` where `<token>` is a deterministic hash of (PIN OR Z/S/B) + day-date. URL itself returns 404 in 2.22.0a (UI deferred to 2.22.0.1) — that's documented behaviour, not a bug. |
 | F8 | A2 reclassification | BRIEF v2 (`CHANGELOG_pre_2p22p0_v2.md`) §4.5 row A2 updated to read "apartment_building (DCF refusal — canonical apt-Stage-2 case)" instead of "Villa". No production logic change. (Self-reference corrected /12 Phase 1 — original KICKOFF text cited v3.1 in error; v3.1 has no §4.5 row table.) |
@@ -241,9 +241,9 @@ Frontend additions in 2.22.0a:
 
 ---
 
-## §5 §1.6 Dynamic refusal templates (6 active + 1 deferred)
+## §5 §1.6 Dynamic refusal templates (5 active + 1 deferred)
 
-Per BRIEF v3.1 §1.6 + Finding §3.1 (Pearl density-gating) + Sprint 2.22.0a/5 Q1 d decision (`asset_class_out_of_scope` engine-capability trigger). **6 active triggers** ship in 2.22.0a; `asset_uniqueness` deferred to 2.22.y per §2.3 (single logical unit — trigger + 3σ compute ship together or not at all per Anas decision 2026-05-26). Each refusal output emits:
+Per BRIEF v3.1 §1.6 + Finding §3.1 (Pearl density-gating). **5 active triggers** ship in 2.22.0a; `asset_uniqueness` deferred to 2.22.y per §2.3 (single logical unit — trigger + 3σ compute ship together or not at all per Anas decision 2026-05-26). Each refusal output emits:
 
 ```python
 refusal_reason = {
