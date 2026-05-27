@@ -1326,44 +1326,19 @@ def _rewrite_brief_anchored_sections(
     final_low = float(final_low)
     final_high = float(final_high)
 
-    # Sprint 2.16.2: stratum-aware negotiation. If the subject was classified
-    # into a specific stratum (reliable, n≥10), use that stratum's estimated
-    # total as the negotiation anchor instead of the blended bracket median.
-    # Falls back to final_amount when no classification or unreliable stratum.
-    _negotiation_anchor = final_amount
-    _negotiation_note_extra = None
-    if isinstance(stock_strata, dict):
-        _subj = stock_strata.get('subject_property') or {}
-        _cls = _subj.get('classification')
-        if _cls and _cls in ('land_priced', 'aging_stock', 'modern_stock', 'luxury_new'):
-            _stratum_data = (stock_strata.get('strata') or {}).get(_cls) or {}
-            _stratum_total = _stratum_data.get('estimated_total')
-            if _stratum_total and _stratum_data.get('reliable'):
-                _negotiation_anchor = float(_stratum_total)
-                _label = _subj.get('classification_label_ar') or _cls
-                _negotiation_note_extra = (
-                    f'النطاق محسوب بناء على فئة "{_label}" المُصنَّفة لعقارك '
-                    f'(وسيط الفئة: {_stratum_total:,.0f} ر.ق)، '
-                    'وليس وسيط الشريحة المدمج. هذا يعكس فعليا فئة عقارك.'
-                )
+    # Sprint 2.22.0a.2 C5 DELETE: the 'negotiation' section is no longer
+    # built in output_briefs.compose_buyer_brief, so the upstream
+    # _negotiation_anchor + stratum-aware-negotiation post-processor
+    # block that lived here is now dead. Removed both. The Sprint 2.16.2
+    # stratum-aware logic remains alive elsewhere (stock_strata module
+    # still emits the strata block — only its consumption by the
+    # negotiation section is gone).
 
     for sec in brief['sections']:
         sid = sec.get('id')
 
-        # Buyer negotiation: floor 5% below valuation, opening 10% below, ceiling 10% above
-        if sid == 'negotiation' and audience == 'buyer':
-            content = sec.get('content') or {}
-            content['floor'] = _r100k(_negotiation_anchor * 0.95)
-            content['opening_offer'] = _r100k(_negotiation_anchor * 0.90)
-            content['ceiling'] = _r100k(_negotiation_anchor * 1.10)
-            content['anchor_used'] = _r100k(_negotiation_anchor)
-            content['is_stratum_aware'] = (_negotiation_anchor != final_amount)
-            if _negotiation_note_extra:
-                content['stratum_note_ar'] = _negotiation_note_extra
-            sec['content'] = content
-
         # Seller's "your property value" section
-        elif sid == 'valuation' and audience == 'seller':
+        if sid == 'valuation' and audience == 'seller':
             content = sec.get('content') or {}
             content['estimated_value'] = _r100k(final_amount)
             content['range_low']  = _r100k(final_low)

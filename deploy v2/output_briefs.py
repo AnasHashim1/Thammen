@@ -513,18 +513,16 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
         })
 
     # Section 2: NEGOTIATION RANGE
-    buyer_ceiling = round(base['valuation_total'] * 1.10) if base['valuation_total'] else None
-    fair_range = {
-        'floor': base['valuation_low'],
-        'ceiling': buyer_ceiling,
-        'opening_offer': round(base['valuation_total'] * 0.90) if base['valuation_total'] else None,
-        'note': 'لا تدفع أكثر من وسيط MoJ + 10%. ابدأ بعرض أقل 10% من التقييم.',
-    }
-    sections.append({
-        'id': 'negotiation',
-        'title_ar': 'نطاق التفاوض المقترح',
-        'content': fair_range,
-    })
+    # Sprint 2.22.0a.2 C5 DELETE: the negotiation-range section is removed
+    # from the user-visible buyer brief. The descriptive reframing GPT-5
+    # reviewed in the multi-AI validation batch still anchored buyer
+    # behavior via a specific 10% number — but that benchmark doesn't
+    # generalize across distressed / inheritance / off-market / premium /
+    # low-liquidity cases. Anas locked DELETE over reframe. The numerical
+    # thresholds × 1.10 / × 0.90 stay in any engine-internal sanity-check
+    # code that still uses them (evaluate_property.above_buyer_ceiling
+    # flag, market_regime.buyer_ceiling_multiplier_default, etc.) —
+    # only the user-visible section disappears here.
 
     # Section 3: RED FLAGS
     flags = evaluation.get('listing_flags') or {}
