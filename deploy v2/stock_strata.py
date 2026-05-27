@@ -446,9 +446,13 @@ def build_stock_strata_result(
             ),
         },
         'subject_property': subject,
+        # Sprint 2.22.0a.2 C2: removed sprint version self-reference,
+        # English/Arabic code-switching (stratification/stratum), and
+        # forward-looking-statement promise. Gemini-approved verbatim
+        # per docs/MULTI_AI_VALIDATION_BATCH_2p22p0a2.md §2.
         'sprint_scope_caveat_ar': (
-            'Sprint 2.16.0 (الإصدار الحالي): الـ stratification شفافية فقط — '
-            'القيمة الرئيسية في الأعلى لم تتغير. اختيار الـ stratum المناسب لفيلتك حسب العمر '
-            'والتشطيب يبقى قراراً للمستخدم. الإصدارات القادمة قد تتيح اختيار stratum مباشرة.'
+            'هذه الطبقات مقدّمة كشفافية إضافية — القيمة الرئيسية أعلاه '
+            'لم تتأثّر. اختيار الفئة المناسبة لعقارك حسب العمر والتشطيب '
+            'يبقى قرار المستخدم.'
         ),
     }

@@ -56,34 +56,56 @@ def test_other_strata_descriptions_unchanged():
     print('  PASS test_other_strata_descriptions_unchanged')
 
 
-def test_sprint_scope_caveat_still_present_for_now():
-    """The 'sprint_scope_caveat_ar' field with the 'Sprint 2.16.0'
-    self-reference is INTENTIONALLY still present in this Sprint —
-    its replacement copy goes through multi-AI validation (Anas's
-    hybrid-path decision). This test guards against accidental
-    removal in the mechanical commit — when the validated replacement
-    lands, this test will be flipped."""
+def test_sprint_scope_caveat_replaced_post_validation():
+    """Post-C2 commit 7 (Sprint 2.22.0a.2): the sprint_scope_caveat_ar
+    field now carries the Gemini-approved neutral copy. The Sprint 2.16.0
+    self-reference and English/Arabic jargon (stratification/stratum) are
+    gone. This test was a forward guard in the mechanical commit and
+    flipped at the validation-landing commit."""
+    # Import the function that builds the stock_strata response block.
+    # The caveat lives inside the dict returned by analyze_stock_strata().
+    # Since the field is plain-string interpolation, we can grep the
+    # source directly without instantiating the full engine.
     src = (REPO_ROOT / 'stock_strata.py').read_text(encoding='utf-8')
-    assert 'sprint_scope_caveat_ar' in src, (
-        'sprint_scope_caveat_ar key disappeared from stock_strata.py — '
-        "but its replacement copy is supposed to land via the multi-AI "
-        "validation batch, not the mechanical commit. Restore or check "
-        "the batch packet."
+
+    # Negative assertions: forbidden tokens are gone
+    assert "Sprint 2.16.0 (الإصدار الحالي)" not in src, (
+        'Forbidden Sprint version self-reference still present in '
+        'stock_strata.py — C2 commit 7 was supposed to remove it.'
     )
-    # Marker that the multi-AI replacement has NOT YET applied:
-    assert 'Sprint 2.16.0' in src, (
-        "Sprint 2.16.0 self-reference unexpectedly removed before "
-        "multi-AI validation landed. Flip this test when the validated "
-        "replacement commits."
+    # English jargon "stratification" / "stratum" should no longer
+    # appear inside the user-visible sprint_scope_caveat_ar block.
+    # (They can still appear in code comments / function names — we
+    # only enforce on the caveat field's value range.)
+    caveat_start = src.find("'sprint_scope_caveat_ar':")
+    assert caveat_start > 0, "sprint_scope_caveat_ar key missing"
+    # The value spans the next ~6 lines after the key
+    caveat_block = src[caveat_start:caveat_start + 800]
+    # Find the closing paren of the string-builder tuple
+    block_end = caveat_block.find('),', 30)  # skip the opening (
+    caveat_value = caveat_block[:block_end] if block_end > 0 else caveat_block
+    assert 'stratification' not in caveat_value, (
+        f'User-visible code-switching jargon "stratification" still in '
+        f'sprint_scope_caveat_ar value: {caveat_value!r}'
     )
-    print('  PASS test_sprint_scope_caveat_still_present_for_now')
+    assert 'stratum' not in caveat_value, (
+        f'User-visible code-switching jargon "stratum" still in '
+        f'sprint_scope_caveat_ar value: {caveat_value!r}'
+    )
+
+    # Positive assertion: the new neutral copy is present
+    assert 'هذه الطبقات مقدّمة كشفافية إضافية' in src, (
+        'C2 commit 7: the Gemini-approved neutral sprint_scope_caveat_ar '
+        'copy is missing — commit 7 was supposed to land it.'
+    )
+    print('  PASS test_sprint_scope_caveat_replaced_post_validation')
 
 
 def main():
     tests = [
         test_land_priced_description_no_internal_doc_reference,
         test_other_strata_descriptions_unchanged,
-        test_sprint_scope_caveat_still_present_for_now,
+        test_sprint_scope_caveat_replaced_post_validation,
     ]
     failed = 0
     for t in tests:
