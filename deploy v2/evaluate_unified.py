@@ -943,9 +943,10 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
             'low':   geo_v2.get('range_low'),
             'high':  geo_v2.get('range_high'),
             'method': 'comparison_widened_indicative',
-            'method_label_ar': 'مقارنة بتوسيع جغرافي — إرشادي (RICS VPS 4 §7)',
+            # Sprint 2.22.0a.2 C3: relabel "إرشادي" -> "شواهد محدودة"
+            'method_label_ar': 'مقارنة بتوسيع جغرافي — شواهد محدودة (RICS VPS 4 §7)',
             'n': geo_n,
-            'source_ar': f'وسيط {geo_n} معاملة بعد توسيع — إرشادي بسبب عينة محدودة',
+            'source_ar': f'وسيط {geo_n} معاملة بعد توسيع — شواهد محدودة بسبب عينة صغيرة',
         }
 
     # Case 4: Fallback — bracket only with low-confidence flag
@@ -1085,15 +1086,18 @@ def _decompose_value(
     bld_pct = bld_implied / valuation_amount if valuation_amount > 0 else 0
 
     # Confidence label for land
+    # Sprint 2.22.0a.2 C3: relabel tier badges to شواهد taxonomy
+    # (Anas-locked شواهد override of CC's original تغطية draft).
+    # Codes (reliable/indicative/thin) unchanged for back-compat.
     if land_n >= 20:
         land_conf = 'reliable'
-        land_conf_ar = 'موثوق'
+        land_conf_ar = 'شواهد كافية'
     elif land_n >= 10:
         land_conf = 'indicative'
-        land_conf_ar = 'إرشادي'
+        land_conf_ar = 'شواهد محدودة'
     else:
         land_conf = 'thin'
-        land_conf_ar = 'عينة محدودة'
+        land_conf_ar = 'شواهد غير كافية'
 
     # Status & interpretation
     if bld_implied < 0:
@@ -2039,44 +2043,49 @@ def _t2_band_copy(band: str, n: int, muc_range_pct: float) -> dict:
                 f'تحفظ مادي: عينة عند الحد الأدنى (n={n}<10) — تفسير حذر مطلوب. '
                 f'النطاق ±{pct}% (Rule E3 §5).'
             ),
+            # Sprint 2.22.0a.2 C3: tier badge relabel "إرشادي" -> "شواهد محدودة";
+            # quoted Category B references updated to match the new tier name.
             'disclaimer_ar': (
                 'هذا التقدير من إعلانات (تطلعات بائعين) — ليس صفقات مسجلة. '
                 f'مع n={n}<10، العينة عند الحد الأدنى للاسترشاد فقط — '
-                'السقف "إرشادي" (Rule E3 §4) ولا يُعتمد كقيمة سوق.'
+                'السقف "شواهد محدودة" (Rule E3 §4) ولا يُعتمد كقيمة سوق.'
             ),
             'level':          'medium',
             'accuracy_score': 1,
-            'accuracy_label': '🟡 إرشادي عند الحد الأدنى للعينة (T2, n<10)',
+            'accuracy_label': '🟡 شواهد محدودة عند الحد الأدنى للعينة (T2, n<10)',
         }
     if band == 'indicative':
         return {
+            # Sprint 2.22.0a.2 C3: tier badge + Category B prose relabel.
             'banner_ar': (
-                f'تحفظ مادي: عينة إرشادية (n={n}, 10≤n<20). '
+                f'تحفظ مادي: عينة في فئة "شواهد محدودة" (n={n}, 10≤n<20). '
                 f'النطاق ±{pct}% — لا يُعتمد كقيمة سوق نهائية.'
             ),
             'disclaimer_ar': (
                 'هذا التقدير من إعلانات (تطلعات بائعين) — ليس صفقات مسجلة. '
-                'الدقة "إرشادية" (Rule E3 §4): السقف إرشادي بدون T1 '
-                '(Confirmed Sales أو MME).'
+                'الدقة في فئة "شواهد محدودة" (Rule E3 §4): السقف "شواهد محدودة" '
+                'بدون T1 (Confirmed Sales أو MME).'
             ),
             'level':          'medium',
             'accuracy_score': 2,
-            'accuracy_label': '🟡 إرشادي — مبني على إعلانات (T2)',
+            'accuracy_label': '🟡 شواهد محدودة — مبنية على إعلانات (T2)',
         }
     # strong_indicative — n >= 20
+    # Sprint 2.22.0a.2 C3: tier badge ceiling stays at "شواهد محدودة" even
+    # with strong sample (Rule E3 §4 — needs T1 to upgrade to "شواهد كافية").
     return {
         'banner_ar': (
-            f'تحفظ مادي: عينة قوية (n={n}≥20) لكن السقف يبقى إرشادي بدون '
-            f'تأكيد وزارة العدل (Rule E3 §4). النطاق ±{pct}%.'
+            f'تحفظ مادي: عينة قوية (n={n}≥20) لكن السقف يبقى "شواهد محدودة" '
+            f'بدون تأكيد وزارة العدل (Rule E3 §4). النطاق ±{pct}%.'
         ),
         'disclaimer_ar': (
             'هذا التقدير من إعلانات بحجم عينة قوي (n≥20)، لكنه يبقى T2 — '
-            'للوصول لـ "موثوق" يلزم تأكيد T1 (Confirmed Sales أو MME). '
-            'Rule E3 §4 يثبّت السقف عند "إرشادي" بدون T1.'
+            'للوصول لـ "شواهد كافية" يلزم تأكيد T1 (Confirmed Sales أو MME). '
+            'Rule E3 §4 يثبّت السقف عند "شواهد محدودة" بدون T1.'
         ),
         'level':          'low',
         'accuracy_score': 3,
-        'accuracy_label': '🟢 إرشادي قوي — عينة كبيرة (T2 n≥20)',
+        'accuracy_label': '🟢 شواهد محدودة — عينة قوية (T2 n≥20)',
     }
 
 
@@ -2235,10 +2244,11 @@ def _try_hybrid_apartments_response(
     }
     base['reconciliation'] = {
         'status': 'hybrid_indicative',
+        # Sprint 2.22.0a.2 C3: Category B reference updated to new tier name.
         'message_ar': (
             f'تقدير من مصدر T2 واحد (PropertyFinder، n={n_used}، عينة {band}). '
             'وزارة العدل لا تسجّل الشقق الفردية (تُحفظ تحت الأبراج). '
-            'لتقدير "موثوق" يلزم Confirmed Sales أو MME.'
+            'لتقدير في فئة "شواهد كافية" يلزم Confirmed Sales أو MME.'
         ),
     }
     base['material_uncertainty'] = _enrich_material_uncertainty({
@@ -4089,24 +4099,26 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     # Labels avoid jargon like "ثقة عالية" alone — instead explain what the
     # number means in concrete terms a non-technical customer understands.
     n = output.get('moj_sample_size', 0) or 0
+    # Sprint 2.22.0a.2 C3: relabel "تقدير موثوق" / "تقدير إرشادي" tier
+    # badges to شواهد taxonomy (Anas-locked override per resume KICKOFF).
     if primary and primary['method'] == 'comparison_bracket' and n >= 20:
         output['accuracy'] = {
             'score': 85,
-            'label': '🟢 تقدير موثوق',
+            'label': '🟢 شواهد كافية',
             'tier': 'high',
             'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة في وزارة العدل لعقارات مشابهة بنفس الحجم.',
         }
     elif primary and primary['method'] in ('comparison_bracket', 'comparison_widened') and n >= 20:
         output['accuracy'] = {
             'score': 78,
-            'label': '🟢 تقدير موثوق',
+            'label': '🟢 شواهد كافية',
             'tier': 'high',
             'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة (مع توسيع النطاق الجغرافي للعثور على عدد كافٍ من الصفقات المشابهة).',
         }
     elif primary and n >= 10:
         output['accuracy'] = {
             'score': 60,
-            'label': '🟡 تقدير إرشادي',
+            'label': '🟡 شواهد محدودة',
             'tier': 'medium',
             'explanation_ar': f'مبني على {n} صفقة فقط — أقل من المعدل الإحصائي المثالي (20). النتيجة قد تنحرف ±10-15% عن السعر الفعلي. يُفضّل التحقق ميدانياً.',
         }

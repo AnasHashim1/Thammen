@@ -146,7 +146,8 @@ def test_provenance_translation_calibrated():
     sec = ob.build_cap_rate_provenance_section(prov)
     c = sec["content"]
     check("calibrated source_ar", c["source_ar"] == "مُعايَر من بيانات السوق")
-    check("reliable confidence_ar", c["confidence_ar"] == "موثوقة")
+    # Sprint 2.22.0a.2 C3: 'موثوقة' relabel -> 'شواهد كافية' (شواهد taxonomy)
+    check("reliable confidence_ar", c["confidence_ar"] == "شواهد كافية")
     check("English source retained", c["source"] == "calibrated")
     check("English confidence retained", c["confidence"] == "reliable")
     check("body_ar present", bool(c.get("body_ar")))
@@ -158,9 +159,12 @@ def test_provenance_translation_hardcoded():
     sec = ob.build_cap_rate_provenance_section(prov)
     c = sec["content"]
     check("hardcoded source_ar", c["source_ar"] == "معدل افتراضي (غير مُعايَر)")
+    # Sprint 2.22.0a.2 C3: 'غير كافية' substring is preserved in the
+    # new 'شواهد غير كافية — استُخدم معدل افتراضي' label.
     check("fallback confidence_ar mentions 'غير كافية'", "غير كافية" in c["confidence_ar"])
+    # Sprint 2.22.0a.2 C3: 'إرشادية' relabel -> 'شواهد محدودة'
     check("indicative confidence_ar",
-          ob._PROVENANCE_CONFIDENCE_AR["indicative"] == "إرشادية")
+          ob._PROVENANCE_CONFIDENCE_AR["indicative"] == "شواهد محدودة")
     check("None provenance -> None section",
           ob.build_cap_rate_provenance_section(None) is None)
 

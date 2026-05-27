@@ -334,10 +334,11 @@ def compute_strata(
             'n':              len(xs),
             'median_per_m2':  round(med) if med else None,
             'reliable':       len(xs) >= RELIABLE_N,
+            # Sprint 2.22.0a.2 C3: relabel tier badges to شواهد taxonomy.
             'reliability_label_ar': (
-                'موثوق (n≥10)' if len(xs) >= RELIABLE_N
-                else ('إرشادي (n=' + str(len(xs)) + ')' if len(xs) >= MINIMUM_N_FOR_MEDIAN
-                      else 'عينة ضعيفة جداً')
+                'شواهد كافية (n≥10)' if len(xs) >= RELIABLE_N
+                else ('شواهد محدودة (n=' + str(len(xs)) + ')' if len(xs) >= MINIMUM_N_FOR_MEDIAN
+                      else 'شواهد غير كافية')
             ),
         }
         if plot_area_m2 and med:

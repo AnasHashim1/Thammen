@@ -122,10 +122,13 @@ _PROVENANCE_SOURCE_AR = {
     'calibrated': 'مُعايَر من بيانات السوق',
     'hardcoded': 'معدل افتراضي (غير مُعايَر)',
 }
+# Sprint 2.22.0a.2 C3: relabel tier badges to شواهد taxonomy
+# (Anas-locked override of CC's original تغطية draft per resume KICKOFF).
+# Codes (reliable/indicative/fallback) unchanged.
 _PROVENANCE_CONFIDENCE_AR = {
-    'reliable': 'موثوقة',
-    'indicative': 'إرشادية',
-    'fallback': 'غير كافية — استُخدم معدل افتراضي',
+    'reliable': 'شواهد كافية',
+    'indicative': 'شواهد محدودة',
+    'fallback': 'شواهد غير كافية — استُخدم معدل افتراضي',
 }
 
 
@@ -181,8 +184,11 @@ def build_cap_rate_provenance_section(provenance):
     }
 
 
+# Sprint 2.22.0a.2 C3: relabel adjustment-grid confidence badges.
 _GRID_CONFIDENCE_AR = {
-    'reliable': 'موثوقة', 'indicative': 'إرشادية', 'fallback': 'غير كافية',
+    'reliable': 'شواهد كافية',
+    'indicative': 'شواهد محدودة',
+    'fallback': 'شواهد غير كافية',
 }
 
 

@@ -107,8 +107,9 @@ def test_grid_section_audience():
           full['content']['sources'] and full['content']['sources'][0]['tier'] == 1)
     check("UX footer present (deferred features)",
           'geographically-keyed' in full['content']['footer_ar'])
+    # Sprint 2.22.0a.2 C3: 'موثوقة' relabel -> 'شواهد كافية' (شواهد taxonomy).
     check("confidence translated to Arabic",
-          full['content']['confidence_ar'] == 'موثوقة')
+          full['content']['confidence_ar'] == 'شواهد كافية')
 
 
 def test_grid_section_fallback_hidden():
