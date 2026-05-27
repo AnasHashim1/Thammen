@@ -402,10 +402,20 @@ print("\n[6] Engine version + sprint tag")
 
 from evaluate_unified import ENGINE_VERSION, SPRINT_TAG
 
-_check(ENGINE_VERSION == 'thammen-sprint2p22p0a1-qars-envelope-fallback',
-       "6 ENGINE_VERSION bumped", f'got={ENGINE_VERSION}')
-_check(SPRINT_TAG == '2.22.0a.1',
-       "6 SPRINT_TAG bumped", f'got={SPRINT_TAG}')
+# Sprint 2.22.0a.2 brittle-pin relax (same anti-pattern as Sprint 2.19.1
+# corrected for 2.16.X test files): the original assertion pinned the
+# exact Sprint-2.22.0a.1 literal, which fails for every later Sprint.
+# The functional behaviour this file tests (QARS envelope fallback,
+# legacy compatibility, BUILDING_NO_SUBTYPE preservation) is already
+# covered above by [1]-[5]. The version-bump check just verifies that
+# *a* sprint version is set — not that it's still the original literal.
+_check(ENGINE_VERSION.startswith('thammen-sprint'),
+       "6 ENGINE_VERSION has sprint format", f'got={ENGINE_VERSION}')
+_check('sprint2p22p0a' in ENGINE_VERSION,
+       "6 ENGINE_VERSION at or after 2.22.0a baseline",
+       f'got={ENGINE_VERSION}')
+_check(SPRINT_TAG.startswith('2.22.0a'),
+       "6 SPRINT_TAG at or after 2.22.0a baseline", f'got={SPRINT_TAG}')
 
 
 sys.exit(_REPORTER.report())
