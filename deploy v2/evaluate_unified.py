@@ -827,7 +827,12 @@ def _age_aware_substantiality_multiplier(
 
 def _ten_year_rule_disclosure_ar(age_years: int, n: Optional[int]) -> str:
     """Generate the user-facing disclosure when 10-Year Rule activates."""
-    n_part = f' بناءً على {n} صفقة مماثلة في وزارة العدل.' if n else '.'
+    # Sprint 2.22.0a.2 §9 precision: "صفقة مماثلة" overclaims similarity;
+    # we actually match by area + bracket + district. Reframed to honest.
+    n_part = (
+        f' بناءً على {n} صفقة قريبة في النوع والمساحة من نفس المنطقة '
+        f'في وزارة العدل.' if n else '.'
+    )
     return (
         f'هذا العقار يزيد عمره عن 10 سنوات (تقديرياً {age_years} سنة). '
         'في السوق القطري، المباني من هذا العمر تتداول عادةً قرب قيمة الأرض '
@@ -4097,14 +4102,18 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'score': 85,
             'label': '🟢 شواهد كافية',
             'tier': 'high',
-            'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة في وزارة العدل لعقارات مشابهة بنفس الحجم.',
+            # Sprint 2.22.0a.2 §9 precision pass: reframed old wording
+            # to honest comparable scope (district + bracket match, not
+            # property-level similarity).
+            'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة في وزارة العدل لعقارات قريبة في النوع والمساحة ضمن نفس المنطقة.',
         }
     elif primary and primary['method'] in ('comparison_bracket', 'comparison_widened') and n >= 20:
         output['accuracy'] = {
             'score': 78,
             'label': '🟢 شواهد كافية',
             'tier': 'high',
-            'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة (مع توسيع النطاق الجغرافي للعثور على عدد كافٍ من الصفقات المشابهة).',
+            # Sprint 2.22.0a.2 §9 precision pass.
+            'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة (مع توسيع النطاق الجغرافي للعثور على عدد كافٍ من الصفقات القريبة في النوع والمساحة).',
         }
     elif primary and n >= 10:
         output['accuracy'] = {
@@ -4125,7 +4134,8 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'score': 0,
             'label': '❌ بيانات غير كافية',
             'tier': 'none',
-            'explanation_ar': 'لا توجد صفقات بيع كافية لعقارات مشابهة في وزارة العدل. لم يتم إنتاج تقييم.',
+            # Sprint 2.22.0a.2 §9 precision pass.
+            'explanation_ar': 'لا توجد صفقات بيع كافية لعقارات قريبة في النوع والمساحة ضمن نفس المنطقة في وزارة العدل. لم يتم إنتاج تقييم.',
         }
 
     # ── Trend (only if sample sizes support it — RICS data quality standard) ──
