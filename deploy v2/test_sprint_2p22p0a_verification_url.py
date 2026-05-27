@@ -23,6 +23,11 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# Sprint 2.22.0a/10 — shared test infrastructure (Anas Q1.5: generic name).
+from _test_helpers import Reporter, set_stdout_utf8
+
+set_stdout_utf8()
+
 # Module under test
 from verification_url import (
     THAMMEN_VERIFY_BASE_URL,
@@ -32,20 +37,19 @@ from verification_url import (
     is_valid_token_format,
 )
 
-PASS = 0
-FAIL = 0
-FAILED = []
+# Sprint 2.22.0a/10 — Pattern B legacy adapter (Rule #39 deviation, see
+# §10 commit message). 67 callsites use the `check(name, cond)` order
+# established in /7 (Sprint 2.22.0a/7). AST-driven reorder attempted
+# but failed on f-string positions for Arabic content (Rule #34 file-
+# based script artifacts removed pre-commit). The adapter wrapper routes
+# through the canonical `_REPORTER.check(cond, name, detail)` → Reporter
+# shared with all 6 isolated test files. Callsite signature drift
+# FLAGGED for /12 final consistency pass.
+_REPORTER = Reporter()
 
 
-def check(name: str, cond: bool) -> None:
-    global PASS, FAIL
-    if cond:
-        PASS += 1
-        print(f'  PASS  {name}')
-    else:
-        FAIL += 1
-        FAILED.append(name)
-        print(f'  FAIL  {name}')
+def check(name, cond):
+    _REPORTER.check(cond, name)
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -356,16 +360,6 @@ print(f'    Lusail next-day:        {url_pearl_next_day}')
 print(f'    Different identifier:   {url_lusail_different_addr}')
 
 # ──────────────────────────────────────────────────────────────────────
-# Summary
+# Summary — Sprint 2.22.0a/10 unified via _test_helpers.Reporter
 # ──────────────────────────────────────────────────────────────────────
-print()
-print('=' * 60)
-print(f'  PASSED: {PASS}/{PASS + FAIL}')
-print(f'  FAILED: {FAIL}/{PASS + FAIL}')
-print('=' * 60)
-if FAIL:
-    print('\nFAILED ASSERTIONS:')
-    for name in FAILED:
-        print(f'  - {name}')
-    sys.exit(1)
-sys.exit(0)
+sys.exit(_REPORTER.report())

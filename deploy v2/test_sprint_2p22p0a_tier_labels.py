@@ -21,29 +21,18 @@ import os
 # Add deploy v2/ to path so we can import evaluate_unified
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-try:
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-except Exception:
-    pass
+# Sprint 2.22.0a/10 — shared test infrastructure (Anas Q1.5: generic name)
+from _test_helpers import Reporter, set_stdout_utf8
+
+set_stdout_utf8()
 
 from evaluate_unified import _tier_label_for, _TIER_LABEL_BY_METHOD
 
 
-# ─────────────────────────────────────────────────────────────────────
-# Test infrastructure
-# ─────────────────────────────────────────────────────────────────────
-_passed = 0
-_failed = 0
-
-
-def _check(condition, name, detail=""):
-    global _passed, _failed
-    if condition:
-        _passed += 1
-        print(f"  PASS  {name}")
-    else:
-        _failed += 1
-        print(f"  FAIL  {name}  {detail}")
+# Canonical `_check(cond, name, detail)` signature — Pattern A native (no
+# argument reorder needed). Reporter instance replaces module-level globals.
+_REPORTER = Reporter()
+_check = _REPORTER.check
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -160,11 +149,6 @@ for reserved in _reserved_values:
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Summary
+# Summary — Sprint 2.22.0a/10 unified via _test_helpers.Reporter
 # ─────────────────────────────────────────────────────────────────────
-total = _passed + _failed
-print("\n" + "=" * 60)
-print(f"  PASSED: {_passed}/{total}")
-print(f"  FAILED: {_failed}/{total}")
-print("=" * 60)
-sys.exit(0 if _failed == 0 else 1)
+sys.exit(_REPORTER.report())

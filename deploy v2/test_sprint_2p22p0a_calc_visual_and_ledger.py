@@ -24,6 +24,11 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# Sprint 2.22.0a/10 — shared test infrastructure (Anas Q1.5: generic name).
+from _test_helpers import Reporter, set_stdout_utf8
+
+set_stdout_utf8()
+
 # Module under test
 from output_briefs import (
     _adjustment_ledger_directional_section,
@@ -33,20 +38,16 @@ from output_briefs import (
     _valuer_brief,
 )
 
-PASS = 0
-FAIL = 0
-FAILED = []
+# Sprint 2.22.0a/10 — Pattern B legacy adapter (Rule #39 deviation, see
+# §10 commit message + /7 sibling for full rationale). 44 callsites use
+# the `check(name, cond)` order. Adapter routes through canonical
+# `_REPORTER.check(cond, name, detail)`. Callsite signature drift
+# FLAGGED for /12 final consistency pass.
+_REPORTER = Reporter()
 
 
-def check(name: str, cond: bool) -> None:
-    global PASS, FAIL
-    if cond:
-        PASS += 1
-        print(f'  PASS  {name}')
-    else:
-        FAIL += 1
-        FAILED.append(name)
-        print(f'  FAIL  {name}')
+def check(name, cond):
+    _REPORTER.check(cond, name)
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -277,16 +278,6 @@ check('Note has muted color + line-height',
       '.alg-placeholder-note{' in html and 'line-height:1.8' in html)
 
 # ──────────────────────────────────────────────────────────────────────
-# Summary
+# Summary — Sprint 2.22.0a/10 unified via _test_helpers.Reporter
 # ──────────────────────────────────────────────────────────────────────
-print()
-print('=' * 60)
-print(f'  PASSED: {PASS}/{PASS + FAIL}')
-print(f'  FAILED: {FAIL}/{PASS + FAIL}')
-print('=' * 60)
-if FAIL:
-    print('\nFAILED ASSERTIONS:')
-    for name in FAILED:
-        print(f'  - {name}')
-    sys.exit(1)
-sys.exit(0)
+sys.exit(_REPORTER.report())
