@@ -140,10 +140,17 @@ If the answer is "needs significant refactor," Sprint 2.22.0 scope expands and m
 | # | PIN | Asset | Why |
 |---|---|---|---|
 | A1 | 31/918/99 | Villa Umm Lekhba | Established baseline (CHANGELOG_v37) |
-| A2 | 52/903/90 | Villa | Safe smoke (Bug A6 known-safe) |
+| A2 | 52/903/90 | apartment_building (DCF refusal — canonical apt-Stage-2 case) | Safe smoke (Bug A6 known-safe) |
 | A3 | 69/329/20 | Apt Fox Hills (غار ثعيلب) | Apartment T2-only, no T3 — Stage 2 questions feasibility check |
 | A4 | 69/255/75 | Apt City Avenues (لوسيل 69) | Full T1+T2+T3 mix — Stage 2 + tier_breakdown rendering |
 | A5 | (Claude Code selects) | Low-n PIN | MUC trigger, confidence band testing |
+
+> **Amendment (Sprint 2.22.0a/11, 2026-05-27):** Row A2 corrected from
+> "Villa" → "apartment_building (DCF refusal — canonical apt-Stage-2 case)"
+> per `AUDIT_FINDINGS_2p22p0.md` §4.5.a + finding #8 (lines 266 + 379).
+> Production engine classifies 52/903/90 as `apartment_building` (DCF
+> refusal path), verified 6/6 reps across v1 + v2 audits. Test guard:
+> `test_sprint_2p22p0a_a2_documentation.py` prevents silent revert.
 
 Each PIN: capture current response JSON, identify which fields would trigger Stage 2 questions, and screenshot current UI.
 

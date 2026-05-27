@@ -20,18 +20,20 @@ files of Sprint 2.22.0a and the two runners that consume them:
 
 | Sub-sprint | File | Assertions | Helper pattern |
 |---|---|---:|---|
-| /2 | `test_sprint_2p22p0a_tier_labels.py`            |  **32** | Pattern A (`_check(cond, name, detail)`) — canonical |
-| /3 | `test_sprint_2p22p0a_tier_breakdown.py`         |  **43** | Pattern A — canonical |
-| /4 | `test_sprint_2p22p0a_use_case_banner.py`        |  **64** | Pattern A — canonical |
-| /5 | `test_sprint_2p22p0a_refusal_reason.py`         | **109** | Pattern A — canonical |
-| /7 | `test_sprint_2p22p0a_verification_url.py`       |  **64** | Pattern B legacy adapter (Rule #39 deviation) |
-| /8 | `test_sprint_2p22p0a_calc_visual_and_ledger.py` |  **62** | Pattern B legacy adapter (Rule #39 deviation) |
-| | **TOTAL** | **374** | |
+| /2  | `test_sprint_2p22p0a_tier_labels.py`            |  **32** | Pattern A (`_check(cond, name, detail)`) — canonical |
+| /3  | `test_sprint_2p22p0a_tier_breakdown.py`         |  **43** | Pattern A — canonical |
+| /4  | `test_sprint_2p22p0a_use_case_banner.py`        |  **64** | Pattern A — canonical |
+| /5  | `test_sprint_2p22p0a_refusal_reason.py`         | **109** | Pattern A — canonical |
+| /7  | `test_sprint_2p22p0a_verification_url.py`       |  **64** | Pattern B legacy adapter (Rule #39 deviation — see §8 TD-1) |
+| /8  | `test_sprint_2p22p0a_calc_visual_and_ledger.py` |  **62** | Pattern B legacy adapter (Rule #39 deviation — see §8 TD-1) |
+| /11 | `test_sprint_2p22p0a_a2_documentation.py`       |  **12** | Pattern A — canonical (regression guard for §4.5 A2 row) |
+| | **TOTAL** | **386** | |
 
 (/1 ENGINE_VERSION bump + /6 merged-into-/5 + /9 RICS audit + /10 this
 consolidation Sprint emit no new isolated test files. /9 extended
 `test_material_uncertainty.py` (unittest-based, separate from this
-suite).)
+suite). /11 emits one new isolated test file as a regression guard for
+the audit-PIN row data fix.)
 
 -----
 

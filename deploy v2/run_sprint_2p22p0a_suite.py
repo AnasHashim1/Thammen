@@ -37,7 +37,9 @@ import time
 # ──────────────────────────────────────────────────────────────────────
 # Pinned coverage gate per Anas Mitigation C (Sprint 2.22.0a/10)
 # ──────────────────────────────────────────────────────────────────────
-EXPECTED_TOTAL = 374  # /2:32 + /3:43 + /4:64 + /5:109 + /7:64 + /8:62
+# Sprint 2.22.0a/11 — A2 documentation guard adds 12 assertions:
+# 374 → 386.
+EXPECTED_TOTAL = 386  # /2:32 + /3:43 + /4:64 + /5:109 + /7:64 + /8:62 + /11:12
 
 PER_FILE_EXPECTED = {
     'test_sprint_2p22p0a_tier_labels.py':              32,   # /2
@@ -46,6 +48,7 @@ PER_FILE_EXPECTED = {
     'test_sprint_2p22p0a_refusal_reason.py':          109,   # /5
     'test_sprint_2p22p0a_verification_url.py':         64,   # /7
     'test_sprint_2p22p0a_calc_visual_and_ledger.py':   62,   # /8
+    'test_sprint_2p22p0a_a2_documentation.py':         12,   # /11
 }
 
 WALL_TIME_BUDGET_S = 30.0
