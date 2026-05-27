@@ -193,17 +193,23 @@ def _compute_refusal_reason(method, asset_type=None, district_ar=None,
       3. Refusal method with no precedence-chain match → falls through to
          comp_density_sparse default (§5.3 row 6)
 
-    Precedence chain (§5.3, post-asset_uniqueness-deferral renumber):
+    Precedence chain (§5.3, post-Sprint-2.22.0a.2-Pattern-B renumber):
       1. density_gated_district  — district in _DENSITY_GATED_DISTRICTS
                                     (Pearl in 2.22.0a per Q2 (α))
-      2. spatial_ambiguity       — method == 'asset_type_reality_stop'
-      3. asset_scale_extreme     — asset_type=='compound_large' AND
+      2. classifier_failure      — asset_type == 'unknown' AND
+                                    method != 'asset_type_reality_stop'
+                                    (Sprint 2.22.0a.2 Pattern B — upstream
+                                    QARS coverage gap, distinct from
+                                    spatial_ambiguity which fires only
+                                    after a SUCCESSFUL classification)
+      3. spatial_ambiguity       — method == 'asset_type_reality_stop'
+      4. asset_scale_extreme     — asset_type=='compound_large' AND
                                     plot_area_m2 >= 15K m² (E20 boundary)
-      4. asset_class_out_of_scope — method == 'out_of_scope_v1' (NEW Q1 d)
-      5. regime_shift            — district matches event in registry
+      5. asset_class_out_of_scope — method == 'out_of_scope_v1' (NEW Q1 d)
+      6. regime_shift            — district matches event in registry
                                     (always inert in 2.22.0a — empty
                                     registry)
-      6. comp_density_sparse     — default fallback for sparse MoJ data
+      7. comp_density_sparse     — default fallback for sparse MoJ data
 
     First-match wins. Engine emits exactly one trigger_id per refusal.
 
@@ -237,20 +243,30 @@ def _compute_refusal_reason(method, asset_type=None, district_ar=None,
     if district_ar in _DENSITY_GATED_DISTRICTS:
         return get_refusal_template('density_gated_district', **base_ctx)
 
-    # 2. spatial_ambiguity (Sprint 2.21.0.7 reality-check path)
+    # 2. classifier_failure (Sprint 2.22.0a.2 Pattern B — upstream QARS
+    # coverage gap leaves asset_type='unknown'). Pre-empts row 3
+    # (spatial_ambiguity stays exclusive to the reality-check stop path)
+    # and row 7 (comp_density_sparse stays exclusive to known-asset-type
+    # sparse-MoJ cases). The asset_type='unknown' guard is intentional:
+    # only fires when the engine could not determine the property type
+    # at all — not when reality-check explicitly stops a known type.
+    if asset_type == 'unknown' and method != 'asset_type_reality_stop':
+        return get_refusal_template('classifier_failure', **base_ctx)
+
+    # 3. spatial_ambiguity (Sprint 2.21.0.7 reality-check path)
     if method == 'asset_type_reality_stop':
         return get_refusal_template('spatial_ambiguity', **base_ctx)
 
-    # 3. asset_scale_extreme (E20 Patch-A boundary)
+    # 4. asset_scale_extreme (E20 Patch-A boundary)
     if asset_type == 'compound_large' and plot_area_m2 is not None \
             and plot_area_m2 >= _ASSET_SCALE_EXTREME_M2:
         return get_refusal_template('asset_scale_extreme', **base_ctx)
 
-    # 4. asset_class_out_of_scope (NEW per Q1 d — out_of_scope_v1 path)
+    # 5. asset_class_out_of_scope (per Q1 d — out_of_scope_v1 path)
     if method == 'out_of_scope_v1':
         return get_refusal_template('asset_class_out_of_scope', **base_ctx)
 
-    # 5. regime_shift (registry lookup — always inert in 2.22.0a)
+    # 6. regime_shift (registry lookup — always inert in 2.22.0a)
     if district_ar:
         regimes = _load_district_regimes()
         events = regimes.get('events') or []
@@ -264,7 +280,7 @@ def _compute_refusal_reason(method, asset_type=None, district_ar=None,
                     'regime_shift', event_name=event_name, **base_ctx
                 )
 
-    # 6. comp_density_sparse (default fallback for any refusal not matched above)
+    # 7. comp_density_sparse (default fallback for any refusal not matched above)
     return get_refusal_template('comp_density_sparse', **base_ctx)
 
 

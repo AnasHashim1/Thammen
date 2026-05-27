@@ -44,22 +44,25 @@ _check = _REPORTER.check
 
 
 # ─────────────────────────────────────────────────────────────────────
-# 1. REFUSAL_TEMPLATES registry — 6 active triggers per Anas Q1 (d)
+# 1. REFUSAL_TEMPLATES registry — 7 active triggers
+#    Sprint 2.22.0a.2 Pattern B added the 7th: classifier_failure
+#    (asset_type='unknown' from upstream QARS coverage gap).
 # ─────────────────────────────────────────────────────────────────────
-print("\n[1] REFUSAL_TEMPLATES registry — 6 active triggers (5 §1.6 + 1 §1.6-ext)")
+print("\n[1] REFUSAL_TEMPLATES registry — 7 active triggers (5 §1.6 + 1 §1.6-ext + 1 Pattern B)")
 _expected_triggers = {
     'comp_density_sparse', 'spatial_ambiguity', 'regime_shift',
     'asset_scale_extreme', 'density_gated_district',
-    'asset_class_out_of_scope',  # NEW per Q1 (d)
+    'asset_class_out_of_scope',  # per Q1 (d)
+    'classifier_failure',         # Sprint 2.22.0a.2 Pattern B
 }
 _check(set(REFUSAL_TEMPLATES.keys()) == _expected_triggers,
-       f"REFUSAL_TEMPLATES has exactly 6 expected trigger_ids",
+       f"REFUSAL_TEMPLATES has exactly 7 expected trigger_ids",
        f"got {sorted(REFUSAL_TEMPLATES.keys())}")
-_check(len(REFUSAL_TEMPLATES) == 6, "len(REFUSAL_TEMPLATES) == 6",
+_check(len(REFUSAL_TEMPLATES) == 7, "len(REFUSAL_TEMPLATES) == 7",
        f"got {len(REFUSAL_TEMPLATES)}")
 
 # All templates have 3 required Arabic+English+recommendation fields
-print("\n[1.b] All 6 templates have {message_ar, message_en, recommendation_ar}")
+print("\n[1.b] All 7 templates have {message_ar, message_en, recommendation_ar}")
 for tid, tpl in REFUSAL_TEMPLATES.items():
     _check('message_ar' in tpl and len(tpl['message_ar']) > 10,
            f"[{tid}] message_ar present and non-trivial")

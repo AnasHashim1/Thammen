@@ -33,6 +33,19 @@ TEMPLATE PARTITION (per Anas Q1 decision, /5 commit message):
   line 96 cosmetic items (4 accumulating).
 
 ================================================================
+Sprint 2.22.0a.2 Pattern B added the 7th template:
+
+  7. classifier_failure  — engine could not classify the property at
+                            all (asset_type='unknown' from upstream
+                            QARS coverage gap). Distinct from
+                            spatial_ambiguity (#2 — fires only when
+                            asset_type_reality_stop STOPS after a
+                            successful classification) and from
+                            comp_density_sparse (#6 — fires only when
+                            asset_type is known but MoJ comparables
+                            are sparse).
+
+================================================================
 NOTE: asset_uniqueness (3σ outlier check) deferred to Sprint 2.22.y
 per KICKOFF §2.3 — single logical unit with 3σ compute logic, both
 ship together or not at all. NOT registered in REFUSAL_TEMPLATES
@@ -112,6 +125,29 @@ REFUSAL_TEMPLATES: Dict[str, Dict[str, str]] = {
             'in this location. A specialized assessment is recommended.'
         ),
         'recommendation_ar': 'نوصي بتقييم متخصص أثناء عملنا على توسيع التغطية.',
+    },
+
+    # Sprint 2.22.0a.2 Pattern B (7th template): classifier_failure fires
+    # when the upstream QARS service yields 0 features for the submitted
+    # address and asset_type falls back to 'unknown'. Distinct semantic
+    # from spatial_ambiguity (asset_type_reality_stop after a SUCCESSFUL
+    # classification) and from comp_density_sparse (known asset_type +
+    # sparse MoJ comparables). Gemini-approved verbatim per
+    # docs/MULTI_AI_VALIDATION_BATCH_2p22p0a2.md §6.
+    'classifier_failure': {
+        'message_ar': (
+            'لم نتمكّن من تحديد نوع العقار من البيانات الحكومية المتاحة. '
+            'قد يكون العنوان غير مفهرس حالياً في قاعدة QARS أو خارج نطاق '
+            'التغطية. نوصي بالتحقّق من بيانات العنوان أو التواصل معنا إذا '
+            'كانت المُدخَلات صحيحة.'
+        ),
+        'message_en': (
+            'We could not classify this property from available government '
+            'data. The address may not yet be indexed in QARS, or may fall '
+            'outside current coverage. Please verify the address details, '
+            'or contact us if the entered values are correct.'
+        ),
+        'recommendation_ar': 'تحقّق من بيانات العنوان أو تواصل معنا.',
     },
 
     # NEW for Sprint 2.22.0a per Anas Q1 (d) decision — distinct semantic
