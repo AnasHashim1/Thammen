@@ -1262,8 +1262,95 @@ mechanism unchanged.
 
 -----
 
-*Last updated: 2026-05-25 evening (Sprint 2.21.4 closed; the hybrid arc
-2.21.2 → 2.21.3 → 2.21.4 complete; three-tier weighted evaluation live
-for Lusail apartments; first documented architectural seal at T3 weight
-= 0.12 matching BRIEF §9 to the digit on production engine v125).*
+## 17. 🆕 2026-05-27 — Sprint 2.22.0a.1 (QARS envelope fallback hotfix)
+
+Production outage discovered + closed same day. `/api/health` had been
+reporting `qars_endpoint.status=degraded` since at least Sprint 2.22.0a
+(Heroku v131), but the user-visible damage was bigger than the health
+flag implied: every address-tab `/api/evaluate` call was returning
+`asset_type=unknown, pin=None, qars=None` silently.
+
+**Root cause** (Phase 0 + Phase 1 probes, file-based per Rule #34):
+1. khazna's `QARS_Point` service is inaccessible from our Heroku
+   `34.229.166.195` AWS us-east-1 IP. Both FeatureServer and MapServer
+   slugs return HTTP 200 carrying an ArcGIS auth-error envelope:
+   `{"error":{"code":503,"message":"User couldn't access this resource
+   'qars/qars_point.mapserver'"}}`. The service-metadata endpoint
+   returns `"Invalid URL"` and the `/QARS` service listing no longer
+   advertises `QARS_Point` (only `LOCATE_QARS_ADDRESS_SYM`).
+2. `_http_get_json` returned the envelope as a normal dict; callers
+   computed `res.get('features', [])` → `[]` → indistinguishable from
+   legitimate address-not-found.
+3. `find_property`'s exception-based legacy fallback never fired
+   because no exception was raised. The polygon-spatial functions
+   `_qars_count_in_polygon` + `count_qars_within_polygon` (Sprint
+   2.21.0.7 + 2.21.0.9) had no fallback at all.
+
+**Rule #45 vindicated**: prior 2.22.0a Gate 3 had claimed legacy
+lacked `BUILDING_NO_SUBTYPE`. Phase 0 Step 3 directly disproved that —
+legacy returns 162,201 features with full schema including
+`BUILDING_NO_SUBTYPE` (subtype=1 on 52/903/90, subtype=6 on 61/875/20
+preserved). Sprint 2.16.6 Branch 0 classifier behaviour is fully
+preserved on the fallback path.
+
+**The fix** (single-purpose per Rule #38, Heroku v132):
+- New `_qars_query()` helper in `qatar_gis.py` centralizing
+  primary-first / legacy-fallback for both Python exceptions AND
+  ArcGIS error envelopes.
+- New `_GISServerError` exception + `_arcgis_envelope_to_exception()`
+  helper.
+- Refactored 3 callsites: `find_property` (existing exception
+  fallback now also triggers on envelope), `_qars_count_in_polygon`,
+  `count_qars_within_polygon` (previously no fallback).
+- ENGINE_VERSION = `thammen-sprint2p22p0a1-qars-envelope-fallback`,
+  SPRINT_TAG = `2.22.0a.1`.
+- 37 isolated tests + clean regression sweep (37/38 root-level +
+  tests/, with the 1 pre-existing pytest block on `test_v2_modules.py`
+  unchanged).
+
+**Post-deploy verification (Heroku v132, 5-address smoke)**:
+
+| PIN | Result | Pre-fix |
+|---|---|---|
+| 52/903/90 | apartment_building / اللقطة / 467 m² | asset_type=unknown |
+| 56/565/21 (Bou Hamour) | standalone_villa / بو هامور / 450 m² (24.9 s — multi-QARS) | unknown |
+| 69/255/75 (Lusail H1) | apartment_building / لوسيل 69 / 2,195 m² | unknown |
+| 61/875/20 (Public Works) | apartment_building / الدفنة 61 / 4,461 m² + `subtype_zoning_mismatch=True` (A11 flag preserved) | unknown |
+| 70/300/25, 53/240/12 | unknown — **data coverage gap, not code regression**: 0 features in legacy DB for these PINs (different snapshot than khazna had). |
+
+**Coverage-gap caveat**: the legacy
+`services.gisqatar.org.qa/Vector/QARS_Search/MapServer/0` snapshot is
+slightly older than khazna's. Two of three Sprint 2.16.15 verification
+PINs were absent from legacy. When khazna access is restored,
+`_qars_query` automatically prefers it again — coverage returns to
+the khazna baseline with zero code change. This is the design intent.
+
+**What's NOT in this Sprint (deferred)**:
+- Path (a) — coordinate with khazna admin to restore access.
+  Operational, not code.
+- Path (c) — enrich `/api/health` `primary_error` field to surface
+  the envelope error code directly. Debuggability improvement.
+
+**Files committed (`b7cf6e9`)**:
+- `qatar_gis.py` — helper + 3 callsite refactors + comment updates
+- `evaluate_unified.py` — version bumps
+- `CHANGELOG_v51.md` — full Sprint documentation
+- `test_sprint_2p22p0a1_qars_envelope_fallback.py` — 37/37 PASS
+- `docs/PHASE0_QARS_REACHABILITY.md` — Phase 0 probe report (already
+  committed in `4c76d3c`)
+
+**Rules referenced**: #11 (defensive endpoint design), #32 (push
+discipline — explicit consent received: "i trust you"), #33
+(empirical first), #34 (file-based probes), #36 (cite sample +
+window), #38 (single-purpose), #39 (deviation — claude.ai sign-off
+step waived explicitly by Anas), #43 (subtree push), #45 (verify
+before claiming — disproved Gate 3 legacy-lacks-subtype claim), #52
+inverse case (content failure masked by HTTP-status fallback
+contract).
+
+-----
+
+*Last updated: 2026-05-27 evening (Sprint 2.22.0a.1 — production
+address-lookup outage closed; engine
+`thammen-sprint2p22p0a1-qars-envelope-fallback`, Heroku v132).*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*

@@ -253,25 +253,40 @@ git -C "C:\Thammen" subtree push --prefix "deploy v2" heroku master
 
 -----
 
-## 7. Verification curl (post-deploy)
+## 7. Verification curl (post-deploy — actual results, Heroku v132)
 
 ```cmd
 curl -s https://thammen.qa/api/health
 ```
 
-Expected: `engine_version: "thammen-sprint2p22p0a1-qars-envelope-fallback"`,
-`version: "3.1.0-sprint2.22.0a.1"`, `qars_endpoint.legacy_count > 1000`.
-`primary_alive` will remain `false` until khazna access is restored —
-that is the operational path (a) from Phase 0, deferred outside this code
-Sprint.
+Returned (2026-05-27 16:06 UTC):
+- `engine_version: "thammen-sprint2p22p0a1-qars-envelope-fallback"` ✓
+- `version: "3.1.0-sprint2.22.0a.1"` ✓
+- `qars_endpoint.legacy_count: 162201` ✓
+- `qars_endpoint.primary_alive: false, status: degraded` — expected;
+  unchanged from baseline (path a operational, khazna admin coordination,
+  outside this Sprint).
 
-```cmd
-curl -s -X POST https://thammen.qa/api/evaluate -H "Content-Type: application/json" -d "{\"zone\":52,\"street\":903,\"building\":90}"
-```
+Five-address smoke (Heroku v132 + v133, post-deploy):
 
-Expected: `asset_type != "unknown"`, `property.pin != null`,
-`property.qars: "52/903/90"`. This is the canonical regression test the
-patch is restoring.
+| PIN | Result | Latency | Notes |
+|---|---|---|---|
+| 52/903/90 | `apartment_building` / district `اللقطة` / 467 m² | ~5 s | Sprint 2.16.15 baseline; **pre-fix returned `unknown` + null PIN** |
+| 56/565/21 | `standalone_villa` / district `بو هامور` / 450 m² | 24.9 s | Bou Hamour multi-QARS anchor (Sprint 2.21.0.9); latency = E16 Stage 2 normal range |
+| 69/255/75 | `apartment_building` / district `لوسيل 69` / 2,195 m² | 9.8 s | Lusail H1 (Sprint 2.21.4 T3 anchor) |
+| 61/875/20 | `apartment_building` / district `الدفنة 61` / 4,461 m² + **zoning_mismatch: True** | 5.8 s | Public Works Authority (Bug A11 / Sprint 2.16.14); zoning cross-check flag still firing correctly post-fallback |
+| 70/300/25 | `unknown` / 0-feature | n/a | **NOT a fix regression** — legacy probe confirms 0 features in legacy DB for this address (different snapshot than khazna). Data coverage gap, not a code gap. |
+| 53/240/12 | `unknown` / 0-feature | n/a | Same as above — absent from legacy DB. |
+
+Discovered coverage gap (data, not code): the legacy
+`services.gisqatar.org.qa/Vector/QARS_Search/MapServer/0` snapshot
+appears to be slightly older than khazna's. Two of the three Sprint
+2.16.15 verification addresses (70/300/25 and 53/240/12) are absent
+from legacy but were present in khazna. Production behaviour on these
+specific PINs is `asset_type=unknown` (graceful — same as any
+genuinely-not-found address). When khazna access is restored,
+`_qars_query` will prefer it again and coverage returns to the
+khazna baseline automatically.
 
 -----
 
