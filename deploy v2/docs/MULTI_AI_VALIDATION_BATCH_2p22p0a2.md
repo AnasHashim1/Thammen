@@ -565,9 +565,18 @@ Collapsing these into one trigger gives users the wrong CTA half the time:
 
 Please mark one before B implementation proceeds:
 
-- [ ] **ACCEPT** my recommendation (keep classifier_failure and coverage_gap separate; my §6 plan stands as-is).
-- [ ] **OVERRIDE** my recommendation (unify them; I'll redesign Pattern B accordingly).
-- [ ] **DEFER** B to a separate Sprint while C1/C3/C4/C5 ship in 2.22.0a.2 (Pattern B is the largest regression surface — splitting it is allowed under Rule #38).
+- [x] **ACCEPT** my recommendation (keep classifier_failure and coverage_gap separate; my §6 plan stands as-is).
+  - **Marked 2026-05-27 by Anas** (chat message: "i mark accept").
+  - **Architecture is now LOCKED:** Pattern B adds exactly 1 new template
+    (`classifier_failure`) + 1 new dispatcher row in
+    `_compute_refusal_reason()`. The existing `density_gated_district`
+    trigger (KICKOFF's "coverage_gap") stays untouched.
+  - **Still pending** before Pattern B commit can land: multi-AI consensus
+    on the Arabic + English message strings in §6 above (the
+    classifier_failure template copy). Architecture decided ≠ copy
+    approved.
+- [ ] ~~**OVERRIDE** my recommendation (unify them; I'll redesign Pattern B accordingly).~~
+- [ ] ~~**DEFER** B to a separate Sprint while C1/C3/C4/C5 ship in 2.22.0a.2 (Pattern B is the largest regression surface — splitting it is allowed under Rule #38).~~
 
 If you accept, the commit order in §6 above is canonical: B ships LAST after all C-pattern validations land.
 
