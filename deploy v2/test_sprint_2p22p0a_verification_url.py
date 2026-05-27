@@ -14,7 +14,11 @@ Coverage:
  [11] _attach_scope integration — universal injection (value-producing + refusal)
  [12] cross-check orthogonality with /2 tier_label
  [13] cross-check orthogonality with /5 refusal_reason
- [14] cross-check Pearl A5 + Lusail A1 sample shape
+ [14] cross-check Lusail-as-mock sample shape + day-rollover
+       (Note: actual Pearl PIN — e.g. 66200197 per Phase 3 §5 audit Step 4 —
+       would also fall through density_gated_district; this test uses the
+       Lusail H1 anchor 69/255/75 as a mock to assert orthogonality of
+       verification_url with refusal_reason gating.)
 """
 from __future__ import annotations
 
@@ -311,12 +315,12 @@ resp_pearl = {
     ),
 }
 _attach_scope(resp_pearl)
-check('[Pearl A5] refusal_reason populated (density_gated_district)',
+check('[Lusail-as-Pearl-mock] refusal_reason populated (density_gated_district)',
       resp_pearl['refusal_reason'] is not None
       and resp_pearl['refusal_reason']['trigger_id'] == 'density_gated_district')
-check('[Pearl A5] verification_url ALSO present (NOT gated)',
+check('[Lusail-as-Pearl-mock] verification_url ALSO present (NOT gated)',
       resp_pearl['verification_url'] is not None)
-check('[Pearl A5] both fields populated simultaneously — orthogonal',
+check('[Lusail-as-Pearl-mock] both fields populated simultaneously — orthogonal',
       resp_pearl['refusal_reason'] is not None
       and resp_pearl['verification_url'] is not None)
 
@@ -339,25 +343,31 @@ check('[value-producing villa] verification_url present (concurrent)',
       resp_villa['verification_url'] is not None)
 
 # ──────────────────────────────────────────────────────────────────────
-# [14] Sample shape — Pearl A5 + Lusail A1 + day-rollover for same identifier
+# [14] Sample shape — Lusail-PIN-as-mock + day-rollover
 # ──────────────────────────────────────────────────────────────────────
-print('\n[14] Sample shape — Pearl A5 + Lusail A1 + day-rollover')
-url_pearl_a5 = build_verification_url('69/255/75', '2026-05-26')
-url_lusail_a1 = build_verification_url('69/255/75', '2026-05-26')  # same identifier
-check('Pearl 69/255/75 same day same URL (determinism)',
-      url_pearl_a5 == url_lusail_a1)
+# Sprint 2.22.0a/12 Phase 1 — labeling corrected: address 69/255/75 is the
+# Lusail H1 anchor (City Avenues), NOT the actual Pearl PIN (which is
+# 66200197 per Phase 3 §5 audit Step 4 self-discovery). The Lusail PIN is
+# used here as a mock test fixture to assert orthogonality between
+# verification_url and refusal_reason gating — the test logic is
+# address-agnostic, so the mock works fine.
+print('\n[14] Sample shape — Lusail-PIN-as-mock + day-rollover')
+url_mock_a = build_verification_url('69/255/75', '2026-05-26')
+url_mock_b = build_verification_url('69/255/75', '2026-05-26')  # same identifier
+check('Same identifier 69/255/75 same day → same URL (determinism)',
+      url_mock_a == url_mock_b)
 url_lusail_different_addr = build_verification_url('69/329/20', '2026-05-26')
 check('Different identifier (69/329/20) → distinct URL',
-      url_pearl_a5 != url_lusail_different_addr)
-url_pearl_next_day = build_verification_url('69/255/75', '2026-05-27')
+      url_mock_a != url_lusail_different_addr)
+url_mock_next_day = build_verification_url('69/255/75', '2026-05-27')
 check('Same identifier, next day → distinct URL (day rollover)',
-      url_pearl_a5 != url_pearl_next_day)
+      url_mock_a != url_mock_next_day)
 
 # Print actual sample URLs (for the STOP report)
 print('\n  SAMPLE URLs:')
-print(f'    Pearl A5 / 2026-05-26: {url_pearl_a5}')
-print(f'    Lusail next-day:        {url_pearl_next_day}')
-print(f'    Different identifier:   {url_lusail_different_addr}')
+print(f'    Lusail mock / 2026-05-26: {url_mock_a}')
+print(f'    Lusail mock next-day:     {url_mock_next_day}')
+print(f'    Different identifier:     {url_lusail_different_addr}')
 
 # ──────────────────────────────────────────────────────────────────────
 # Summary — Sprint 2.22.0a/10 unified via _test_helpers.Reporter

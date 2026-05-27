@@ -706,7 +706,10 @@ function show(d){
   h+='<button class="copy-btn print-btn" onclick="printReport()" style="margin-right:8px">🖨️ طباعة / حفظ PDF</button>';
   h+='<div style="clear:both"></div>';
 
-  // ── Sprint 2.14.0 + 2.16.9: RICS VPS 5 Material Uncertainty Clause (FIRST, most prominent) ──
+  // ── Sprint 2.14.0 + 2.16.9 + 2.22.0a/9+/12: Material Valuation Uncertainty (MVU) Clause ──
+  // (FIRST, most prominent). Sprint 2.22.0a/12 Phase 1 — citation updated from
+  // "RICS VPS 5" to the verified 2024-edition canonical reference: VPGA 10 +
+  // VPS 3 (RICS Red Book Global Standards 2024) and IVS 103 (IVS 2024).
   // Sprint 2.16.9 — read from d.material_uncertainty (canonical root, populated by
   // Sprint 2.16.8 _enrich_material_uncertainty for ALL paths). Fall back to brief
   // sections for backward compat with the villa path which has always written
@@ -729,7 +732,7 @@ function show(d){
   }
   if(muc_ar){
     h+='<div style="background:var(--bad-bg);border:2px solid var(--bad);border-radius:8px;padding:16px;margin-bottom:14px">';
-    h+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem">⚠️ تحفظ مادي وفق RICS VPS 5</div>';
+    h+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem">⚠️ تحفظ مادي وفق RICS Red Book Global Standards 2024 (VPGA 10 + VPS 3) و IVS 2024 (IVS 103)</div>';
     h+='<div style="white-space:pre-line;line-height:1.7;font-size:.92rem">'+muc_ar.replace(/^⚠️[^\n]*\n+/,'')+'</div>';
     if(muc_basis)h+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--bad);font-size:.85rem;color:var(--muted)"><strong>الأساس:</strong> '+muc_basis+'</div>';
     if(muc_review)h+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+muc_review+'</div>';
@@ -1248,7 +1251,7 @@ function show(d){
 }
 
 // Sprint D: Section renderer for brief.sections
-const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮','tier_breakdown':'📊','use_case_banner':'⚖️','refusal_reason':'🛑','adjustment_ledger_directional':'🧮'};
+const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮','tier_breakdown':'📊','use_case_banner':'⚖️','refusal_reason':'🛑','adjustment_ledger_directional':'📋'};
 
 // Sprint 2.22.0a/3 — Arabic display maps for tier_breakdown T3 sources detail
 // (UI-side mapping per Anas Q1 Option (b) — backend stays in English machine values).

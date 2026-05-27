@@ -5,7 +5,7 @@ evaluate_v3.py — Thammen v3 evaluation layer.
 Wraps evaluate_property.py (v2) and adds:
     1. Income approach via rent_reference.py (360K rental transactions)
     2. Individual comparable adjustments (RICS VPS 4 §7)
-    3. Material Uncertainty declaration (RICS VPS 4 §3.2)
+    3. Material Valuation Uncertainty declaration (RICS Red Book Global Standards 2024 — VPGA 10 + VPS 3; IVS 2024 — IVS 103)
     4. 3-way blended valuation (comparison + cost + income)
     5. Four audience-specific output briefs
 
@@ -458,7 +458,8 @@ def evaluate_v3(
             'known_unknowns': uncertainty.known_unknowns,
             'recommendations': uncertainty.recommendations,
             'rics_compliant': uncertainty.rics_compliant,
-            # Sprint 2.14.0 hotfix — propagate RICS VPS 5 MUC fields
+            # Sprint 2.14.0 hotfix — propagate Material Valuation Uncertainty (MVU) clause fields
+            # (citation updated Sprint 2.22.0a/12 Phase 1: was "RICS VPS 5" → now VPGA 10 + VPS 3 + IVS 103)
             'muc_clause_ar': uncertainty.muc_clause_ar,
             'muc_clause_en': uncertainty.muc_clause_en,
             'muc_basis_ar': uncertainty.muc_basis_ar,

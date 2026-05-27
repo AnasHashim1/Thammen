@@ -138,10 +138,10 @@ Frontend additions in 2.22.0a:
 | F2 | `tier_breakdown` UI rendering | When `body.hybrid.tier_breakdown` is present and non-empty (Lusail hybrid path), brief includes a `tier_breakdown` section that renders T1/T2/T3 rows with `weight`, `n`, `value_per_m2_raw`, `value_per_m2_adjusted`. |
 | F3 | `n_used` + freshness | When `body.hybrid.n_used` is present, brief surfaces it with a date stamp. Format: "تقدير مبني على N إعلان كما في YYYY-MM-DD". |
 | F4 | Use-case banner | Every non-refusal response includes `use_case_banner` with `suitable_for[]`, `not_suitable_for[]`, `stage5_required_for[]`. Content per BRIEF v3.1 §6.7 table. |
-| F5 | §1.6 dynamic refusal templates (5 active) | Every refusal response includes `refusal_reason = {trigger_id, message_ar, message_en, recommendation_ar}`. The **5 trigger_ids** enumerated in §5 of this brief. `asset_uniqueness` trigger deferred to 2.22.y per §2.3 (single logical unit with 3σ compute). |
+| F5 | §1.6 dynamic refusal templates (6 active) | Every refusal response includes `refusal_reason = {trigger_id, message_ar, message_en, recommendation_ar}`. **6 active trigger_ids** in 2.22.0a (4 inherited + 1 NEW `density_gated_district` [BRIEF v3.1 §1.6 + Finding §3.1] + 1 NEW `asset_class_out_of_scope` [engine-capability for `out_of_scope_v1`, added Sprint 2.22.0a/5 per Q1 d decision]). The 6 are enumerated in §5 of this brief. `asset_uniqueness` trigger deferred to 2.22.y per §2.3 (single logical unit with 3σ compute). |
 | F6 | Density-gated district refusal (NEW) | Pearl (`district == 'جزيرة اللؤلؤة'`) returns `refusal_reason.trigger_id = 'density_gated_district'`. Lusail D10 zones continue hybrid path (no density-gating). |
 | F7 | Verification URL generation | Every Stage-2/Stage-3 response includes `verification_url = '<base>/verify/<token>'` where `<token>` is a deterministic hash of (PIN OR Z/S/B) + day-date. URL itself returns 404 in 2.22.0a (UI deferred to 2.22.0.1) — that's documented behaviour, not a bug. |
-| F8 | A2 reclassification | BRIEF v3.1 §4.5 row A2 updated to read "apartment_building (DCF refusal — canonical apt-Stage-2 case)" instead of "Villa". No production logic change. |
+| F8 | A2 reclassification | BRIEF v2 (`CHANGELOG_pre_2p22p0_v2.md`) §4.5 row A2 updated to read "apartment_building (DCF refusal — canonical apt-Stage-2 case)" instead of "Villa". No production logic change. (Self-reference corrected /12 Phase 1 — original KICKOFF text cited v3.1 in error; v3.1 has no §4.5 row table.) |
 | F9 | Calculator-style visual (Stage 3 output) | Results-screen final output visually distinct from formal-report aesthetic. Typography + spacing + border treatment differentiated. (No new fields; pure CSS + HTML class change.) |
 | F10 | Directional adjustment ledger | When Stage 2 adjustments are present (post-2.22.0b — placeholder in 2.22.0a), brief renders "Factor: increased/decreased/unchanged" — NO percentages. 2.22.0a empty placeholder acceptable. |
 | F11 | RICS Red Book 2024 / IVS 2024 text audit | `material_uncertainty.py` MUC clause text reviewed and updated where current copy diverges from RICS Red Book 2024 / IVS 2024 standards. Specific text changes recorded in commit message. |
@@ -178,7 +178,7 @@ Frontend additions in 2.22.0a:
 
 | File | Changes | Risk |
 |---|---|---|
-| `evaluate_unified.py` | • ENGINE_VERSION bump<br>• Add `tier_label` to response (per asset_type / valuation path)<br>• Add `use_case_banner` injection (helper function emits per asset_type / audience)<br>• Add `refusal_reason` injection on all refusal paths (insufficient_data, asset_type_reality_stop, Patch-A skip-MoJ)<br>• Add `verification_url` generation call<br>• Detect `district == 'جزيرة اللؤلؤة'` (and other non-D10 non-empty districts where appropriate) → trigger `density_gated_district` refusal | **MEDIUM** (Pearl detection adds a NEW classification branch — behaviour change, not pure additive. Before: Pearl falls to generic `insufficient_data`. After: Pearl returns `refusal_reason.trigger_id='density_gated_district'`. All other listed changes are additive but the Pearl branch warrants MEDIUM. Mitigation: §7.3 smoke audit case A5 covers Pearl behaviour change explicitly; Rule #11 rollback target = Heroku v128.) |
+| `evaluate_unified.py` | • ENGINE_VERSION bump<br>• Add `tier_label` to response (per asset_type / valuation path)<br>• Add `use_case_banner` injection (helper function emits per §6.7 single-dimension structure — single banner across all 4 audiences)<br>• Add `refusal_reason` injection on all refusal paths (insufficient_data, asset_type_reality_stop, Patch-A skip-MoJ)<br>• Add `verification_url` generation call<br>• Detect `district == 'جزيرة اللؤلؤة'` (and other non-D10 non-empty districts where appropriate) → trigger `density_gated_district` refusal | **MEDIUM** (Pearl detection adds a NEW classification branch — behaviour change, not pure additive. Before: Pearl falls to generic `insufficient_data`. After: Pearl returns `refusal_reason.trigger_id='density_gated_district'`. All other listed changes are additive but the Pearl branch warrants MEDIUM. Mitigation: §7.3 smoke audit case A5 covers Pearl behaviour change explicitly; Rule #11 rollback target = Heroku v128.) |
 | `output_briefs.py` | • Add new section builders: `_tier_breakdown_section`, `_use_case_banner_section`, `_refusal_reason_section`, `_adjustment_ledger_directional_section`<br>• Add tier_label rendering across all 4 audience briefs (`_buyer_brief`, `_seller_brief`, `_investor_brief`, `_valuer_brief`)<br>• Update `_base_brief()` to surface `tier_label` + `verification_url` + `use_case_banner` in the header dict | LOW (pure additive section appends; existing sections preserved) |
 | `index.html` | • Add `SEC_ICONS` entries for new section IDs (`tier_breakdown`, `use_case_banner`, `refusal_reason`, `adjustment_ledger_directional`)<br>• Add `renderSection()` switch cases for the 4 new sections<br>• Add calculator-style CSS class + apply to Stage-3 results screen container<br>• Surface `data.tier_label` + `data.verification_url` in the results header rendering<br>• NO new screens (multi-screen flow is 2.22.0b)<br>• NO SSE / ReadableStream wiring (2.22.0b) | LOW (additive renderSection cases + CSS — does not touch existing logic) |
 | `api.py` | • ENGINE_VERSION/version string bump<br>• Pydantic response schemas: add `tier_label: Optional[str]`, `verification_url: Optional[str]`, `refusal_reason: Optional[dict]`, `use_case_banner: Optional[dict]` (with `extra='forbid'` schemas unchanged per Bug A2 / Sprint 2.16.15)<br>• A2 reclassification: documentation comment update only — production behaviour unchanged | LOW (Pydantic additions backward-compatible; old clients ignoring new fields work) |
@@ -195,7 +195,7 @@ Frontend additions in 2.22.0a:
 | `test_sprint_2p22p0a_use_case_banner.py` | Banner content per audience × asset_type. | ~120 LOC |
 | `test_sprint_2p22p0a_verification_url.py` | URL token determinism + idempotency. | ~80 LOC |
 | `test_sprint_2p22p0a_density_gated_district.py` | Pearl → density_gated_district refusal trigger. | ~80 LOC |
-| `test_sprint_2p22p0a_a2_documentation.py` | Verify BRIEF v3.1 §4.5 A2 row updated (text assertion). | ~30 LOC |
+| `test_sprint_2p22p0a_a2_documentation.py` | Verify BRIEF v2 (`CHANGELOG_pre_2p22p0_v2.md`) §4.5 A2 row updated (text assertion). | ~30 LOC |
 
 **Total new code estimate (per §9.1 sub-sprint breakdown):**
 
@@ -241,9 +241,9 @@ Frontend additions in 2.22.0a:
 
 ---
 
-## §5 §1.6 Dynamic refusal templates (5 active + 1 deferred)
+## §5 §1.6 Dynamic refusal templates (6 active + 1 deferred)
 
-Per BRIEF v3.1 §1.6 + Finding §3.1 (Pearl density-gating). **5 active triggers** ship in 2.22.0a; `asset_uniqueness` deferred to 2.22.y per §2.3 (single logical unit — trigger + 3σ compute ship together or not at all per Anas decision 2026-05-26). Each refusal output emits:
+Per BRIEF v3.1 §1.6 + Finding §3.1 (Pearl density-gating) + Sprint 2.22.0a/5 Q1 d decision (`asset_class_out_of_scope` engine-capability trigger). **6 active triggers** ship in 2.22.0a; `asset_uniqueness` deferred to 2.22.y per §2.3 (single logical unit — trigger + 3σ compute ship together or not at all per Anas decision 2026-05-26). Each refusal output emits:
 
 ```python
 refusal_reason = {
@@ -267,7 +267,7 @@ refusal_reason = {
 
 **Deferred (NOT in 2.22.0a per §2.3):** `asset_uniqueness` trigger (3σ outlier check) — bundled with compute logic as a single logical unit, both ship in 2.22.y. Originally BRIEF v3.1 §1.6 trigger #4.
 
-**Template substitution syntax (M2 clarification):** template strings use Python `.format()` substitution with named placeholders. For trigger #3 specifically: `template.format(event_name=" — إعلان مشروع X" if event else "")`. Default `event_name=""` so the trigger fires correctly even with empty registry (`{"events": []}` skeleton per §5.4). The trigger-id, message_ar, and message_en strings are constants in `refusal_templates.py`; only `{event_name}` (trigger #3) and potentially `{comp_count}` (trigger #1, future enhancement) accept context substitution.
+**Template substitution syntax (M2 clarification):** template strings use Python `.format()` substitution with named placeholders. For trigger #3 specifically: `template.format(event_name=" — إعلان مشروع X" if event else "")`. Default `event_name=""` handles events without an `event_name` attribute without breaking template substitution. When the registry is empty (`{"events": []}` skeleton per §5.4), the trigger doesn't fire at all (no event to match) — the default value only matters once the registry is populated by the 2.22.0b operational track. The trigger-id, message_ar, and message_en strings are constants in `refusal_templates.py`; only `{event_name}` (trigger #3) and potentially `{comp_count}` (trigger #1, future enhancement) accept context substitution.
 
 ### §5.2 Refusal output also includes:
 - `soft_indicative_range` (optional) — wide MUC indicative range labeled "rough orientation only, not for any transactional use" — may be empty for `density_gated_district` and `spatial_ambiguity`
@@ -317,7 +317,7 @@ First-match wins. Engine emits exactly one `trigger_id` per refusal.
 
 ### §6.4 What this means for ship gate (BRIEF v3.1 §10 #8)
 - **Pearl is explicitly density-gated in 2.22.0a** (refusal template renders correctly). Ship gate per §10 #8: "Density baselines confirmed achievable in target zones (Pearl, Lusail Fox Hills + Marina, West Bay) OR density-gating accepted as launch posture for failing zones" — **2.22.0a accepts density-gating as Pearl's launch posture**.
-- **Lusail Fox Hills + Lusail 69 covered by D10 verified** (Phase 3 §5 audit cases A1 + A3-equivalent confirm hybrid path produces value with n=78-79). **Lusail Marina coverage expected via `'لوسيل'` substring match, auditable post-deploy** (gap in Phase 3 §5 audit — no Marina PIN tested; §2.5 lists "Lusail Marina §5 audit coverage" as deferred to 2.22.0.1).
+- **Lusail Fox Hills + Lusail 69 covered by D10 verified** (per H_walk anchors H1=69/255/75 + H11=69/329/20 confirming hybrid path produces value with n=78-79). **Lusail Marina coverage expected via `'لوسيل'` substring match, auditable post-deploy** (gap in Phase 3 §5 audit — no Marina PIN tested; §2.5 lists "Lusail Marina §5 audit coverage" as deferred to 2.22.0.1).
 - West Bay coverage partial (61/875/20 confirmed via A11 Sprint 2.16.14). For 2.22.0a, West Bay falls through to existing `insufficient_data` paths → renders as `comp_density_sparse` template. 2.22.y validation work measures whether West Bay meets baselines or stays density-gated.
 
 ---
@@ -330,7 +330,7 @@ First-match wins. Engine emits exactly one `trigger_id` per refusal.
 - `test_sprint_2p22p0a_use_case_banner.py` — banner content per audience (buyer/seller/investor/valuer) × asset_type ≈ 8-10 tests
 - `test_sprint_2p22p0a_verification_url.py` — token determinism (same input → same token), idempotency (multiple calls → same output), input-shape variants (PIN vs Z/S/B) ≈ 6-8 tests
 - `test_sprint_2p22p0a_density_gated_district.py` — Pearl trigger, D10 Lusail bypass, fallback chain ≈ 5-7 tests
-- `test_sprint_2p22p0a_a2_documentation.py` — text assertion on BRIEF v3.1 §4.5 row A2 ≈ 1-2 tests
+- `test_sprint_2p22p0a_a2_documentation.py` — text assertion on BRIEF v2 (`CHANGELOG_pre_2p22p0_v2.md`) §4.5 row A2 ≈ 1-2 tests
 
 **Target:** ~50-65 new isolated tests, all standalone (no pytest framework dependency per CLAUDE.md). Run with `PYTHONIOENCODING=utf-8`.
 
@@ -411,12 +411,12 @@ Each is a single-purpose commit per Rule #38. Same disciplined commit pattern (m
 | 2.22.0a/3 | `tier_breakdown` UI section + `n_used` + freshness rendering | `output_briefs.py` + `index.html` | ~150 LOC |
 | 2.22.0a/4 | `use_case_banner` per BRIEF v3.1 §6.7 + Arabic copy review | `output_briefs.py` + `index.html` | ~100 LOC |
 | 2.22.0a/5 | `refusal_templates.py` NEW (**5 active templates** — `asset_uniqueness` deferred per §2.3) + `district_regimes.json` empty skeleton + integration in `evaluate_unified.py` refusal paths | `refusal_templates.py` + `district_regimes.json` + `evaluate_unified.py` + `output_briefs.py` + `index.html` | ~250 LOC |
-| 2.22.0a/6 | `density_gated_district` trigger integration (Pearl + non-D10 zones) | `evaluate_unified.py` + tests | ~80 LOC |
+| 2.22.0a/6 | `density_gated_district` trigger integration — **MERGED INTO /5** per natural precedence chain scope overlap. Implementation shipped within Sprint 2.22.0a/5 (commit `b0c62b7`) — see §5.3 row 1 (`density_gated_district` overrides all). No separate /6 commit. | (absorbed) | (absorbed into /5) |
 | 2.22.0a/7 | `verification_url.py` NEW + integration | `verification_url.py` + `evaluate_unified.py` + `index.html` | ~120 LOC |
 | 2.22.0a/8 | Calculator-style visual + directional adjustment ledger placeholder | `index.html` (CSS + new section render) | ~150 LOC |
 | 2.22.0a/9 | RICS Red Book 2024 / IVS 2024 compliance text audit on `material_uncertainty.py` | `material_uncertainty.py` | ~50 LOC |
 | 2.22.0a/10 | Isolated tests batch (all 6+ new test files) | 6+ new `test_sprint_2p22p0a_*.py` files | ~700 LOC |
-| 2.22.0a/11 | A2 documentation fix in BRIEF v3.1 §4.5 row | `BRIEF_2p22p0_FINAL_v3.1.md` | <10 LOC |
+| 2.22.0a/11 | A2 documentation fix in BRIEF v2 §4.5 row | `2p22p0_pre/CHANGELOG_pre_2p22p0_v2.md` | <10 LOC (data) + ~30 LOC (test guard) |
 | 2.22.0a/12 | Final regression + smoke audit + CHANGELOG_v50.md | `CHANGELOG_v50.md` + `PHASE3_LOG.md` update | ~150 LOC |
 
 **Total estimated commits:** 12 (one per sub-sprint). **Estimated days:** 3-5 per BRIEF v3.1 §2 row 1. ~2-3 commits per day.
