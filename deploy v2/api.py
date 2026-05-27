@@ -4,7 +4,9 @@ api.py — FastAPI backend for Thammen (ثمّن)
 
 Sprint 1 hardening applied:
     - CORS restricted to thammen.qa origins only
-    - Rate limiting via slowapi (10 req/min per IP for evaluate)
+    - Rate limiting via slowapi keyed on CF-Connecting-IP
+      (Sprint 2.16.17: burst caps 5/sec + 30/min + 200/hr per IP)
+    - Auto-docs locked down unless THAMMEN_DEV_MODE=1
     - Environment variables for sensitive/configurable settings
     - Centralized logging
 """
@@ -94,19 +96,65 @@ except ImportError as e:
     log.warning(f"GIS preload not available: {e}")
 
 # ── App ──
+# Sprint 2.16.17: lock down FastAPI's auto-docs in production. When
+# THAMMEN_DEV_MODE is unset (or anything other than "1") the three
+# routes /docs, /openapi.json, /redoc are not registered at all, so
+# they return 404. Setting THAMMEN_DEV_MODE=1 in the dyno env restores
+# the defaults. Fail-closed: unset = locked.
+THAMMEN_DEV_MODE = os.getenv("THAMMEN_DEV_MODE", "") == "1"
+_docs_kwargs: dict = (
+    {} if THAMMEN_DEV_MODE
+    else {"docs_url": None, "redoc_url": None, "openapi_url": None}
+)
 app = FastAPI(
     title="Thammen API",
     description="Qatar Real Estate Valuation — بيانات وزارة العدل",
     version="3.1.0",
+    **_docs_kwargs,
+)
+log.info(
+    f"FastAPI docs: {'EXPOSED (THAMMEN_DEV_MODE=1)' if THAMMEN_DEV_MODE else 'LOCKED DOWN (404)'}"
 )
 
-# ── Rate Limiting ──
-# Default: 10 evaluations/minute per IP. Override via RATE_LIMIT env var.
-RATE_LIMIT = os.getenv("RATE_LIMIT", "10/minute")
-limiter = Limiter(key_func=get_remote_address, default_limits=[])
+
+# ── Rate Limiting (Sprint 2.16.17 — per-IP burst caps + CF key) ──
+def cf_remote_address(request: Request) -> str:
+    """Real client IP via Cloudflare's CF-Connecting-IP header.
+
+    Phase 0 of Sprint 2.16.17 verified that the legacy
+    `get_remote_address` returns Heroku's router IP because uvicorn
+    is started without --proxy-headers — collapsing every client to
+    a near-constant key and yielding 0×429 on a 20-burst against
+    /api/evaluate. Cloudflare always sets CF-Connecting-IP on real
+    traffic; direct herokuapp.com bypasses fall back to
+    X-Forwarded-For (first hop) → request.client.host.
+    """
+    cf_ip = request.headers.get("cf-connecting-ip")
+    if cf_ip:
+        return cf_ip.strip()
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        # X-Forwarded-For is a comma-separated chain; first entry is
+        # the original client (when not spoofed). Cloudflare normally
+        # writes a single IP here, but Heroku may append router hops.
+        return xff.split(",", 1)[0].strip()
+    return get_remote_address(request)
+
+
+# Triplet defaults: 5/sec burst cap, 30/min sustained, 200/hour daily
+# envelope for a single legitimate user. Overridable via RATE_LIMIT
+# env var as a comma-separated list (e.g. "10/second,60/minute").
+_RATE_LIMIT_DEFAULT = "5/second,30/minute,200/hour"
+RATE_LIMIT = os.getenv("RATE_LIMIT", _RATE_LIMIT_DEFAULT)
+RATE_LIMIT_LIST = [s.strip() for s in RATE_LIMIT.split(",") if s.strip()]
+
+limiter = Limiter(key_func=cf_remote_address, default_limits=[])
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-log.info(f"Rate limit configured: {RATE_LIMIT} for /api/evaluate*")
+log.info(
+    f"Rate limits: {RATE_LIMIT_LIST} for /api/evaluate* "
+    f"(keyed by CF-Connecting-IP / X-Forwarded-For / client.host)"
+)
 
 # ── CORS — restricted via env var ──
 # Default origins for production. Override with ALLOWED_ORIGINS env var
@@ -607,7 +655,9 @@ async def health():
         },
         "security": {
             "cors_locked": ALLOWED_ORIGINS != ["*"],
-            "rate_limit": RATE_LIMIT,
+            "rate_limits": RATE_LIMIT_LIST,
+            "rate_limit_key": "cf-connecting-ip",
+            "docs_locked": not THAMMEN_DEV_MODE,
         },
         "timestamp": datetime.now().isoformat(),
     }
@@ -872,7 +922,7 @@ async def scope():
 
 
 @app.post("/api/evaluate")
-@limiter.limit(RATE_LIMIT)
+@limiter.limit(";".join(RATE_LIMIT_LIST))
 async def evaluate_quick(req: EvaluateRequest, request: Request):
     """Quick evaluation — address only. Returns free-tier result."""
     log.info(f"evaluate quick: {req.zone}/{req.street}/{req.building} "
@@ -920,7 +970,7 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
 
 
 @app.post("/api/evaluate/details")
-@limiter.limit(RATE_LIMIT)
+@limiter.limit(";".join(RATE_LIMIT_LIST))
 async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
     """Improved evaluation with building details from user."""
     log.info(f"evaluate details: {req.zone}/{req.street}/{req.building} "
