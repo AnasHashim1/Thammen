@@ -106,7 +106,7 @@ def test_helper(helper):
     # T3: muc_clause_ar carries a RICS citation
     # Sprint 2.22.0a/9 \u2014 relaxed from brittle 'VPS 5' literal pin (same anti-
     # pattern Sprint 2.19.1 corrected across 4 other Sprint test files,
-    # Operational_Rules #36). The 2024-edition citation is "VPGA 10 + VPS 3";
+    # Operational_Rules #36). The current effective-edition citation is "VPGA 10 + VPS 6 + IVS 106" (effective 31 January 2025);
     # 'RICS' substring covers any future edition rename too.
     if 'RICS' in (out.get('muc_clause_ar') or ''):
         print("  \u2713 T3: muc_clause_ar contains RICS citation")

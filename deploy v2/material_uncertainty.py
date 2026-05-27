@@ -2,19 +2,21 @@
 """
 material_uncertainty.py — Material Valuation Uncertainty (MVU) declarations.
 
-Canonical standards (Sprint 2.22.0a/9 audit — RICS Red Book Global Standards
-2024 + IVS 2024, both effective 31 January 2024):
+Canonical standards (Sprint 2.22.0a/12 Phase 1.5b citation correction —
+multi-AI validation, RICS Red Book + IVS, both effective 31 January 2025):
 
-  - RICS Red Book Global Standards 2024 — VPGA 10 (Material Valuation
-    Uncertainty) + VPS 3 (Valuation Reports — reporting requirements).
-  - IVS 2024 — IVS 103 (Reporting).
+  - RICS Red Book Global Standards (published December 2024, effective
+    31 January 2025) — VPGA 10 (Material Valuation Uncertainty) + VPS 6
+    (Valuation Reports — reporting requirements).
+  - IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting).
 
 VPGA 10 is the canonical RICS guidance on Material Valuation Uncertainty;
-VPS 3 carries the reporting obligations. The earlier "RICS VPS 5"
-references that appeared in this module (Sprint 2.14.0 era) reflected
-2014-edition / COVID-19-era informal industry usage. VPS 5 in the 2024
-edition is "Valuation Approaches and Methods" — a different topic — so
-the citation has been corrected throughout.
+VPS 6 carries the reporting obligations in the current effective edition.
+Earlier "RICS VPS 5" references in this module (Sprint 2.14.0 era) reflected
+2014-edition / COVID-19-era informal industry usage. The interim Sprint
+2.22.0a/9 correction cited "VPS 3 + IVS 103" but missed the 2025 edition
+transition — Sprint 2.22.0a/12 Phase 1.5b corrects to the current effective
+edition citations (VPS 6 + IVS 106).
 
 When any data source has insufficient sample size, OR the active market
 regime is materially disrupted, the valuation must carry an explicit
@@ -52,10 +54,11 @@ class UncertaintyLevel:
     known_unknowns: List[str]     # what we explicitly don't know
     recommendations: List[str]    # what should be done to reduce uncertainty
     # Sprint 2.14.0 — formal Material Valuation Uncertainty (MVU) clause text.
-    # Sprint 2.22.0a/9 — citation corrected to RICS VPGA 10 + VPS 3 (Red Book
-    # Global Standards 2024) and IVS 103 (IVS 2024). Set by regime_muc()
-    # when the market regime is non-normal. None means no market-wide MVU
-    # applies (normal market conditions).
+    # Sprint 2.22.0a/12 Phase 1.5b — citation corrected to RICS VPGA 10 + VPS 6
+    # (Red Book Global Standards, effective 31 January 2025) and IVS 106 (IVS,
+    # effective 31 January 2025). Set by regime_muc() when the market regime
+    # is non-normal. None means no market-wide MVU applies (normal market
+    # conditions).
     muc_clause_ar: Optional[str] = None
     muc_clause_en: Optional[str] = None
     muc_basis_ar: Optional[str] = None    # what makes the MVU applicable
@@ -95,19 +98,24 @@ def regime_muc(regime=None) -> dict:
     """Generate the Material Valuation Uncertainty (MVU) clause for the
     current market regime.
 
-    Canonical standards (Sprint 2.22.0a/9 citation audit):
-      - RICS Red Book Global Standards 2024 — VPGA 10 (Material Valuation
-        Uncertainty, the canonical RICS guidance) + VPS 3 (Valuation Reports —
-        reporting requirements).
-      - IVS 2024 — IVS 103 (Reporting).
+    Canonical standards (Sprint 2.22.0a/12 Phase 1.5b citation correction —
+    multi-AI validation caught the 2025-edition transition that Sprint
+    2.22.0a/9 missed):
+      - RICS Red Book Global Standards (effective 31 January 2025) —
+        VPGA 10 (Material Valuation Uncertainty, the canonical RICS
+        guidance) + VPS 6 (Valuation Reports — reporting requirements).
+      - IVS (effective 31 January 2025) — IVS 106 (Documentation and
+        Reporting).
       The earlier "RICS VPS 5" citation that appeared in this module
       (Sprint 2.14.0 era) reflected 2014-edition / COVID-19-era informal
-      industry usage. VPS 5 in the 2024 edition is "Valuation Approaches
-      and Methods" — a different topic — so the citation has been
-      corrected throughout.
+      industry usage. The interim Sprint 2.22.0a/9 citation "VPS 3 +
+      IVS 103" was based on a 2024-edition reading that missed the
+      January-2025 effective-date transition (VPS 3 → VPS 6 renumbering;
+      IVS 103 in the current edition is "Valuation Approaches", with
+      Reporting moved to IVS 106).
 
     The MVU declaration follows the four structural elements required by
-    RICS VPGA 10 + IVS 103:
+    RICS VPGA 10 + IVS 106:
       1. Statement of material valuation uncertainty (with edition citation)
       2. Cause of uncertainty (regime + shock layers identified by name)
       3. Scope of uncertainty (Sprint 2.22.0a/9 R3 strengthening — what
@@ -148,9 +156,10 @@ def regime_muc(regime=None) -> dict:
             'muc_review_recommendation_ar': None,
         }
 
-    # Build the formal MVU text — Sprint 2.22.0a/9 verified per Anas 2026-05-26
-    # (citation corrected from "VPS 5" → "VPGA 10 + VPS 3 + IVS 103"; scope-of-
-    # uncertainty paragraph added per R3 element 3 strengthening).
+    # Build the formal MVU text — Sprint 2.22.0a/12 Phase 1.5b multi-AI
+    # validation correction (citation now reflects the 2025 effective edition:
+    # VPGA 10 + VPS 6 + IVS 106; scope-of-uncertainty paragraph added in
+    # Sprint 2.22.0a/9 per R3 element 3 strengthening preserved).
     layers = getattr(regime, 'shock_layers', ())
     shock_summary_ar = '، '.join(s.name_ar for s in layers)
     shock_summary_en = ', '.join(_shock_layer_name_en(s) for s in layers)
@@ -160,9 +169,10 @@ def regime_muc(regime=None) -> dict:
     _since_iso_en = active_since.isoformat() if active_since else '?'
 
     muc_clause_ar = (
-        f'⚠️ تحفظ مادي وفق RICS Red Book Global Standards 2024 '
-        f'(VPGA 10 — Material Valuation Uncertainty، و VPS 3 — Valuation Reports) '
-        f'و IVS 2024 (IVS 103 — Reporting)\n\n'
+        f'⚠️ تحفظ مادي وفق RICS Red Book Global Standards '
+        f'(effective 31 January 2025) — VPGA 10 (Material Valuation '
+        f'Uncertainty) و VPS 6 (Valuation Reports) — و IVS '
+        f'(effective 31 January 2025) — IVS 106 (Documentation and Reporting)\n\n'
         f'تواجه السوق العقاري القطري في تاريخ هذا التقدير '
         f'({_since_iso_ar} وما بعده) '
         f'اضطراباً جوهرياً نشطاً: {shock_summary_ar}.\n\n'
@@ -177,8 +187,10 @@ def regime_muc(regime=None) -> dict:
 
     muc_clause_en = (
         f'⚠️ Material Valuation Uncertainty per RICS Red Book Global '
-        f'Standards 2024 (VPGA 10 — Material Valuation Uncertainty; '
-        f'VPS 3 — Valuation Reports) and IVS 2024 (IVS 103 — Reporting)\n\n'
+        f'Standards (effective 31 January 2025) — VPGA 10 (Material '
+        f'Valuation Uncertainty) and VPS 6 (Valuation Reports) — and '
+        f'IVS (effective 31 January 2025) — IVS 106 (Documentation '
+        f'and Reporting)\n\n'
         f'The Qatari real estate market is experiencing material disruption '
         f'at the valuation date '
         f'({_since_iso_en} onwards): {shock_summary_en}.\n\n'
@@ -354,8 +366,9 @@ def assess_uncertainty(
 
     if not rics_compliant:
         recommendations.append(
-            'للتوافق مع معايير RICS Red Book Global Standards 2024 '
-            'و IVS 2024: يلزم فحص ميداني + تعديل فردي للمقارنات + '
+            'للتوافق مع معايير RICS Red Book Global Standards '
+            '(effective 31 January 2025) و IVS (effective 31 January 2025): '
+            'يلزم فحص ميداني + تعديل فردي للمقارنات + '
             'توثيق حالة المبنى + Terms of Engagement (VPS 1).'
         )
 
@@ -364,9 +377,12 @@ def assess_uncertainty(
     # INDEPENDENT of per-property uncertainty above: even a well-supported
     # valuation (low per-property uncertainty) carries market-wide MVU during
     # the current regime.
-    # Sprint 2.22.0a/9 — citation corrected from "RICS VPS 5" to the canonical
-    # 2024-edition references (VPGA 10 + VPS 3 + IVS 103). See regime_muc()
-    # docstring for the standards audit trail.
+    # Sprint 2.22.0a/12 Phase 1.5b — citation reflects the current effective
+    # edition (RICS Red Book + IVS, effective 31 January 2025: VPGA 10 + VPS 6
+    # + IVS 106). The intermediate Sprint 2.22.0a/9 citation "VPS 3 + IVS 103"
+    # was based on a 2024-edition reading that missed the January-2025
+    # effective-date transition. See regime_muc() docstring for the standards
+    # audit trail.
     muc = regime_muc()
 
     return UncertaintyLevel(

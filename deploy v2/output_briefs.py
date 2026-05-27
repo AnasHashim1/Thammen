@@ -562,31 +562,36 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     })
 
     # Section 5: MATERIAL UNCERTAINTY (Sprint 2.14.0)
-    # Sprint 2.22.0a/12 Phase 1 — citation updated (was "RICS VPS 5"):
+    # Sprint 2.22.0a/12 Phase 1.5b — citation updated (multi-AI validation
+    # corrected the 2025 effective-edition transition):
     # adds the Material Valuation Uncertainty (MVU) clause per VPGA 10 +
-    # VPS 3 (RICS Red Book Global Standards 2024) and IVS 103 (IVS 2024),
-    # alongside per-property uncertainty factors.
+    # VPS 6 (RICS Red Book Global Standards, effective 31 January 2025)
+    # and IVS 106 (IVS, effective 31 January 2025), alongside per-property
+    # uncertainty factors.
     # Was previously only in valuer brief — now in buyer brief too because
     # the index.html MUC banner reads from this section.
     if uncertainty:
         unc = uncertainty if isinstance(uncertainty, dict) else asdict(uncertainty)
         sections.append({
             'id': 'material_uncertainty',
-            # Sprint 2.22.0a/12 Phase 1 — RICS citation updated to verified
-            # 2024-edition canonical reference (VPGA 10 + VPS 3 + IVS 103).
-            # See material_uncertainty.py docstring + Sprint 2.22.0a/9 commit
-            # 636c763 for the standards audit trail.
-            'title_ar': 'تحفظات مادية وفق RICS Red Book Global Standards 2024 (VPGA 10 + VPS 3) و IVS 2024 (IVS 103)',
-            'title_en': 'Material Uncertainty Declaration per RICS Red Book Global Standards 2024 (VPGA 10 + VPS 3) and IVS 2024 (IVS 103)',
+            # Sprint 2.22.0a/12 Phase 1.5b — RICS citation updated to current
+            # effective-edition canonical reference (VPGA 10 + VPS 6 + IVS 106,
+            # effective 31 January 2025). Multi-AI validation caught the
+            # 2025-edition transition that Sprint 2.22.0a/9 missed (VPS 3 → VPS 6
+            # renumbering; IVS 103 → IVS 106). See material_uncertainty.py
+            # docstring for the full standards audit trail.
+            'title_ar': 'تحفظات مادية وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 و VPS 6 — و IVS (effective 31 January 2025) — IVS 106',
+            'title_en': 'Material Uncertainty Declaration per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)',
             'content': {
                 'level': unc.get('level'),
                 'factors': unc.get('factors', []),
                 'known_unknowns': unc.get('known_unknowns', []),
                 'recommendations': unc.get('recommendations', []),
                 'rics_compliant': unc.get('rics_compliant', False),
-                # Sprint 2.22.0a/12 Phase 1 — citation updated (was "RICS VPS 5"):
-                # Material Valuation Uncertainty clause fields per VPGA 10 + VPS 3
-                # (RICS Red Book Global Standards 2024) and IVS 103 (IVS 2024).
+                # Sprint 2.22.0a/12 Phase 1.5b — citation reflects current effective
+                # edition: Material Valuation Uncertainty clause fields per VPGA 10
+                # + VPS 6 (RICS Red Book Global Standards, effective 31 January 2025)
+                # and IVS 106 (IVS, effective 31 January 2025).
                 'muc_clause_ar': unc.get('muc_clause_ar'),
                 'muc_clause_en': unc.get('muc_clause_en'),
                 'muc_basis_ar': unc.get('muc_basis_ar'),
@@ -908,21 +913,23 @@ def _valuer_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
         unc = uncertainty if isinstance(uncertainty, dict) else asdict(uncertainty)
         sections.append({
             'id': 'material_uncertainty',
-            # Sprint 2.22.0a/12 Phase 1 — RICS citation updated to verified
-            # 2024-edition canonical reference (VPGA 10 + VPS 3 + IVS 103).
-            # See sibling material_uncertainty section above (line ~572) for
-            # the standards audit trail. This is the _valuer_brief site.
+            # Sprint 2.22.0a/12 Phase 1.5b — RICS citation updated to current
+            # effective-edition canonical reference (VPGA 10 + VPS 6 + IVS 106,
+            # effective 31 January 2025). See sibling material_uncertainty
+            # section above (line ~579) for the standards audit trail.
+            # This is the _valuer_brief site.
             'title_ar': 'تحفظات مادية',
-            'title_en': 'Material Uncertainty Declaration per RICS Red Book Global Standards 2024 (VPGA 10 + VPS 3) and IVS 2024 (IVS 103)',
+            'title_en': 'Material Uncertainty Declaration per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)',
             'content': {
                 'level': unc.get('level'),
                 'factors': unc.get('factors', []),
                 'known_unknowns': unc.get('known_unknowns', []),
                 'recommendations': unc.get('recommendations', []),
                 'rics_compliant': unc.get('rics_compliant', False),
-                # Sprint 2.22.0a/12 Phase 1 — citation updated (was "RICS VPS 5"):
-                # Material Valuation Uncertainty clause fields per VPGA 10 + VPS 3
-                # (RICS Red Book Global Standards 2024) and IVS 103 (IVS 2024).
+                # Sprint 2.22.0a/12 Phase 1.5b — citation reflects current effective
+                # edition: Material Valuation Uncertainty clause fields per VPGA 10
+                # + VPS 6 (RICS Red Book Global Standards, effective 31 January 2025)
+                # and IVS 106 (IVS, effective 31 January 2025).
                 'muc_clause_ar': unc.get('muc_clause_ar'),
                 'muc_clause_en': unc.get('muc_clause_en'),
                 'muc_basis_ar': unc.get('muc_basis_ar'),

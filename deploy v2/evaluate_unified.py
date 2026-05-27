@@ -335,7 +335,7 @@ CAP_RATES_BY_ASSET = {
     'agricultural':       None,
 }
 
-# Sample size thresholds (RICS Red Book Global Standards 2024 — VPS 4 reliability tiers; Material Valuation Uncertainty disclosure per VPGA 10 + VPS 3)
+# Sample size thresholds (RICS Red Book Global Standards, effective 31 January 2025 — VPS 4 reliability tiers; Material Valuation Uncertainty disclosure per VPGA 10 + VPS 6 + IVS 106)
 MIN_N_RELIABLE   = 20  # full confidence
 MIN_N_INDICATIVE = 10  # use with caveat
 MIN_N_BOUND_ONLY = 5   # bounds only
@@ -1806,17 +1806,19 @@ def _enrich_fast_context(loc, plot):
 def _enrich_material_uncertainty(mu: dict) -> dict:
     """Inject Material Valuation Uncertainty (MVU) clause fields if not already present (Sprint 2.16.8).
 
-    Sprint 2.22.0a/12 Phase 1 — citation updated from "RICS VPS 5" to verified
-    2024-edition canonical reference: VPGA 10 + VPS 3 (RICS Red Book Global
-    Standards 2024) and IVS 103 (IVS 2024). See material_uncertainty.py
-    docstring + Sprint 2.22.0a/9 commit 636c763 for the standards audit trail.
+    Sprint 2.22.0a/12 Phase 1.5b — citation updated to current effective-edition
+    canonical reference: VPGA 10 + VPS 6 (RICS Red Book Global Standards,
+    effective 31 January 2025) and IVS 106 (IVS, effective 31 January 2025).
+    Multi-AI validation caught the 2025-edition transition that Sprint
+    2.22.0a/9 missed. See material_uncertainty.py docstring for full standards
+    audit trail.
 
     The four `_build_fast_*` response builders below construct
     `material_uncertainty` as an inline dict literal — bypassing the v3
     path in `evaluate_v3.py:457-460` that auto-populates MUC fields for
     standard villas. As a result, towers, out-of-scope assets, and other
     fast-path responses produced material_uncertainty WITHOUT the formal
-    Material Valuation Uncertainty (MVU) muc_clause_ar/en/basis/review fields per VPGA 10 + VPS 3 + IVS 103.
+    Material Valuation Uncertainty (MVU) muc_clause_ar/en/basis/review fields per VPGA 10 + VPS 6 + IVS 106 (current effective edition, 31 January 2025).
 
     This helper closes the gap: it calls `regime_muc()` from
     material_uncertainty.py (which has existed and been unused since

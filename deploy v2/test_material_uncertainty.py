@@ -1,5 +1,8 @@
 """Tests for material_uncertainty.py — Sprint 2.14.0 MUC extension
-+ Sprint 2.22.0a/9 RICS Red Book Global Standards 2024 + IVS 2024 audit.
++ Sprint 2.22.0a/9 RICS audit + Sprint 2.22.0a/12 Phase 1.5b citation
+correction (multi-AI validation caught the 2025 effective-edition
+transition: VPS 3 → VPS 6, IVS 103 → IVS 106, "2024" → "(effective
+31 January 2025)").
 
 Run as:  python test_material_uncertainty.py
 """
@@ -20,9 +23,10 @@ class TestRegimeMucCurrent(unittest.TestCase):
     """MUC generation with the active regime (post_disruption_recession).
 
     Sprint 2.22.0a/9: brittle "VPS 5" string-pin assertions replaced with
-    structural assertions (Rule #36 anti-pattern lesson). Tests now assert
-    the presence of canonical 2024-edition citations (VPGA 10 + VPS 3 +
-    IVS 103) plus structural elements rather than pinning legacy strings.
+    structural assertions (Rule #36 anti-pattern lesson).
+    Sprint 2.22.0a/12 Phase 1.5b: citation assertions updated to current
+    effective-edition references (VPGA 10 + VPS 6 + IVS 106, effective
+    31 January 2025) after multi-AI validation caught the 2025 transition.
     """
 
     def setUp(self):
@@ -43,7 +47,7 @@ class TestRegimeMucCurrent(unittest.TestCase):
         self.assertIn('higher degree of caution', self.muc['muc_clause_en'])
 
     def test_clause_recommends_review(self):
-        # VPGA 10 / VPS 3 requires "kept under frequent review"
+        # VPGA 10 / VPS 6 requires "kept under frequent review"
         self.assertIn('مراجعة', self.muc['muc_clause_ar'])
         self.assertIn('review', self.muc['muc_clause_en'])
 
@@ -103,12 +107,13 @@ class TestAssessUncertaintyAttachesMUC(unittest.TestCase):
 
 
 class TestMUCStructuralCompliance(unittest.TestCase):
-    """The generated MUC must follow the RICS VPGA 10 + VPS 3 + IVS 103
+    """The generated MUC must follow the RICS VPGA 10 + VPS 6 + IVS 106
     recognised structure (4 required elements).
 
-    Per RICS Red Book Global Standards 2024 — VPGA 10 (Material Valuation
-    Uncertainty) and VPS 3 (Valuation Reports), plus IVS 2024 IVS 103
-    (Reporting):
+    Per RICS Red Book Global Standards (effective 31 January 2025) —
+    VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports),
+    plus IVS (effective 31 January 2025) — IVS 106 (Documentation and
+    Reporting):
 
       1. Statement of material valuation uncertainty (titled, with
          edition-specific citation)
@@ -138,13 +143,17 @@ class TestMUCStructuralCompliance(unittest.TestCase):
         self.assertIn('مراجعة', self.muc)
 
 
-class TestRICS2024Compliance(unittest.TestCase):
-    """Sprint 2.22.0a/9 — RICS Red Book Global Standards 2024 + IVS 2024
-    citation compliance audit.
+class TestRICS2025Compliance(unittest.TestCase):
+    """Sprint 2.22.0a/12 Phase 1.5b — RICS Red Book + IVS citation
+    compliance audit, current effective edition (31 January 2025).
 
-    Verifies that the corrected citations (VPGA 10 + VPS 3 + IVS 103)
-    are present in both Arabic and English clause text, AND that the
-    R3 element-3 scope-of-uncertainty paragraph is present.
+    Multi-AI validation (Sprint 2.22.0a/12 Phase 1.5b) caught the 2025
+    effective-edition transition that Sprint 2.22.0a/9 missed: VPS 3 →
+    VPS 6, IVS 103 → IVS 106, "2024 edition" → "(effective 31 January 2025)".
+
+    Verifies that the corrected citations (VPGA 10 + VPS 6 + IVS 106) are
+    present in both Arabic and English clause text, AND that the R3
+    element-3 scope-of-uncertainty paragraph is present.
     """
 
     def setUp(self):
@@ -161,32 +170,32 @@ class TestRICS2024Compliance(unittest.TestCase):
         self.assertIn('RICS', clause)
         self.assertIn('IVS', clause)
 
-    # ── Edition specificity ──────────────────────────────────────────────
-    def test_ar_clause_cites_2024_edition(self):
-        self.assertIn('2024', self.muc['muc_clause_ar'])
+    # ── Edition specificity (current effective edition) ──────────────────
+    def test_ar_clause_cites_2025_effective_date(self):
+        self.assertIn('2025', self.muc['muc_clause_ar'])
 
-    def test_en_clause_cites_2024_edition(self):
-        self.assertIn('2024', self.muc['muc_clause_en'])
+    def test_en_clause_cites_2025_effective_date(self):
+        self.assertIn('2025', self.muc['muc_clause_en'])
 
-    # ── Canonical RICS Red Book 2024 citation: VPGA 10 + VPS 3 ───────────
+    # ── Canonical RICS Red Book current-edition citation: VPGA 10 + VPS 6 ─
     def test_ar_clause_cites_vpga_10(self):
         self.assertIn('VPGA 10', self.muc['muc_clause_ar'])
 
     def test_en_clause_cites_vpga_10(self):
         self.assertIn('VPGA 10', self.muc['muc_clause_en'])
 
-    def test_ar_clause_cites_vps_3(self):
-        self.assertIn('VPS 3', self.muc['muc_clause_ar'])
+    def test_ar_clause_cites_vps_6(self):
+        self.assertIn('VPS 6', self.muc['muc_clause_ar'])
 
-    def test_en_clause_cites_vps_3(self):
-        self.assertIn('VPS 3', self.muc['muc_clause_en'])
+    def test_en_clause_cites_vps_6(self):
+        self.assertIn('VPS 6', self.muc['muc_clause_en'])
 
-    # ── Canonical IVS 2024 citation: IVS 103 ─────────────────────────────
-    def test_ar_clause_cites_ivs_103(self):
-        self.assertIn('IVS 103', self.muc['muc_clause_ar'])
+    # ── Canonical IVS current-edition citation: IVS 106 ──────────────────
+    def test_ar_clause_cites_ivs_106(self):
+        self.assertIn('IVS 106', self.muc['muc_clause_ar'])
 
-    def test_en_clause_cites_ivs_103(self):
-        self.assertIn('IVS 103', self.muc['muc_clause_en'])
+    def test_en_clause_cites_ivs_106(self):
+        self.assertIn('IVS 106', self.muc['muc_clause_en'])
 
     # ── Legacy citation removed ──────────────────────────────────────────
     # The 2014/COVID-era "VPS 5" reference for Material Uncertainty was
@@ -198,6 +207,23 @@ class TestRICS2024Compliance(unittest.TestCase):
 
     def test_en_clause_no_longer_cites_vps_5_for_mvu(self):
         self.assertNotIn('VPS 5', self.muc['muc_clause_en'])
+
+    # ── Interim Sprint 2.22.0a/9 citations also removed ──────────────────
+    # VPS 3 in the current effective edition is no longer "Valuation
+    # Reports"; that role moved to VPS 6 in the 2025 effective edition.
+    # IVS 103 in the current edition is "Valuation Approaches"; Reporting
+    # moved to IVS 106. Confirm the interim citation is no longer present.
+    def test_ar_clause_no_longer_cites_vps_3_for_mvu(self):
+        self.assertNotIn('VPS 3', self.muc['muc_clause_ar'])
+
+    def test_en_clause_no_longer_cites_vps_3_for_mvu(self):
+        self.assertNotIn('VPS 3', self.muc['muc_clause_en'])
+
+    def test_ar_clause_no_longer_cites_ivs_103_for_mvu(self):
+        self.assertNotIn('IVS 103', self.muc['muc_clause_ar'])
+
+    def test_en_clause_no_longer_cites_ivs_103_for_mvu(self):
+        self.assertNotIn('IVS 103', self.muc['muc_clause_en'])
 
     # ── R3 element-3 scope-of-uncertainty paragraph ──────────────────────
     def test_ar_clause_has_scope_of_uncertainty_paragraph(self):
@@ -303,16 +329,16 @@ class TestShockLayerEnglishMapping(unittest.TestCase):
         )
 
 
-class TestAssessUncertaintyRecommendation2024(unittest.TestCase):
-    """Sprint 2.22.0a/9 — the RICS compliance recommendation should cite
-    the current 2024 edition + IVS 2024."""
+class TestAssessUncertaintyRecommendation2025(unittest.TestCase):
+    """Sprint 2.22.0a/12 Phase 1.5b — the RICS compliance recommendation
+    should cite the current effective edition (31 January 2025)."""
 
-    def test_non_compliant_recommendation_cites_2024(self):
+    def test_non_compliant_recommendation_cites_2025_effective_date(self):
         # Force rics_compliant=False by withholding inspection + condition
         u = assess_uncertainty(moj_n=25, rent_n=50)
         self.assertFalse(u.rics_compliant)
         joined = '\n'.join(u.recommendations)
-        self.assertIn('2024', joined)
+        self.assertIn('2025', joined)
         self.assertIn('RICS', joined)
         self.assertIn('IVS', joined)
 

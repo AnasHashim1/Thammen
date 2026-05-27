@@ -707,9 +707,11 @@ function show(d){
   h+='<div style="clear:both"></div>';
 
   // ── Sprint 2.14.0 + 2.16.9 + 2.22.0a/9+/12: Material Valuation Uncertainty (MVU) Clause ──
-  // (FIRST, most prominent). Sprint 2.22.0a/12 Phase 1 — citation updated from
-  // "RICS VPS 5" to the verified 2024-edition canonical reference: VPGA 10 +
-  // VPS 3 (RICS Red Book Global Standards 2024) and IVS 103 (IVS 2024).
+  // (FIRST, most prominent). Sprint 2.22.0a/12 Phase 1.5b — citation updated to
+  // current effective-edition canonical reference: VPGA 10 + VPS 6 (RICS Red Book
+  // Global Standards, effective 31 January 2025) and IVS 106 (IVS, effective
+  // 31 January 2025). Multi-AI validation caught the 2025-edition transition
+  // that Sprint 2.22.0a/9 missed (VPS 3 → VPS 6 renumbering; IVS 103 → IVS 106).
   // Sprint 2.16.9 — read from d.material_uncertainty (canonical root, populated by
   // Sprint 2.16.8 _enrich_material_uncertainty for ALL paths). Fall back to brief
   // sections for backward compat with the villa path which has always written
@@ -732,7 +734,7 @@ function show(d){
   }
   if(muc_ar){
     h+='<div style="background:var(--bad-bg);border:2px solid var(--bad);border-radius:8px;padding:16px;margin-bottom:14px">';
-    h+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem">⚠️ تحفظ مادي وفق RICS Red Book Global Standards 2024 (VPGA 10 + VPS 3) و IVS 2024 (IVS 103)</div>';
+    h+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem">⚠️ تحفظ مادي وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 و VPS 6 — و IVS (effective 31 January 2025) — IVS 106</div>';
     h+='<div style="white-space:pre-line;line-height:1.7;font-size:.92rem">'+muc_ar.replace(/^⚠️[^\n]*\n+/,'')+'</div>';
     if(muc_basis)h+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--bad);font-size:.85rem;color:var(--muted)"><strong>الأساس:</strong> '+muc_basis+'</div>';
     if(muc_review)h+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+muc_review+'</div>';
