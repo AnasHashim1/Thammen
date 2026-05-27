@@ -168,11 +168,15 @@ def regime_muc(regime=None) -> dict:
     _since_iso_ar = active_since.isoformat() if active_since else '؟'
     _since_iso_en = active_since.isoformat() if active_since else '?'
 
+    # Sprint 2.22.0a.2 Pattern A: Latin tokens wrapped with U+200E (LRM) to
+    # prevent bidi reversal under RTL rendering (Operational_Rules #25).
     muc_clause_ar = (
-        f'⚠️ تحفظ مادي وفق RICS Red Book Global Standards '
-        f'(effective 31 January 2025) — VPGA 10 (Material Valuation '
-        f'Uncertainty) و VPS 6 (Valuation Reports) — و IVS '
-        f'(effective 31 January 2025) — IVS 106 (Documentation and Reporting)\n\n'
+        f'⚠️ تحفظ مادي وفق ‎RICS Red Book Global Standards‎ '
+        f'(‎effective 31 January 2025‎) — ‎VPGA 10‎ '
+        f'(‎Material Valuation Uncertainty‎) و ‎VPS 6‎ '
+        f'(‎Valuation Reports‎) — و ‎IVS‎ '
+        f'(‎effective 31 January 2025‎) — ‎IVS 106‎ '
+        f'(‎Documentation and Reporting‎)\n\n'
         f'تواجه السوق العقاري القطري في تاريخ هذا التقدير '
         f'({_since_iso_ar} وما بعده) '
         f'اضطراباً جوهرياً نشطاً: {shock_summary_ar}.\n\n'
@@ -365,11 +369,14 @@ def assess_uncertainty(
                       and building_condition_known and bua_known)
 
     if not rics_compliant:
+        # Sprint 2.22.0a.2 Pattern A: LRM-wrap Latin tokens to prevent
+        # bidi reversal under RTL rendering (Operational_Rules #25).
         recommendations.append(
-            'للتوافق مع معايير RICS Red Book Global Standards '
-            '(effective 31 January 2025) و IVS (effective 31 January 2025): '
+            'للتوافق مع معايير ‎RICS Red Book Global Standards‎ '
+            '(‎effective 31 January 2025‎) و ‎IVS‎ '
+            '(‎effective 31 January 2025‎): '
             'يلزم فحص ميداني + تعديل فردي للمقارنات + '
-            'توثيق حالة المبنى + Terms of Engagement (VPS 1).'
+            'توثيق حالة المبنى + ‎Terms of Engagement‎ (‎VPS 1‎).'
         )
 
     # Sprint 2.14.0 — automatically attach the market-wide Material Valuation

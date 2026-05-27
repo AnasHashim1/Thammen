@@ -580,7 +580,8 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
             # 2025-edition transition that Sprint 2.22.0a/9 missed (VPS 3 → VPS 6
             # renumbering; IVS 103 → IVS 106). See material_uncertainty.py
             # docstring for the full standards audit trail.
-            'title_ar': 'تحفظات مادية وفق RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 و VPS 6 — و IVS (effective 31 January 2025) — IVS 106',
+            # Sprint 2.22.0a.2 Pattern A: LRM-wrap Latin tokens (Operational_Rules #25).
+            'title_ar': 'تحفظات مادية وفق ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ و ‎VPS 6‎ — و ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎',
             'title_en': 'Material Uncertainty Declaration per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)',
             'content': {
                 'level': unc.get('level'),
