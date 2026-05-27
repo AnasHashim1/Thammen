@@ -1,0 +1,69 @@
+[
+  {
+    "anchor": "52/903/90",
+    "status": 200,
+    "ok": true,
+    "engine_version": "thammen-sprint2p22p0a2-arabic-surface-content-fixes",
+    "asset_type": "apartment_building",
+    "refusal_trigger": "comp_density_sparse",
+    "section_ids": [
+      "next_steps"
+    ],
+    "failures": []
+  },
+  {
+    "anchor": "56/565/21",
+    "status": 200,
+    "ok": true,
+    "engine_version": "thammen-sprint2p22p0a2-arabic-surface-content-fixes",
+    "asset_type": "standalone_villa",
+    "refusal_trigger": null,
+    "section_ids": [
+      "flags",
+      "due_diligence",
+      "material_uncertainty",
+      "cap_rate_provenance"
+    ],
+    "failures": []
+  },
+  {
+    "anchor": "69/255/75",
+    "status": 200,
+    "ok": true,
+    "engine_version": "thammen-sprint2p22p0a2-arabic-surface-content-fixes",
+    "asset_type": "apartment_building",
+    "refusal_trigger": "comp_density_sparse",
+    "section_ids": [
+      "next_steps"
+    ],
+    "failures": []
+  },
+  {
+    "anchor": "70/300/25",
+    "status": 200,
+    "ok": true,
+    "engine_version": "thammen-sprint2p22p0a2-arabic-surface-content-fixes",
+    "asset_type": "unknown",
+    "refusal_trigger": "classifier_failure",
+    "section_ids": [
+      "flags",
+      "due_diligence",
+      "material_uncertainty"
+    ],
+    "failures": []
+  },
+  {
+    "anchor": "51/835/17",
+    "status": 200,
+    "ok": true,
+    "engine_version": "thammen-sprint2p22p0a2-arabic-surface-content-fixes",
+    "asset_type": "compound_large",
+    "refusal_trigger": "asset_scale_extreme",
+    "section_ids": [
+      "flags",
+      "due_diligence",
+      "material_uncertainty"
+    ],
+    "failures": []
+  }
+]
