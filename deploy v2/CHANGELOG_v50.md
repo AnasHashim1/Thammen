@@ -1,6 +1,6 @@
 # Sprint 2.22.0a "Content + Refusal Templates" — CHANGELOG v50
 
-> **Status:** Drafted 2026-05-27 PM. Awaiting Anas Gate 2B approval. NOT YET DEPLOYED.
+> **Status:** Drafted 2026-05-27 PM. Awaiting Anas Gate 2C approval (Phase 1.5b multi-AI catch joint review). NOT YET DEPLOYED.
 
 -----
 
@@ -21,7 +21,7 @@
 | Suite aggregator EXPECTED_TOTAL | `374` (post-/10) → **`386`** (post-/11; +12 for A2 doc guard) |
 | Coverage gate file | `run_sprint_2p22p0a_suite.py` (Sprint 2.22.0a/10) |
 | Test infrastructure manifest | `2p22p0_pre/TESTS_MANIFEST.md` (Sprint 2.22.0a/10) |
-| Heroku push status | **NOT YET PUSHED** (Gate 2 lock per Rule #32; Gate 2B = this CHANGELOG approval) |
+| Heroku push status | **NOT YET PUSHED** (Gate 2 lock per Rule #32; Gate 2B (initial joint review) + Gate 2C (post-Phase 1.5b multi-AI catch joint review) — both completed) |
 
 -----
 
@@ -450,7 +450,7 @@ git branch -D heroku-deploy-tmp
 - [ ] `py_compile` on all modified Python files (12 files touched in Sprint 2.22.0a — verified per /1-/12 commits)
 - [ ] `node --check` on inline JS extracted from `index.html` (manual verification recommended pre-push since /3+/4+/5+/8 modified renderSection cases)
 - [ ] Mobile viewport test 390×844 — calc-block + adjustment_ledger_directional placeholder visual verification by Anas
-- [ ] Regression: 36/36 files green (verified post-/12 Phase 1.5 — see §7 above)
+- [ ] Regression: 36/36 files green (verified post-/12 Phase 1.5 + Phase 1.5b — see §7 above)
 - [ ] Suite aggregator: 386/386 MATCH (verified)
 - [ ] Smoke test 3 diverse addresses from Heroku post-deploy (see §9 smoke addresses below)
 
@@ -550,4 +550,4 @@ Per BRIEF v3.1 §2:
 
 -----
 
-*Drafted 2026-05-27 PM. Awaiting Anas Gate 2B approval. Phase 3 (Heroku push) follows after Anas signs off on this CHANGELOG.*
+*Drafted 2026-05-27 PM. Awaiting Anas Gate 2C approval. Phase 3 (Heroku push) follows after final signoff.*
