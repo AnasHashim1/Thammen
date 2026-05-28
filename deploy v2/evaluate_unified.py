@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p16p17-security-hardening'
-SPRINT_TAG = '2.16.17'              # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0a3-arabic-surface-honesty'
+SPRINT_TAG = '2.22.0a.3'             # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -507,6 +507,42 @@ MIN_MOJ_SAMPLES_FOR_FULL_PIPELINE = 1  # below this → use fast paths instead
 
 _MOJ_CACHE: Dict[str, list] = {}
 _RENT_REF_CACHE: Dict[str, dict] = {}
+
+# Sprint 2.22.0a.3 T1.2 (rework): freshness cache for the staleness-
+# coupled trend-gate. Parallels api.py's get_freshness() with a
+# module-local cache to avoid the api ⇄ engine circular import.
+# Safe-fail: any failure (missing CSV, parse error) returns None →
+# the staleness gate doesn't fire → engine behaves like pre-T1.2.
+# Sentinel False = "previously failed, don't retry every call".
+_ENGINE_FRESHNESS_CACHE = None  # None=unknown; False=failed; FreshnessReport=cached
+
+
+def _get_moj_freshness_tier() -> Optional[str]:
+    """Return MoJ data_freshness.tier ('fresh'|'mild'|'stale'|'very_stale')
+    or None on any failure. Module-cached after the first successful
+    call. Used by the T1.2 staleness-coupled trend-gate at the emission
+    site. Self-healing: when the CSV is replaced with fresh data, the
+    next process restart re-computes; tier falls back to 'fresh'/'mild'
+    automatically and the gate stops suppressing.
+    """
+    global _ENGINE_FRESHNESS_CACHE
+    if _ENGINE_FRESHNESS_CACHE is False:
+        return None
+    if _ENGINE_FRESHNESS_CACHE is None:
+        try:
+            from data_freshness import compute_freshness
+            csv = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'moj_weekly.csv',
+            )
+            _ENGINE_FRESHNESS_CACHE = compute_freshness(csv)
+        except Exception:
+            _ENGINE_FRESHNESS_CACHE = False
+            return None
+    try:
+        return _ENGINE_FRESHNESS_CACHE.tier
+    except Exception:
+        return None
 
 
 def _get_moj_rows(csv_path: str) -> list:
@@ -1130,10 +1166,18 @@ def _decompose_value(
         )
     elif bld_pct < 0.05:
         status = 'land_dominant'
+        # Sprint 2.22.0a.3 T1.4: reframe from named "10-Year Rule" to
+        # observational pattern. We haven't published "the rule" — this is
+        # an observed regularity in the Qatar market, not a codified rule.
+        # Sprint 2.22.0a.3 post-validation fold (Rule #54): GPT
+        # flagged the prior "architectural burden" framing as
+        # provocative (owners/developers/valuers) and Gemini as
+        # implying universality. Reframed to a TENDENCY — leaves room
+        # for exceptions and avoids the restated-rule register.
         interp = (
             f'البناء يساهم بنسبة ضئيلة جداً ({bld_pct*100:.1f}%) من قيمة العقار. '
-            f'هذا يتسق مع قاعدة الـ 10 سنوات: السوق القطري يقيّم هذا العقار '
-            f'تقريباً بقيمة الأرض فقط.'
+            f'غالباً ما تتراجع مساهمة البناء في القيمة مع تقادم العقار '
+            f'السكني دون تجديد، فتصبح الأرض المكوّن الأكبر في التسعير.'
         )
     elif bld_pct < 0.15:
         status = 'building_modest'
@@ -1143,9 +1187,14 @@ def _decompose_value(
         )
     elif bld_pct < 0.35:
         status = 'normal'
+        # Sprint 2.22.0a.3 T1.1: drop "بحالة جيدة" — we have no condition
+        # ground truth (no field inspection, no user-supplied condition).
+        # The phrase was a fabricated fact dressed as interpretation. Keep
+        # the numeric narration; let the user infer condition from other
+        # signals (age, BUA breakdown if supplied).
         interp = (
-            f'البناء يساهم بنسبة {bld_pct*100:.1f}% من القيمة — مساهمة طبيعية '
-            f'لبناء بحالة جيدة على هذه الأرض.'
+            f'البناء يساهم بنسبة {bld_pct*100:.1f}% من القيمة — مساهمة '
+            f'ضمن النطاق النموذجي لمبنى على هذه الأرض.'
         )
     else:
         status = 'building_dominant'
@@ -1883,7 +1932,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         'methodology_disclaimer_ar': (
             'تقدير الأصول من هذه الفئة يحتاج طريقة الدخل (Income Approach) أو سعر '
             'إعلان قابل للمقارنة. يرجى إعادة الطلب مع إفادة بالإيجار الشهري أو سعر '
-            'الإعلان للحصول على تقييم كامل.'
+            'الإعلان للحصول على تحليل آلي.'
         ),
         'address': f'{zone}/{street}/{building}',
         'valuation_date': datetime.now().strftime('%Y-%m-%d'),
@@ -1942,7 +1991,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
                 'content': {
                     'note_ar': (
                         f'العنوان {zone}/{street}/{building} تابع لمساحة {plot.pdarea:,.0f} م² '
-                        f'مُصنَّف كـ "{asset_label_ar}". لتقييم كامل يرجى تزويدنا بأحد التاليين:'
+                        f'مُصنَّف كـ "{asset_label_ar}". لتحليل آلي يرجى تزويدنا بأحد التاليين:'
                     ),
                     'options_ar': [
                         'إفادة الإيجار الشهري الفعلي (لتقييم بطريقة الدخل)',
@@ -3684,7 +3733,12 @@ def evaluate_thammen(
             # Build regime-aware methodology note
             if regime == 'qatar_10_year_rule':
                 method_note = _ten_year_rule_disclosure_ar(building_age_years, primary.get('n') if primary else None)
-                regime_label_ar = 'قاعدة الـ 10 سنوات (السوق القطري)'
+                # Sprint 2.22.0a.3 T1.4: regime label reframed from
+                # named "rule" to observed pattern (epistemic humility).
+                # Internal regime key 'qatar_10_year_rule' unchanged.
+                # Post-validation fold (Rule #54): short descriptive tag
+                # — no 'قاعدة', no 'عبء' (both AIs flagged the latter).
+                regime_label_ar = 'نمط سوقي: غلبة قيمة الأرض في العقارات القديمة'
             elif regime == 'old_luxury_building':
                 method_note = _luxury_old_disclosure_ar(building_age_years)
                 regime_label_ar = 'بناء قديم فاخر — تعديل جزئي'
@@ -3752,10 +3806,19 @@ def evaluate_thammen(
             and _p4_at not in ('raw_land', 'land')):
         try:
             mu = output['material_uncertainty']
+            # Sprint 2.22.0a.3 T2.5: drop "±20-40%" quantitative range —
+            # no calibration study backs it.
+            # Post-validation fold (Rule #54): GPT pushed to replace
+            # vague "بشكل ملحوظ" with causal+specific framing — name
+            # the inputs that would move the estimate (condition, exact
+            # area, finishes). Pairs with T1.1: T1.1 dropped the
+            # fabricated condition claim; T2.5 here names condition
+            # as exactly what would refine the estimate if provided.
+            # Pure Arabic — em-dashes between Arabic words, no LRM needed.
             building_unknown_factor = (
-                'تفاصيل البناء غير مُقدَّمة (الطوابق، السرداب، الترميم، الملاحق) — '
-                'التقييم يفترض بناءً نموذجياً وقد يختلف عن الواقع بـ ±20-40% '
-                'إذا كان للعقار سرداب أو طوابق متعددة أو ملاحق مهمة.'
+                'قد يؤدي إدخال التفاصيل الفعلية للعقار — '
+                'كالحالة والمساحة الدقيقة والتشطيبات — '
+                'إلى تعديل جوهري في التقدير.'
             )
             building_unknown_unknown = (
                 'مكوّنات البناء الفعلية (سرداب، طوابق، مجلس خارجي، حالة التشطيب)'
@@ -4153,16 +4216,103 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             and total_n >= 10        # total observations meaningful
         )
         if trend_supportable:
+            # Sprint 2.22.0a.3 T1.2 (rework): staleness-coupled gate.
+            #
+            # Suppress the numeric slope_pct (and the exceptional-slope
+            # warning that quotes it) when EITHER:
+            #
+            #   (a) MoJ source data is stale or very_stale (>= 91 days
+            #       old). A precise "%/سنة" rate cannot be defended on
+            #       data that pre-dates the trend window's end. This
+            #       was the case the original 2.22.0a.3 gate missed:
+            #       at 148-day MoJ staleness, the brief's headline
+            #       case (`56/565/21` showing `استقرار 1.9%/سنة`) IS
+            #       the contradiction we have to fix.
+            #
+            #   (b) Material Valuation Uncertainty is engaged at
+            #       'critical' or 'high' level (sample shortfall or
+            #       methodology breakdown). Showing a precise rate
+            #       alongside a critical/high MUC banner is internally
+            #       contradictory.
+            #
+            # Self-healing: when MoJ publishes a fresh bulletin the
+            # next process restart picks up tier='fresh', the gate
+            # auto-clears, and the slope returns — no code change.
+            #
+            # 'moderate' MUC is NOT gated. It fires on every desktop
+            # valuation regardless of MoJ freshness (no field
+            # inspection always = score 2, see material_uncertainty.py
+            # `assess_uncertainty`). Coupling on 'moderate' would
+            # over-suppress the (currently rare) fresh-data + low-MUC
+            # case where the rate IS defensible.
+            #
+            # Suppressed output: qualitative label + years[] backing
+            # detail + an Arabic historical-window string ("نافذة
+            # 2020-2025") so the user sees the time span backing the
+            # direction call. No slope_pct, no '%/سنة' framing.
+            #
+            # Float-noise rounding: slope_pct → 1 decimal (was
+            # 1.8900000000000001 — float-serialization noise).
+            _muc_level = (output.get('material_uncertainty') or {}).get('level')
+            _fresh_tier = _get_moj_freshness_tier()
+            _suppress_slope = (
+                _fresh_tier in ('stale', 'very_stale')
+                or _muc_level in ('high', 'critical')
+            )
+
+            # Historical window for the suppressed-headline framing.
+            # Sprint 2.22.0a.3 LRM fix (Operational_Rules #25): the
+            # digit-EN_DASH-digit run "YYYY–YYYY" embedded inside Arabic
+            # text is the same bidi-reversal class as "31/918/99 →
+            # 99/918/31" — wrap the LTR range with U+200E on both
+            # sides. Matches the muc_clause_ar convention
+            # (e.g. "‎VPGA 10‎", "‎effective 31 January 2025‎").
+            # The "نافذة غير محددة" fallback has no Latin/digit run
+            # → no LRM needed.
+            _year_nums = sorted({y.get('year') for y in years
+                                 if y.get('year') is not None})
+            _window_ar = (
+                f'نافذة ‎{_year_nums[0]}–{_year_nums[-1]}‎'
+                if _year_nums else 'نافذة غير محددة'
+            )
+
             output['trend'] = {
                 'label': ev.trend.get('label'),
-                'slope_pct': slope_pct,
                 'years': years,
+                'historical_window_ar': _window_ar,
             }
-            if abs(slope_pct) > 8:
-                output['trend']['warning'] = (
-                    f'⚠️ اتجاه استثنائي ({slope_pct:+.1f}%/سنة) — '
-                    f'لا يُستخدم للاستقراء. النمو المستدام في قطر 2-4%/سنة.'
-                )
+            if not _suppress_slope:
+                output['trend']['slope_pct'] = round(slope_pct, 1)
+                if abs(slope_pct) > 8:
+                    output['trend']['warning'] = (
+                        f'⚠️ اتجاه استثنائي ({slope_pct:+.1f}%/سنة) — '
+                        f'لا يُستخدم للاستقراء. النمو المستدام في قطر 2-4%/سنة.'
+                    )
+            else:
+                # Transparency: name the active suppression cause so
+                # consumers can render "اتجاه تاريخي" framing instead
+                # of a current-rate one.
+                if _fresh_tier in ('stale', 'very_stale'):
+                    # Sprint 2.22.0a.3 LRM fix: the "91" digit run
+                    # inside Arabic text is wrappable per the
+                    # Operational_Rules #25 detector. The "≥" is a
+                    # neutral math symbol; wrap only the digit run
+                    # (parallels material_uncertainty.py "‎VPGA 10‎"
+                    # which wraps only the Latin run, not the
+                    # surrounding spaces or punctuation).
+                    output['trend']['suppressed_reason_ar'] = (
+                        'بيانات وزارة العدل قديمة (≥ ‎91‎ يوماً) — '
+                        'لا تدعم رقماً سنوياً دقيقاً اليوم.'
+                    )
+                else:
+                    # No Latin/digit run in this branch — pure Arabic
+                    # (uses 'عالٍ/حرج' for high/critical, not Latin
+                    # level names) → no LRM wrap needed. The em-dash
+                    # separates Arabic clauses on both sides.
+                    output['trend']['suppressed_reason_ar'] = (
+                        'تحفظ مادي عند مستوى عالٍ/حرج — '
+                        'العينة أو المنهجية قاصرة عن دعم رقم محدد.'
+                    )
         else:
             # Show "volatile / undeterminable" indicator instead of a misleading line
             output['trend'] = {

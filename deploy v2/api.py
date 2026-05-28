@@ -835,10 +835,13 @@ async def disclaimer():
         # docs/MULTI_AI_VALIDATION_BATCH_2p22p0a2.md §4. Key phrase
         # kept on a single source line so substring searches don't trip
         # over Python string-concat boundaries.
+        # Sprint 2.22.0a.3 T-mzad (live honesty): Mzadqatar permanently
+        # excluded from Thammen's data pipeline (T5). Removed from the
+        # source enumeration in both Arabic + English disclaimers.
         "disclaimer_ar": (
             "ثمّن يجمع البيانات السوقية من المصادر الحكومية (وزارة العدل، "
             "وزارة البلدية والبيئة) والإعلانات النشطة (FGRealty، PropertyFinder، "
-            "arady، Mzad). هذا تحليل معلوماتي للقرار، "
+            "arady). هذا تحليل معلوماتي للقرار، "
             "ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS. "
             "القرار النهائي ومسؤوليته على العميل. للأغراض الرسمية "
             "(قروض بنكية، محاكم، تقارير محاسبية) يلزم تقييم من مُقيِّم معتمد."
@@ -846,7 +849,7 @@ async def disclaimer():
         "disclaimer_en": (
             "Thammen aggregates market data from government sources (Ministry "
             "of Justice, Ministry of Municipality) and active listings "
-            "(FGRealty, PropertyFinder, arady, Mzad). This is informational "
+            "(FGRealty, PropertyFinder, arady). This is informational "
             "analysis to support decisions, NOT a certified property valuation "
             "per RICS or IVS standards. Final decisions and their consequences "
             "rest with the client. For formal purposes (bank loans, courts, "
@@ -882,10 +885,11 @@ async def about():
                  "description": "الحدود الإدارية، التنظيم، المعالم"},
             ],
             "listings": [
+                # Sprint 2.22.0a.3 T-mzad: Mzad Qatar removed (permanently
+                # excluded T5 source — listing it implied usage we don't have).
                 {"name": "FGRealty", "url": "https://fgrealty.qa"},
                 {"name": "PropertyFinder Qatar", "url": "https://www.propertyfinder.qa"},
                 {"name": "arady.qa", "url": "https://arady.qa"},
-                {"name": "Mzad Qatar", "url": "https://www.mzadqatar.com"},
             ],
         },
         "what_thammen_does": [

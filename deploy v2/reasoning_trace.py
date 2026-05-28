@@ -105,10 +105,15 @@ class ReasoningTrace:
     # ("وفق معايير RICS أو IVS") rather than the short form, but the
     # reframe is identical — name the role + artefact, not the absence
     # of certification.
+    # Sprint 2.22.0a.3 T-mzad (live honesty): Mzadqatar is permanently
+    # excluded from Thammen's data pipeline (T5 — auction-only listings
+    # don't match the active-listing semantics the disclaimer implies).
+    # Listing it here claimed a source we do not use. FGRealty +
+    # PropertyFinder + arady are valid T2 sources.
     disclaimer: str = (
         "ثمّن يجمع البيانات السوقية من المصادر الحكومية (وزارة العدل، "
         "وزارة البلدية والبيئة) والإعلانات النشطة (FGRealty، PropertyFinder، "
-        "arady، Mzad). هذا تحليل معلوماتي للقرار، "
+        "arady). هذا تحليل معلوماتي للقرار، "
         "ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS. "
         "القرار النهائي ومسؤوليته على العميل. "
         "للأغراض الرسمية (قروض بنكية، محاكم، تقارير محاسبية) يلزم تقييم من "
@@ -378,6 +383,16 @@ def add_standard_unknowns(trace: ReasoningTrace, asset_type: str = 'apartment') 
         standard.extend([
             "حالة الحديقة وحوض السباحة (إن وُجد)",
             "حالة الجدران الخارجية والسقف",
+            # Sprint 2.22.0a.3 T2.7 (deduped): Qatar legality gaps.
+            # 3 items, deliberately distinct from the standard list above.
+            # Subdivision/parcellation status is NOT re-added — it is
+            # already covered by `standard[1]` ("أي التزامات قانونية
+            # ... حصص غير مفروزة"). Each item below names a verification
+            # path the engine cannot run from GIS/MoJ alone (municipality
+            # records, SAK title, on-site).
+            "تعديلات غير مرخصة من البلدية على البناء الأصلي (تجاوزات الارتدادات أو الارتفاع المسموح)",
+            "ملاحق وإضافات غير موثقة في السجل العقاري (غرف خدم، مظلات، مسابح، حدائق مضافة)",
+            "التحقق من شهادة إتمام الإشغال / شهادة إنجاز البناء من البلدية",
         ])
 
     for u in standard:

@@ -398,9 +398,21 @@ Set `rightToLeft: false` on TextRun if text is purely Latin/numeric.
 
 Text detector:
 ```javascript
-/[A-Za-z0-9]/.test(t) && /[\/.,:°²×\-]/.test(t)  // needs LRM
+/[A-Za-z0-9]/.test(t) && /[\/.,:°²×\-–]/.test(t)  // needs LRM (Sprint 2.22.0a.3: added EN-DASH)
 /[\u0600-\u06FF]/.test(t)                          // pure Arabic, keep rightToLeft:true
 ```
+
+**Separator class history.** Sprint 2.22.0a.3 added EN-DASH (the
+"range dash", U+2013) to the class. Without it, year-range tokens
+embedded in Arabic (such as the suppressed-trend headline that
+emits the Arabic word for "window" followed by `2020`, EN-DASH,
+`2025`) would not trigger the detector and would ship unwrapped.
+Same bidi-reversal class as the `31/918/99` reversal. Hyphen-minus
+(`-`, U+002D) was already in the class for ISO date tokens such
+as `2025-12-31`; the EN-DASH addition catches range expressions.
+EM-DASH (U+2014) is NOT in the class: it typically separates
+Arabic clauses on both sides, so the `/[A-Za-z0-9]/` test fails
+on both sides and no LRM is needed.
 
 -----
 

@@ -30,12 +30,23 @@ def test_land_priced_description_no_internal_doc_reference():
     assert '§3' not in desc, (
         f"C2 mechanical: '§3' still present: {desc!r}"
     )
-    # Must STILL contain the substantive methodology hint
-    assert '10-Year-Rule' in desc, (
-        f"C2 mechanical: 10-Year-Rule rationale lost: {desc!r}"
+    # Must STILL identify the stratum's substantive signal.
+    # Sprint 2.22.0a.3 T1.4 reframed the named "10-Year-Rule" into
+    # observed-pattern phrasing. The post-validation fold (Rule #54)
+    # further replaced "كعبء معماري" (flagged provocative by GPT,
+    # universalizing by Gemini) with a short DESCRIPTIVE TAG:
+    # "نمط سوقي: غلبة قيمة الأرض في العقارات القديمة" (market pattern:
+    # land-value dominance in old residential stock). The tag carries
+    # the substantive signal — land dominates in this stratum — without
+    # the inflammatory "burden" framing.
+    assert 'غلبة قيمة الأرض في العقارات القديمة' in desc, (
+        f"C2 mechanical (post-validation fold): land-dominance tag lost. "
+        f"Got: {desc!r}"
     )
-    assert 'البناء عبء معماري' in desc, (
-        f"C2 mechanical: core insight 'البناء عبء معماري' lost: {desc!r}"
+    # Regression guard: the prior pre-fold wording MUST NOT reappear
+    assert 'كعبء معماري' not in desc, (
+        f"C2 regression: prior 'كعبء معماري' (Rule #54-flagged) "
+        f"phrasing re-introduced. Got: {desc!r}"
     )
     print('  PASS test_land_priced_description_no_internal_doc_reference')
 

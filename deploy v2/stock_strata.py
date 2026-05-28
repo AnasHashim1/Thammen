@@ -93,8 +93,15 @@ STRATUM_DESC_AR = {
         # "(Project Instructions §3)" internal-doc reference. The
         # methodology is documented in the user-facing reasoning trace
         # and does not require an internal-doc citation in the user copy.
-        'فلل قديمة جداً تُباع بسعر الأرض تقريباً. تنطبق عليها قاعدة الـ10-Year-Rule '
-        'في قطر: البناء عبء معماري، ليس قيمة مضافة.',
+        # Sprint 2.22.0a.3 T1.4: reframed from named "10-Year-Rule" to
+        # observed pattern. We have not published "the rule" — this is
+        # an observed regularity in the Qatari market for older stock.
+        # Post-validation fold (Rule #54): short DESCRIPTIVE TAG (matches
+        # the regime_label form). GPT+Gemini both flagged the prior
+        # "architectural burden" wording — replaced with the tendency
+        # tag. The stratum's empirical signal (land-price-priced sales)
+        # is carried by the ratio_band/label_ar fields in the strata dict.
+        'نمط سوقي: غلبة قيمة الأرض في العقارات القديمة',
     'aging_stock':
         'فلل عمرها 10+ سنوات بتشطيب متوسط أو تجديد جزئي. '
         'الفئة الأكثر تكراراً في معظم مناطق قطر، وتميل إلى أن تكون مهيمنة على median المدمج.',

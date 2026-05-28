@@ -819,7 +819,7 @@ function show(d){
   const ss=d.service_scope;
   if(ss){
     let scopeBg,scopeColor,scopeIcon,scopeLabel;
-    if(ss.tier==='supported'){scopeBg='var(--ok-bg)';scopeColor='var(--ok)';scopeIcon='✅';scopeLabel='تقييم كامل';}
+    if(ss.tier==='supported'){scopeBg='var(--ok-bg)';scopeColor='var(--ok)';scopeIcon='✅';scopeLabel='تحليل آلي';}
     else if(ss.tier==='limited'){scopeBg='var(--warn-bg)';scopeColor='var(--warn)';scopeIcon='⚠️';scopeLabel='تقييم مشروط';}
     else{scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='❌';scopeLabel='خارج النطاق';}
     h+='<div style="background:'+scopeBg+';border-right:4px solid '+scopeColor+';padding:12px 14px;margin-bottom:14px;border-radius:0 6px 6px 0">';
@@ -1045,7 +1045,7 @@ function show(d){
     if(noDetails){
       h+='<div class="rc" style="border-color:#f4d03f;background:#fffdf3">';
       h+='<div class="rt" style="margin-bottom:6px;color:#a87000">ℹ️ التقييم يفترض بناءً نموذجياً</div>';
-      h+='<div class="rn" style="font-size:.85rem;color:#666">لم تُدخل تفاصيل البناء (الطوابق، السرداب، الملاحق، العمر). إذا كان عقارك يختلف عن النموذجي، أعِد التقييم بعد إدخال التفاصيل للحصول على قيمة أدق. الفرق قد يكون ±20-40%.</div>';
+      h+='<div class="rn" style="font-size:.85rem;color:#666">قد يؤدي إدخال التفاصيل الفعلية للعقار — كالحالة والمساحة الدقيقة والتشطيبات — إلى تعديل جوهري في التقدير.</div>';
       h+='</div>';
     }
   }
@@ -1070,9 +1070,24 @@ function show(d){
   }
 
   // ── Trend card ──
+  // Sprint 2.22.0a.3 T1.2 (rework): when backend suppresses slope_pct
+  // (MoJ stale OR MUC high/critical), reframe headline to
+  // "اتجاه تاريخي" + the historical-window string, instead of
+  // "اتجاه السوق" with a current-rate parenthetical. Backwards-
+  // compatible: when slope_pct is present (fresh data + low MUC,
+  // rare today at 148-day staleness), the original "اتجاه السوق"
+  // headline with the (X.X%/سنة) parenthetical still renders.
   const tr=d.trend;
   if(tr&&tr.years&&tr.years.length>0){
-    h+='<div class="rc"><div class="rt" style="margin-bottom:6px">اتجاه السوق: '+(tr.label||'')+(tr.slope_pct!=null?' ('+tr.slope_pct.toFixed(1)+'%/سنة)':'')+'</div>';
+    let trHeadline;
+    if(tr.slope_pct!=null){
+      trHeadline='اتجاه السوق: '+(tr.label||'')+' ('+tr.slope_pct.toFixed(1)+'%/سنة)';
+    } else if(tr.historical_window_ar){
+      trHeadline='اتجاه تاريخي: '+(tr.label||'')+' — '+tr.historical_window_ar;
+    } else {
+      trHeadline='اتجاه السوق: '+(tr.label||'');
+    }
+    h+='<div class="rc"><div class="rt" style="margin-bottom:6px">'+trHeadline+'</div>';
     const maxM=Math.max(...tr.years.map(y=>y.median_m2||0));
     h+='<div class="trend-row">';
     tr.years.forEach(y=>{const pct=maxM>0?((y.median_m2||0)/maxM*100):0;
