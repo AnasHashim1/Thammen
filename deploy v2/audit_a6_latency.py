@@ -17,10 +17,18 @@ BRIEF_BranchB_villa_GIS_latency_v2.md):
   * Per-event (thread, t0, t1) capture → wall-clock UNION (overlap-merged) so
     the phase table reconciles to ~total instead of over-counting parallel
     work; a per-thread split exposes what is ALREADY parallel (§3.2 prep).
-  * NOT traced (honest coverage caveat, Rule #36): imagery get_tile (off the
-    evaluate hot path) and the hybrid PropertyFinder connector (requests-based,
-    apartments only — the villa target makes no such call). Any untraced
-    network therefore lands in 'compute_ms' (total − gis_wallclock).
+  * FAITHFUL PASS (2026-05-29, after the first run exposed a ~9.2s villa
+    'cpu' that was actually uncaptured secondary-module network): now ALSO
+    captures geo_reference_v2's 3 raw-urllib district/zoning fallbacks
+    (georef_*), geometric_factors._http_get_json (geom.*, redundant with
+    property_factors), property_geo._fetch (pgeo.*), and QatarGIS.get_tile
+    (gis.imagery_tile). AND loads gis_preload at setup so in-process district
+    lookups are memory-served exactly as production — removing the
+    in-process-only district artifact. With ~all engine network captured,
+    'compute_ms' finally reflects TRUE production compute.
+  * STILL not traced: the hybrid PropertyFinder connector (requests-based,
+    apartments only — the villa target makes no such call). Any residual
+    untraced network still lands in 'compute_ms' (total − gis_wallclock).
 
 Two measurements per (address × rep):
 
@@ -254,6 +262,109 @@ def patch_zoning_xcheck_wrapper():
 
     qatar_gis._fetch_zoning_at_point = patched
     return orig
+
+
+# --- Branch B §3.1 faithful pass: capture the secondary-module raw-urllib ---
+# These three modules each roll their OWN urllib (NOT qatar_gis._http_get_json /
+# property_factors._query_gis), so the first run dumped them into 'cpu_ms'. They
+# only fire on the residential-comparison path (villa/land/compound) that the
+# apartment fast-path skips — the structural reason villa cpu >> apt cpu.
+
+def patch_geo_reference_wrapper():
+    """Wrap geo_reference_v2's three raw-urllib district/zoning fallbacks. With
+    gis_preload loaded (main setup), district radius/centroid take the in-memory
+    fast path (~0ms) and only zoning-at-centroid still networks — exactly as in
+    production. Tagged georef_* to stay distinct from qatar_gis's gis.districts.
+    (build_reference_geo_v2 calls these by module-global name, so rebinding the
+    module attrs patches the calls made inside it; the nested centroid inside
+    zoning is also patched and, with preload, is ~0ms.)"""
+    import geo_reference_v2 as _g
+
+    def _mk(orig, tag):
+        def patched(*a, **kw):
+            t0 = time.perf_counter()
+            ok = True
+            try:
+                res = orig(*a, **kw)
+            except Exception:
+                res = None
+                ok = False
+            _tracer.record(tag, t0, time.perf_counter(), ok)
+            return res
+        return patched
+
+    _g._query_gis_districts_radius = _mk(_g._query_gis_districts_radius, 'gis.georef_districts')
+    _g._query_district_centroid    = _mk(_g._query_district_centroid,    'gis.georef_centroid')
+    _g._query_zoning_at_centroid   = _mk(_g._query_zoning_at_centroid,   'gis.georef_zoning')
+
+
+def patch_geometric_factors_wrapper():
+    """Wrap geometric_factors._http_get_json — its OWN raw-urllib helper
+    (separate from qatar_gis). Tagged geom.* so the redundancy with
+    property_factors (which already fetched roads/landmarks/zoning, captured)
+    is visible in the phase table."""
+    import geometric_factors as _gf
+    orig = _gf._http_get_json
+
+    def patched(url, params):
+        full = url + ('?' + urllib.parse.urlencode(params, safe='/:,') if params else '')
+        tag = 'geom.' + classify_phase(full).split('.')[-1]
+        t0 = time.perf_counter()
+        ok = True
+        try:
+            res = orig(url, params)
+            if res is None:
+                ok = False
+        except Exception:
+            res = None
+            ok = False
+        _tracer.record(tag, t0, time.perf_counter(), ok)
+        return res
+
+    _gf._http_get_json = patched
+
+
+def patch_property_geo_wrapper():
+    """Wrap property_geo._fetch — its OWN raw-urllib helper. 0 calls here
+    confirms the corner/road-frontage module is not on the villa eval path."""
+    import property_geo as _pg
+    orig = _pg._fetch
+
+    def patched(url, params, timeout=15):
+        full = url + ('?' + urllib.parse.urlencode(params, safe='/:,') if params else '')
+        tag = 'pgeo.' + classify_phase(full).split('.')[-1]
+        t0 = time.perf_counter()
+        ok = True
+        try:
+            res = orig(url, params, timeout=timeout)
+        except Exception:
+            res = None
+            ok = False
+        _tracer.record(tag, t0, time.perf_counter(), ok)
+        return res
+
+    _pg._fetch = patched
+
+
+def patch_imagery_wrapper():
+    """Wrap QatarGIS.get_tile (raw-urllib imagery tile fetch for building-age).
+    0 calls confirms building-age does NOT hit the network on the eval path.
+    Behaviour-preserving (re-raises on error)."""
+    import qatar_gis
+    orig = qatar_gis.QatarGIS.get_tile
+
+    def patched(self, *a, **kw):
+        t0 = time.perf_counter()
+        ok = True
+        try:
+            return orig(self, *a, **kw)
+        except Exception:
+            ok = False
+            raise
+        finally:
+            _tracer.record('gis.imagery_tile', t0, time.perf_counter(), ok)
+
+    qatar_gis.QatarGIS.get_tile = patched
 
 
 # ============================================================
@@ -494,15 +605,33 @@ def main():
     print('=' * 72)
 
     # 1. Patch HTTP wrappers BEFORE importing evaluate_thammen.
-    print('\n[setup] patching HTTP wrappers (qatar_gis + property_factors + zoning x-check)...')
+    print('\n[setup] patching HTTP/GIS wrappers (full network capture for Branch B §3.1)...')
+    for _name, _fn in [
+        ('qatar_gis._http_get_json',         patch_qatar_gis_wrapper),
+        ('property_factors._query_gis',      patch_property_factors_wrapper),
+        ('qatar_gis._fetch_zoning_at_point', patch_zoning_xcheck_wrapper),
+        ('geo_reference_v2 (3 fallbacks)',   patch_geo_reference_wrapper),
+        ('geometric_factors._http_get_json', patch_geometric_factors_wrapper),
+        ('property_geo._fetch',              patch_property_geo_wrapper),
+        ('QatarGIS.get_tile (imagery)',      patch_imagery_wrapper),
+    ]:
+        try:
+            _fn()
+            print(f'  patched {_name}')
+        except Exception as e:
+            print(f'  WARN: patch {_name} failed: {type(e).__name__}: {e}')
+
+    # Branch B §3.1 faithful pass: load gis_preload so in-process district
+    # lookups are memory-served exactly as on the web dyno (api.py boot). Removes
+    # the in-process-only district fallback artifact; only genuinely-networked
+    # calls remain, so cpu_ms reflects TRUE production compute.
+    print('\n[setup] loading gis_preload (mirror production web-dyno boot)...')
     try:
-        patch_qatar_gis_wrapper()
-        patch_property_factors_wrapper()
-        patch_zoning_xcheck_wrapper()
-        print('  ok')
+        import gis_preload
+        _n = len(gis_preload.load_districts())
+        print(f'  gis_preload: {_n} districts in-memory (is_loaded={gis_preload.is_loaded()})')
     except Exception as e:
-        print(f'  FAIL: {type(e).__name__}: {e}')
-        return 1
+        print(f'  WARN: gis_preload load failed ({type(e).__name__}: {e}) — district artifact remains')
 
     # 2. Discover Lusail apartment_building dynamically (skip slot if not found).
     print('\n[discover] Lusail apartment_building (ZONE=69, SUBTYPE=6)...')
@@ -530,8 +659,8 @@ def main():
 
     results = {
         'meta': {
-            'sprint': 'Branch B §3.1 (A14 real-fix) — extends 2.18 Phase 1 harness',
-            'engine_version_assumption': 'thammen-sprint2p22p0a5-villa-cold503-budget (v142)',
+            'sprint': 'Branch B §3.1 faithful pass (full network capture + gis_preload) — A14 real-fix',
+            'engine_version_assumption': 'thammen-sprint2p22p0a5-villa-cold503-budget (v143 slug, v142 behaviour)',
             'start_utc': datetime.utcnow().isoformat() + 'Z',
             'cohort_size': len(cohort),
             'reps_per_address': REPS,
