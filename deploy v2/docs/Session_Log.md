@@ -1487,6 +1487,14 @@ was set to 35s (>wall) → dormant. The path must be made **faster**, not bounde
 | **§9 — degraded-QARS clean-fail-on-trip** | Budget trip currently returns silent `status=ok`; making it a clean refusal (+ optional indicative+MUC) is Gate 2. | Dedicated brief; then arm the budget (`THAMMEN_REQUEST_BUDGET`≤28). |
 | **Dyno bump (Basic→Standard/Performance)** | Cost decision (Anas's) + treats symptom not root. | Anas's call; complements, doesn't replace, Branch B. |
 
+> **Brief status (2026-05-29):** `docs/BRIEF_BranchB_villa_GIS_latency_v2.md`
+> drafted + committed (`f267ee7`); Phase-0 §3.0 findings folded (F1 = no local
+> projection lib installed / in requirements; F2 = T1 parity target is the polygon
+> *shape metrics* + `plot_shape` factor, NOT `plot_area_m2`). 🟡 **pending Anas
+> sign-off** (T1+T2 scope, T1 impl path, sprint tag). Gating next step = §3.1
+> decomposition of the ~13.4s uncaptured remainder (Rule #56), which needs a
+> probe deploy (Gate 1).
+
 ### 19.7 A14 in the bug catalogue
 **A14 (open, Medium)** — villa cold-dyno first-try 503 on the heavy multi-QARS path
 (reference: 56/565/21). H2-bound (sequential-GIS ~22–24s warm → >30s cold). NOT the
