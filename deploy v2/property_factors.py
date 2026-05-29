@@ -149,8 +149,24 @@ def _query_gis(layer_url: str, params: dict, timeout: int = TIMEOUT) -> list:
     params.setdefault('returnGeometry', 'false')
     url = layer_url + '/query?' + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={'User-Agent': 'property-factors/1.0'})
+    # Sprint 2.22.0a.5 (Bug A14): honour the per-request I/O budget set in
+    # qatar_gis (propagated into these worker threads via copy_context() in
+    # analyze_property). On the happy path the budget is ample so eff == timeout
+    # and behaviour is unchanged; only when the request is already near the 30s
+    # wall does this shrink — and this helper is fail-soft (returns [] → the
+    # factor is simply omitted, exactly as on any GIS miss today).
+    eff = timeout
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        from qatar_gis import _remaining_budget as _rb
+        rem = _rb()
+        if rem is not None:
+            if rem <= 1.5:
+                return []
+            eff = min(timeout, rem)
+    except Exception:
+        eff = timeout
+    try:
+        with urllib.request.urlopen(req, timeout=eff) as r:
             data = json.loads(r.read())
         return data.get('features', [])
     except Exception as e:
@@ -498,12 +514,17 @@ def analyze_property(lat: float, lon: float,
     # benefit. If a future Sprint adds independent layers, bump max_workers
     # to match the new task count.
     if verbose: print("  [factors] Querying 5 GIS layers in parallel...")
+    # Sprint 2.22.0a.5 (Bug A14): copy the current context into each worker so the
+    # qatar_gis request-deadline contextvar is visible inside _query_gis
+    # (ThreadPoolExecutor does NOT propagate contextvars by default). Each submit
+    # gets its OWN fresh copy — a Context cannot be entered concurrently/re-entrantly.
+    import contextvars as _cv
     with ThreadPoolExecutor(max_workers=5, thread_name_prefix='factors') as pool:
-        fut_zoning     = pool.submit(_factor_zoning, lat, lon, purpose)
-        fut_commercial = pool.submit(_factor_commercial_street, lat, lon, purpose)
-        fut_road       = pool.submit(_factor_main_road, lat, lon, purpose)
-        fut_landmarks  = pool.submit(_factor_landmarks, lat, lon, purpose)
-        fut_height     = pool.submit(_factor_permitted_height, lat, lon)
+        fut_zoning     = pool.submit(_cv.copy_context().run, _factor_zoning, lat, lon, purpose)
+        fut_commercial = pool.submit(_cv.copy_context().run, _factor_commercial_street, lat, lon, purpose)
+        fut_road       = pool.submit(_cv.copy_context().run, _factor_main_road, lat, lon, purpose)
+        fut_landmarks  = pool.submit(_cv.copy_context().run, _factor_landmarks, lat, lon, purpose)
+        fut_height     = pool.submit(_cv.copy_context().run, _factor_permitted_height, lat, lon)
         zoning_result     = fut_zoning.result()
         commercial_result = fut_commercial.result()
         road_result       = fut_road.result()

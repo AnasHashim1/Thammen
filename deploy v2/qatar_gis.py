@@ -255,6 +255,51 @@ class PropertyReport:
 # 3. HELPERS
 # ============================================================
 
+# ─── Sprint 2.22.0a.5 (Bug A14): request-level I/O budget ─────────────────
+# The villa cold-dyno first-try 503 is caused by GIS network calls stacking
+# past the Heroku 30s router wall: _http_get_json retried 3× at timeout=30 each
+# (+1/2/4s backoff) and _qars_query calls it twice (primary→legacy). One slow
+# round could reach ~97s; a full _qars_query ~194s. We bound the WHOLE request,
+# not each call: a monotonic deadline set once at request entry (api.py handlers)
+# caps every GIS call to min(its ceiling, remaining budget) and fails fast when
+# the budget is spent — turning a guaranteed >30s 503 into a clean refusal within
+# the wall. When NO deadline is set (CLI, tests, direct calls) _remaining_budget()
+# returns None and every path below behaves exactly as before (zero behaviour change).
+import contextvars as _contextvars
+import time as _time
+
+_REQUEST_DEADLINE = _contextvars.ContextVar('thammen_request_deadline', default=None)
+# Total external-I/O budget per request, under the 30s router wall (leaves
+# headroom for boot/compute/render/serialisation). Derived from the REQUEST
+# budget, not the per-call budget (Anas). Tunable via env without a code change.
+REQUEST_BUDGET_SECONDS = float(_os.environ.get('THAMMEN_REQUEST_BUDGET', '24'))
+# Never issue (or retry) a GIS call with less than this much budget left — it
+# would be doomed and only burn wall time. Fail fast instead.
+_MIN_GIS_CALL_BUDGET = 1.5
+
+
+def set_request_deadline(seconds: float = None):
+    """Arm the per-request external-I/O budget. Call once at request entry.
+    Returns a token for clear_request_deadline(). `seconds=None` uses
+    REQUEST_BUDGET_SECONDS."""
+    secs = REQUEST_BUDGET_SECONDS if seconds is None else float(seconds)
+    return _REQUEST_DEADLINE.set(_time.monotonic() + secs)
+
+
+def clear_request_deadline(token) -> None:
+    """Reset the deadline contextvar (paired with set_request_deadline)."""
+    try:
+        _REQUEST_DEADLINE.reset(token)
+    except Exception:
+        pass
+
+
+def _remaining_budget():
+    """Seconds left in the current request's I/O budget, or None if unarmed."""
+    dl = _REQUEST_DEADLINE.get()
+    return None if dl is None else (dl - _time.monotonic())
+
+
 def _http_get_json(url, params=None, timeout=30):
     # Sprint 2.21.0.7: GET by default, but fall back to POST when the query
     # string would overflow the URL length limit (HTTP 414). Large ESRI
@@ -275,8 +320,14 @@ def _http_get_json(url, params=None, timeout=30):
         req = urllib.request.Request(url, headers=headers)
     last_err = None
     for attempt in range(3):
+        # Sprint 2.22.0a.5 (A14): cap this call to the remaining request budget.
+        rem = _remaining_budget()
+        if rem is not None and rem <= _MIN_GIS_CALL_BUDGET:
+            raise last_err or TimeoutError(
+                f'request I/O budget exhausted before GIS call to {url}')
+        eff_timeout = timeout if rem is None else min(timeout, rem)
         try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
+            with urllib.request.urlopen(req, timeout=eff_timeout) as resp:
                 raw = resp.read()
             if raw[:3] == b'\xef\xbb\xbf':
                 raw = raw[3:]
@@ -290,15 +341,22 @@ def _http_get_json(url, params=None, timeout=30):
                 ctx.check_hostname = False
                 ctx.verify_mode = ssl.CERT_NONE
                 try:
-                    with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
+                    with urllib.request.urlopen(req, timeout=eff_timeout, context=ctx) as resp:
                         raw = resp.read()
                     if raw[:3] == b'\xef\xbb\xbf':
                         raw = raw[3:]
                     return json.loads(raw.decode('utf-8'))
                 except Exception as e2:
                     last_err = e2
-            import time
-            time.sleep(2 ** attempt)
+            # Sprint 2.22.0a.5 (A14): budget-aware backoff — never sleep past the
+            # budget, and skip the final doomed retry when the budget is spent.
+            rem2 = _remaining_budget()
+            if rem2 is not None and rem2 <= _MIN_GIS_CALL_BUDGET:
+                break
+            backoff = float(2 ** attempt)
+            if rem2 is not None:
+                backoff = min(backoff, max(0.0, rem2 - _MIN_GIS_CALL_BUDGET))
+            _time.sleep(backoff)
     raise last_err
 
 

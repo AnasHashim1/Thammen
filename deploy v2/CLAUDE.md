@@ -51,6 +51,62 @@ tier-weighted entry via `hybrid_valuation_v1()`).
 
 ## Current production state (snapshot)
 
+> **Operating Mode (Autonomous Lead) — adopted 2026-05-29.** Supersedes the
+> implicit "Claude.ai drafts → Anas signs every step → Claude Code implements"
+> loop for **reversible** work only. The two hard gates below are unchanged from
+> Rule #32 and the §"Self-correction triggers" STOP list — this block does not
+> relax them, it scopes everything *else* to autonomous lead.
+
+### Operating Mode — Claude Code leads
+
+**Default: Claude Code drives the whole process and self-corrects.** Run recon,
+instrument, refactor, write/fix tests, iterate locally, run smoke probes, and
+**correct what is wrong as you find it** — without round-tripping to Claude.ai or
+waiting for a sign-off — for anything **reversible**. "Reversible" = revertable by
+a single local edit or redeploy, with no change to user-facing output and no
+production state left behind.
+
+Three gates remain. They are not velocity drag; each has documented scar tissue.
+
+#### 🔴 HARD GATE 1 — Production push to Heroku
+Never `git subtree push --prefix "deploy v2" heroku master` without **explicit
+Anas consent in that session**. Unchanged from Rule #32 / STOP list. A wrong push
+= deploy + log churn + regression + broken Sprint atomicity — irreversible at low
+cost. Before asking: state branch, tests pass (actual numbers), ENGINE_VERSION
+bumped y/n, CHANGELOG present y/n.
+
+#### 🔴 HARD GATE 2 — Methodology / user-facing output change
+Any change to *what the engine returns to a user* — valuation logic, confidence
+tiering, MUC, refusal/scope decisions, disclaimers, Arabic copy semantics — stops
+for an Anas sign-off **before** it lands. Reason is audit, not quality: "Anas signs
+all methodology decisions for auditability." An unsigned methodology change = a
+broken RICS audit trail. The §9 degraded-QARS fail-soft is the live example: it
+looked like "perf" but invents a new output → gated. **Test for this gate:** "would
+the JSON/UI a user sees differ?" If yes → gate. If the change only moves
+*when/how fast/whether-it-503s* with identical success-path output → reversible,
+no gate.
+
+#### 🟡 SOFT GATE 3 — Scope beyond the signed brief
+Single-purpose discipline holds (Rule #38), but does not require a stop.
+**Flag-and-proceed:** if a fix needs to step outside the signed brief, state in one
+line *what* and *why* (Rule #39: why / what-is-lost / what-Anas-needs-to-know), then
+proceed unless Anas objects. New genuinely-separate work → log to the deferred list
+(Rule #42), don't fold it in silently.
+
+#### Multi-AI (GPT-5 / Gemini) — sprint open only
+Invoke at the **start of a sprint when needed** (evolving-standard checks,
+effective-date traps, methodology framing) — this is exactly Rule #54. Not part of
+the per-change loop; Claude Code does not pause mid-execution for it.
+
+#### What this changes vs. before
+- **Gone:** Claude.ai brief-review ping-pong as a precondition for routine
+  reversible work, and per-step "may I?" on recon / instrumentation / refactor / tests.
+- **Kept:** the two 🔴 gates (push, methodology/output), the soft 🟡 scope flag, the
+  full STOP list (#33–#42, E7, A2, 51/835/17, etc. — *correctness* triggers, not
+  approval gates, and Claude Code self-applies them).
+- **Claude.ai role now:** sprint-open methodology framing + multi-AI when asked;
+  available for review on request; not a mandatory gate on reversible work.
+
 ```
 Engine version deployed:  thammen-sprint2p22p0a4-disclosure-framing-honesty
                           (Heroku v140, commit f7870a3, 2026-05-29)

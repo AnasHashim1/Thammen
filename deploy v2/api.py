@@ -931,6 +931,13 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
     """Quick evaluation — address only. Returns free-tier result."""
     log.info(f"evaluate quick: {req.zone}/{req.street}/{req.building} "
              f"from {get_remote_address(request)}")
+    # Sprint 2.22.0a.5 (A14): bound this request's external GIS I/O to a budget
+    # under the Heroku 30s router wall. Perf-only/reversible — the deadline only
+    # fires when the request was already heading past the wall (would 503); the
+    # success-path output is unchanged. Request-scoped via ASGI context; reset in
+    # finally so /api/health and other endpoints are never affected.
+    import qatar_gis as _qg
+    _deadline_token = _qg.set_request_deadline()
     try:
         # NEW v3.1: Use unified engine if available
         if _UNIFIED_OK:
@@ -971,6 +978,8 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
     except Exception as e:
         log.error(f"evaluate failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        _qg.clear_request_deadline(_deadline_token)
 
 
 @app.post("/api/evaluate/details")
@@ -982,6 +991,9 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
              f"basement={req.basement} footprint={req.footprint_m2} "
              f"age={req.building_age_years} luxury={req.is_luxury} "
              f"from {get_remote_address(request)}")
+    # Sprint 2.22.0a.5 (A14): bound this request's external GIS I/O (see /api/evaluate).
+    import qatar_gis as _qg
+    _deadline_token = _qg.set_request_deadline()
     try:
         # NEW v3.1: Use unified engine if available
         if _UNIFIED_OK:
@@ -1084,6 +1096,8 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
     except Exception as e:
         log.error(f"evaluate/details fallback failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        _qg.clear_request_deadline(_deadline_token)
 
 
 # ── Static file serving ──
