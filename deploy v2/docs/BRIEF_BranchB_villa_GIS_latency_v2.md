@@ -2,7 +2,7 @@
 
 > **Type:** Performance refactor (network-call elimination + concurrency), diagnostic-first.
 > **Channel:** Implementation → Claude Code, **fresh session** with full §5 audit — NOT a tail-of-session bolt-on (#38 / #50 / #51 / #56).
-> **Status:** 🟡 DRAFT v2 — pending Anas sign-off. Gain estimate **provisional** until Phase 0 §3.1 closes the measurement gap (Rule #56).
+> **Status:** 🟢 SCOPE-LOCKED (2026-05-29) — Phase 0 §3.1 + §3.2 are **DONE** (see **§8**). The estimate is now **measured, not provisional** (Rule #56 satisfied). The §2 T1/T2 hypotheses were **revised by measurement** (§8 supersedes them). Remaining gate = the implementation itself: a **separate single-purpose sprint** (fresh session, §5 audit of the multi-QARS dependency edges + determinism-regression harness FIRST, then the concurrency refactor, then 🔴 Gate-1 push).
 > **Single-purpose (#38):** bring the villa main-path under the 30s router wall (cold) by reducing GIS *work*. No methodology/output change intended (see §4 parity/determinism gates).
 > **Predecessor:** A14 v141 budget fix → neutralised to safe **v142** (`THAMMEN_REQUEST_BUDGET=35`). The budget was a *false lever* for an H2-bound path. prod = v142, safe; villa-cold-503 = pre-sprint baseline.
 >
@@ -100,3 +100,71 @@ multi-QARS fetches multiple independent plots (cadastre + geometry) serially —
 - [ ] T1 implementation path: (a) pure-python EPSG:2932 [recommended] vs (b) pyproj — decided after §3.3, or pre-chosen here.
 - [ ] Acknowledge estimate is provisional until §3.1 decomposition.
 - [ ] Confirm sprint number / tag (A14 real-fix).
+
+---
+
+## §8 · §3.1 + §3.2 RESULTS — measured scope (2026-05-29; supersedes the §2 hypotheses)
+
+> Phase 0 §3.1 (faithful pass: full network capture + `gis_preload` loaded) and §3.2
+> (concurrency map from the captured per-event `(thread,t0,t1)` timeline) are **DONE**.
+> Measurement **revised the v1/v2 hypotheses** — a clean Rule #56 outcome (scoped on
+> measurement, not the inferred remainder). Probe deploys Heroku **v143 + v144**
+> (`audit_a6_latency.py` only; **zero engine files**; prod == v142 behaviour throughout).
+> Evidence: `audit_villa_run_branchB.txt` (run 1) + `audit_villa_run_branchB_v2.txt` (faithful).
+
+### §8.1 — §3.1: the villa is NETWORK-bound, not compute-bound
+Faithful pass collapsed the inferred "~13.4s remainder": villa warm ≈ **21s wall =
+~20.5s network + ~0.5s real compute**. The first run mis-attributed ~9s of network as
+"cpu" because `geo_reference_v2` + `geometric_factors` carry their OWN `urllib`
+(bypassing the base wrappers); once captured + `gis_preload` loaded, `cpu` → ~0.5s.
+Compound (10.7s→0.1s) and land confirm the same. **⟹ the dyno is irrelevant** (the A14
+budget was correctly the wrong lever); the fix must cut/parallelise GIS **network**.
+
+### §8.2 — §3.2: three sequential, largely-independent phases
+| phase | what | wall | parallel? |
+|---|---|---|---|
+| A | main valuation (MainThread): ~3 serial multi-QARS `get_plot` rounds + districts + zoning_xcheck (13 calls) | ~10.2s | **serial** |
+| B | `property_factors` 5-way fan-out | ~1.65s | already parallel |
+| C | enrichment pool: `geometric_factors` (~9s, 11 serial calls incl. **4× each road**) ∥ `geo_v2` (~1.9s; `georef` districts/centroid ≈ 0 via preload) | ~9s | long pole = geometric |
+
+Phases run **strictly sequentially** (10.2 + 1.65 + 9 ≈ 21s), but **C is independent of
+A's result** — `geometric_factors` needs only `pin/lat/lon` (ready at ~t=1.4s); the
+`zoning_code` it reads from `ev.valuation.factors_detail` is a **removable soft hint**
+(it fetches its own `geom.zoning` regardless). `geo_v2`'s result feeds the value → must
+precede value selection, but can still start early.
+
+### §8.3 — LOCKED SCOPE (all perf-only; implementation = separate signed sprint)
+| # | lever | effect | gate |
+|---|---|---|---|
+| **1 (primary)** | **overlap the enrichment phase (geom 9s ∥ geo_v2) with the valuation** | villa ~21s→~11-12s; **cold ~32s→~22s → FIXES A14** | perf-only |
+| 2 | parallelise `geometric_factors`' 11 serial calls (4× each road = edge sampling) | 9s→~1-2s (matters only if A shrinks <9s) | perf-only |
+| 3 | parallelise the multi-QARS serial `get_plot` rounds in A | 10.2s→less (needs impl-sprint dep-map) | perf-only |
+
+**Lever 1 alone meets the goal (cold <30s).** All three are perf-only (same calls, same
+results, reordered) — the 2.18.0/2.18.1 + `copy_context` precedent. **Determinism
+regression is MANDATORY** (#52): byte-identical output on 56/565/21, 52/903/90,
+69/329/20, 69/255/75; special care on `geo_v2` (feeds the value) and on removing the
+`geometric` `zoning_code` hint (must not change corner/range output). The v2 **T1**
+(kill `geometry_project`) is **demoted** — it's inside the valuation chain (~0.74s/call),
+not the headline; revisit only within lever 3. **The §0.2/§2-T1 pure-python EPSG:2932
+projection question is therefore MOOT for this sprint** (parked).
+
+### §8.4 — deferred sub-questions (Rule #42; NOT in Branch B perf scope, #38)
+- **`gis.landuse` 4.5s/call** — magnitude **confirmed**; **cause is a code question**
+  (why one `General_Landuse` query takes 4.5s — heavy spatial / POST-fallback geometry?).
+  Separate probe; not a blocker for levers 1-3.
+- **Gate-2 corner range-expansion methodology** — `geometric_factors` feeds a user-facing
+  **upper-range expansion** (corner +10% / main-road +8% / walkable-mall +10%) + a
+  disclosure section (`evaluate_unified.py` L4405-4474). Whether that methodology is still
+  valid (**E12 corner-premium was BLOCKED**) is a **methodology question → 🔴 Gate 2**
+  (Anas sign-off), independent of the perf work. If the range-expansion is later removed,
+  `geometric_factors` becomes **deletable** (a bigger perf win) — but that's a methodology
+  decision, not this sprint.
+
+### §8.5 — sign-off now resolves to
+- Scope = **lever 1 primary (perf-only); levers 2-3 stretch**; the T1 projection-path
+  question (§2-T1, sign-off box 2) is **MOOT** (`geometry_project` demoted). Estimate is
+  **measured**.
+- Implementation = a **fresh, single-purpose sprint**: §5 audit of the multi-QARS
+  `get_plot` dependency edges (for levers 2-3) + the determinism-regression harness FIRST,
+  then the concurrency refactor, then 🔴 Gate-1 push. **NOT a tail-of-session bolt-on.**

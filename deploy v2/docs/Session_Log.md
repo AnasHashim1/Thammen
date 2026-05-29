@@ -1502,10 +1502,60 @@ closed A6 compound-latency case (Rule #53 — distinct tag). Fix = Branch B.
 
 -----
 
-*Last updated: 2026-05-29 (Sprint 2.22.0a.5 — A14 villa cold-503: request-budget
-shipped Heroku **v141** then neutralised via config **v142** after smoke proved the
-villa is H2-bound, not budget-fixable; engine
-`thammen-sprint2p22p0a5-villa-cold503-budget`, prod == v140 behaviour, no regression.
-Branch B (GIS parallelisation) is the real fix, deferred to its own audited sprint.
+## 20. 🆕 2026-05-29 (evening) — Branch B Phase 0 (§3.1 + §3.2): villa latency MEASURED → scope locked
+
+> Diagnostic-only follow-on to §19's A14. **NO engine change** — two probe deploys
+> (Heroku **v143 + v144**, `audit_a6_latency.py` only, zero engine files, prod == v142
+> behaviour). Outcome: the A14 villa cold-503 is **100 % network-bound** (dyno irrelevant),
+> and Branch B's real shape = **parallelise 3 sequential GIS phases** (perf-only). Full
+> detail + locked scope: `BRIEF_BranchB_villa_GIS_latency_v2.md` **§8**.
+
+### 20.1 Work done
+- **State cleanup first** (Anas-directed, no `git add -A`): 3 slug-hygiene artifact
+  deletions (`dae13c6`), probe-tooling parameterisation (`4d04601`), §19.6 brief-status
+  pointer (`9644c3e`). Tree clean (only the separate `backtest/README.md` edit pending).
+- **§3.1 tracer** (`2caf3ff` → faithful pass `2950199`): global thread-safe buffer (the old
+  `threading.local()` silently dropped worker-thread events → the original capture was a
+  FLOOR), wrapped the secondary-module raw-urllib that bypassed the base wrappers
+  (`geo_reference_v2` ×3, `geometric_factors`, `property_geo`, `get_tile`), loaded
+  `gis_preload` so in-process mirrors the web dyno, per-event `(thread,t0,t1)` →
+  wall-clock-union reconciliation.
+
+### 20.2 Decisive numbers (faithful run, villa 56/565/21)
+- warm ≈ **21 s wall = ~20.5 s network + ~0.5 s compute**. The first run's "9.2 s cpu" was
+  uncaptured `geometric_factors` / `geo_reference` **network**, not compute (compound
+  10.7→0.1 s, land 7.3→0.6 s confirm). HTTP production ≈ in-process warm (preload mirror
+  holds). Cold villa rep ≈ **32 s** = the >30 s-wall first-try 503.
+- §3.2: three **sequential** phases — A valuation ~10.2 s (serial multi-QARS `get_plot`
+  rounds) · B `property_factors` ~1.65 s (already parallel) · C enrichment ~9 s
+  (`geometric_factors` long pole, 11 serial calls incl. **4× each road**) ∥ `geo_v2`.
+  **C is independent of A's result** → overlapping it ≈ ~9 s perf-only win → **fixes A14**.
+
+### 20.3 Decisions / boundaries
+- **Scope LOCKED** (brief §8.3): lever 1 (overlap enrichment) primary; levers 2-3 stretch;
+  all **perf-only**; determinism regression mandatory (#52). v2 T1 (`geometry_project` /
+  pure-python projection) **demoted + parked** (~0.74 s/call inside the valuation, not the
+  headline).
+- **`geometric_factors` is consumed** (corner/HBU/landmarks disclosure + a user-facing
+  upper-range expansion, `evaluate_unified.py` L4405-4474) → **not deletable perf-only**;
+  delete/reduce = **Gate 2**.
+- **Deferred sub-questions** (Rule #42, brief §8.4): (a) `gis.landuse` **4.5 s/call cause**
+  (code question — magnitude confirmed, cause not); (b) **Gate-2 corner range-expansion
+  methodology** validity (E12 corner-premium was BLOCKED).
+- **Implementation NOT started** — Branch B is a separate single-purpose sprint (fresh
+  session, §5 audit of multi-QARS dependency edges + determinism harness, then Gate-1 push).
+  This session was diagnostic + scope-lock only. **No new Operational rule yet** — #56
+  ("measure the dominant cost before committing scope", brief §7) crystallises when Branch B
+  ships.
+
+-----
+
+*Last updated: 2026-05-29 (Branch B Phase 0 — §3.1+§3.2 villa-latency diagnostic: the A14
+cold-503 is measured **network-bound**, dyno irrelevant; scope locked to perf-only GIS-phase
+parallelisation [lever 1 = overlap the enrichment phase, fixes cold-503]; probe deploys
+**v143+v144**, no engine change, prod == v142; implementation deferred to its own signed
+sprint — see §20 + BRIEF_BranchB §8. Prior: Sprint 2.22.0a.5 — A14 request-budget shipped
+Heroku v141 then neutralised via config v142; engine
+`thammen-sprint2p22p0a5-villa-cold503-budget`, prod == v140 behaviour, no regression;
 Operating Mode (Autonomous Lead) adopted.)*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*
