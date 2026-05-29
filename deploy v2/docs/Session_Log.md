@@ -1350,7 +1350,85 @@ contract).
 
 -----
 
-*Last updated: 2026-05-27 evening (Sprint 2.22.0a.1 — production
-address-lookup outage closed; engine
-`thammen-sprint2p22p0a1-qars-envelope-fallback`, Heroku v132).*
+## 18. 🆕 2026-05-27 → 2026-05-29 — Arabic-Surface arc (Sprints 2.22.0a.2 → 2.16.17 → 2.22.0a.3 → 2.22.0a.4)
+
+> Four deploys after the 2.22.0a.1 hotfix, all on the **Arabic surface /
+> framing-honesty** line (plus one security bundle). Full per-sprint detail
+> lives in the CHANGELOGs; this section is the bridge + the 2.22.0a.4
+> close-out (the only one shipped from this CC session end-to-end).
+
+### 18.1 Bridge — what shipped before 2.22.0a.4 (factual, see CHANGELOGs)
+
+| Sprint | CHANGELOG | Engine / Heroku | One-line |
+|---|---|---|---|
+| 2.22.0a | v50 | (content + refusal templates) | Arabic content + refusal-template groundwork |
+| 2.22.0a.1 | v51 | `…-qars-envelope-fallback` / v132 | QARS envelope fallback hotfix (§17) |
+| 2.22.0a.2 | v52 | `…-arabic-surface-content-fixes` | Arabic surface content fixes (C1–C5, Pattern B 7th refusal template, شواهد tier relabel, IVS/RICS reframe, negotiation-section delete) |
+| 2.16.17 | v53 | `…-security-hardening` | Security: CF-IP-keyed burst caps + docs lockdown |
+| 2.22.0a.3 | v54 | `…-arabic-surface-honesty` / **v139** | Arabic surface honesty (T1.1–T1.4, T2.x; reopened once after Anas caught the T1.2 MUC/staleness gate was a no-op) |
+
+### 18.2 Sprint 2.22.0a.4 — Disclosure & Framing Honesty (Heroku **v140**, CHANGELOG_v55, commit `f7870a3`)
+
+**Theme (single-purpose, Rule #38):** the tool must not over-state its
+**authority/scope** — one surface up from 2.22.0a.3's textual honesty.
+
+**Phase 0 (read-only, mandatory before edits) — `docs/PHASE0_2p22p0a4_DISCLAIMER_MAP.md`:**
+- **P0.1 rendering map:** in the rendered brief, Layer A (`methodology_disclaimer_ar`)
+  and D′ (`reasoning_trace.disclaimer`) **never show** (JSON-only / explicitly
+  skipped). Rendered: B/C (MUC), D (top-level `disclaimer`, short C4), E
+  (`service_scope.disclaimer_ar`). ⟹ "4→2 consolidation" is mostly JSON hygiene.
+- **P0.2:** there is **no reconciliation weighting because there is no blend** —
+  `val = primary['value']` (Sales Comparison alone, 100%); `_analyze_reconciliation`
+  is a status reporter. So the bare methodology line is the honest one.
+
+**Shipped (all in `evaluate_unified.py`):**
+- **T-method (a+b):** `methodology_ar` (main path) → universal bare line
+  **`أساس التقدير هو منهج المقارنة بالمبيعات.`** Dropped the misleading
+  `توفيق ثلاثي الطرق` claim **and** the embedded Latin (AVM / Sales Comparison
+  Approach) — both lived on the one string. Matches the completed multi-AI
+  Resolution (Path A / Amendment).
+- **T2.8 (premise-corrected, JSON-merge-only):** the 6 `methodology_disclaimer_ar`
+  sites are **heterogeneous** — only the **main-path** one duplicated D. The
+  other 5 carry genuine per-path methodology caveats and were **preserved**.
+  Removed main-path Layer A only (6→5). Layer D (C4) was **already canonical**
+  from 2.22.0a.2 (zero edits, C4 lock×5 confirms); Layer C cleanup was
+  **unnecessary** (`banner_ar`@496 = data-freshness collision, not Layer C).
+- **Provenance retreat (Rule #36/#39):** an interim edit added a VPS-4 provenance
+  2nd sentence on a mistaken recommendation; on reading the completed multi-AI
+  Resolution ("reduce, not add" + bare line) it was **reverted**. VPS-4 provenance
+  on a secondary expandable surface is deferred.
+
+**Audit-trail correction:** the "three-branch dispatcher" was a **batch-doc
+proposal only, never live code** — the actual `fc2d7da` code was a single old
+string. The Amendment (single old string → single bare line) is cleaner than a
+dispatcher collapse.
+
+**Multi-AI (Rule #54):** Question E re-used; Question F resolved 2026-05-28
+(GPT-5 + Gemini, universal bare line) — `docs/MULTI_AI_VALIDATION_BATCH_2p22p0a4.md`.
+
+**Verification:** aggregator **392/392**, security **15/15**, 2.22.0a.3 standalone
+**45/45**, broad regression **48/48 files**, new `test_sprint_2p22p0a4_disclosure_framing.py`
+**17/17**, c3 **8/8** + c5 **5/5**. Local smoke villa 56/565/21 + apt 52/903/90 green.
+
+**Post-deploy live smoke (v140):**
+- apt 52/903/90 → HTTP 200 ~7s, engine 2.22.0a.4, early-return caveat (@1932) + D intact.
+- villa 56/565/21 → attempt 1 HTTP 503 @30.4s (A6 known pattern, Rule #36), retry
+  **HTTP 200 @22.3s**: bare line present, main-path Layer A absent (fold confirmed
+  live), D (C4) intact, standalone_villa.
+
+### 18.3 Deferred / queued (registered per Rule #42)
+
+| Item | Why deferred | Revival / next step |
+|---|---|---|
+| **E rename** (`service_scope.disclaimer_ar` → a methodology field) | Rule #47 — rename is its own pass; render-coupled at index.html:831 | Dedicated refactor sub-sprint; update index.html:831 in lockstep |
+| **VPS-4 provenance on a secondary expandable surface** | "reduce, not add" kept it off the headline; never user-visible pre-sprint | Future sub-sprint (2.22.0a.5 / 2.22.0b); see batch-doc "Deferred — secondary-surface variants" |
+| **Latin in other methodology strings** (GIS / MoJ / PropertyFinder / Cap Rate / RICS Income Approach) | out of single-purpose scope (Rule #38) | Dedicated copy-standard pass |
+| **VPS citation (VPS 3 vs VPS 6)** | both GPT-5 + Gemini cited VPS 3, not VPS 6 (which 2.22.0a /12 used for the MUC card) | Targeted RICS Red Book 2024 PDF lookup; code comment stays genus-only (RICS Red Book 2024 / IVS 106) until resolved — **non-blocking** |
+
+-----
+
+*Last updated: 2026-05-29 (Sprint 2.22.0a.4 — Disclosure & Framing Honesty;
+methodology_ar → universal bare line + Layer A fold; engine
+`thammen-sprint2p22p0a4-disclosure-framing-honesty`, Heroku **v140**, commit
+`f7870a3`).*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*

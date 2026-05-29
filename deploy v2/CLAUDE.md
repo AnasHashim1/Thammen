@@ -3,7 +3,7 @@
 > **Project:** thammen.qa — Qatar real-estate AVM (RICS VPS 4)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-25 evening (Sprint 2.21.4 — T3 developer-inventory shipped Heroku v125; live H_WALK PASS; engine `thammen-sprint2p21p4-t3-aryan-lusail`. Hybrid arc 2.21.2 → 2.21.3 → 2.21.4 complete: foundation → T2 PF Lusail apartments → T3 Aryan/City Avenues 4 rows + status-aware discount map + freshness multiplier. PIN 69/255/75 = City Avenues H1 anchor; PIN 69/329/20 = Fox Hills H11 partial-population anchor.)
+> **Last update:** 2026-05-29 (Sprint 2.22.0a.4 — Disclosure & Framing Honesty shipped Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
 
 ## Quick orientation
 
@@ -52,12 +52,33 @@ tier-weighted entry via `hybrid_valuation_v1()`).
 ## Current production state (snapshot)
 
 ```
-Engine version deployed:  thammen-sprint2p21p4-t3-aryan-lusail  (Heroku v125 code,
+Engine version deployed:  thammen-sprint2p22p0a4-disclosure-framing-honesty
+                          (Heroku v140, commit f7870a3, 2026-05-29)
+api/health version:       3.1.0-sprint2.22.0a.4
+Latest CHANGELOG:         CHANGELOG_v55.md  (2.22.0a.4 Disclosure & Framing
+                          Honesty; v50=2.22.0a, v51=a.1, v52=a.2, v53=2.16.17
+                          security, v54=a.3, v55=a.4 — no drift)
+Latest Sprint:            2.22.0a.4 Disclosure & Framing Honesty
+                          - methodology_ar → universal bare line
+                            «أساس التقدير هو منهج المقارنة بالمبيعات.»
+                            (Path A / multi-AI Rule #54; dropped «توفيق ثلاثي
+                            الطرق» reconciliation claim + Latin AVM/SCA tokens)
+                          - T2.8: main-path Layer A fold (6→5; 5 per-path
+                            caveats preserved); D/C4 already canonical from
+                            2.22.0a.2 (untouched); Layer C cleanup unnecessary
+                          - VPS-4 provenance NOT promoted to headline
+                            (reduce-not-add); deferred to secondary surface
+                          - Phase 0: P0.1 disclaimer rendering map + P0.2
+                            no-blend confirmation (docs/PHASE0_2p22p0a4_*)
+                          - live smoke: villa 56/565/21 (A6 503→retry 200@22s)
+                            + apt 52/903/90 PASS; aggregator 392 + 17 new green
+                          (full narrative: Session_Log §18; deferred items there)
+
+--- snapshot block below is PRE-2.22.0a (2.21.4-era), kept for reference ---
+Engine (pre-arc):         thammen-sprint2p21p4-t3-aryan-lusail  (Heroku v125 code,
                           v127 config — T3_INVENTORY_ENABLED unset, default true)
-api/health version:       3.1.0-sprint2.21.4
-Latest CHANGELOG:         CHANGELOG_v49.md  (2.21.4 T3 developer-inventory;
-                          slot v49 natural next, no drift)
-Latest Sprint:            2.21.4 T3 Developer-Inventory (Aryan, Lusail)
+prev api/health version:  3.1.0-sprint2.21.4
+prev Latest Sprint:       2.21.4 T3 Developer-Inventory (Aryan, Lusail)
                           - HYBRID_TIER_CONFIG: T3_status_discount_map dict
                             (off_plan / under_construction → −17.5%; ready → −10%)
                             + T3_discount_default scalar + T3_stale_evidence_multiplier=0.5
