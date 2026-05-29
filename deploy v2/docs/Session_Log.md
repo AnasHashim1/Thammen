@@ -1427,8 +1427,77 @@ dispatcher collapse.
 
 -----
 
-*Last updated: 2026-05-29 (Sprint 2.22.0a.4 — Disclosure & Framing Honesty;
-methodology_ar → universal bare line + Layer A fold; engine
-`thammen-sprint2p22p0a4-disclosure-framing-honesty`, Heroku **v140**, commit
-`f7870a3`).*
+## 19. 🆕 2026-05-29 — Sprint 2.22.0a.5 (Bug A14 villa cold-503) + Operating-Mode adoption
+
+> **Outcome in one line:** the A14 *request-budget* fix shipped (Heroku **v141**)
+> but is the **wrong tool for the target villa** — post-deploy smoke proved
+> 56/565/21 still 503s cold. Root is **H2** (heavy ~22–24s sequential-GIS path
+> tipping over the 30s wall cold), not H1/H3. Budget **neutralised via config
+> (v142, `THAMMEN_REQUEST_BUDGET=35`)** so prod == known-good v140 behaviour. Real
+> fix = **Branch B (parallelise the sequential GIS chain)**, deferred to its own
+> audited sprint. **No regression**; production safe.
+
+### 19.1 Operating Mode (Autonomous Lead) adopted
+Block installed in `CLAUDE.md` under "Current production state". Claude Code now
+leads reversible work autonomously; only **Gate 1** (production push) and **Gate 2**
+(methodology / user-facing-output change) stop for explicit Anas consent; scope
+beyond the brief = flag-and-proceed. Source: `CLAUDE_md_OperatingMode_block.md`.
+
+### 19.2 What shipped (v141, commit `fc31fc1`, CHANGELOG_v56)
+Per-request external-I/O **deadline** (`contextvars`) consumed by
+`qatar_gis._http_get_json` + `property_factors._query_gis` (propagated into the
+factor threads via `copy_context()`), armed in both `/api/evaluate*` handlers.
+`REQUEST_BUDGET_SECONDS=24`, env-tunable `THAMMEN_REQUEST_BUDGET`. No-deadline path
+byte-identical (CLI/tests). 17/17 isolated, 49/49 files regression, factor
+determinism preserved. ENGINE `thammen-sprint2p22p0a5-villa-cold503-budget`.
+
+### 19.3 Phase 0 findings (measured — Rule #33)
+- **H1 (cold-boot) FALSIFIED.** Dyno is **Basic** → does NOT sleep (only Eco does).
+  The documented 503 was a post-deploy fresh-dyno + cold-cache event, not idle wake.
+  ⟹ keep-warm cron dropped (would fix a non-existent problem).
+- **H2 (cold cache) CONFIRMED** (`_MOJ_CACHE`/`_RENT_REF_CACHE` reset per cycle).
+- **H3 (retry×timeout) ROOT of the *blowup class*** — `_http_get_json` 3×30s ×
+  `_qars_query` 2 endpoints ≈ up to ~194s. The budget caps THIS class only.
+- **khazna distribution BIMODAL** (`probe_khazna_latency.py`, Qatar vantage, n=30:
+  111–233ms, 0% slow-valid) ⟹ bounding the timeout sacrifices no valid data ⟹
+  **not Gate 2** (classification decided autonomously per Anas's delegation).
+
+### 19.4 Why the budget can't fix THIS villa (the decisive measurement)
+Live warm `56/565/21` = **22.2s and 24.5s** (HTTP 200) — ~20 **sequential** GIS
+round-trips × ~830ms (Heroku→Qatar). The warm *success* path already approaches the
+30s wall; cold tips it over. **No budget value fits between warm-success (~25s) and
+the wall (30s) with cold margin** — and a budget *trip* returns silent `status=ok`
+(not a clean refusal), i.e. the §9 degraded-output behaviour (Gate 2). So the budget
+was set to 35s (>wall) → dormant. The path must be made **faster**, not bounded.
+
+### 19.5 Production state
+- **Heroku v142** = v141 code + `THAMMEN_REQUEST_BUDGET=35` (deadline never trips
+  before the wall) → behaviourally identical to v140 for all real traffic.
+- `engine_version` live = `…-villa-cold503-budget` (a5). `primary_alive=true`,
+  qars `healthy`. Villa cold 503 **still open** (= pre-sprint baseline, no regression);
+  safe/H11/apartment anchors 200.
+- A14 budget code = deployed but **dormant**; becomes live+useful only after §9
+  (clean-fail-on-trip design, Gate 2). The `THAMMEN_REQUEST_BUDGET` knob is the on/off
+  (set ≤28 to arm once §9 makes the trip a clean refusal).
+
+### 19.6 Deferred → Branch B (Rule #42 register)
+| Item | Why deferred | Revival / next step |
+|---|---|---|
+| **Branch B — parallelise sequential GIS on the heavy multi-QARS villa path** | Real A14 fix; larger surface (concurrency + determinism), deserves its own §5 audit + brief — not a session-tail bolt-on (#38/#50/#51). | New sprint. Phase 0 = run in-slug `audit_a6_latency.py` on Heroku for `multi_qars_56` to get the per-phase GIS-vs-compute split; parallelise the independent calls (proven 2.18.0/2.18.1 pattern that cut compound 89s→29s). |
+| **§9 — degraded-QARS clean-fail-on-trip** | Budget trip currently returns silent `status=ok`; making it a clean refusal (+ optional indicative+MUC) is Gate 2. | Dedicated brief; then arm the budget (`THAMMEN_REQUEST_BUDGET`≤28). |
+| **Dyno bump (Basic→Standard/Performance)** | Cost decision (Anas's) + treats symptom not root. | Anas's call; complements, doesn't replace, Branch B. |
+
+### 19.7 A14 in the bug catalogue
+**A14 (open, Medium)** — villa cold-dyno first-try 503 on the heavy multi-QARS path
+(reference: 56/565/21). H2-bound (sequential-GIS ~22–24s warm → >30s cold). NOT the
+closed A6 compound-latency case (Rule #53 — distinct tag). Fix = Branch B.
+
+-----
+
+*Last updated: 2026-05-29 (Sprint 2.22.0a.5 — A14 villa cold-503: request-budget
+shipped Heroku **v141** then neutralised via config **v142** after smoke proved the
+villa is H2-bound, not budget-fixable; engine
+`thammen-sprint2p22p0a5-villa-cold503-budget`, prod == v140 behaviour, no regression.
+Branch B (GIS parallelisation) is the real fix, deferred to its own audited sprint.
+Operating Mode (Autonomous Lead) adopted.)*
 *Supersedes: __Session_Log___2026-05-17_to_18 (2026-05-18) — that file should be replaced with this one*
