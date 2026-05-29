@@ -1,0 +1,107 @@
+{
+ "status": "ok",
+ "engine_version": "thammen-sprint2p22p0a4-disclosure-framing-honesty",
+ "tier_label": null,
+ "refusal_reason": {
+  "trigger_id": "comp_density_sparse",
+  "message_ar": "هذه المنطقة فيها أقل من 5 صفقات بيع مقارنة خلال آخر 6 أشهر لعقارات بهذا الحجم والنوع. التقدير الآلي لا يصل إلى مستوى الموثوقية المطلوب.",
+  "message_en": "This district has fewer than 5 comparable transactions in the past 6 months for properties of this size and type. An automated estimate cannot reach reliable confidence.",
+  "recommendation_ar": "نوصي بتقييم متخصص لعقارك من خلال مُقيِّم معتمد.",
+  "context": {
+   "asset_type": "apartment_building",
+   "district_ar": "اللقطة",
+   "plot_area_m2": 467.0
+  }
+ },
+ "methodology_ar": "تصنيف سريع مبني على بيانات GIS — لا توجد مقارنة MoJ مباشرة لفئة \"عمارة سكنية\" في قطر",
+ "methodology_disclaimer_ar": "تقدير الأصول من هذه الفئة يحتاج طريقة الدخل (Income Approach) أو سعر إعلان قابل للمقارنة. يرجى إعادة الطلب مع إفادة بالإيجار الشهري أو سعر الإعلان للحصول على تحليل آلي.",
+ "address": "52/903/90",
+ "valuation_date": "2026-05-29",
+ "district": "اللقطة",
+ "plot_area_m2": 467.0,
+ "gps": {
+  "lat": 25.314793449647496,
+  "lon": 51.46703858854732
+ },
+ "asset_type": "apartment_building",
+ "asset_type_ar": "عمارة سكنية",
+ "audience": "buyer",
+ "user_inputs": {
+  "listing_price": null,
+  "rental_income": null
+ },
+ "valuation": {
+  "amount": null,
+  "low": null,
+  "high": null,
+  "method": "insufficient_data",
+  "reason_ar": "هذا الأصل من نوع \"عمارة سكنية\" — لا توجد عينة مقارنة في سجلات وزارة العدل لهذه الفئة (الكومباوندات الكبيرة والأبراج تُسجَّل بأرقام مرجعية موحَّدة بدلاً من مقارنات سعر/م²). لتقييم دقيق، أضف الإيجار الشهري الفعلي أو سعر الإعلان وأعد الطلب."
+ },
+ "moj_sample_size": 0,
+ "cost_approach": null,
+ "income_approach": null,
+ "reconciliation": {
+  "status": "no_primary",
+  "message_ar": "تصنيف فقط — التقييم يحتاج إفادة الإيجار أو سعر الإعلان"
+ },
+ "accuracy": {
+  "score": 0,
+  "label": "⚠️ بيانات غير كافية"
+ },
+ "trend": null,
+ "location_features": null,
+ "geometric_factors": {
+  "polygon_available": true,
+  "plot_area_m2_verified": 467.0,
+  "pd_no": "PD/3063/2001"
+ },
+ "material_uncertainty": {
+  "level": "critical",
+  "banner_ar": "تحفظ مادي حرج: لا توجد بيانات بيع مقارنة لهذه الفئة",
+  "known_unknowns_ar": [
+   "الإيجار الشهري للوحدات",
+   "حالة المبنى والعمر",
+   "مساحة البناء الإجمالية",
+   "عدد الوحدات الفعلي"
+  ],
+  "rics_compliant": false,
+  "muc_clause_ar": "⚠️ تحفظ مادي وفق ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ (‎Material Valuation Uncertainty‎) و ‎VPS 6‎ (‎Valuation Reports‎) — و ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎ (‎Documentation and Reporting‎)\n\nتواجه السوق العقاري القطري في تاريخ هذا التقدير (2026-02-28 وما بعده) قيوداً جوهرية على شواهد السوق المتاحة، في ظل فجوة طويلة في تحديث بيانات وزارة العدل وضعف في حجم المعاملات الحديثة المنشورة.\n\nنطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن (الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف السوق الحالية.\n\nبناءً عليه — ووفق المعايير المذكورة أعلاه — يجب اعتبار درجة اليقين في هذا التقدير أقل من المعتاد، وتطبيق درجة حذر أعلى عند الاعتماد عليه. يُوصى بمراجعة هذا التقدير على فترات متقاربة.",
+  "muc_clause_en": "⚠️ Material Valuation Uncertainty per RICS Red Book Global Standards (effective 31 January 2025) — VPGA 10 (Material Valuation Uncertainty) and VPS 6 (Valuation Reports) — and IVS (effective 31 January 2025) — IVS 106 (Documentation and Reporting)\n\nThe Qatari real estate market is experiencing, at the valuation date (2026-02-28 onwards), material constraints on available market evidence, given an extended gap in the publication of Ministry of Justice transaction data and a low volume of recently published transactions.\n\nScope of uncertainty: this affects the reported value, the disclosed range (low/high), and the applicability of the Sales Comparison approach under current market conditions.\n\nAccordingly — and in line with the standards cited above — less certainty, and a consequently higher degree of caution, should be attached to this estimate than would normally be the case. The valuation should be kept under frequent review.",
+  "muc_basis_ar": "بيانات وزارة العدل المسجَّلة تنتهي عند 2025-12-31 — أي قبل بدء الاضطراب الحالي بـ 59 يوماً. بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.",
+  "muc_review_recommendation_ar": "هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، أيهما أسبق."
+ },
+ "brief": {
+  "audience": "buyer",
+  "title_ar": "تقرير عمارة سكنية — تحتاج بيانات إضافية",
+  "sections": [
+   {
+    "id": "next_steps",
+    "title_ar": "الخطوات المقترحة",
+    "content": {
+     "note_ar": "العنوان 52/903/90 تابع لمساحة 467 م² مُصنَّف كـ \"عمارة سكنية\". لتحليل آلي يرجى تزويدنا بأحد التاليين:",
+     "options_ar": [
+      "إفادة الإيجار الشهري الفعلي (لتقييم بطريقة الدخل)",
+      "سعر الإعلان أو سعر المالك (لمقارنة سوقية)"
+     ]
+    }
+   }
+  ]
+ },
+ "disclaimer": "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي، ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS.",
+ "active_listings": {
+  "available": false,
+  "reason": "تصنيف سريع — لم يُجرَ بحث إعلانات"
+ },
+ "service_scope": {
+  "asset_type": "apartment_building",
+  "tier": "limited",
+  "label_ar": "عمارة شقق",
+  "methodology_ar": "منهج الدخل (Income Approach)",
+  "methodology_en": "Income Approach",
+  "requires_user_input_ar": "الإيجار السنوي الإجمالي",
+  "disclaimer_ar": "عمارات الشقق تُقيَّم بمنهج الدخل. وزارة العدل لا تسجل وحدات الشقق فردياً بشكل قابل للمقارنة. الإيجار السنوي مطلوب.",
+  "reason_ar": "MoJ لا تسجل وحدات الشقق فردياً"
+ },
+ "verification_url": "https://thammen.qa/verify/QR6F54GDMB3K",
+ "sanity_warnings": []
+}

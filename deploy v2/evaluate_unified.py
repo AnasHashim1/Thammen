@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0a3-arabic-surface-honesty'
-SPRINT_TAG = '2.22.0a.3'             # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0a4-disclosure-framing-honesty'
+SPRINT_TAG = '2.22.0a.4'             # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4048,12 +4048,35 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     output = {
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
-        'methodology_ar': 'AVM مبني على Sales Comparison Approach مع توفيق ثلاثي الطرق',
-        'methodology_disclaimer_ar': (
-            'تقدير آلي (Automated Valuation Model) وفق RICS VPS 4. '
-            'لا يحلّ محل التقييم المعتمد من مُقيِّم مُرخّص للأغراض الرسمية '
-            '(قروض بنكية، نزاعات قضائية، تقارير محاسبية).'
-        ),
+        # Methodology line — universal bare statement of the basis of estimate.
+        # Engine reality (Phase 0 mechanical audit, Sprint 2.22.0a.4): valuation =
+        # primary['value'] = Sales Comparison alone in 100% of cases; cost/income
+        # are convergence checks only, never blended into the headline number.
+        # The pre-Amendment design spec'd a status-aware three-branch line; that was
+        # collapsed to this single constant per the 2.22.0a.4 Amendment (multi-AI
+        # validated — GPT-5 + Gemini, Rule #54). reconciliation['status'] stays
+        # computed and JSON-stored (see output['reconciliation'] below) for analytics
+        # and frontend secondary-surface use, but the headline asserts only the
+        # approach actually applied (silence on approaches not applied).
+        # Cite: RICS Red Book Global Standards 2024 / IVS 106 (Valuation Reporting),
+        # effective 31 January 2025. (Specific VPS sub-clause OPEN pending PDF lookup.)
+        # ── T2.8 (Sprint 2.22.0a.4): A→D fold (main path) ──
+        # The main-path methodology_disclaimer_ar (Layer A) duplicated the
+        # top-level `disclaimer` (Layer D — the canonical not-a-formal-valuation
+        # C4 string). P0.1 confirmed A was JSON-only (never rendered in the UI
+        # brief), so removing it is render-invisible. Per the completed multi-AI
+        # Resolution (docs/MULTI_AI_VALIDATION_BATCH_2p22p0a4.md, GPT-5 + Gemini,
+        # Rule #54) the redundant disclaimer half folds into D. The "AVM per VPS 4"
+        # provenance is NOT promoted to the visible headline: the Resolution's
+        # "reduce, not add" theme + the bare-line outcome keep methodology_ar a
+        # single sentence (the provenance was previously JSON-only/invisible in A;
+        # RICS framing already surfaces in the MUC card). VPS-4 provenance on a
+        # secondary expandable surface is deferred to a future sub-sprint (the
+        # batch doc's "Deferred — secondary-surface variants").
+        # The other 5 methodology_disclaimer_ar sites carry genuine per-path
+        # methodology caveats (NOT duplicates of D) and are intentionally left
+        # untouched. (@2703's "إنتاج تقييم موثوق" stays — test c3 pins it.)
+        'methodology_ar': 'أساس التقدير هو منهج المقارنة بالمبيعات.',
         'address': getattr(ev, 'address', None),
         'valuation_date': getattr(ev, 'valuation_date', None),
         'district': getattr(ev, 'gis_district_aname', None),
