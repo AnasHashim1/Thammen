@@ -1529,13 +1529,17 @@ closed A6 compound-latency case (Rule #53 — distinct tag). Fix = Branch B.
 - §3.2: three **sequential** phases — A valuation ~10.2 s (serial multi-QARS `get_plot`
   rounds) · B `property_factors` ~1.65 s (already parallel) · C enrichment ~9 s
   (`geometric_factors` long pole, 11 serial calls incl. **4× each road**) ∥ `geo_v2`.
-  **C is independent of A's result** → overlapping it ≈ ~9 s perf-only win → **fixes A14**.
+  **C is independent of A's result** → overlapping **`geometric_factors` alone** (NOT
+  `geo_v2`, which feeds the central value) ≈ fixes A14 (cold ~32→~25 s, ~5 s margin).
 
 ### 20.3 Decisions / boundaries
-- **Scope LOCKED** (brief §8.3): lever 1 (overlap enrichment) primary; levers 2-3 stretch;
-  all **perf-only**; determinism regression mandatory (#52). v2 T1 (`geometry_project` /
-  pure-python projection) **demoted + parked** (~0.74 s/call inside the valuation, not the
-  headline).
+- **Scope LOCKED** (brief §8.3): lever 1 = overlap **`geometric_factors` ALONE**; **`geo_v2`
+  stays SEQUENTIAL** (it feeds the central value — overlapping it buys only ~2s for a
+  central-number determinism risk → deferred to optional follow-up 1b). Levers 2-3 stretch;
+  all **perf-only**; determinism regression mandatory (#52) — incl. a **targeted** test that
+  removing `geometric`'s `zoning_code` hint does not change its output (hint ≠ self-fetched
+  zoning; passing anchors alone is insufficient). v2 T1 (`geometry_project` / pure-python
+  projection) **demoted + parked** (~0.74 s/call inside the valuation, not the headline).
 - **`geometric_factors` is consumed** (corner/HBU/landmarks disclosure + a user-facing
   upper-range expansion, `evaluate_unified.py` L4405-4474) → **not deletable perf-only**;
   delete/reduce = **Gate 2**.
@@ -1552,7 +1556,8 @@ closed A6 compound-latency case (Rule #53 — distinct tag). Fix = Branch B.
 
 *Last updated: 2026-05-29 (Branch B Phase 0 — §3.1+§3.2 villa-latency diagnostic: the A14
 cold-503 is measured **network-bound**, dyno irrelevant; scope locked to perf-only GIS-phase
-parallelisation [lever 1 = overlap the enrichment phase, fixes cold-503]; probe deploys
+parallelisation [lever 1 = overlap `geometric_factors` ALONE; `geo_v2` stays sequential
+(feeds central value); cold ~25s, fixes cold-503]; probe deploys
 **v143+v144**, no engine change, prod == v142; implementation deferred to its own signed
 sprint — see §20 + BRIEF_BranchB §8. Prior: Sprint 2.22.0a.5 — A14 request-budget shipped
 Heroku v141 then neutralised via config v142; engine

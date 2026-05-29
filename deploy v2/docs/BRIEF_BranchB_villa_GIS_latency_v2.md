@@ -136,18 +136,34 @@ precede value selection, but can still start early.
 ### §8.3 — LOCKED SCOPE (all perf-only; implementation = separate signed sprint)
 | # | lever | effect | gate |
 |---|---|---|---|
-| **1 (primary)** | **overlap the enrichment phase (geom 9s ∥ geo_v2) with the valuation** | villa ~21s→~11-12s; **cold ~32s→~22s → FIXES A14** | perf-only |
+| **1 (primary)** | **overlap `geometric_factors` ALONE (~9s) with the valuation; leave `geo_v2` SEQUENTIAL** | villa warm ~21s→~14s; **cold ~32s→~25s (~5s margin) → FIXES A14** | perf-only |
 | 2 | parallelise `geometric_factors`' 11 serial calls (4× each road = edge sampling) | 9s→~1-2s (matters only if A shrinks <9s) | perf-only |
 | 3 | parallelise the multi-QARS serial `get_plot` rounds in A | 10.2s→less (needs impl-sprint dep-map) | perf-only |
+| 1b (optional follow-up, documented) | ALSO overlap `geo_v2` with the valuation | **+~2s only** | perf-only **but determinism risk on the CENTRAL value** → **do NOT do by default** |
 
-**Lever 1 alone meets the goal (cold <30s).** All three are perf-only (same calls, same
-results, reordered) — the 2.18.0/2.18.1 + `copy_context` precedent. **Determinism
-regression is MANDATORY** (#52): byte-identical output on 56/565/21, 52/903/90,
-69/329/20, 69/255/75; special care on `geo_v2` (feeds the value) and on removing the
-`geometric` `zoning_code` hint (must not change corner/range output). The v2 **T1**
-(kill `geometry_project`) is **demoted** — it's inside the valuation chain (~0.74s/call),
-not the headline; revisit only within lever 3. **The §0.2/§2-T1 pure-python EPSG:2932
-projection question is therefore MOOT for this sprint** (parked).
+**Lever 1 alone meets the goal (cold ~25s, ~5s margin).** All three are perf-only (same
+calls, same results, reordered) — the 2.18.0/2.18.1 + `copy_context` precedent.
+
+**Why `geo_v2` stays sequential (Anas, 2026-05-29 — load-bearing):** `geo_v2`
+(`build_reference_geo_v2`) feeds the **central value** via `_select_primary_comparison`.
+Overlapping `geometric` *alone* already fixes A14; overlapping `geo_v2` buys only ~2s
+against a determinism risk on the **headline number** — a bad trade. Keep `geo_v2` on its
+current sequential path. **Lever 1b is the documented escape hatch** if the lever-1 margin
+later proves tight — and only with a full central-value parity proof.
+
+**Determinism regression is MANDATORY** (#52): byte-identical output on 56/565/21,
+52/903/90, 69/329/20, 69/255/75. **Critical (Anas):** lever 1 lets `geometric` start
+*before* the valuation computes the `zoning_code` hint it currently reads from
+`ev.valuation.factors_detail`. That hint is **NOT guaranteed equal** to `geometric`'s own
+`geom.zoning` fetch — so the parity test must **directly assert `geometric`(with-hint)
+output == `geometric`(no-hint) output**, NOT merely rely on the 4 anchors happening to
+match (a passing anchor set is **insufficient** — it can mask a hint-vs-self-zoning
+divergence on other inputs). If the two paths *can* diverge, removing the hint is itself a
+behaviour change → resolve before lever 1 lands.
+
+The v2 **T1** (kill `geometry_project`) is **demoted** — it's inside the valuation chain
+(~0.74s/call), not the headline; revisit only within lever 3. **The §0.2/§2-T1 pure-python
+EPSG:2932 projection question is therefore MOOT for this sprint** (parked).
 
 ### §8.4 — deferred sub-questions (Rule #42; NOT in Branch B perf scope, #38)
 - **`gis.landuse` 4.5s/call** — magnitude **confirmed**; **cause is a code question**
