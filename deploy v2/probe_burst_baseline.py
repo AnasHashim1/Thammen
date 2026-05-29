@@ -18,6 +18,7 @@ Address 52/903/90: Sprint 2.16.15 anchor (Bug A6 SAFE, ~5s avg).
 
 import concurrent.futures
 import json
+import os
 import statistics
 import sys
 import time
@@ -26,9 +27,19 @@ import urllib.error
 from datetime import datetime, timezone
 
 
-URL = "https://thammen.qa/api/evaluate"
+URL = os.getenv("THAMMEN_BASE", "https://thammen.qa") + "/api/evaluate"
 PAYLOAD = json.dumps({"zone": 52, "street": 903, "building": 90}).encode("utf-8")
-HEADERS = {"Content-Type": "application/json"}
+UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+)
+HEADERS = {
+    "Content-Type": "application/json",
+    "User-Agent": UA,
+    "Accept": "application/json,*/*;q=0.8",
+    "Origin": "https://thammen.qa",
+    "Referer": "https://thammen.qa/",
+}
 N_REQUESTS = 20
 TIMEOUT = 40  # Heroku router caps at 30s; allow a small buffer
 
@@ -117,7 +128,7 @@ def main() -> int:
     print("--- summary (Rule #36 format) ---")
     parts = [f"{c}x{s}" for s, c in sorted(status_dist.items())]
     print(f"  result:  {' + '.join(parts)}")
-    print(f"  window:  {started}  →  {ended}")
+    print(f"  window:  {started}  ->  {ended}")
     print(f"  sample:  n={n} concurrent POST /api/evaluate (52/903/90)")
 
     return 0

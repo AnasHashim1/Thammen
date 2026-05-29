@@ -21,8 +21,14 @@ import urllib.request
 from datetime import datetime, timezone
 
 
+import os
+
 PATHS = ["/docs", "/openapi.json", "/redoc"]
-BASE = "https://thammen.qa"
+BASE = os.getenv("THAMMEN_BASE", "https://thammen.qa")
+UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+)
 
 
 def probe(path: str) -> dict:
@@ -30,7 +36,15 @@ def probe(path: str) -> dict:
     t0 = time.perf_counter()
     try:
         # HEAD is cleaner than GET; FastAPI/uvicorn answers HEAD on these.
-        req = urllib.request.Request(url, method="HEAD")
+        # UA = real browser string so Cloudflare doesn't 403 us.
+        req = urllib.request.Request(
+            url,
+            method="HEAD",
+            headers={
+                "User-Agent": UA,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            },
+        )
         with urllib.request.urlopen(req, timeout=20) as resp:
             return {
                 "path": path,
@@ -83,7 +97,7 @@ def main() -> int:
             else f"UNKNOWN ({r['status']})"
         )
         print(f"  {r['path']:<18s}  {verdict}")
-    print(f"  window:     {started}  →  {ended}")
+    print(f"  window:     {started}  ->  {ended}")
     print(f"  sample:     n={len(PATHS)} HEAD requests")
     return 0
 
