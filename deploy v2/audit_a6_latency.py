@@ -1,10 +1,26 @@
 """
-audit_a6_latency.py — Sprint 2.18 Phase 1 (A6 Latency Investigation)
-====================================================================
+audit_a6_latency.py — Sprint 2.18 Phase 1 → extended for Branch B §3.1
+=====================================================================
 
 Profile end-to-end /api/evaluate latency with a per-phase breakdown so we can
-identify what to fix in Phase 2. **No engine code change.** This is a
-measurement instrument.
+identify what to fix. **No engine code change.** This is a measurement
+instrument.
+
+Branch B §3.1 extension (2026-05-29, A14 real-fix audit) — closes the
+worker-thread blind spot that made the original capture a FLOOR (§0.3 of
+BRIEF_BranchB_villa_GIS_latency_v2.md):
+  * GLOBAL thread-safe trace buffer (was threading.local) → captures the
+    ThreadPoolExecutor worker threads: property_factors 5-way fan-out
+    ('factors_*') AND _expand_extent BFS prefetch ('bfs_prefetch_*').
+  * NEW wrapper on qatar_gis._fetch_zoning_at_point — the raw-urllib A11
+    zoning cross-check that bypasses _http_get_json (tagged gis.zoning_xcheck).
+  * Per-event (thread, t0, t1) capture → wall-clock UNION (overlap-merged) so
+    the phase table reconciles to ~total instead of over-counting parallel
+    work; a per-thread split exposes what is ALREADY parallel (§3.2 prep).
+  * NOT traced (honest coverage caveat, Rule #36): imagery get_tile (off the
+    evaluate hot path) and the hybrid PropertyFinder connector (requests-based,
+    apartments only — the villa target makes no such call). Any untraced
+    network therefore lands in 'compute_ms' (total − gis_wallclock).
 
 Two measurements per (address × rep):
 
@@ -108,29 +124,65 @@ def classify_phase(url: str) -> str:
 
 
 # ============================================================
-# 3. THREAD-LOCAL TRACE BUFFER
+# 3. GLOBAL THREAD-SAFE TRACE BUFFER  (Branch B §3.1)
 # ============================================================
+# Was threading.local() — which silently dropped every event recorded on a
+# ThreadPoolExecutor worker ('factors_*' + 'bfs_prefetch_*'), making the
+# original capture a FLOOR (BRIEF §0.3). One shared, lock-guarded buffer + a
+# per-rep epoch lets us reconcile the whole timeline (main + all workers) and
+# compute wall-clock overlap. Lock is held only for the microsecond append, so
+# contention is negligible against ~hundreds-of-ms network calls.
 
-_trace = threading.local()
+class _Tracer:
+    def __init__(self):
+        self._lock = threading.Lock()
+        self.events = []
+        self.epoch = None
+
+    def reset(self):
+        with self._lock:
+            self.events = []
+            self.epoch = time.perf_counter()
+
+    def record(self, phase, t_start, t_end, ok):
+        th = threading.current_thread().name
+        with self._lock:
+            ep = self.epoch if self.epoch is not None else t_start
+            self.events.append({
+                'phase':  phase,
+                't_ms':   round((t_end - t_start) * 1000.0, 1),
+                't0_ms':  round((t_start - ep) * 1000.0, 1),
+                't1_ms':  round((t_end - ep) * 1000.0, 1),
+                'thread': th,
+                'ok':     ok,
+            })
+
+    def snapshot(self):
+        with self._lock:
+            return list(self.events)
+
+_tracer = _Tracer()
 
 def _trace_reset():
-    _trace.events = []
-
-def _trace_record(phase: str, dt_ms: float, ok: bool):
-    if not getattr(_trace, 'events', None):
-        _trace.events = []
-    _trace.events.append({'phase': phase, 't_ms': round(dt_ms, 1), 'ok': ok})
+    _tracer.reset()
 
 def _trace_events():
-    return list(getattr(_trace, 'events', None) or [])
+    return _tracer.snapshot()
 
 
 # ============================================================
 # 4. MONKEY-PATCH HTTP WRAPPERS
 # ============================================================
+# All three wrappers record (phase, t_start, t_end, ok) into the global
+# tracer. Behaviour is otherwise byte-identical to the originals (same args,
+# same return value, same exception-swallowing) — the audit must not change
+# what the engine does, only observe it.
 
 def patch_qatar_gis_wrapper():
-    """Wrap qatar_gis._http_get_json so each call is timed + phase-tagged."""
+    """Wrap qatar_gis._http_get_json so each call is timed + phase-tagged.
+    Covers QARS (incl. multi-QARS spatial via _qars_query), cadastre,
+    districts, landuse, and the ESRI geometry-project round-trip. Fires on the
+    main thread AND on 'bfs_prefetch_*' workers (_expand_extent prefetch)."""
     import qatar_gis
     orig = qatar_gis._http_get_json
 
@@ -148,8 +200,7 @@ def patch_qatar_gis_wrapper():
         except Exception:
             res = None
             ok = False
-        dt_ms = (time.perf_counter() - t0) * 1000.0
-        _trace_record(phase, dt_ms, ok)
+        _tracer.record(phase, t0, time.perf_counter(), ok)
         return res
 
     qatar_gis._http_get_json = patched
@@ -157,8 +208,9 @@ def patch_qatar_gis_wrapper():
 
 
 def patch_property_factors_wrapper():
-    """Wrap property_factors._query_gis (separate HTTP path: landmarks,
-    zoning, roads, commercial-streets)."""
+    """Wrap property_factors._query_gis (separate raw-urllib path: landmarks,
+    zoning, roads, commercial-streets). Runs on the 'factors_*' worker threads
+    of the 5-way fan-out — now captured via the global tracer."""
     import property_factors
     orig = property_factors._query_gis
     timeout_default = getattr(property_factors, 'TIMEOUT', 10)
@@ -172,11 +224,35 @@ def patch_property_factors_wrapper():
         except Exception:
             res = []
             ok = False
-        dt_ms = (time.perf_counter() - t0) * 1000.0
-        _trace_record(phase, dt_ms, ok)
+        _tracer.record(phase, t0, time.perf_counter(), ok)
         return res
 
     property_factors._query_gis = patched
+    return orig
+
+
+def patch_zoning_xcheck_wrapper():
+    """Wrap qatar_gis._fetch_zoning_at_point — the A11 zoning cross-check that
+    issues its OWN raw urllib request (bypassing _http_get_json), so it was
+    invisible to both wrappers above even on the main thread. Tagged distinctly
+    as gis.zoning_xcheck to separate it from the property_factors zoning factor
+    (gis.zoning). The function already swallows its own exceptions, so 'ok' is
+    effectively always True here; the duration is the signal we want."""
+    import qatar_gis
+    orig = qatar_gis._fetch_zoning_at_point
+
+    def patched(lat, lon, timeout=4.0):
+        t0 = time.perf_counter()
+        ok = True
+        try:
+            res = orig(lat, lon, timeout=timeout)
+        except Exception:
+            res = None
+            ok = False
+        _tracer.record('gis.zoning_xcheck', t0, time.perf_counter(), ok)
+        return res
+
+    qatar_gis._fetch_zoning_at_point = patched
     return orig
 
 
@@ -233,6 +309,60 @@ def _aggregate(events):
     return agg
 
 
+def _wallclock_union_ms(intervals):
+    """Merge [t0,t1] ms intervals (across all threads) and return the length
+    of their union — the real wall-clock footprint of GIS, with overlapping
+    (parallel) calls counted once. This is what lets the phase table reconcile
+    to ~total instead of a sum that double-counts the parallel fan-outs."""
+    iv = sorted((a, b) for a, b in intervals if b >= a)
+    if not iv:
+        return 0.0
+    union = 0.0
+    lo, hi = iv[0]
+    for a, b in iv[1:]:
+        if a <= hi:
+            hi = max(hi, b)
+        else:
+            union += hi - lo
+            lo, hi = a, b
+    union += hi - lo
+    return round(union, 1)
+
+
+def _analyze(total_ms, events):
+    """Timeline reconciliation + per-thread split (Branch B §3.1 core output).
+
+      gis_work_ms       = sum of every GIS call duration (over-counts parallel)
+      gis_wallclock_ms  = union of GIS intervals (true timeline footprint)
+      gis_overlap_ms    = work - wallclock (latency ALREADY hidden by parallelism)
+      compute_ms        = total - wallclock (non-GIS; incl. any untraced network)
+      by_thread         = per-thread {count, work_ms, span_ms}; 'MainThread' is
+                          the serial critical path, 'factors_*'/'bfs_prefetch_*'
+                          are already-parallel (do NOT re-parallelize, §2 T2 caveat)
+    """
+    work_ms  = round(sum(e['t_ms'] for e in events), 1)
+    union_ms = _wallclock_union_ms([(e['t0_ms'], e['t1_ms']) for e in events])
+    by_thread = {}
+    for e in events:
+        d = by_thread.setdefault(e['thread'],
+                                 {'count': 0, 'work_ms': 0.0, '_t0': 1e9, '_t1': 0.0})
+        d['count']   += 1
+        d['work_ms'] += e['t_ms']
+        d['_t0'] = min(d['_t0'], e['t0_ms'])
+        d['_t1'] = max(d['_t1'], e['t1_ms'])
+    for d in by_thread.values():
+        d['work_ms'] = round(d['work_ms'], 1)
+        d['span_ms'] = round(d['_t1'] - d['_t0'], 1) if d['_t0'] < 1e9 else 0.0
+        d.pop('_t0'); d.pop('_t1')
+    return {
+        'gis_work_ms':      work_ms,
+        'gis_wallclock_ms': union_ms,
+        'gis_overlap_ms':   round(max(0.0, work_ms - union_ms), 1),
+        'compute_ms':       round(max(0.0, total_ms - union_ms), 1),
+        'by_thread':        by_thread,
+    }
+
+
 def run_inproc(case):
     """Call evaluate_thammen() directly with patched HTTP wrappers."""
     from evaluate_unified import evaluate_thammen
@@ -265,6 +395,7 @@ def run_inproc(case):
         'event_count': len(events),
         'phase_events': events,
         'phase_aggregate': _aggregate(events),
+        'timeline': _analyze(total_ms, events),
     }
 
 
@@ -304,6 +435,50 @@ def run_http(case):
     }
 
 
+def _print_inproc_summary(inproc):
+    """Compact, grep-friendly timeline decomposition (Branch B §3.1). Full
+    per-rep detail is in the JSON; this is the at-a-glance reconciliation:
+    total = gis_wallclock (overlap-merged) + compute (non-GIS, incl. untraced).
+    Then a phase-work table + per-thread split for the villa target."""
+    by_case = {}
+    for r in inproc:
+        by_case.setdefault(r['case_id'], []).append(r)
+
+    print('\n[summary] in-process timeline decomposition (mean over reps)')
+    print('-' * 72)
+    print(f'  {"case":18s} {"total":>7s} {"giswall":>8s} {"cpu":>7s}'
+          f' {"overlap":>8s} {"ev":>4s}')
+    for cid, rows in by_case.items():
+        use = [r for r in rows if r.get('ok')] or rows
+        n = len(use) or 1
+        def _m(key):
+            return sum((r.get('timeline') or {}).get(key, 0.0) for r in use) / n
+        mt = sum(r['total_ms'] for r in use) / n
+        print(f'  {cid:18s} {mt:7.0f} {_m("gis_wallclock_ms"):8.0f}'
+              f' {_m("compute_ms"):7.0f} {_m("gis_overlap_ms"):8.0f}'
+              f' {sum(r["event_count"] for r in use) // n:4d}')
+
+    target = 'multi_qars_56'
+    rows = [r for r in inproc if r['case_id'] == target and r.get('ok')]
+    if rows:
+        print(f'\n  [phase work, {target}] summed across {len(rows)} ok rep(s):')
+        agg = {}
+        for r in rows:
+            for p, v in (r.get('phase_aggregate') or {}).items():
+                a = agg.setdefault(p, {'count': 0, 'total_ms': 0.0})
+                a['count'] += v['count']
+                a['total_ms'] += v['total_ms']
+        for p in sorted(agg, key=lambda k: -agg[k]['total_ms']):
+            a = agg[p]
+            print(f'    {p:26s} n={a["count"]:3d}  work={a["total_ms"]:8.0f} ms')
+        tl = (rows[-1].get('timeline') or {}).get('by_thread', {})
+        print(f'  [threads, {target} last rep] (MainThread = serial critical path):')
+        for th in sorted(tl, key=lambda k: -tl[k]['work_ms']):
+            d = tl[th]
+            print(f'    {th:18s} n={d["count"]:3d}  work={d["work_ms"]:8.0f} ms'
+                  f'  span={d["span_ms"]:8.0f} ms')
+
+
 # ============================================================
 # 7. MAIN
 # ============================================================
@@ -319,10 +494,11 @@ def main():
     print('=' * 72)
 
     # 1. Patch HTTP wrappers BEFORE importing evaluate_thammen.
-    print('\n[setup] patching HTTP wrappers (qatar_gis + property_factors)...')
+    print('\n[setup] patching HTTP wrappers (qatar_gis + property_factors + zoning x-check)...')
     try:
         patch_qatar_gis_wrapper()
         patch_property_factors_wrapper()
+        patch_zoning_xcheck_wrapper()
         print('  ok')
     except Exception as e:
         print(f'  FAIL: {type(e).__name__}: {e}')
@@ -354,8 +530,8 @@ def main():
 
     results = {
         'meta': {
-            'sprint': '2.18 Phase 1',
-            'engine_version_assumption': 'thammen-sprint2p21p0p9-multi-qars-stage1',
+            'sprint': 'Branch B §3.1 (A14 real-fix) — extends 2.18 Phase 1 harness',
+            'engine_version_assumption': 'thammen-sprint2p22p0a5-villa-cold503-budget (v142)',
             'start_utc': datetime.utcnow().isoformat() + 'Z',
             'cohort_size': len(cohort),
             'reps_per_address': REPS,
@@ -380,12 +556,18 @@ def main():
             r['rep'] = rep
             r['label'] = case['label']
             results['in_process'].append(r)
-            status = (f' {r["total_ms"]:7.0f} ms  asset={r["asset_type"]:<22s}'
-                      f' events={r["event_count"]:3d}')
+            tl = r.get('timeline') or {}
+            status = (f' {r["total_ms"]:7.0f} ms  '
+                      f'wall={tl.get("gis_wallclock_ms", 0):6.0f}  '
+                      f'cpu={tl.get("compute_ms", 0):6.0f}  '
+                      f'asset={str(r["asset_type"]):<18s} '
+                      f'ev={r["event_count"]:3d}')
             if not r['ok']:
                 status += f'  ERR={r["err"]}'
             print(status)
             time.sleep(INPROC_INTERREQ_DELAY_S)
+
+    _print_inproc_summary(results['in_process'])
 
     # 5. HTTP runs (rate-limited).
     print('\n[http] POST https://thammen.qa/api/evaluate (7s spacing)')
