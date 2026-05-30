@@ -89,7 +89,7 @@ thammen-sprint{Major}p{Minor}p{Patch}-{slug}
 1. `py_compile` on every modified Python file
 2. `node --check` on extracted inline JS from index.html (Sprint 2.16.1 lesson)
 3. Mobile viewport test 390×844 (Sprint 2.16.4 lesson)
-4. Regression green per the **CLAUDE.md DoD test matrix** (single source). Measured 2026-05-30: aggregator 392/392, security 15/15, surface-honesty 45/45, broad 48/49 (1 known brittle version-pin — RISK_REGISTER R6); `test_v2_modules.py` formally excluded (pytest not in requirements.txt)
+4. Regression green per the **CLAUDE.md DoD test matrix** (single source — Rule #58). `test_v2_modules.py` is formally excluded (pytest not in requirements.txt) — a stable structural fact, not a drifting count.
 5. Isolated logic tests for new code (5+ cases with fallback)
 6. Smoke test 3 diverse addresses from Heroku after deploy (Sprint 2.16.10 lesson)
 
