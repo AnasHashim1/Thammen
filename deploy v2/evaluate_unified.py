@@ -949,6 +949,51 @@ def _run_geo_v2(ev, moj_csv_path: str, pin=None):
 
 
 # ============================================================
+# Sprint 2.22.0a.9 (facet a) — age/quality elasticity for the widened headline
+# ============================================================
+# The widened (geo_value) comparison paths take their headline from
+# geo_reference_v2.build_reference_geo_v2, which already owns the LOCATION
+# dimension (inter-district price normalization, geo_reference_v2.py:447).
+# They never multiply by the bracket path's property-factor adjustment, so the
+# widened headline had ZERO age/quality elasticity (Marikh 54/541/6: identical
+# 4.5M at building_age 0 / 20 / 45 — the operator-reported symptom).
+#
+# Fork 1 (signed): apply ONLY the age/quality slice — building_age + plot_shape —
+# to the widened headline. Location factors (zoning, commercial_street,
+# main_road, landmark, permitted_height) are deliberately EXCLUDED: geo_v2
+# already inter-district-normalizes them, so re-layering would double-count.
+# corner/HBU are not in this adjustment at all (separate geometric_factors.py).
+# Fork 2 (signed): clamp to property_factors.MAX_ADJUSTMENT (±0.10); the
+# age/quality slice natural range is ≈[-6%, +3%] so the clamp ~never binds.
+# Fork 3 (signed): comparison_widened + comparison_widened_indicative ONLY.
+# Bracket / thin / preliminary use bracket_value (= fair_price_total, already
+# the FULL adj) and are untouched.
+
+_AGE_QUALITY_FACTOR_CODES = frozenset({'building_age', 'plot_shape'})
+
+
+def _age_quality_adj(valuation) -> float:
+    """Age/quality-only slice of the property-factor adjustment (Sprint
+    2.22.0a.9 facet a). Summed from valuation.factors_detail (a list of dicts
+    keyed 'code'/'weight'), clamped to ±MAX_ADJUSTMENT. Returns 0.0 when no
+    factor detail is available (factors did not run) so the caller no-ops and
+    the widened headline stays byte-identical to the pre-sprint output."""
+    detail = getattr(valuation, 'factors_detail', None) if valuation else None
+    if not detail:
+        return 0.0
+    raw = sum(
+        (f.get('weight') or 0.0)
+        for f in detail
+        if f.get('code') in _AGE_QUALITY_FACTOR_CODES
+    )
+    try:
+        from property_factors import MAX_ADJUSTMENT as _CAP
+    except Exception:
+        _CAP = 0.10
+    return round(max(-_CAP, min(_CAP, raw)), 4)
+
+
+# ============================================================
 # Primary value selection (Sales Comparison Approach)
 # ============================================================
 
@@ -969,6 +1014,21 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
     geo_n = (geo_v2.get('total_n') or 0) if geo_v2 else 0
     geo_value = geo_v2.get('estimated_value') if geo_v2 else None
 
+    # Sprint 2.22.0a.9 facet (a): age/quality-only elasticity for the widened
+    # (geo_value) headline. geo_v2 owns LOCATION (inter-district normalization),
+    # so only building_age + plot_shape enter here (Fork 1), clamped ±0.10
+    # (Fork 2). When no factor detail exists, aq=0 → values untouched
+    # (byte-stable). Applied to Cases 2 & 3 only — the geo_value paths; bracket /
+    # thin / preliminary use bracket_value and are unaffected (Fork 3).
+    geo_low = geo_v2.get('range_low') if geo_v2 else None
+    geo_high = geo_v2.get('range_high') if geo_v2 else None
+    if geo_value:
+        _aq = _age_quality_adj(ev.valuation)
+        if _aq:
+            geo_value = round(geo_value * (1 + _aq), -3)
+            geo_low = round(geo_low * (1 + _aq), -3) if geo_low else geo_low
+            geo_high = round(geo_high * (1 + _aq), -3) if geo_high else geo_high
+
     # Case 1: Bracket has strong sample
     if bracket_n >= MIN_N_RELIABLE and bracket_value:
         return {
@@ -985,8 +1045,8 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
     if geo_n >= MIN_N_RELIABLE and geo_value and geo_n >= max(bracket_n * 3, 15):
         return {
             'value': geo_value,
-            'low':   geo_v2.get('range_low'),
-            'high':  geo_v2.get('range_high'),
+            'low':   geo_low,
+            'high':  geo_high,
             'method': 'comparison_widened',
             'method_label_ar': 'مقارنة بتوسيع جغرافي (‎RICS VPS 3 / IVS 103‎)',
             'n': geo_n,
@@ -997,8 +1057,8 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
     if geo_n >= MIN_N_INDICATIVE and geo_value and bracket_n < MIN_N_INDICATIVE:
         return {
             'value': geo_value,
-            'low':   geo_v2.get('range_low'),
-            'high':  geo_v2.get('range_high'),
+            'low':   geo_low,
+            'high':  geo_high,
             'method': 'comparison_widened_indicative',
             # Sprint 2.22.0a.2 C3: relabel "إرشادي" -> "شواهد محدودة"
             'method_label_ar': 'مقارنة بتوسيع جغرافي — شواهد محدودة (‎RICS VPS 3 / IVS 103‎)',
