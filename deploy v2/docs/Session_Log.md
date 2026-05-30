@@ -1595,10 +1595,14 @@ closed A6 compound-latency case (Rule #53 — distinct tag). Fix = Branch B.
   deliberately include an HBU-positive property** — HBU-negative anchors coincidentally pass
   and mask the gate. Now baked into `harness_branchB_determinism.py`.
 
-### 20.6 🆕 Sprint 2.22.0a.6 — lever 3 (seed `get_plot` dedup) — SHIPPED to commit (NOT pushed)
+### 20.6 🆕 Sprint 2.22.0a.6 — lever 3 (seed `get_plot` dedup) — DEPLOYED Heroku v145
 
-> Engine `thammen-sprint2p22p0a6-seed-getplot-dedup` / SPRINT_TAG `2.22.0a.6`.
-> **perf-only / byte-identical.** Committed, **held at 🔴 Gate 1** for Anas PR sign-off.
+> Engine `thammen-sprint2p22p0a6-seed-getplot-dedup` / SPRINT_TAG `2.22.0a.6`. **perf-only /
+> byte-identical.** Committed `1711035` → origin backup → Heroku **v145** (2026-05-30,
+> `git subtree split --prefix "deploy v2"` + force-push per Rule #43, on explicit Anas "go").
+> **Post-deploy verify (Rule #52):** `/api/health` = a6 ✓; 52/903/90 → 200 @4.9s
+> (apartment_building/اللقطة) ✓; 56/565/21 → attempt1 503 @30.4s (**known A14 cold, NOT a
+> regression** — lever 3 doesn't fix A14) → retry **200 @21.0s warm, standalone_villa** ✓.
 > Full detail: `CHANGELOG_v57.md`.
 
 - **Change:** `qatar_gis.detect_extent` gains optional `seed_plot=`; `full_property_lookup`
@@ -1627,14 +1631,17 @@ closed A6 compound-latency case (Rule #53 — distinct tag). Fix = Branch B.
 *Last updated: 2026-05-30 (Sprint 2.22.0a.6 — lever 3 seed `get_plot` dedup committed
 [`qatar_gis.detect_extent` optional `seed_plot`], perf-only/byte-identical [harness: villa +
 compound BFS old≡new, get_plot deterministic], regression 45/392/15/49 green, classify_asset
-dedup dropped per Rule #39 recon; **held at Gate 1, not pushed**; §20.4 lever-1 CAVEAT closed
+dedup dropped per Rule #39 recon; **DEPLOYED Heroku v145** (subtree-force, Rule #43, on Anas
+"go"; post-deploy: health=a6, 52/903/90 200@4.9s, villa 56/565/21 retry 200@21s warm —
+attempt1 503 = known A14 cold, not a regression); §20.4 lever-1 CAVEAT closed
 live. Prior same session — lever-1 determinism gate FAILED
 → Gate 2: `geometric_factors.py:611` gates HBU entirely on the zoning hint, §8.3's
 "self-fetches geom.zoning" assumption FALSIFIED; the 4 R1-in-R1 anchors coincide & mask it;
 HBU-positive Phase-0 proof was SYNTHETIC, live confirmation deferred to the 2.22.0a.6 gate.
 New Bug A15 (Medium): HBU silently dropped whenever the zoning hint is absent — reachable
 today under QARS degradation; graceful-disclosure fix deferred (Gate 2). Harness committed
-`2ecfd43`. Lever 3 (seed get_plot dedup) implementation = Sprint 2.22.0a.6, in progress.
+`2ecfd43`. Lever 3 (seed get_plot dedup) = Sprint 2.22.0a.6 DEPLOYED Heroku v145 (A14 still open —
+lever 1 Gate-2-blocked).
 Prior: 2026-05-29 (Branch B Phase 0 — §3.1+§3.2 villa-latency diagnostic: the A14
 cold-503 is measured **network-bound**, dyno irrelevant; scope locked to perf-only GIS-phase
 parallelisation [lever 1 = overlap `geometric_factors` ALONE; `geo_v2` stays sequential

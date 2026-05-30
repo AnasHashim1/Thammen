@@ -108,20 +108,24 @@ the per-change loop; Claude Code does not pause mid-execution for it.
   available for review on request; not a mandatory gate on reversible work.
 
 ```
-Engine version deployed:  thammen-sprint2p22p0a5-villa-cold503-budget
-                          (Heroku v141 code + v142 config THAMMEN_REQUEST_BUDGET=35
-                          → A14 budget DORMANT, prod == v140 behaviour; commit
-                          fc31fc1, 2026-05-29)
-api/health version:       3.1.0-sprint2.22.0a.5
-Latest CHANGELOG:         CHANGELOG_v56.md  (2.22.0a.5 A14 villa cold-503 request
-                          budget — shipped then neutralised; villa cold 503 still
-                          OPEN, H2-bound → Branch B. Full narrative Session_Log §19.
-                          Prior: v55=2.22.0a.4 … v50=2.22.0a — no drift)
-A14 (open, Medium):       villa cold-dyno first-try 503 (ref 56/565/21). H2: heavy
-                          multi-QARS sequential-GIS path ~22-24s warm → >30s cold.
-                          Budget code dormant (wrong tool; H1 keep-warm falsified —
-                          Basic dyno doesn't sleep). Real fix = Branch B (parallelise
-                          GIS, proven 2.18.x pattern). NOT the closed A6 case (#53).
+Engine version deployed:  thammen-sprint2p22p0a6-seed-getplot-dedup
+                          (Heroku v145, 2026-05-30, commit 1711035; Branch B lever 3 —
+                          seed get_plot dedup in qatar_gis.detect_extent; perf-only /
+                          byte-identical; success-path output == v140/v144)
+api/health version:       3.1.0-sprint2.22.0a.6
+Latest CHANGELOG:         CHANGELOG_v57.md  (2.22.0a.6 Branch B lever 3 — dedup the
+                          redundant seed get_plot [cadastre + ESRI projection round-trip,
+                          ~1.5s] between full_property_lookup and detect_extent via an
+                          optional seed_plot= param; byte-identical; classify_asset NOT
+                          deduped per Rule #39. Full narrative Session_Log §20.6.
+                          Prior: v56=2.22.0a.5 … v50=2.22.0a — no drift)
+A14 (open, Medium):       villa cold-dyno first-try 503 (ref 56/565/21; reconfirmed live
+                          on v145: attempt1 503@30s cold → retry 200@21s warm). H2: heavy
+                          multi-QARS sequential-GIS path ~21-24s warm → >30s cold. Lever 3
+                          (v145) shaved ~1.5s but does NOT close A14. Real fix = Branch B
+                          lever 1 (overlap geometric_factors) — BUT Gate-2-blocked (drops
+                          HBU hbu_analysis when zoning hint absent; Session_Log §20.4 +
+                          Bug A15 §20.5). NOT the closed A6 case (#53).
 Latest Sprint:            2.22.0a.4 Disclosure & Framing Honesty
                           - methodology_ar → universal bare line
                             «أساس التقدير هو منهج المقارنة بالمبيعات.»
