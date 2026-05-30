@@ -1,6 +1,6 @@
 # Thammen Custom Instructions
 
-You are working on **Thammen** (`thammen.qa`) — a Qatar real-estate AVM following RICS VPS 4. The user is **Anas**, a Qatari citizen on Windows deploying to Heroku. He speaks Arabic, prefers code in English. He runs `C:\Thammen\deploy v2`.
+You are working on **Thammen** (`thammen.qa`) — a Qatar real-estate AVM following the RICS Red Book Global Standards (effective 31 January 2025 — VPGA 10 + VPS 6 + IVS 106). The user is **Anas**, a Qatari citizen on Windows deploying to Heroku. He speaks Arabic, prefers code in English. He runs `C:\Thammen\deploy v2`.
 
 **Full project context** is in the Project Knowledge file. **Read it before any technical work.** This document covers behavior and delivery rules only.
 
@@ -59,7 +59,7 @@ Before proposing or building ANY Sprint, you MUST:
 ### Sprint numbering
 
 - Sequential, never reused
-- **Current latest = Sprint 2.16.12 (`CHANGELOG_v34.md`)** — deployed 2026-05-18
+- **Current production state** (engine version, latest sprint, Heroku vN): the CLAUDE.md production snapshot + Session_Log are the SINGLE SOURCE — do not duplicate version numbers here (they drift). As of 2026-05-30: Sprint 2.22.0a.6, Heroku v145.
 - **Mthamen integration**: ⏸️ archived only (decision 2026-05-19, never deployed)
 
 ### CHANGELOG_vN.md structure (mirror v33/v34)
@@ -89,7 +89,7 @@ thammen-sprint{Major}p{Minor}p{Patch}-{slug}
 1. `py_compile` on every modified Python file
 2. `node --check` on extracted inline JS from index.html (Sprint 2.16.1 lesson)
 3. Mobile viewport test 390×844 (Sprint 2.16.4 lesson)
-4. 46/46 regression tests pass
+4. Regression green per the **CLAUDE.md DoD test matrix** (single source). Measured 2026-05-30: aggregator 392/392, security 15/15, surface-honesty 45/45, broad 48/49 (1 known brittle version-pin — RISK_REGISTER R6); `test_v2_modules.py` formally excluded (pytest not in requirements.txt)
 5. Isolated logic tests for new code (5+ cases with fallback)
 6. Smoke test 3 diverse addresses from Heroku after deploy (Sprint 2.16.10 lesson)
 
@@ -185,7 +185,7 @@ Reliability gate: n ≥ 10 per stratum.
 
 ## 5. MoJ Data Reality
 
-- Last `data.gov.qa` update: **2025-12-31** (still stale 2026-05-19, >139 days)
+- Last `data.gov.qa` update: **2025-12-31** (measured 2026-05-30: **150 days** stale)
 - Sprint 2.7 surfaces via banner — **never claim "weekly updates"**
 - Self-healing: when government resumes, `/api/health` recomputes freshness
 
@@ -302,10 +302,10 @@ User triggers any of these by saying **"Read Section X"** where X is relevant se
 - 🆕 **"تذكر Bug A11"** — Zoning/Subtype contradiction discovery 2026-05-19 PM
 - 🆕 **"تذكر أشغال 61/875/20"** — The reference case for Bug A11
 - 🆕 **"تذكر Rule E7"** — QARS subtype requires Zoning cross-check
-- **"بيانات السكرتيرة جاهزة"** — Sprint **2.16.15** (renumbered from 2.16.13)
+- **"تذكر إغلاق Confirmed Sales"** — Sprint 2.16.16 (Confirmed Sales DB) **deferred indefinitely**: no viable internal source (secretary source closed 2026-05-24 + brokerage closed). NOT an awaiting-secretary dependency; T2 "broker" = ad-hoc only
 - **"راجع EMPIRICAL_FINDINGS"** — audit rules E1-E7
 - **"اقرأ القسم X من Project Instructions"** — load specific section
 
 -----
 
-*Bound to every Thammen session. Last updated 2026-05-19 PM (after Bug A11 / Sprint 2.16.14 deployment + Claude Code migration).*
+*Bound to every Thammen session. Last updated 2026-05-30 (governance consolidation — accuracy reconciliation + process hardening; engine 2.22.0a.6 / Heroku v145).*

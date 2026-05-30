@@ -1,9 +1,9 @@
 # Thammen — Claude Code Workspace Configuration
 
-> **Project:** thammen.qa — Qatar real-estate AVM (RICS VPS 4)
+> **Project:** thammen.qa — Qatar real-estate AVM (RICS Red Book Global Standards, effective 31 January 2025 — VPGA 10 + VPS 6 + IVS 106)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-29 (Sprint 2.22.0a.4 — Disclosure & Framing Honesty shipped Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
+> **Last update:** 2026-05-30 (governance consolidation — docs accuracy + process hardening; see `docs/BRIEF_governance_consolidated_2026-05-30.md`). **LIVE: engine `thammen-sprint2p22p0a6-seed-getplot-dedup` · Heroku v145 · CHANGELOG_v57** (Branch B lever 3 — seed get_plot dedup, perf-only/byte-identical; A14 villa cold-503 still OPEN, lever 1 Gate-2-blocked). The production-state snapshot block below + Session_Log §20 are authoritative. Prior: 2026-05-29 Sprint 2.22.0a.4 — Disclosure & Framing Honesty (Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
 
 ## Quick orientation
 
@@ -235,7 +235,7 @@ Mthamen integration:      ⏸️ Deferred indefinitely (Project_Instructions §2
 MME apartments (2.21.1):  ⏸️ Deferred — awaits DevTools auth capture on
                           mme.gov.qa (see 2p21p1_pre/CHANGELOG)
 
-Roadmap (priority order, post-2.21.4 — both hybrid tiers SHIPPED):
+Roadmap (priority order — **AUTHORITATIVE ROADMAP = Project_Instructions §11 "Deferred Sprints"; the list below is a convenience copy, §11 wins on any drift**):
   1. Sprint 2.21.5 — UI tier breakdown + MUC surfacing for hybrid outputs.
                      Both 2.21.3 (T2) + 2.21.4 (T3) shipped → 2.21.5 is now
                      UNBLOCKED. Owns rendering of sources[] (per-row T3
@@ -259,23 +259,22 @@ Roadmap (priority order, post-2.21.4 — both hybrid tiers SHIPPED):
   7. Sprint 2.21.0.10 — Stage 2 wall-to-wall (E18). Needs Building
                      Footprint layer probe.
   8. Sprint 2.21.1 — MME apartments. Awaits authenticated session.
-  9. Sprint 2.16.16 — Confirmed Sales DB. Trigger redefined 2026-05-24
-                     post secretary-source-closure (permanent, not delayed).
-                     Brokerage-fed only. Two paths: consolidate with
-                     developer_inventory.sqlite (now exists — Sprint 2.21.4
-                     ships the schema; Sprint 2.16.16 could extend it with
-                     a transaction_type discriminator OR keep separate table),
-                     OR defer until brokerage velocity reaches ≥30 Lusail
-                     apartment closings (6-18 months). NOT a blocker for
+  9. Sprint 2.16.16 — Confirmed Sales DB. DEFERRED INDEFINITELY (2026-05-30):
+                     NO viable internal source — both candidate feeds are
+                     closed (secretary source 2026-05-24 + Anas's brokerage,
+                     Gardenia). Confirmed Sales is NOT a data source,
+                     dependency, or pillar. Do NOT re-add closed-feed framing
+                     (no broker-supplied pipeline; no awaiting-secretary dep). Revive only if a genuinely
+                     PIN-keyed T1 sale source ever appears. NOT a blocker for
                      anything else.
 
-D5/D6 calibration:        provisional, broker-experience-grounded.
-                          Recalibration via brokerage Confirmed Sales pipeline
-                          ONLY (secretary source permanently closed 2026-05-24
-                          — the company supplying that data is shutting down).
-                          Timeline depends on brokerage transaction velocity —
-                          estimate 6-18 months for ≥30 Lusail apartment
-                          closings. Empirical basis (interim): EMPIRICAL_FINDINGS
+D5/D6 calibration:        provisional, broker-experience-grounded — and remain
+                          so INDEFINITELY. NO viable recalibration source: both
+                          the secretary feed (closed 2026-05-24) and the
+                          brokerage (Gardenia, closed) are gone. Recalibration
+                          would need a future genuinely-PIN-keyed T1 sale source
+                          (none exists). NOT a blocker (discounts ship with the
+                          MUC clause). Empirical basis (interim): EMPIRICAL_FINDINGS
                           §3 asking-premium ranges + broker negotiation
                           experience.
 
@@ -318,7 +317,7 @@ For external endpoints (especially Qatar government):
 1. `python -m py_compile` on every modified Python file
 2. `node --check` on extracted inline JS from index.html
 3. Mobile viewport test 390×844
-4. Regression tests: 81/81 must pass (post-2.16.15 baseline)
+4. Regression — **DoD TEST MATRIX (SINGLE SOURCE; other docs reference this), measured 2026-05-30, run with `PYTHONIOENCODING=utf-8`:** aggregator `run_sprint_2p22p0a_suite.py` = **392/392** · security `test_sprint_2p16p17_security.py` = **15/15** · `test_sprint_2p22p0a3_surface_honesty.py` = **45/45** · broad `2p22p0_pre/run_regression_2p22p0a.py` = **48/49** (1 known fail = `test_sprint_2p22p0a5_request_budget.py`, 2 brittle EXACT-version-pin assertions broken by the a6 bump — RISK_REGISTER R6, relax in next code sprint). `test_v2_modules.py` is **formally EXCLUDED** (needs pytest; not in requirements.txt; already in the broad runner's `SKIP_FILES`).
 5. Isolated logic tests for new code (5+ cases including fallback)
 6. Smoke test 3 diverse addresses from Heroku post-deploy
 
@@ -437,11 +436,11 @@ STOP if I:
 | "تذكر E20" أو "تذكر 15K compound" | EMPIRICAL_FINDINGS E20 — MoJ "مجمع فلل" sampling max = **15,027 m²**. Compounds with extent ≥ 15K m² have no MoJ comparable; Income Approach with rent input is the only valid methodology. The 15K threshold drives Sprint 2.18.1.1 Patch A. |
 | "تذكر #53" أو "تذكر closed cases stay closed" | Operational_Rules #53 — rules derived from a deferred/closed case remain in force, but the originating case itself is not cited as a foil, precedent, or comparison in new documentation. Cite §X (the rule), not the case that produced §X. Self-check: delete any sentence containing "unlike [closed case]" or "mirror [closed case] pattern". Crystallized 2026-05-24, pre-Sprint 2.21.1 MME smoke session. |
 | "تذكر Sprint 2.21.2" أو "تذكر Hybrid Foundation" أو "تذكر hybrid_valuation_v1" | Sprint 2.21.2 (CHANGELOG_v47.md, Heroku v107, deployed 2026-05-24 evening). Foundation Sprint — Rule E3 expanded from "MUST NOT enter calculation" sentence to **8 numbered constraints** permitting tier-weighted listing entry via `hybrid_valuation_v1()`. New module `hybrid_valuation.py` exposes `HYBRID_TIER_CONFIG` (D5 T2 discount −12.5%, D6 T3 −17.5%, both provisional) + the function (Cases A/B/C/D + Constraint 7 unit-norm + Constraint 8 T3-alone refusal). Function exists, no engine path calls it yet — production behavior identical to 2.18.1.1. Connectors land in 2.21.3 (T2) + 2.21.4 (T3). 22 test functions / 67 sub-checks (H1+H2+H3+H4+H6 all TRUE); H5 verified 27/27 files pass. |
-| "تذكر Rule E3 v2" أو "تذكر 8 constraints" | Rule E3 in `docs/Empirical_Findings.md` was rewritten 2026-05-24 by Sprint 2.21.2. Now 8 numbered constraints: (1) T2 cap 0.40 with T1 + D5 discount; (2) T3 cap 0.15 + D6 discount; (3) T1 floor 0.45 when present; (4) no T1 → indicative ceiling; (5) mandatory MUC ±20% when T1 absent; (6) source-level transparency (E10); (7) like-for-like unit normalization (RICS VPS 4); (8) T3 alone insufficient. E1 (no MoJ uplift) preserved. |
+| "تذكر Rule E3 v2" أو "تذكر 8 constraints" | Rule E3 in `docs/Empirical_Findings.md` was rewritten 2026-05-24 by Sprint 2.21.2. Now 8 numbered constraints: (1) T2 cap 0.40 with T1 + D5 discount; (2) T3 cap 0.15 + D6 discount; (3) T1 floor 0.45 when present; (4) no T1 → indicative ceiling; (5) mandatory MUC ±20% when T1 absent; (6) source-level transparency (E10); (7) like-for-like unit normalization (RICS Red Book); (8) T3 alone insufficient. E1 (no MoJ uplift) preserved. |
 | "تذكر Pre-Sprint 2.22.0" أو "تذكر H5 FALSE" | Pre-Sprint 2.22.0 audit (2p22p0_pre/CHANGELOG, 2026-05-24). Tested whether 3-stage UX architecture solves the apartments gap. H5 FALSE was decisive: 52/903/90 apartment_building returns HTTP 200 + valuation_amount=None + 4.7s — failure is data-driven, not latency-driven. 3-stage would just rename "insufficient data" across two stages. Sprint 2.22.0 deferred; BRIEF_2p21p2 (hybrid foundation) returned to top of queue and shipped. H1 TRUE + H3 TRUE + H4 TRUE evidence preserved for future UX-refactor Sprint after 2.21.5. |
 | "تذكر Pre-Sprint 2.21.3" أو "تذكر DOM duplication" أو "تذكر arady /listings" | Pre-Sprint 2.21.3 smoke (2p21p3_pre/CHANGELOG, 2026-05-24 evening). 4 of 5 TRUE. arady canonical search URL = **`/listings`** (HTTP 200, 70 listing hits page 1, sitemap.xml available for full inventory). PropertyFinder reachable from Heroku (exact parity with sandbox; raw=142 = sandbox=142). H2 FALSE was a threshold artifact: PropertyFinder DOM duplicates listing nodes ~6× (142 raw → 24 unique on Lusail page 1). **Sprint 2.21.3 connector MUST deduplicate by canonical URL or listing ID.** Detail-page schema confirmed extractable: CSS class `property-price` + regex fallback for QAR/AED + regex for m²/sqm. |
-| "تذكر D5/D6" أو "تذكر calibration provisional" | `HYBRID_TIER_CONFIG` ships with D5 T2 discount midpoint −12.5% (range −10%/−15%) and D6 T3 discount midpoint −17.5% (range −15%/−20%), both tagged `provisional, broker-experience-grounded`. Empirical basis: EMPIRICAL_FINDINGS §3 asking-premium ranges (+8% to +20% inverted). Recalibration trigger: brokerage Confirmed Sales pipeline produces ≥30 (asking, close) pairs. Secretary data may never arrive (per Anas 2026-05-24) — recalibration is on the brokerage-pipeline-only path; not a blocker for 2.21.2 or anything depending on it. |
-| "تذكر إغلاق مصدر السكرتيرة" أو "تذكر secretary source closed" | Secretary data source permanently closed 2026-05-24 (the company supplying it is shutting down — this is permanent source closure, NOT uncertain arrival). Confirmed Sales DB (Sprint 2.16.16) now depends entirely on brokerage closings. D5/D6 recalibration migrated to brokerage-only path; timeline estimate 6-18 months for ≥30 Lusail apartment closings depending on transaction velocity. Roadmap entry for 2.16.16 redefined: consolidate with 2.21.4 T3 schema OR defer. |
+| "تذكر D5/D6" أو "تذكر calibration provisional" | `HYBRID_TIER_CONFIG` ships with D5 T2 discount midpoint −12.5% (range −10%/−15%) and D6 T3 discount midpoint −17.5% (range −15%/−20%), both tagged `provisional, broker-experience-grounded`. Empirical basis: EMPIRICAL_FINDINGS §3 asking-premium ranges (+8% to +20% inverted). Recalibration has NO viable source (secretary feed closed 2026-05-24 + brokerage/Gardenia closed) → D5/D6 stay provisional **indefinitely**; not a blocker (ship with the MUC clause). Do NOT re-add closed-feed framing (no broker-supplied pipeline / no awaiting-secretary dependency). |
+| "تذكر إغلاق Confirmed Sales" أو "تذكر no viable source" | BOTH internal sale-data feeds are closed: the secretary source (permanently, 2026-05-24) AND Anas's brokerage (Gardenia). Confirmed Sales DB (Sprint 2.16.16) therefore has **NO viable internal source** → deferred **indefinitely**; it is NOT a data source, dependency, or pillar. Do NOT re-add closed-feed framing (no broker-supplied pipeline; no awaiting-secretary dependency). Revive only if a genuinely PIN-keyed T1 sale source ever appears (none exists). T2 "broker" listings are ad-hoc only (not a stable feed); the Stage-4 field check is broker-agnostic (any vetted broker). |
 | "راجع EMPIRICAL_FINDINGS" | Audit rules E1-E20 |
 | "اقرأ القسم X" | Activate self-correction trigger from section X |
 | "ركذت قاعدة الدفع" أو "تذكر #32" | Push & Commit discipline — Operational_Rules #32 |

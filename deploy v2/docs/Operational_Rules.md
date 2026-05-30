@@ -1062,6 +1062,16 @@ The older one-liner form is equivalent but leaves no temp branch to inspect:
 git push heroku `git subtree split --prefix "deploy v2" master`:refs/heads/master --force
 ```
 
+**Backup is part of the deploy ritual (added 2026-05-30, RISK_REGISTER R1).** A Heroku deploy
+and a GitHub backup are **one ritual, not two decisions**. Immediately after a successful
+`heroku` deploy (and after any sprint commit), run `git push origin master` to keep the GitHub
+backup current — a **standing step, not a per-time manual confirmation**. Rationale: `origin`
+had silently fallen **98 commits behind** production (everything 2.18.1 → 2.22.0a.6 was
+local-only) — a disk failure would have lost ~a month of work. `origin` is a backup mirror
+(normal fast-forward full push), distinct from the `heroku` subtree-force deploy. The #32 push
+gate still governs the **Heroku production** push (explicit consent); the **origin backup** is
+routine and encouraged, **not** separately gated.
+
 **Key distinctions**:
 - **Commits** are normal full-tree commits at repo root (they carry the
   `deploy v2/` prefix). Nothing special about committing.
@@ -1402,6 +1412,72 @@ script docstring, two ledger interpretations, and a multi-choice question
 option. Each reference reopened a settled decision unnecessarily.
 
 **Recall**: "تذكر #53" / "تذكر closed cases stay closed".
+
+-----
+
+## 54. ⚠️ Multi-AI consult at sprint open (GPT-5 / Gemini) — evolving-standard / effective-date / framing
+
+**Status**: written in-file 2026-05-30 (governance consolidation). Previously tracked only in
+memory / CLAUDE.md "Operating Mode" — reconciled here so the live register matches.
+
+At the **start of a sprint** (not per-change), invoke a second/third AI (GPT-5, Gemini) for
+questions where a single model's training cutoff is a real risk:
+- **Evolving-standard checks** (e.g. RICS Red Book / IVS edition + clause renumbering).
+- **Effective-date traps** (which edition is in force on the valuation date).
+- **Methodology framing** (how to phrase a disclosure so it is defensible).
+
+It is **not** part of the per-change execution loop — Claude Code does not pause mid-execution
+for it. Precedents: the 2.22.0a.4 methodology bare-line resolution (GPT-5 + Gemini, Path A);
+the VPS-edition catch (both cited VPS 3 → corrected to VPS 6 / IVS 106 for the 2025 edition).
+**Recall**: "تذكر #54" / "Multi-AI sprint-open".
+
+-----
+
+### Reserved / pending rule numbers (do NOT silently reuse — 2026-05-30)
+
+- **#55** — *"ENV-VAR override audit pre-close"* (pending candidate; surfaced during this
+  governance pass). RESERVED — not yet written. Author #55 when crystallized.
+- **#56** — *"measure the dominant cost before committing scope"* (Branch B brief §7;
+  crystallizes at Branch B full closeout). RESERVED — Branch B lever 3 shipped (v145) but
+  levers 1–3 are not all done, so #56 is held.
+
+The two new rules below take **#57 / #58** (first genuinely-free numbers after the
+reservations) to avoid colliding with #55/#56.
+
+-----
+
+## 57. ⚠️ Session-start ground-truth handshake — measure live state before routing work
+
+**Discovered**: 2026-05-30 (governance consolidation; RISK_REGISTER R1/R3). A new session
+inherits a brief + memory that may be stale by several sprints; trusting them risks re-doing,
+overwriting, or "losing" committed/deployed work.
+
+**The rule**: before routing ANY work in a fresh session, run the ground-truth handshake:
+```
+curl -s https://thammen.qa/api/health          # live engine_version + freshness
+git rev-parse --abbrev-ref HEAD ; git log --oneline -8 ; git reflog -15
+git fetch origin ; git log --oneline origin/master -3 ; git status -sb   # local vs origin
+```
+**Live state outranks memory.** If `/api/health` engine_version, the git HEAD, or the
+origin-diff contradicts the brief/CLAUDE.md snapshot, the measured value wins and you proceed
+from it (then reconcile the docs). Pairs with #33 (empirical-first) and #58.
+**Recall**: "تذكر #57" / "ground-truth handshake".
+
+-----
+
+## 58. ⚠️ Assumed-vs-actual operational gap — measured wins, log the gap
+
+**Discovered**: 2026-05-30 (governance consolidation; RISK_REGISTER R3). This pass found
+multiple memory-vs-disk drifts: MoJ "139d" (doc) vs **150d** (live); "RICS VPS 4" (docs) vs
+VPGA 10 + VPS 6 + IVS 106 (code); "Current latest = Sprint 2.16.12" (4 sprints stale); a
+49/49-vs-48/49 regression delta caused by a brittle version-pin.
+
+**The rule**: when a brief / memory / CLAUDE.md value diverges from the **measured** live
+state (engine, git, code, `/api/health`, test counts), the **measured value wins**, and the
+gap is **logged to `RISK_REGISTER.md`** (so the drift is tracked, not silently patched). Do
+not "trust the number in the brief" — re-measure it. Single-source critical numbers (e.g. the
+DoD test count lives in CLAUDE.md; other docs reference it). Pairs with #36 (observed-vs-
+expected) and #57. **Recall**: "تذكر #58" / "measured wins".
 
 -----
 

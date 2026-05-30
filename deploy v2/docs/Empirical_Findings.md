@@ -57,7 +57,7 @@ with the following hard constraints:
    contributing to the weighted average appears in the `sources` block with
    its tier, raw value, discounted value, and weight.
 
-7. **Like-for-like normalization (RICS VPS 4)**: all values input to
+7. **Like-for-like normalization (RICS Red Book — like-for-like unit of comparison)**: all values input to
    `hybrid_valuation_v1()` MUST be in the same unit of comparison (typically
    QAR/m²), normalized for size bracket and area BEFORE entering the
    function. Comparing un-normalized values is a contract breach with the
@@ -79,9 +79,12 @@ tagged `provisional, broker-experience-grounded` in `HYBRID_TIER_CONFIG`.
 D5 derives from Empirical_Findings §3 asking-premium band (+8% to +20%
 above MoJ) inverted to a closing discount range (−7% to −17%); the
 central `−10% to −15%` band picks the centre. D6 = ~10% negotiation
-component + ~7.5% off-plan-to-resale component, stacked. Recalibration
-trigger: brokerage Confirmed Sales pipeline produces ≥30 (asking, close)
-pairs (BRIEF §8 roadmap, deferred Sprint).
+component + ~7.5% off-plan-to-resale component, stacked. Recalibration has
+**no viable internal source** — both candidate feeds are closed (the secretary
+source 2026-05-24 + Anas's brokerage, Gardenia). D5/D6 therefore remain
+`provisional, broker-experience-grounded` **indefinitely**; recalibration would
+require a future genuinely-PIN-keyed T1 sale source, which does not exist. NOT a
+blocker for anything (the discounts ship provisional with the MUC clause).
 
 ### Rule E4 — Villa valuation requires stock stratification
 ✓ Before any villa reference, classify:
@@ -139,7 +142,7 @@ QARS subtype=6 surveyed 2010-01-26, last updated 2012-02-20. Zoning=CCC.
 ✓ **Discovered 2026-05-18** via reverse engineering of "المثمن" app (`com.informatique.pricing`).
 ✓ **Deferred 2026-05-19** from live integration (see §8.5).
 
-**The principle**: RICS VPS 4 recognizes 5 valuation approaches (Market, Income, Cost, Profits, Residual). Cost Approach (DRC) is methodologically valid, and used by MoJ Qatar's own pricing app.
+**The principle**: the RICS Red Book recognizes 5 valuation approaches (Market, Income, Cost, Profits, Residual). Cost Approach (DRC) is methodologically valid, and used by MoJ Qatar's own pricing app.
 
 **The methodology** (extracted from APK):
 ```
@@ -221,7 +224,7 @@ attribute premiums **without** an asking-to-sale gap assumption.
 `رقم العقار المرجعي` is an opaque `PN…` hash (**0/26,719 numeric**), with no
 PIN/coordinates/street. So `detect_corner` (and any GIS attribute detector)
 **cannot tag MoJ sales**. E12 activates only when a PIN-keyed sale source exists
-(Confirmed Sales — indefinitely delayed; or verified MME geocoding). Until then,
+(Confirmed Sales — deferred indefinitely, no viable source; or verified MME geocoding). Until then,
 attribute premiums derived from MoJ self-calibration are infeasible. (Discovery
 logged: Sprint 2.20 audit; see Operational_Rules #45.)
 
@@ -357,7 +360,7 @@ broker reviews and corrects what Thammen fetched — Thammen never asks the brok
 to supply what GIS already publishes.
 
 This is the inverse of the legacy "ask the user everything" pattern and aligns
-with **RICS VPS 4 disclosure requirements** (every datum cited with source).
+with **RICS Red Book disclosure requirements** (every datum cited with source).
 Recall: **"تذكر E17"** / **"تذكر 1-field minimum"**.
 
 ### 🆕 Rule E18 — Stage 2 wall-to-wall classification rule (Anas 2026-05-23)
@@ -662,8 +665,10 @@ User triggers: **"راجع EMPIRICAL_FINDINGS"** · **"تذكر audit الأرض
 - `smoke_mthamen.py` — single-profile test
 - `smoke_mthamen_v2.py` — 6-profile WAF bypass attempts
 
-### Confirmed Sales DB (Sprint 2.16.13) — Pending Thursday
-Will enable:
+### Confirmed Sales DB (Sprint 2.16.16) — DEFERRED INDEFINITELY (no viable source)
+**2026-05-30:** both candidate feeds are closed — the secretary source (2026-05-24)
+and Anas's brokerage (Gardenia). Confirmed Sales is **not** a data source, dependency,
+or pillar. The capabilities below stay aspirational (no feed to realize them):
 - Real MAPE calculation across 4 strata
 - Cap rate calibration per stock class
 - Triangulation: confirmed sales vs MoJ (Cost reference noted but not callable)

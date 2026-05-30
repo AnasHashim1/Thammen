@@ -563,7 +563,7 @@ Anas can say any of these:
 |🆕 "تذكر Bug A11" | Zoning/Subtype contradiction discovery 2026-05-19 PM |
 |🆕 "تذكر أشغال 61/875/20" | The reference case for Bug A11 |
 |🆕 "تذكر Rule E7" | QARS subtype requires Zoning cross-check |
-|"بيانات السكرتيرة جاهزة" | Begin Sprint **2.16.16** (Confirmed Sales — renumbered 2.16.13 → 2.16.15 → 2.16.16) |
+|"تذكر إغلاق Confirmed Sales" | Sprint 2.16.16 **deferred indefinitely** — no viable internal source (secretary source + brokerage/Gardenia both closed). NOTE: dated "awaits secretary" / "post-secretary" lines in the §7/§11/§12/§15 narrative below are **historical** (point-in-time) — superseded by §20 + CLAUDE.md + RISK_REGISTER (2026-05-30 governance pass). |
 |"راجع EMPIRICAL_FINDINGS" | Audit rules E1-E7 |
 |"اقرأ القسم 5" | Pre-Sprint UI-First Audit |
 |"اقرأ القسم 18" | Open bug catalogue |

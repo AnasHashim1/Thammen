@@ -2,13 +2,13 @@
 
 > **Scope:** هذا المشروع مخصص حصرياً لتطوير وصيانة موقع تقييم العقارات القطري `thammen.qa`. أي مهمة خارج هذا النطاق (تقارير عقارية مستقلة، أبحاث سوق، تقييم عقار معين بدون لمس المنصة) **لا** تنتمي لهذا المشروع.
 
-> **آخر تحديث:** 2026-05-24 (الإصدار 8) — بعد Sprints 2.18.1 + 2.18.1.1 (unified closeout: parallel BFS upfront-prefetch + compound-misroute fix). يدمج كل ما سبق + قوس الأراضي + Multi-QARS (2.21.0.9) + A6 latency arc complete (2.18.0 / 2.18.1 / 2.18.1.1 — first documented "latency unmasks methodology bug" case). Engine الحالي: `thammen-sprint2p18p1p1-compound-misroute-fix` (v101). قواعد جديدة منذ الإصدار 7: Operational #50-#52، Empirical E15-E20.
+> **آخر تحديث:** 2026-05-30 (governance consolidation — دقّة الـ artifacts + process hardening؛ `docs/BRIEF_governance_consolidated_2026-05-30.md`). **الحالة الحيّة (المصدر الوحيد = CLAUDE.md production snapshot + Session_Log §20): engine `thammen-sprint2p22p0a6-seed-getplot-dedup` · Heroku v145 · CHANGELOG_v57.** هذه الوثيقة **مرجع منهجي ثابت** — أرقام النسخ/الـ Sprints لا تُكرَّر هنا (تنجرف؛ راجع CLAUDE.md). الـ **ROADMAP المعتمد = §11 (Deferred Sprints)** أدناه. قواعد منذ الإصدار 8: Operational #50-#58 (#54 Multi-AI، #57 ground-truth handshake، #58 measured-wins؛ #55/#56 محجوزان)، Empirical E15-E20.
 
 -----
 
 ## 1. Product Identity
 
-**Thammen** هو نموذج تقييم آلي (AVM) للسوق العقاري القطري، يعمل وفق RICS VPS 4 مع تكييفات للظروف القطرية. مصادر البيانات:
+**Thammen** هو نموذج تقييم آلي (AVM) للسوق العقاري القطري، يعمل وفق RICS Red Book Global Standards (إصدار 31 يناير 2025 — VPGA 10 + VPS 6 + IVS 106) مع تكييفات للظروف القطرية. مصادر البيانات:
 
 - **وزارة العدل القطرية** (data.gov.qa) — الصفقات المسجلة (**الحقيقة**)
 - **MME / qrep** — صفقات الشقق والإيجارات
@@ -215,13 +215,13 @@ heroku run python smoke_<endpoint>.py
 
 ## 6. MoJ Data Freshness — Permanent Reality
 
-- **آخر تحديث `data.gov.qa`:** 2025-12-31 (>139 يوم قديمة)
+- **آخر تحديث `data.gov.qa`:** 2025-12-31 (مقيس 2026-05-30: **150 يوم** قديمة)
 - Sprint 2.7 أضاف banner شفاف
 - Self-healing: `/api/health` يستدعي `refresh_freshness()` تلقائياً
 - بدائل:
   - **MME API** — Sprint 2.29
   - ~~**المثمن**~~ — deferred 2026-05-19 (§20.8)
-  - **Confirmed sales** — السكرتيرة الخميس → Sprint 2.16.16 (renumbered from 2.16.13 → 2.16.15 → 2.16.16 as A11 + A2 took intermediate slots)
+  - ~~**Confirmed sales**~~ — Sprint 2.16.16 **مؤجَّل لأجل غير مسمى** (لا مصدر داخلي صالح: مصدر السكرتيرة مغلق 2026-05-24 + brokerage/Gardenia مغلق). ليس مصدر بيانات أو dependency.
 - **منذ 2026-02-28**: MUC clause active
 
 **لا تدّعِ "أسبوعياً"** — حُذفت في Sprint 2.7.
@@ -353,12 +353,15 @@ heroku run python smoke_<endpoint>.py
 
 ### Deferred Sprints
 
+> **AUTHORITATIVE ROADMAP (single source), updated 2026-05-30.** CLAUDE.md's roadmap
+> block is a convenience copy that points here; when they drift, **this table wins**.
+
 |Order|Sprint|Description|Blocker|
 |---|---|---|---|
 |**1**|**2.21.5**|**UI tier breakdown + MUC surfacing for hybrid outputs.** Both 2.21.3 (T2) + 2.21.4 (T3) shipped → 2.21.5 is now UNBLOCKED. Owns rendering of `tier_breakdown.sources[]` (per-row T3 7-field shape: developer / project / status / value_per_m2_raw / discount_applied / value_per_m2_adjusted / freshness_status) + the H10 visual verification deferred from Sprint 2.21.4 H_WALK §5. Needs BRIEF from Claude.ai (lane discipline).|none|
 |**2**|**2.21.4.1 / .2 / …**|**Data-only expansion Sprints** — add more developers/projects to `developer_inventory.sqlite` via CSV import (UDC Lusail Marina + Pearl, Qetaifan Islands, Qatari Diar, Msheireb, Dar Al-Arkan, etc.). Pure data Sprints — no code change. Workflow per `2p21p4_brief/README.md`.|developer inventory data availability|
 |**3**|**2.21.3.2 candidate**|**arady connector** — deferred from Sprint 2.21.3 per BRIEF §12 single-purpose. arady detail content is JS-hydrated; sitemap.xml has only 5 category URLs. Two viable paths: (a) probe Next.js `__NEXT_DATA__` script tag for inline data; (b) headless-browser infrastructure (Playwright/Selenium). Decision via separate §5 audit.|design decision|
-|**4**|**2.16.16**|**Confirmed Sales DB integration** (renumbered 2.16.13 → 2.16.15 → 2.16.16 — A11 and A2 took intermediate slots). REDEFINED 2026-05-24 post secretary-source-closure (the supplying company is shutting down; this is permanent, NOT delayed arrival). Brokerage-fed only. Two viable paths now that `developer_inventory.sqlite` exists from Sprint 2.21.4: (a) extend that schema with a `transaction_type` discriminator to also hold brokerage closings, OR (b) keep separate table. Defer until brokerage transaction velocity warrants its own DB (6-18 months for ≥30 Lusail apartment closings). NOT a blocker for 2.21.5 or anything depending on it.|brokerage transaction velocity|
+|**4**|**2.16.16**|**Confirmed Sales DB — DEFERRED INDEFINITELY (2026-05-30): NO viable internal source.** Both candidate feeds are closed — the secretary source (permanently, 2026-05-24) AND Anas's brokerage (Gardenia). Confirmed Sales is **not** a data source, dependency, or pillar. Do NOT re-add closed-feed framing (no broker-supplied pipeline; no awaiting-secretary dependency). Revive ONLY if a genuinely PIN-keyed T1 sale source ever appears (none exists; the MoJ `PN…` hash is permanently closed per Empirical E12). NOT a blocker for anything.|no viable source (both feeds closed)|
 |**2**|**2.18.2 candidate**|**Lite/full GIS deduplication + boundary-test optimization** — closes Stage-1 (≤5s) gap for compound_small (the ~15s of non-parallelizable Python overhead remaining after Sprint 2.18.1.1's Patch A MoJ-skip). Three candidate optimizations: (a) lite/full GIS-call dedup, (b) `_polygons_share_boundary` via spatial index (e.g. shapely STRtree, kills ~882 pairwise tests), (c) async DCF/MoJ overlap with BFS prefetch. Decision via separate §5 audit.|none|
 |3|**2.21.0.11 candidate** (cosmetic)|UX: deep-link rent input field from the "بيانات غير كافية" box when compound_large refuses for lack of income. Anas observation post-2.18.1.1 visual verification.|none|
 |4|**2.21.0.12 candidate** (cosmetic)|UX: hide or replace "نطاق التفاوض المقترح" box when valuation=None (replace with "نطاق التفاوض غير متاح حتى تقديم الإيجار السنوي"). Anas observation post-2.18.1.1 visual verification.|none|
@@ -516,7 +519,7 @@ for compound_small remains queued as Sprint 2.18.2 candidate.
 
 - BUA-aware sanity check → 2.18+
 - Visual building assessment → 2.22+
-- Per-stratum cap rate calibration → بعد بيانات السكرتيرة
+- Per-stratum cap rate calibration → **لا مصدر داخلي صالح** (السكرتيرة + brokerage مغلقان) — مؤجَّل لأجل غير مسمى
 
 -----
 
@@ -552,7 +555,7 @@ Carve-out tuple يستثني tower/compound_large/apartment_building.
 
 ### القاعدة 4 — Cap Rate verify (deferred 2.20+)
 
-`LANDS_CAP_RATE_PRIMARY = 0.04` محل شك. بيانات السكرتيرة الخميس قد تُظهر 7-8%.
+`LANDS_CAP_RATE_PRIMARY = 0.04` محل شك. لا مصدر تحقّق داخلي (السكرتيرة + brokerage مغلقان) — يبقى تقديرياً حتى يظهر مصدر T1 مفتاحه PIN (لا يوجد).
 
 -----
 
@@ -762,7 +765,7 @@ Backend → Response → Frontend priority → Display. canonical root > brief.
 |🆕 "تذكر Sprint 2.16.14" | A11 fix deployed 2026-05-19 PM, CHANGELOG_v35 |
 |🆕 "تذكر Sprint 2.16.15" | Bug A2 (Pydantic extra='forbid') deployed 2026-05-19 evening, CHANGELOG_v36 |
 |🆕 "تذكر Bug A2" | Pydantic schema lenience — unknown fields silently dropped; fix = `model_config = ConfigDict(extra='forbid')` |
-|"بيانات السكرتيرة جاهزة" | Sprint 2.16.16 (renumbered 2.16.13 → 2.16.15 → 2.16.16) |
+|"تذكر إغلاق Confirmed Sales" | Sprint 2.16.16 مؤجَّل لأجل غير مسمى — لا مصدر داخلي صالح (مصدر السكرتيرة + brokerage/Gardenia مغلقان) |
 |"راجع EMPIRICAL_FINDINGS" | قواعد E1-E7 |
 |"اقرأ القسم X" | تفعيل self-correction trigger |
 
