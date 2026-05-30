@@ -1552,9 +1552,59 @@ closed A6 compound-latency case (Rule #53 — distinct tag). Fix = Branch B.
   ("measure the dominant cost before committing scope", brief §7) crystallises when Branch B
   ships.
 
+### 20.4 🆕 2026-05-30 — Branch B implementation session, Phase-0 GATE (lever 1) — **FAILED → Gate 2**
+
+> Diagnostic-only on the engine (no engine edit this sub-step). The signed lever-1
+> determinism gate ran via the new permanent harness `harness_branchB_determinism.py`
+> (committed `2ecfd43`). Outcome: **lever 1 as written in §8.3 is NOT perf-only.**
+
+- **lever 1 (overlap `geometric_factors`, §8.3) FAILED the determinism gate.** Root:
+  `geometric_factors.py:611` `if current_zoning_code:` gates the **entire HBU block** on
+  the externally-supplied zoning hint. Naive overlap launches `geometric` before the
+  valuation produces that hint (`ev.valuation.factors_detail`, `evaluate_unified.py:3524-3535`)
+  → hint `None` → `hbu` key absent → user-facing `hbu_analysis` (`evaluate_unified.py:4428-4438`)
+  **dropped for HBU-positive properties** → Gate 2 (output change).
+- **§8.3 assumption FALSIFIED.** `analyze_geometric_factors` does NOT self-fetch the
+  **subject's** zone — it self-fetches only the **neighbours'** zoning (line 354, for HBU
+  adjacency). The subject zone arrives only via the hint. So "removing the hint is safe
+  because it self-fetches geom.zoning" is wrong.
+- **The 4 SC3 anchors are all R1-in-R1 (HBU-negative)** → with-hint vs no-hint coincide at
+  the user-facing surface → **an anchors-only regression is BLIND to this defect.** This is
+  exactly the brief §8.3 warning ("a passing anchor set is insufficient"). The directed
+  hint-removal test on an HBU-positive input is what exposed it.
+- **⚠ CAVEAT (honesty, Rule #36):** in the Phase-0 run, the **HBU-positive** case used
+  **SYNTHETIC (mocked) GIS inputs** (controlled `analyze_adjacent_zoning` stub) — it proves
+  the line-611 gate *logic*. The **live GIS** contact (Layer 2) hit only the **HBU-negative**
+  anchor 56/565/21 (Bou Hamour, R1-in-R1; raw dict diverged by the `hbu` key, user-facing
+  coincided). **Live HBU-positive confirmation is deferred to the Sprint 2.22.0a.6 gate.**
+
+### 20.5 🆕 Bug A15 (Medium, open) + determinism-test finding
+
+- **Bug A15 (Medium, open):** HBU is **silently dropped whenever the zoning hint is absent**
+  — not only under a hypothetical lever-1 overlap. It is reachable **today** under QARS /
+  zoning-layer degradation (if the valuation's `factors_detail` carries no `zoning` factor,
+  the hint is `None` → `hbu` never computed). The RICS surface then **conflates "no HBU
+  upside" with "HBU not evaluated"** — two materially different disclosures. Reference
+  mechanism: `geometric_factors.py:611` + consumer `evaluate_unified.py:4428-4438`.
+  **NOT the closed A6/A14 latency cases (Rule #53 — distinct tag).**
+- **Proposed fix (separate later sprint, NOT now; methodology → Gate 2):** graceful 🟡
+  disclosure ("HBU لم يُقيَّم — تصنيف الموضوع غير متاح") instead of silent omission.
+  **NOT solved by Option B** (making `geometric` self-fetch the subject zone would itself
+  change output and add a GIS call). Register per Rule #42.
+- **Finding (test discipline):** any determinism/parity test touching an HBU path **must
+  deliberately include an HBU-positive property** — HBU-negative anchors coincidentally pass
+  and mask the gate. Now baked into `harness_branchB_determinism.py`.
+
 -----
 
-*Last updated: 2026-05-29 (Branch B Phase 0 — §3.1+§3.2 villa-latency diagnostic: the A14
+*Last updated: 2026-05-30 (Branch B implementation session — lever-1 determinism gate FAILED
+→ Gate 2: `geometric_factors.py:611` gates HBU entirely on the zoning hint, §8.3's
+"self-fetches geom.zoning" assumption FALSIFIED; the 4 R1-in-R1 anchors coincide & mask it;
+HBU-positive Phase-0 proof was SYNTHETIC, live confirmation deferred to the 2.22.0a.6 gate.
+New Bug A15 (Medium): HBU silently dropped whenever the zoning hint is absent — reachable
+today under QARS degradation; graceful-disclosure fix deferred (Gate 2). Harness committed
+`2ecfd43`. Lever 3 (seed get_plot dedup) implementation = Sprint 2.22.0a.6, in progress.
+Prior: 2026-05-29 (Branch B Phase 0 — §3.1+§3.2 villa-latency diagnostic: the A14
 cold-503 is measured **network-bound**, dyno irrelevant; scope locked to perf-only GIS-phase
 parallelisation [lever 1 = overlap `geometric_factors` ALONE; `geo_v2` stays sequential
 (feeds central value); cold ~25s, fixes cold-503]; probe deploys
