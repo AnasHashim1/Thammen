@@ -2,8 +2,10 @@
 
 **Date:** 2026-05-30
 **Type:** Methodology (headline value changes on two comparison paths) — single-purpose (Rule #38)
-**Deploy posture:** LOCAL isolated commit only — **NO Heroku push this sprint.**
-**Engine version:** NOT bumped in this commit (no deploy) — see §8.
+**Deploy posture:** Facet (a) shipped as isolated commit `acb1e40`; the bump + R6 pin relax +
+the validation note land in the deploy-prep commit; **deployed to Heroku on Gate-1 GO (2026-05-30).**
+**Engine version:** `thammen-sprint2p22p0a9-widened-elasticity` / SPRINT_TAG `2.22.0a.9`
+(bumped in the deploy-prep commit; `/api/health` → `3.1.0-sprint2.22.0a.9`).
 **Files changed:**
 - `evaluate_unified.py` — `_age_quality_adj()` helper + Cases 2 & 3 of `_select_primary_comparison`
 - `test_sprint_2p22p0a9_widened_elasticity.py` — new isolated test (28 checks)
@@ -103,6 +105,17 @@ scaled once; no-op identity; no double-count).
 - surface-honesty `test_sprint_2p22p0a3_surface_honesty.py` — **45 / 45**
 - broad `2p22p0_pre/run_regression_2p22p0a.py` — **52 / 52 files** (auto-includes the new test)
 
+**External MoJ cross-check (Claude.ai lane — why a9 shipped, and why the contamination track closed):**
+Ref property 54/541/6 is a **2-story villa + annex, ~20 yr**. Decomposing the MoJ 24-month data by
+built type (`nw_l_qr`), the MoJ median for that **exact built type** in Marikh = **681 QAR/ft²**
+(n=25, matched plot ~590 m²); the engine's widened value = **682 QAR/ft²** (4.5 M) → **MATCH**. The
+widened path compared the subject to the correct built-type segment and landed right. The earlier
+"luxury-contamination / Al-Waab" hypothesis is **DROPPED**: the n=22 "luxury" comps are Marikh's
+**own** 2-story villas (p75 = 798, max = 867 QAR/ft²), not Al-Waab. a9's age factor correctly steps
+the 20-yr villa 4.5 M → 4.4 M (right direction; the median is age-blind, so a 20-yr villa sits in
+the lower half of the type range). **Backlog (not now):** whether `building_age` (−2% at 20 yr) is
+strong enough for older villas — a possible future refinement tied to the 10-Year Rule.
+
 ## 5. Hypotheses
 
 - **H1** widened headline moves with age — ✅ confirmed (4.6 / 4.4 / 4.3M).
@@ -124,13 +137,14 @@ scaled once; no-op identity; no double-count).
 `git subtree push --prefix "deploy v2" heroku master` (Rule #43) — see §8 for the
 required deploy-prep steps that are deliberately NOT in this commit.
 
-## 8. Deploy-prep deferred from this commit (do at Gate 1, not before)
+## 8. Deploy-prep (done at Gate-1 GO, in the deploy-prep commit)
 
-1. **Bump `ENGINE_VERSION` → `thammen-sprint2p22p0a9-widened-elasticity` + `SPRINT_TAG` → `2.22.0a.9`**
-   (`evaluate_unified.py:44-45`). Omitted here because there is no deploy and a bump would
-   break the next item.
-2. **Relax the brittle version pin** in `test_sprint_2p22p0a8_rics_citation.py:124-127`
-   (`== 'thammen-sprint2p22p0a8...'` / `== '2.22.0a.8'`) to be version-agnostic — it re-introduced
-   the exact R6 / a7 anti-pattern ("no exact version pins"). Must be relaxed in lockstep with the bump.
+1. **Bumped `ENGINE_VERSION` → `thammen-sprint2p22p0a9-widened-elasticity` + `SPRINT_TAG` → `2.22.0a.9`**
+   (`evaluate_unified.py:44-45`); `/api/health` auto-derives `3.1.0-sprint2.22.0a.9` (`api.py:642/644`).
+2. **Relaxed the brittle version pin** in `test_sprint_2p22p0a8_rics_citation.py` (was
+   `== 'thammen-sprint2p22p0a8…'` / `== '2.22.0a.8'`) to a **format/regex** assertion
+   (`^thammen-sprint\d+p\d+p\d+` / `^\d+\.\d+\.\d+`) — fixes the R6 / a7 "no exact version pins"
+   anti-pattern in lockstep with the bump.
 3. Post-deploy live smoke (Rule #52): Marikh 54/541/6 age sweep + control 56/565/21 (= 2.5M) +
-   apt anchors, desktop + mobile 390×844.
+   apt 52/903/90, desktop + mobile 390×844. a9 is **backend-only** (no `index.html` change) →
+   mobile layout structurally unaffected.

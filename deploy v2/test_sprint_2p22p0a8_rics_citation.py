@@ -22,6 +22,7 @@ Verifies (source-level on the LIVE production files + one runtime exercise):
 Run:  PYTHONIOENCODING=utf-8 python test_sprint_2p22p0a8_rics_citation.py
 """
 import os
+import re
 import sys
 import types
 
@@ -121,10 +122,15 @@ check("bare line carries no Latin standard code", (LRM not in BARE_LINE and 'VPS
 print("\n[7] Runtime production exercise")
 try:
     import evaluate_unified as eu
-    check("ENGINE_VERSION bumped",
-          eu.ENGINE_VERSION == 'thammen-sprint2p22p0a8-rics-citation-2025',
+    # R6 (a7 testing-discipline lesson): assert FORMAT, not an exact version
+    # string — exact pins break every later sprint (this pin broke on the a9
+    # bump). See CHANGELOG_v61 §8.
+    check("ENGINE_VERSION format (thammen-sprint{M}p{m}p{p})",
+          bool(re.match(r'^thammen-sprint\d+p\d+p\d+', eu.ENGINE_VERSION)),
           f"got {eu.ENGINE_VERSION!r}")
-    check("SPRINT_TAG bumped", eu.SPRINT_TAG == '2.22.0a.8', f"got {eu.SPRINT_TAG!r}")
+    check("SPRINT_TAG format (X.Y.Z...)",
+          bool(re.match(r'^\d+\.\d+\.\d+', eu.SPRINT_TAG)),
+          f"got {eu.SPRINT_TAG!r}")
     # Minimal ev: valuation=None makes the `if ev.valuation` guards skip the
     # valuation block, so the real _build_unified_output runs to completion and
     # returns the actual base dict (incl. the new note) — a genuine production
