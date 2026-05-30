@@ -270,7 +270,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   <div class="htag">تقييم عقارك في قطر<br>مبني على بيانات وزارة العدل الفعلية</div>
   <button class="hbtn" onclick="go('form')">ابدأ التقييم</button>
   <div class="hfoot" id="dfSubtitle">بيانات وزارة العدل القطرية الرسمية</div>
-  <!-- Sprint 2.14.0 — RICS VPS 2 Scope link -->
+  <!-- Sprint 2.14.0 — RICS VPS 1 Scope link -->
   <div style="margin-top:14px;font-size:.85rem;color:var(--muted);position:relative;z-index:1">
     <a href="#" onclick="openScope();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer">
       ما يدعمه ثمّن وما لا يدعمه ↓
@@ -742,6 +742,18 @@ function show(d){
     h+='</div>';
   }
 
+  // ── Sprint 2.22.0a.8: secondary RICS/IVS methodology + models-standard note ──
+  // Quiet, collapsed-by-default surface (NOT the headline). Surfaces the AVM models
+  // standard (VPS 5 / IVS 105, new in 2025) + the IVS 105 disclosure that an AVM is a
+  // supplementary tool, not a standalone compliant valuation. LRM marks arrive embedded
+  // in the backend string (Operational_Rules #25); Latin in the summary uses &lrm;.
+  if(d.rics_methodology_note_ar){
+    h+='<details style="margin-bottom:14px;border:1px solid var(--light);border-radius:8px;padding:10px 12px;background:var(--alt)">';
+    h+='<summary style="cursor:pointer;font-weight:600;font-size:.9rem;color:var(--primary)">ℹ️ المنهجية ومعايير &lrm;RICS / IVS&lrm;</summary>';
+    h+='<div style="margin-top:8px;line-height:1.7;font-size:.88rem;color:var(--muted)">'+d.rics_methodology_note_ar+'</div>';
+    h+='</details>';
+  }
+
   // ── Sprint 2.16.14: Bug A11 — Zoning/Subtype contradiction warning ──
   // QARS_Point's BUILDING_NO_SUBTYPE was last surveyed 2010-2012 for most
   // parcels. When a building was converted to commercial/government use
@@ -1063,7 +1075,7 @@ function show(d){
         const sign=hbuAdj>0?'+':'';
         const bg=hbuAdj>0?'#e6f7ed':'#fdecec';
         const color=hbuAdj>0?'#0c7d41':'#a8131c';
-        h+='<div style="margin-top:12px;padding:10px;background:'+bg+';border-radius:6px;font-size:.88rem;color:'+color+'"><strong>HBU:</strong> تعديل النقطة المركزية '+sign+hbuAdj.toFixed(1)+'% — RICS VPS 4 §3.4</div>';
+        h+='<div style="margin-top:12px;padding:10px;background:'+bg+';border-radius:6px;font-size:.88rem;color:'+color+'"><strong>HBU:</strong> تعديل النقطة المركزية '+sign+hbuAdj.toFixed(1)+'% — &lrm;RICS VPS 2 / IVS 102&lrm;</div>';
       }
       h+='</div>';
     }

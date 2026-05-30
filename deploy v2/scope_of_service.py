@@ -2,10 +2,11 @@
 """
 scope_of_service.py — Sprint 2.14.0
 
-Formal RICS VPS 2 Scope of Service declaration for Thammen.
+Formal RICS VPS 1 (Terms of engagement / scope of work) Scope of Service declaration for Thammen.
 
 WHY THIS EXISTS:
-  RICS Red Book Global Standards VPS 2 requires every valuation to be
+  RICS Red Book Global Standards (effective 31 January 2025) VPS 1
+  (Terms of engagement / scope of work) requires every valuation to be
   accompanied by a clear statement of scope:
     - What is being valued (asset type, address, interest)
     - What is NOT included (assets out of scope, limitations)
@@ -69,18 +70,18 @@ from typing import Optional
 # VPS 1 paragraph 1.2 are subject to mandatory compliance." Thammen's
 # valuations are NOT for mortgage, financial reporting, or judicial purposes
 # — so mandatory VPS 1 compliance does not technically apply. We voluntarily
-# follow VPS 4 methodology as best practice, but we are clear about scope.
+# follow VPS 3 methodology as best practice, but we are clear about scope.
 
 SERVICE_LEVEL_AR = (
     'ثمّن يُنتج "حساب قيمة" (Calculation of Value) + "نصيحة استشارية" '
-    '(Other Advice) وفق المنهجية المعيارية لـ RICS VPS 4 — وليس "تقريراً '
+    '(Other Advice) وفق المنهجية المعيارية لـ ‎RICS VPS 3‎ — وليس "تقريراً '
     'تقييمياً معتمداً" (Valuation Report). للأغراض الرسمية (قروض، نزاعات '
     'قضائية، تقارير محاسبية، تأمين)، يلزم تقييم معتمد من مُقيِّم مُرخّص.'
 )
 
 SERVICE_LEVEL_EN = (
     'Thammen provides a "Calculation of Value" + "Other Advice" following '
-    'RICS VPS 4 methodology as best practice — NOT a certified "Valuation '
+    'RICS VPS 3 methodology as best practice — NOT a certified "Valuation '
     'Report". For regulatory purposes (mortgages, court proceedings, '
     'financial reporting, insurance), a certified valuation by a licensed '
     'RICS valuer is required.'

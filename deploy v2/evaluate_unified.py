@@ -5,9 +5,9 @@ evaluate_unified.py — Thammen AVM orchestrator (Sprint 1.b)
 Methodology name (RICS-aligned):
     "Sales Comparison-led AVM with Three-Approach Reconciliation"
 
-    Primary value source: Sales Comparison Approach (RICS VPS 4)
+    Primary value source: Sales Comparison Approach (RICS VPS 3 — Valuation approaches and methods)
         - Bracket comparison when bracket_n >= 20
-        - Geographic widening adjustment when bracket_n < 20 (VPS 4 §7)
+        - Geographic widening adjustment when bracket_n < 20 (VPS 3)
     Cross-checks (NOT weighted into primary):
         - Cost Approach (sanity check for old buildings)
         - Income Approach (sentiment check for asset class)
@@ -17,7 +17,7 @@ Important departure from Sprint 1.a:
     Sprint 1.a wrongly blended three approaches with equal weights for a
     residential villa. This produced 2.9M for Marikh when truth was ~4.5M.
     Sprint 1.b keeps comparison as primary (correct for residential per
-    IVS 105) and uses cost/income only for reconciliation transparency.
+    IVS 103 — Valuation Approaches) and uses cost/income only for reconciliation transparency.
 """
 
 from __future__ import annotations
@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0a7-villa-geometric-parallel'
-SPRINT_TAG = '2.22.0a.7'             # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0a8-rics-citation-2025'
+SPRINT_TAG = '2.22.0a.8'             # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -351,7 +351,7 @@ CAP_RATES_BY_ASSET = {
     'agricultural':       None,
 }
 
-# Sample size thresholds (RICS Red Book Global Standards, effective 31 January 2025 — VPS 4 reliability tiers; Material Valuation Uncertainty disclosure per VPGA 10 + VPS 6 + IVS 106)
+# Sample size thresholds (RICS Red Book Global Standards, effective 31 January 2025 — VPS 3 reliability tiers; Material Valuation Uncertainty disclosure per VPGA 10 + VPS 6 + IVS 106)
 MIN_N_RELIABLE   = 20  # full confidence
 MIN_N_INDICATIVE = 10  # use with caveat
 MIN_N_BOUND_ONLY = 5   # bounds only
@@ -954,11 +954,11 @@ def _run_geo_v2(ev, moj_csv_path: str, pin=None):
 
 def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
     """
-    Choose the primary comparison value following RICS VPS 4.
+    Choose the primary comparison value following RICS VPS 3.
 
     Priority:
         1. Bracket median if bracket_n >= 20 (most specific, most reliable)
-        2. Geographic widening if it adds substantial samples (RICS VPS 4 §7)
+        2. Geographic widening if it adds substantial samples (RICS VPS 3)
         3. Bracket median with low-confidence caveat
     """
     bracket_n = (ev.valuation.bracket_n or 0) if ev.valuation else 0
@@ -976,7 +976,7 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
             'low':   ev.valuation.estimated_value_low,
             'high':  ev.valuation.estimated_value_high,
             'method': 'comparison_bracket',
-            'method_label_ar': f'مقارنة شريحية مباشرة (RICS VPS 4)',
+            'method_label_ar': 'مقارنة شريحية مباشرة (‎RICS VPS 3 / IVS 103‎)',
             'n': bracket_n,
             'source_ar': f'وسيط {bracket_n} معاملة في نفس الشريحة والمنطقة',
         }
@@ -988,7 +988,7 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
             'low':   geo_v2.get('range_low'),
             'high':  geo_v2.get('range_high'),
             'method': 'comparison_widened',
-            'method_label_ar': 'مقارنة بتوسيع جغرافي (RICS VPS 4 §7)',
+            'method_label_ar': 'مقارنة بتوسيع جغرافي (‎RICS VPS 3 / IVS 103‎)',
             'n': geo_n,
             'source_ar': f'وسيط {geo_n} معاملة بعد توسيع للمناطق المجاورة مع تسوية موقع',
         }
@@ -1001,7 +1001,7 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
             'high':  geo_v2.get('range_high'),
             'method': 'comparison_widened_indicative',
             # Sprint 2.22.0a.2 C3: relabel "إرشادي" -> "شواهد محدودة"
-            'method_label_ar': 'مقارنة بتوسيع جغرافي — شواهد محدودة (RICS VPS 4 §7)',
+            'method_label_ar': 'مقارنة بتوسيع جغرافي — شواهد محدودة (‎RICS VPS 3 / IVS 103‎)',
             'n': geo_n,
             'source_ar': f'وسيط {geo_n} معاملة بعد توسيع — شواهد محدودة بسبب عينة صغيرة',
         }
@@ -1767,7 +1767,7 @@ _DCF_ASSETS_FOR_REASON = frozenset({'compound_large', 'tower', 'apartment_buildi
 
 
 def _attach_scope(response: dict) -> dict:
-    """Sprint 2.14.0 — attach RICS VPS 2 scope assessment to every response.
+    """Sprint 2.14.0 — attach RICS VPS 1 (Terms of engagement / scope of work) scope assessment to every response.
 
     Mutates and returns the response dict. Always safe — falls back to
     'unknown' scope if asset_type missing. Adds the field `service_scope`
@@ -4058,25 +4058,55 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
         # computed and JSON-stored (see output['reconciliation'] below) for analytics
         # and frontend secondary-surface use, but the headline asserts only the
         # approach actually applied (silence on approaches not applied).
-        # Cite: RICS Red Book Global Standards 2024 / IVS 106 (Valuation Reporting),
-        # effective 31 January 2025. (Specific VPS sub-clause OPEN pending PDF lookup.)
+        # Cite: RICS Red Book Global Standards (effective 31 January 2025) / IVS 106
+        # (Documentation and Reporting). Sprint 2.22.0a.8 adds a secondary methodology
+        # surface (rics_methodology_note_ar/en below) citing the approach (VPS 3 / IVS 103)
+        # + the new models standard (VPS 5 / IVS 105) + the report (VPS 6 / IVS 106).
         # ── T2.8 (Sprint 2.22.0a.4): A→D fold (main path) ──
         # The main-path methodology_disclaimer_ar (Layer A) duplicated the
         # top-level `disclaimer` (Layer D — the canonical not-a-formal-valuation
         # C4 string). P0.1 confirmed A was JSON-only (never rendered in the UI
         # brief), so removing it is render-invisible. Per the completed multi-AI
         # Resolution (docs/MULTI_AI_VALIDATION_BATCH_2p22p0a4.md, GPT-5 + Gemini,
-        # Rule #54) the redundant disclaimer half folds into D. The "AVM per VPS 4"
+        # Rule #54) the redundant disclaimer half folds into D. The methodology
         # provenance is NOT promoted to the visible headline: the Resolution's
         # "reduce, not add" theme + the bare-line outcome keep methodology_ar a
-        # single sentence (the provenance was previously JSON-only/invisible in A;
-        # RICS framing already surfaces in the MUC card). VPS-4 provenance on a
-        # secondary expandable surface is deferred to a future sub-sprint (the
-        # batch doc's "Deferred — secondary-surface variants").
+        # single sentence. Sprint 2.22.0a.8 realises the previously-deferred
+        # "secondary expandable surface" as rics_methodology_note_ar/en (below) +
+        # a collapsible block in index.html — NOT on this bare line, which stays bare.
         # The other 5 methodology_disclaimer_ar sites carry genuine per-path
         # methodology caveats (NOT duplicates of D) and are intentionally left
         # untouched. (@2703's "إنتاج تقييم موثوق" stays — test c3 pins it.)
         'methodology_ar': 'أساس التقدير هو منهج المقارنة بالمبيعات.',
+        # ── Sprint 2.22.0a.8: secondary RICS/IVS methodology + models-standard note ──
+        # The "secondary expandable surface" deferred in 2.22.0a.4. Represents the AVM
+        # models standard (VPS 5 / IVS 105, new in the 2025 edition) and the IVS 105
+        # disclosure that an AVM is a supplementary tool — not a standalone compliant
+        # valuation without a licensed valuer (Stage 5). This doubles as the A7
+        # disclosure (why rics_compliant=false pre-inspection). Rendered on a quiet
+        # collapsible block (index.html), NOT the headline — the bare methodology_ar
+        # above is untouched. Latin standard codes are LRM-wrapped (‎) per Op. #25.
+        'rics_methodology_note_ar': (
+            'يستند هذا التقدير إلى منهج المقارنة بالمبيعات '
+            '(‎VPS 3‎ / ‎IVS 103‎)، ضمن '
+            '‎RICS Red Book Global Standards (effective 31 January 2025)‎ '
+            'بما في ذلك معيار نماذج '
+            'التقييم (‎VPS 5‎ / ‎IVS 105‎)، مع الإفصاح عن '
+            'عدم اليقين الجوهري (‎VPGA 10‎) في التقرير '
+            '(‎VPS 6‎ / ‎IVS 106‎). النموذج الآلي '
+            '(‎AVM‎) أداة مساعدة ولا يُنتج بمفرده تقييماً نهائياً '
+            'مطابقاً للمعايير دون مراجعة مُقيِّم مُرخّص (المرحلة الخامسة).'
+        ),
+        'rics_methodology_note_en': (
+            'This estimate uses the Sales Comparison approach (VPS 3 / IVS 103), '
+            'within RICS Red Book Global Standards (effective 31 January 2025) '
+            'including the valuation models standard (VPS 5 / IVS 105), with '
+            'material valuation uncertainty disclosed (VPGA 10) in the report '
+            '(VPS 6 / IVS 106). An automated valuation model (AVM) is a '
+            'supplementary tool and does not by itself produce a final '
+            'standards-compliant valuation without review by a licensed valuer '
+            '(Stage 5).'
+        ),
         'address': getattr(ev, 'address', None),
         'valuation_date': getattr(ev, 'valuation_date', None),
         'district': getattr(ev, 'gis_district_aname', None),
@@ -4434,7 +4464,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 'potential_pct': hbu.get('potential_pct', 0),
                 'evidence_ar': hbu.get('evidence_ar'),
                 'adjacent_zones': hbu.get('adjacent_zones', []),
-                'rics_reference': 'RICS VPS 4 §3.4 — Highest and Best Use',
+                'rics_reference': 'RICS VPS 2 / IVS 102 — Highest and Best Use',
             }
 
         # Named landmarks (from GIS dynamic query — no hardcoded whitelist)
@@ -4514,7 +4544,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 ),
             }
 
-    # ── Material Uncertainty (RICS VPN 13) ──
+    # ── Material Uncertainty (RICS VPGA 10) ──
     # Sprint 1.c fix: ensure MU reflects the n actually USED in primary value
     # (not the thin bracket n that geo widening already bypassed)
     if v3_result and v3_result.get('material_uncertainty'):
@@ -4529,7 +4559,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 if 'صغيرة جداً' in f and 'لا يمكن إنتاج' in f and effective_n >= 20:
                     new_factors.append(
                         f'الشريحة المباشرة ضعيفة (n=1) — تم التعويض بالتوسيع الجغرافي '
-                        f'(n={effective_n} معاملة بعد التوسيع، RICS VPS 4 §7)'
+                        f'(n={effective_n} معاملة بعد التوسيع، ‎RICS VPS 3 / IVS 103‎)'
                     )
                 else:
                     new_factors.append(f)
@@ -4660,7 +4690,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
         output['active_listings'] = {'available': False,
                                       'reason': 'لا توجد إعلانات نشطة مطابقة'}
 
-    # Sprint 2.14.0 — attach RICS VPS 2 scope assessment
+    # Sprint 2.14.0 — attach RICS VPS 1 (scope of work / terms of engagement) scope assessment
     _attach_scope(output)
 
     # Sprint 2.21.0.9 — surface multi-QARS detection at the canonical root

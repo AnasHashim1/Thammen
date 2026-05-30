@@ -2,7 +2,8 @@
 """
 comparable_adjustments.py — Individual comparable transaction adjustments.
 
-RICS Red Book VPS 4 §7 requires each comparable transaction to be adjusted
+RICS Red Book (effective 31 January 2025) VPS 3 (Valuation approaches and methods)
+requires each comparable transaction to be adjusted
 individually for: time, location, size, condition, and terms.
 
 Our approach:

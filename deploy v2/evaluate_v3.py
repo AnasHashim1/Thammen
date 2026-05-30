@@ -4,7 +4,7 @@ evaluate_v3.py — Thammen v3 evaluation layer.
 
 Wraps evaluate_property.py (v2) and adds:
     1. Income approach via rent_reference.py (360K rental transactions)
-    2. Individual comparable adjustments (RICS VPS 4 §7)
+    2. Individual comparable adjustments (RICS VPS 3)
     3. Material Valuation Uncertainty declaration (RICS Red Book Global Standards, effective 31 January 2025 — VPGA 10 + VPS 6; IVS, effective 31 January 2025 — IVS 106)
     4. 3-way blended valuation (comparison + cost + income)
     5. Four audience-specific output briefs

@@ -5,7 +5,7 @@ WHAT THIS CONNECTOR DOES
     Fetches Lusail apartment-for-sale listings from PropertyFinder Qatar
     as asking-tier (T2) evidence for the hybrid valuation framework
     (`hybrid_valuation.hybrid_valuation_v1()`, Sprint 2.21.2). Returns a
-    list of normalized dicts with `value_per_m2` (RICS VPS 4 like-for-like,
+    list of normalized dicts with `value_per_m2` (RICS VPS 3 like-for-like,
     Rule E3 Constraint 7) for ingestion by the engine.
 
 ARCHITECTURE — list-page JSON-LD only (Sprint 2.21.3 polish, post-deploy)

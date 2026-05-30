@@ -446,7 +446,7 @@ def analyze_adjacent_zoning(centroid_lat: float, centroid_lon: float,
     evidence = (
         f'⚠ إمكانية تعديل رخصة: {flag} ({", ".join(sorted(adjacent_codes))}). '
         f'القيمة قد ترتفع بـ +{int(potential_pct*100)}% '
-        f'إذا تم اعتماد التعديل (RICS HBU — VPS 4 §3.4).'
+        f'إذا تم اعتماد التعديل (‎RICS HBU — VPS 2 / IVS 102‎).'
     )
 
     return {

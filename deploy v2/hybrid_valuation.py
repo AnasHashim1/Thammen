@@ -17,7 +17,7 @@ Governing rules:
   - Rule E1 (unchanged) — no MoJ uplift. T1 values are NOT inflated by
     asking-tier evidence; they enter the weighted average at their own
     measured median.
-  - RICS VPS 4 — like-for-like unit-of-comparison enforced by Constraint 7.
+  - RICS VPS 3 — like-for-like unit-of-comparison enforced by Constraint 7.
 
 Author: Sprint 2.21.2 (Claude Code), 2026-05-24.
 BRIEF: 2p21p2_pre/BRIEF_2p21p2.md (Anas-signed D1–D6).
