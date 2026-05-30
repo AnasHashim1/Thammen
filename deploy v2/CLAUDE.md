@@ -3,7 +3,7 @@
 > **Project:** thammen.qa — Qatar real-estate AVM (RICS Red Book Global Standards, effective 31 January 2025 — VPGA 10 + VPS 6 + IVS 106)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-30 (governance consolidation — docs accuracy + process hardening; see `docs/BRIEF_governance_consolidated_2026-05-30.md`). **LIVE: engine `thammen-sprint2p22p0a7-villa-geometric-parallel` · Heroku v146 · CHANGELOG_v59** (Sprint A14 lever 2 — geometric_factors parallelized, perf-only/byte-identical; **A14 CLOSED** — live post-deploy cold villa 200 @~15s ×2, was 503@31s; lever 1 deferred + H_A-cleared/ready). The production-state snapshot block below + Session_Log §20 are authoritative. Prior: 2026-05-29 Sprint 2.22.0a.4 — Disclosure & Framing Honesty (Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
+> **Last update:** 2026-05-30 (Sprint 2.22.0a.8 deployed — RICS/IVS 2025 citation correctness; CHANGELOG_v60 + Session_Log §20.9). **LIVE: engine `thammen-sprint2p22p0a8-rics-citation-2025` · api/health 3.1.0-sprint2.22.0a.8 · Heroku v147 · commit `1e07a2a` · CHANGELOG_v60** (added the AVM models standard VPS 5 / IVS 105 + AVM-not-standalone disclosure on a secondary collapsible surface [the 2.22.0a.4-deferred surface]; remapped ALL stale citations — approaches VPS 4→VPS 3 / IVS 103, HBU→VPS 2 / IVS 102 [genus, triple-confirmed], scope→VPS 1, VPN 13→VPGA 10 [D5 widened]; bare `methodology_ar` untouched; copy-only — valuations unchanged [villa 56/565/21 = 2.5M = v101]; regression 392/15/45/51 + 43/43; origin in sync `b560920..1e07a2a`). Prior: Sprint A14 lever 2 — geometric_factors parallelized, **A14 CLOSED** (Heroku v146, CHANGELOG_v59, cold villa 200 @~15s, was 503@31s; lever 1 deferred + H_A-cleared/ready). The production-state snapshot block below + Session_Log §20 are authoritative. Prior: 2026-05-29 Sprint 2.22.0a.4 — Disclosure & Framing Honesty (Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
 
 ## Quick orientation
 
@@ -108,38 +108,44 @@ the per-change loop; Claude Code does not pause mid-execution for it.
   available for review on request; not a mandatory gate on reversible work.
 
 ```
-Engine version deployed:  thammen-sprint2p22p0a7-villa-geometric-parallel
-                          (Heroku v146, 2026-05-30, commit d870d16; Sprint A14 lever 2 —
-                          parallelize geometric_factors internals; perf-only / byte-identical
-                          [H_det]; success-path output == v145)
-api/health version:       3.1.0-sprint2.22.0a.7
-Latest CHANGELOG:         CHANGELOG_v59.md  (Sprint A14 lever 2 — geometric_factors
-                          parallelized: Round0 polygon → Round1 parallel{corner road-probes
-                          ∥ hbu ∥ landmarks}; byte-identical (only self-timing differs).
-                          Lever 1 deferred (measure-gate). R6 brittle a5 pin fixed → 50/50.
-                          New permanent test_sprint_2p22p0a7_geometric_determinism. Full
-                          narrative Session_Log §20.7. Prior: v57=2.22.0a.6 … no drift)
+Engine version deployed:  thammen-sprint2p22p0a8-rics-citation-2025
+                          (Heroku v147, 2026-05-30, commit 1e07a2a; Sprint 2.22.0a.8 —
+                          RICS/IVS 2025 citation correctness; copy/comments only —
+                          success-path valuations unchanged [villa 56/565/21 = 2.5M = v101])
+api/health version:       3.1.0-sprint2.22.0a.8
+Latest CHANGELOG:         CHANGELOG_v60.md  (Sprint 2.22.0a.8 — RICS/IVS 2025 citation
+                          correctness: ADDED the AVM models standard VPS 5 / IVS 105 +
+                          AVM-not-standalone disclosure on a secondary collapsible surface
+                          (the 2.22.0a.4-deferred surface); remapped EVERY stale citation —
+                          approaches VPS 4→VPS 3 / IVS 103, HBU→VPS 2 / IVS 102 (genus,
+                          triple-confirmed D3), scope→VPS 1, VPN 13→VPGA 10; D5 widened to
+                          ALL labels; bare methodology_ar line untouched. Deferred "VPS 3 vs
+                          VPS 6" item CLOSED. Full narrative Session_Log §20.9. Prior:
+                          v59=2.22.0a.7 A14 lever 2 (A14 CLOSED) … no engine drift)
 A14 (CLOSED 2026-05-30):  villa cold-dyno first-try 503 — FIXED by Sprint A14 lever 2 (v146).
                           Live post-deploy H_lat: 56/565/21 cold first-try 200@14.4s + 200@15.0s
                           (×2) · 56/647/6 cold 200@15.9s — all <30s, margin ~15s, ZERO 503
                           (baseline was 503@31s). Lever 1 (overlap, H_A-cleared) DEFERRED —
                           unneeded (lever-2 margin huge). Bug A15 (silent-HBU-drop) still OPEN
                           (§20.5, separate sprint). NOT the closed A6 case (#53).
-Latest Sprint:            2.22.0a.4 Disclosure & Framing Honesty
-                          - methodology_ar → universal bare line
-                            «أساس التقدير هو منهج المقارنة بالمبيعات.»
-                            (Path A / multi-AI Rule #54; dropped «توفيق ثلاثي
-                            الطرق» reconciliation claim + Latin AVM/SCA tokens)
-                          - T2.8: main-path Layer A fold (6→5; 5 per-path
-                            caveats preserved); D/C4 already canonical from
-                            2.22.0a.2 (untouched); Layer C cleanup unnecessary
-                          - VPS-4 provenance NOT promoted to headline
-                            (reduce-not-add); deferred to secondary surface
-                          - Phase 0: P0.1 disclaimer rendering map + P0.2
-                            no-blend confirmation (docs/PHASE0_2p22p0a4_*)
-                          - live smoke: villa 56/565/21 (A6 503→retry 200@22s)
-                            + apt 52/903/90 PASS; aggregator 392 + 17 new green
-                          (full narrative: Session_Log §18; deferred items there)
+Latest Sprint:            2.22.0a.8 RICS/IVS 2025 Citation Correctness
+                          - ADDED models standard VPS 5 / IVS 105 + AVM-not-
+                            standalone disclosure (IVS 105) on a NEW secondary
+                            collapsible surface (rics_methodology_note_ar/en);
+                            main bare methodology_ar line UNTOUCHED (2.22.0a.4 guard)
+                          - remapped ALL stale citations (D5 widened): approaches
+                            VPS 4→VPS 3 / IVS 103; HBU→VPS 2 / IVS 102 (genus,
+                            triple-confirmed — Claude.ai IVS 102 App. A90 + GPT-5 +
+                            Gemini); scope→VPS 1; VPN 13→VPGA 10 typo; §x.y
+                            sub-clauses dropped (genus-level — were unverified)
+                          - LRM-wrapped every Latin run in Arabic copy; mobile
+                            390×844 bidi/overflow verified (pre-deploy + live)
+                          - A7 (rics_compliant) closed not-a-bug/by-design
+                            (IVS 105: AVM not standalone-compliant); flag logic
+                            untouched; field-rename DEFERRED
+                          - copy-only: valuations unchanged (villa 56/565/21 =
+                            2.5M = v101); regression 392/15/45/51 + new 43/43
+                          (full narrative: Session_Log §20.9; deferred items there)
 
 --- snapshot block below is PRE-2.22.0a (2.21.4-era), kept for reference ---
 Engine (pre-arc):         thammen-sprint2p21p4-t3-aryan-lusail  (Heroku v125 code,

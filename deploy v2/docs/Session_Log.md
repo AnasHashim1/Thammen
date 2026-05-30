@@ -1660,7 +1660,77 @@ Added Empirical **E21** (cold-latency coupled to the serial GIS chain, not dyno 
 
 -----
 
-*Last updated: 2026-05-30 (Sprint A14 — villa cold-503 **FIXED** via lever 2 (geometric_factors
+## 20.9 🆕 2026-05-30 — Sprint 2.22.0a.8 (RICS / IVS 2025 citation correctness) — DEPLOYED Heroku v147
+
+> Engine `thammen-sprint2p22p0a8-rics-citation-2025` / SPRINT_TAG `2.22.0a.8` / api-health
+> `3.1.0-sprint2.22.0a.8`. **Copy + comments only — no valuation-logic change; success-path
+> valuations byte-unchanged.** Brief `BRIEF_2p22p0a8_rics_citation_2025.md` + signed
+> `BRIEF_2p22p0a8_SIGNED_DECISIONS.md` (Anas, D1–D5). Committed `1e07a2a` → Heroku **v147**
+> (`git subtree push`, clean fast-forward `468e100..86b24a8`, on explicit Anas "go") →
+> origin backup `b560920..1e07a2a` (in sync). CHANGELOG_v60.
+
+- **Why.** Two correctness gaps: (1) the AVM-governing standard was never cited — the 2025
+  edition's **VPS 5 / IVS 105 (Valuation Models)** holds that an AVM cannot produce a standalone
+  IVS-compliant valuation without a valuer; (2) `VPS 4` was used as a *method label* — a
+  **pre-existing mislabel** (approaches were VPS 5 in 2022, VPS 3 in 2025; never VPS 4), NOT
+  edition drift (D1 condition on the CHANGELOG framing).
+- **Numbering verified ✓** (both lanes, primary sources — IVSC + RICS): RICS 2025 = VPS 1 terms /
+  VPS 2 bases / **VPS 3 approaches** / VPS 4 inspections / **VPS 5 models (new)** / VPS 6 reports;
+  IVS 2025 = IVS 102 bases / IVS 103 approaches / IVS 104 data&inputs / **IVS 105 models (new)** /
+  IVS 106 reporting. The IVS 105 AVM clause confirmed near-verbatim.
+- **Shipped (8 files + 1 new test).** New secondary `rics_methodology_note_ar/en` in
+  `_build_unified_output` (`evaluate_unified.py`) citing approach (VPS 3/IVS 103) + models
+  (VPS 5/IVS 105) + MUC (VPGA 10) + report (VPS 6/IVS 106) + the AVM-not-standalone disclosure,
+  rendered on a NEW collapsible `<details>` block in `index.html` (the 2.22.0a.4-deferred
+  surface). **Main bare `methodology_ar` line UNTOUCHED** (2.22.0a.4 guard). Remapped every stale
+  citation across `evaluate_unified.py` / `evaluate_v3.py` / `comparable_adjustments.py` /
+  `hybrid_valuation.py` / `geometric_factors.py` / `scope_of_service.py` /
+  `connectors/propertyfinder_apartments_t2_sales.py` / `index.html`: approaches **VPS 4→VPS 3 /
+  IVS 103**; **HBU→VPS 2 / IVS 102**; **scope→VPS 1**; comment typo **VPN 13→VPGA 10**. Sub-clause
+  refs (`§7`, `§3.4`) dropped (genus-level — they were unverified and tied to the wrong standard).
+  Edition label → "effective 31 January 2025". Every Latin run in Arabic copy **LRM-wrapped**
+  (U+200E); mobile 390×844 bidi/overflow verified pre-deploy (exact DOM + real CSS) and live.
+- **D3 CLOSED — HBU = genus `VPS 2 / IVS 102`, TRIPLE-confirmed** (Claude.ai primary-source
+  IVS 2025 → **IVS 102 Appendix A90** + GPT-5 + Gemini; all three flagged the exact *RICS*
+  sub-paragraph is uncertain since the Red Book cross-references IVS → genus-level, no sub-para).
+- **D5 widened** the purpose to "correct ALL RICS/IVS citation labels to 2025" (folded the
+  `VPS 2 — Scope`→VPS 1 mislabel + the VPN 13 typo).
+- **A7 (`rics_compliant` always false) — closed as not-a-bug / by-design** (gated on
+  `has_field_inspection`, which an AVM never has → `False` is correct per IVS 105). Flag logic
+  **untouched**; the "why" now rides on the new note. Field-rename DEFERRED (Rule #42 + #47).
+- **Long-deferred "VPS 3 vs VPS 6" item → CLOSED/RESOLVED** by the full VPS 1–6 verification:
+  reports = VPS 6 / IVS 106, approaches = VPS 3 / IVS 103. No open VPS-numbering question remains.
+- **Verification.** py_compile 7/7; isolated `test_sprint_2p22p0a8_rics_citation.py` **43/43**
+  (incl. a runtime `_build_unified_output` exercise — note returned, bare line intact); DoD
+  regression **392 / 15 / 45 / 51-files** all green (+1 file = the new test); LRM proven (18
+  marks, 0 Latin outside a wrap). Post-deploy: `/api/health`=a8; villa 56/565/21 200@14.6s
+  `valuation.amount=2,500,000` (=v101, **unchanged**) + note present (VPS 5/IVS 105/LRM) + bare
+  line live; apt 52/903/90 + hybrid 69/255/75 → 200, valuation None (unchanged), **no `VPS 4`**
+  in any response. **node --check** unavailable locally (node absent — §11.3 precedent); inline
+  JS balance verified by proxy + live render.
+
+**Deferred / candidates (Rule #42 register):**
+
+| Item | Why deferred | Revival / next |
+|---|---|---|
+| `rics_compliant` field-rename | rename is its own pass (Rule #47) — so `false` reads "pending Stage-5 inspection," not "non-compliant" | dedicated copy/schema sub-sprint |
+| RICS/IVS note on refusal screens | note is on the main valuation path only; refusal/early-return + hybrid builders don't carry it | follow-up if wanted on those surfaces |
+| arady JS-connector revival | arady detail content is JS-hydrated; needs `__NEXT_DATA__` probe OR headless browser | separate §5 audit (was Sprint 2.21.3.2 candidate) |
+| PropertyFinder coverage beyond Lusail apartments | the T2 connector is Lusail-apartments-scoped | data-expansion sprint |
+| Demolition special-assumption feature (HBU / VPS 2) | a new methodology surface (HBU now cited VPS 2 / IVS 102) — Gate 2 | brief + §5 audit |
+| **54/541/6 investigation** | flagged NEXT by Anas | next session — diagnose before scoping |
+
+-----
+
+*Last updated: 2026-05-30 (Sprint **2.22.0a.8** — RICS/IVS 2025 citation correctness, **DEPLOYED
+Heroku v147**, commit `1e07a2a`, CHANGELOG_v60: added the AVM models standard VPS 5/IVS 105 +
+AVM-not-standalone disclosure on a secondary collapsible surface (the 2.22.0a.4-deferred surface),
+remapped EVERY stale citation — approaches VPS 4→VPS 3/IVS 103, HBU→VPS 2/IVS 102 (genus,
+triple-confirmed D3), scope→VPS 1, VPN 13→VPGA 10 (D5 widened to ALL labels); bare methodology_ar
+line untouched; copy-only — valuations unchanged (villa 56/565/21 = 2.5M = v101); regression
+392/15/45/51 + new 43/43; origin in sync `b560920..1e07a2a`; deferred "VPS 3 vs VPS 6" item CLOSED;
+A7 closed not-a-bug/by-design (field-rename deferred); full narrative §20.9. Prior: Sprint A14 —
+villa cold-503 **FIXED** via lever 2 (geometric_factors
 parallelization), **DEPLOYED Heroku v146**; live post-deploy H_lat: cold villa 56/565/21
 200@14.4s + 200@15.0s ×2 + 56/647/6 200@15.9s — all <30s, margin ~15s, **A14 CLOSED** (was
 503@31s); lever 1 deferred + H_A-cleared/ready; R6 brittle pin fixed; new permanent
