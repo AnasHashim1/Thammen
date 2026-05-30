@@ -1626,9 +1626,43 @@ closed A6 compound-latency case (Rule #53 — distinct tag). Fix = Branch B.
   yet measured live (owed post-deploy per #51). One lever — does **not** alone close A14
   (lever 1 is Gate-2-blocked).
 
+### 20.7 🆕 Sprint A14 — villa cold-503 FIXED (lever 2: geometric parallelization) — DEPLOYED Heroku v146; A14 CLOSED
+
+> Engine `thammen-sprint2p22p0a7-villa-geometric-parallel` / SPRINT_TAG `2.22.0a.7`.
+> **perf-only / byte-identical** (H_det). Committed `d870d16` → deployed Heroku **v146**
+> (subtree-force, Rule #43, on explicit Anas "go") → origin backup. CHANGELOG_v59.
+
+- **Scope = LEVER 2 ONLY** (measure-gated). `geometric_factors.analyze_geometric_factors`:
+  Round0 `fetch_plot_polygon` → Round1 parallel{`detect_corner` (its per-edge road probes
+  also parallelized) ∥ `analyze_adjacent_zoning` ∥ `find_named_landmarks`}. Determinism
+  preserved (street sets order-independent, `edge_evidence` in original edge order,
+  `copy_context()` deadline; `hbu` key still set only when a zoning hint is present).
+- **H_A (lever-1 gate) HELD airtight** (`test_sprint_2p22p0a7_geometric_determinism.py`,
+  26 live points incl HBU-positive + the E7/A11 stale-subtype anchor): early-fetched zoning
+  == current `factors_detail` parse. Gate #1 confirmed `_factor_zoning` is the sole, unmutated
+  source (E7 injects a separate response flag, never the factor). **Lever 1 (overlap) DEFERRED**
+  per measure-gate — lever 2 alone more than sufficed; lever 1 stays H_A-cleared/ready.
+- **H_det:** geometric byte-identical serial-vs-parallel (villa 56/565/21, compound 51500109,
+  HBU-positive R2), excluding the self-timing `corner.time_taken_s` (NOT in the response).
+- **R6:** brittle EXACT-version-pin in `test_sprint_2p22p0a5_request_budget.py` → version-agnostic
+  (assert vs live `ENGINE_VERSION`/`SPRINT_TAG` format). Unbroke 48/49.
+- **Regression:** aggregator 392/392 · security 15/15 · surface-honesty 45/45 · **broad 50/50**.
+- **BINDING post-deploy H_lat → PASSED → A14 CLOSED:** forced cold (`heroku ps:restart` ×3) →
+  56/565/21 cold first-try **200@14.4s + 200@15.0s** (×2) · 56/647/6 cold **200@15.9s** —
+  all <30s, margin ~15s, **zero 503** (baseline was 503@31s). Cold ≈ warm now (~15s) — the
+  serial geometric chain was the dominant cold-penalty driver. RISK_REGISTER R2 → ✅ CLOSED,
+  R6 → ✅ resolved.
+- **Still OPEN:** Bug A15 (silent-HBU-drop when the zoning hint is absent — §20.5), separate
+  Gate-2 correctness sprint; ~12 `.py` "VPS 4" method-labels (separate RICS-label pass).
+
 -----
 
-*Last updated: 2026-05-30 (Sprint 2.22.0a.6 — lever 3 seed `get_plot` dedup committed
+*Last updated: 2026-05-30 (Sprint A14 — villa cold-503 **FIXED** via lever 2 (geometric_factors
+parallelization), **DEPLOYED Heroku v146**; live post-deploy H_lat: cold villa 56/565/21
+200@14.4s + 200@15.0s ×2 + 56/647/6 200@15.9s — all <30s, margin ~15s, **A14 CLOSED** (was
+503@31s); lever 1 deferred + H_A-cleared/ready; R6 brittle pin fixed; new permanent
+`test_sprint_2p22p0a7_geometric_determinism`; broad 50/50; engine
+`thammen-sprint2p22p0a7-villa-geometric-parallel`. Prior: Sprint 2.22.0a.6 — lever 3 seed `get_plot` dedup committed
 [`qatar_gis.detect_extent` optional `seed_plot`], perf-only/byte-identical [harness: villa +
 compound BFS old≡new, get_plot deterministic], regression 45/392/15/49 green, classify_asset
 dedup dropped per Rule #39 recon; **DEPLOYED Heroku v145** (subtree-force, Rule #43, on Anas

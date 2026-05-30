@@ -3,7 +3,7 @@
 > **Project:** thammen.qa — Qatar real-estate AVM (RICS Red Book Global Standards, effective 31 January 2025 — VPGA 10 + VPS 6 + IVS 106)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-30 (governance consolidation — docs accuracy + process hardening; see `docs/BRIEF_governance_consolidated_2026-05-30.md`). **LIVE: engine `thammen-sprint2p22p0a6-seed-getplot-dedup` · Heroku v145 · CHANGELOG_v57** (Branch B lever 3 — seed get_plot dedup, perf-only/byte-identical; A14 villa cold-503 still OPEN, lever 1 Gate-2-blocked). The production-state snapshot block below + Session_Log §20 are authoritative. Prior: 2026-05-29 Sprint 2.22.0a.4 — Disclosure & Framing Honesty (Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
+> **Last update:** 2026-05-30 (governance consolidation — docs accuracy + process hardening; see `docs/BRIEF_governance_consolidated_2026-05-30.md`). **LIVE: engine `thammen-sprint2p22p0a7-villa-geometric-parallel` · Heroku v146 · CHANGELOG_v59** (Sprint A14 lever 2 — geometric_factors parallelized, perf-only/byte-identical; **A14 CLOSED** — live post-deploy cold villa 200 @~15s ×2, was 503@31s; lever 1 deferred + H_A-cleared/ready). The production-state snapshot block below + Session_Log §20 are authoritative. Prior: 2026-05-29 Sprint 2.22.0a.4 — Disclosure & Framing Honesty (Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
 
 ## Quick orientation
 
@@ -108,24 +108,23 @@ the per-change loop; Claude Code does not pause mid-execution for it.
   available for review on request; not a mandatory gate on reversible work.
 
 ```
-Engine version deployed:  thammen-sprint2p22p0a6-seed-getplot-dedup
-                          (Heroku v145, 2026-05-30, commit 1711035; Branch B lever 3 —
-                          seed get_plot dedup in qatar_gis.detect_extent; perf-only /
-                          byte-identical; success-path output == v140/v144)
-api/health version:       3.1.0-sprint2.22.0a.6
-Latest CHANGELOG:         CHANGELOG_v57.md  (2.22.0a.6 Branch B lever 3 — dedup the
-                          redundant seed get_plot [cadastre + ESRI projection round-trip,
-                          ~1.5s] between full_property_lookup and detect_extent via an
-                          optional seed_plot= param; byte-identical; classify_asset NOT
-                          deduped per Rule #39. Full narrative Session_Log §20.6.
-                          Prior: v56=2.22.0a.5 … v50=2.22.0a — no drift)
-A14 (open, Medium):       villa cold-dyno first-try 503 (ref 56/565/21; reconfirmed live
-                          on v145: attempt1 503@30s cold → retry 200@21s warm). H2: heavy
-                          multi-QARS sequential-GIS path ~21-24s warm → >30s cold. Lever 3
-                          (v145) shaved ~1.5s but does NOT close A14. Real fix = Branch B
-                          lever 1 (overlap geometric_factors) — BUT Gate-2-blocked (drops
-                          HBU hbu_analysis when zoning hint absent; Session_Log §20.4 +
-                          Bug A15 §20.5). NOT the closed A6 case (#53).
+Engine version deployed:  thammen-sprint2p22p0a7-villa-geometric-parallel
+                          (Heroku v146, 2026-05-30, commit d870d16; Sprint A14 lever 2 —
+                          parallelize geometric_factors internals; perf-only / byte-identical
+                          [H_det]; success-path output == v145)
+api/health version:       3.1.0-sprint2.22.0a.7
+Latest CHANGELOG:         CHANGELOG_v59.md  (Sprint A14 lever 2 — geometric_factors
+                          parallelized: Round0 polygon → Round1 parallel{corner road-probes
+                          ∥ hbu ∥ landmarks}; byte-identical (only self-timing differs).
+                          Lever 1 deferred (measure-gate). R6 brittle a5 pin fixed → 50/50.
+                          New permanent test_sprint_2p22p0a7_geometric_determinism. Full
+                          narrative Session_Log §20.7. Prior: v57=2.22.0a.6 … no drift)
+A14 (CLOSED 2026-05-30):  villa cold-dyno first-try 503 — FIXED by Sprint A14 lever 2 (v146).
+                          Live post-deploy H_lat: 56/565/21 cold first-try 200@14.4s + 200@15.0s
+                          (×2) · 56/647/6 cold 200@15.9s — all <30s, margin ~15s, ZERO 503
+                          (baseline was 503@31s). Lever 1 (overlap, H_A-cleared) DEFERRED —
+                          unneeded (lever-2 margin huge). Bug A15 (silent-HBU-drop) still OPEN
+                          (§20.5, separate sprint). NOT the closed A6 case (#53).
 Latest Sprint:            2.22.0a.4 Disclosure & Framing Honesty
                           - methodology_ar → universal bare line
                             «أساس التقدير هو منهج المقارنة بالمبيعات.»
