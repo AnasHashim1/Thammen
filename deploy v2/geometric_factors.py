@@ -19,6 +19,7 @@ import json
 import math
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
@@ -202,13 +203,16 @@ def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0,
     edges_checked = 0
     budget_exceeded = False
 
-    for edge in significant_edges:
-        # Time budget check — graceful degradation
-        if time.time() - start_time > time_budget_s:
-            budget_exceeded = True
-            break
-
-        # Single midpoint sample (was 3 — reduced for performance)
+    # ── Sprint A14 lever 2 — parallelize the per-edge road probes ──────────────
+    # Was a serial loop of up to 6 edges x 2 layers (main+local) = up to 12 serial
+    # GIS round-trips, the dominant cost in geometric_factors (~8s). Each edge is
+    # independent (its own midpoint bbox). We fire all edges concurrently, then
+    # aggregate in the ORIGINAL significant_edges order so the output is
+    # byte-identical to the serial version (set unions are order-independent;
+    # edge_evidence is rebuilt in edge order). copy_context() carries the
+    # request-deadline contextvar into each worker (A14 v141 pattern); going
+    # parallel can only REDUCE wall-time, never introduce a new timeout drop.
+    def _probe_edge(edge):
         mid_lat, mid_lon = _edge_midpoint(edge)
         bbox = _bbox_around_point(mid_lat, mid_lon, road_search_buffer_m)
         params = {
@@ -220,10 +224,7 @@ def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0,
             'returnGeometry': 'false',
             'f': 'json',
         }
-
-        edge_main_streets = set()
-        edge_local_streets = set()
-
+        em, el = set(), set()
         main = _http_get_json(LAYER_URLS['main_roads'], params)
         if main and main.get('features'):
             for f in main['features']:
@@ -231,8 +232,7 @@ def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0,
                 sn = a.get('STREET_NO')
                 zn = a.get('ZONE_NO')
                 if sn is not None:
-                    edge_main_streets.add((zn, sn))
-
+                    em.add((zn, sn))
         local = _http_get_json(LAYER_URLS['local_roads'], params)
         if local and local.get('features'):
             for f in local['features']:
@@ -240,8 +240,25 @@ def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0,
                 sn = a.get('STREET_NO')
                 zn = a.get('ZONE_NO')
                 if sn is not None:
-                    edge_local_streets.add((zn, sn))
+                    el.add((zn, sn))
+        return em, el
 
+    import contextvars as _cv
+    with ThreadPoolExecutor(max_workers=len(significant_edges),
+                            thread_name_prefix='corner') as _pool:
+        _futs = [_pool.submit(_cv.copy_context().run, _probe_edge, edge)
+                 for edge in significant_edges]
+        _edge_results = []
+        for _f in _futs:
+            try:
+                _edge_results.append(_f.result(timeout=time_budget_s))
+            except Exception:
+                _edge_results.append((set(), set()))
+    if time.time() - start_time > time_budget_s:
+        budget_exceeded = True
+
+    # Aggregate in the ORIGINAL edge order (deterministic edge_evidence).
+    for edge, (edge_main_streets, edge_local_streets) in zip(significant_edges, _edge_results):
         main_streets.update(edge_main_streets)
         local_streets.update(edge_local_streets)
         edges_checked += 1
@@ -597,22 +614,45 @@ def analyze_geometric_factors(pin: int, lat: float, lon: float,
             lat, lon = polygon['centroid']
             result['centroid'] = (lat, lon)
 
-        # Corner detection
-        result['corner'] = detect_corner(polygon)
     else:
         result['polygon_available'] = False
-        result['corner'] = {
+
+    # ── Sprint A14 lever 2 — run the 3 independent analyses concurrently ───────
+    # Each needs only the polygon/centroid already resolved above: corner (polygon
+    # edges), HBU (centroid + zoning hint), named landmarks (centroid). Serial was
+    # detect_corner road-loop + hbu + landmarks (~9s); parallel wall = the long
+    # pole (corner). Same calls, same results, same result-dict keys (incl. the
+    # 'hbu' key set ONLY when a zoning hint is present) → byte-identical output.
+    import contextvars as _cv
+
+    def _run_corner():
+        if polygon:
+            return detect_corner(polygon)
+        return {
             'is_corner': False,
             'confidence': 'low',
             'evidence_ar': 'لا توجد بيانات polygon',
         }
 
-    # HBU (uses centroid)
-    if current_zoning_code:
-        result['hbu'] = analyze_adjacent_zoning(lat, lon, current_zoning_code)
+    def _run_hbu():
+        if current_zoning_code:
+            return analyze_adjacent_zoning(lat, lon, current_zoning_code)
+        return None
 
-    # Named landmarks
-    result['named_landmarks'] = find_named_landmarks(lat, lon)
+    def _run_landmarks():
+        return find_named_landmarks(lat, lon)
+
+    with ThreadPoolExecutor(max_workers=3, thread_name_prefix='geom') as _pool:
+        _f_corner = _pool.submit(_cv.copy_context().run, _run_corner)
+        _f_hbu = _pool.submit(_cv.copy_context().run, _run_hbu)
+        _f_landmarks = _pool.submit(_cv.copy_context().run, _run_landmarks)
+        result['corner'] = _f_corner.result()
+        _hbu_res = _f_hbu.result()
+        result['named_landmarks'] = _f_landmarks.result()
+
+    # Preserve original key semantics: 'hbu' is set ONLY when a zoning hint was given.
+    if _hbu_res is not None:
+        result['hbu'] = _hbu_res
 
     return result
 

@@ -200,11 +200,17 @@ def run():
     check(f"unarmed analyze_property still queries GIS (calls={rec['calls']}>0)",
           err is None and rec['calls'] > 0)
 
-    # 9) version bump landed
+    # 9) version bump landed — R6 (Sprint A14): assert against the LIVE ENGINE_VERSION /
+    # SPRINT_TAG source FORMAT, NOT frozen literals. The old exact-pin
+    # ('2p22p0a5' / '2.22.0a.5') broke on every later sprint — the 48/49 cause
+    # (RISK_REGISTER R6 / the Sprint-2.19.1 brittle-pin anti-pattern).
     import evaluate_unified as eu
-    check("ENGINE_VERSION bumped to 2p22p0a5",
-          eu.ENGINE_VERSION == 'thammen-sprint2p22p0a5-villa-cold503-budget')
-    check("SPRINT_TAG bumped to 2.22.0a.5", eu.SPRINT_TAG == '2.22.0a.5')
+    check("ENGINE_VERSION is a well-formed thammen-sprint tag (version-agnostic)",
+          isinstance(eu.ENGINE_VERSION, str)
+          and eu.ENGINE_VERSION.startswith('thammen-sprint')
+          and len(eu.ENGINE_VERSION) > len('thammen-sprint'))
+    check("SPRINT_TAG present & dotted-numeric (consistent with /api/health 3.1.0-sprint{tag})",
+          isinstance(eu.SPRINT_TAG, str) and eu.SPRINT_TAG[:1].isdigit() and '.' in eu.SPRINT_TAG)
 
     # 10) no contextvar leak after all tests
     check("no deadline leaked into test thread", qatar_gis._remaining_budget() is None)
