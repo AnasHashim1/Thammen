@@ -59,7 +59,7 @@ Before proposing or building ANY Sprint, you MUST:
 ### Sprint numbering
 
 - Sequential, never reused
-- **Current production state** (engine version, latest sprint, Heroku vN): the CLAUDE.md production snapshot + Session_Log are the SINGLE SOURCE — do not duplicate version numbers here (they drift). As of 2026-05-30: Sprint 2.22.0a.6, Heroku v145.
+- **Current production state** (engine / sprint / Heroku vN): see the CLAUDE.md production snapshot + `/api/health` — the SINGLE SOURCE (Rule #58). Do not duplicate version numbers here (they drift).
 - **Mthamen integration**: ⏸️ archived only (decision 2026-05-19, never deployed)
 
 ### CHANGELOG_vN.md structure (mirror v33/v34)
@@ -308,4 +308,4 @@ User triggers any of these by saying **"Read Section X"** where X is relevant se
 
 -----
 
-*Bound to every Thammen session. Last updated 2026-05-30 (governance consolidation — accuracy reconciliation + process hardening; engine 2.22.0a.6 / Heroku v145).*
+*Bound to every Thammen session. Version-agnostic — for current production state (engine / sprint / Heroku vN) see the CLAUDE.md production snapshot + `/api/health` (single source, Rule #58).*

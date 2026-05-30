@@ -2,7 +2,7 @@
 
 > **Scope:** هذا المشروع مخصص حصرياً لتطوير وصيانة موقع تقييم العقارات القطري `thammen.qa`. أي مهمة خارج هذا النطاق (تقارير عقارية مستقلة، أبحاث سوق، تقييم عقار معين بدون لمس المنصة) **لا** تنتمي لهذا المشروع.
 
-> **آخر تحديث:** 2026-05-30 (governance consolidation — دقّة الـ artifacts + process hardening؛ `docs/BRIEF_governance_consolidated_2026-05-30.md`). **الحالة الحيّة (المصدر الوحيد = CLAUDE.md production snapshot + Session_Log §20): engine `thammen-sprint2p22p0a6-seed-getplot-dedup` · Heroku v145 · CHANGELOG_v57.** هذه الوثيقة **مرجع منهجي ثابت** — أرقام النسخ/الـ Sprints لا تُكرَّر هنا (تنجرف؛ راجع CLAUDE.md). الـ **ROADMAP المعتمد = §11 (Deferred Sprints)** أدناه. قواعد منذ الإصدار 8: Operational #50-#58 (#54 Multi-AI، #57 ground-truth handshake، #58 measured-wins؛ #55/#56 محجوزان)، Empirical E15-E20.
+> **هذه الوثيقة = مرجع منهجي ثابت** (version-agnostic؛ governance-consolidated، انظر `docs/BRIEF_governance_consolidated_2026-05-30.md`). **الحالة الحيّة للإنتاج (engine / sprint / Heroku vN): راجع CLAUDE.md production snapshot + `/api/health` — المصدر الوحيد (Rule #58).** أرقام النسخ/الـ Sprints/Heroku **لا تُكرَّر هنا** (تنجرف). الـ **ROADMAP المعتمد = §11 (Deferred Sprints)** أدناه. قواعد منذ الإصدار 8: Operational #50-#58 (#54 Multi-AI، #57 ground-truth handshake، #58 measured-wins؛ #55/#56 محجوزان)، Empirical E15-E20.
 
 -----
 
@@ -771,4 +771,4 @@ Backend → Response → Frontend priority → Display. canonical root > brief.
 
 -----
 
-*Bound to every Thammen session. Last updated 2026-05-19 evening (بعد Sprint 2.16.15 — Bug A2 / Pydantic extra='forbid' deployment).*
+*Bound to every Thammen session. Version-agnostic methodology reference — for current production state (engine / sprint / Heroku vN) see the CLAUDE.md production snapshot + `/api/health` (single source, Rule #58); for edit history see git log.*
