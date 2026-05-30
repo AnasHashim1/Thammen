@@ -44,6 +44,21 @@ ANCHORS = [
     ("Lusail 69/255/75 (City Avenues, H1)",      None,     None,    None,    "R3"),
 ]
 
+# LIVE HBU-positive point found via probe_find_hbu_positive.py (2026-05-30): an R2
+# parcel adjacent to higher-density R3 → analyze_adjacent_zoning returns
+# hbu_potential=True on LIVE Qatar GIS. Closes the Session_Log §20.4 CAVEAT (the
+# Phase-0 HBU-positive case was synthetic). services.gisqatar.org.qa, central Doha.
+LIVE_HBU_POSITIVE = (25.320057, 51.483856, "R2")   # (lat, lon, subject_zone)
+
+# Lever-3 (Sprint 2.22.0a.6 seed get_plot dedup) determinism PINs: a single-parcel
+# villa (no expansion) + a multi-parcel compound (real BFS). The gate asserts
+#   detect_extent(pin)  [old: re-fetches its own seed]
+#     == detect_extent(pin, seed_plot=get_plot(pin))  [new: reuses prefetched]
+LEVER3_PINS = [
+    ("villa seed · single-parcel", 56090294),
+    ("compound seed · multi-parcel BFS", 51500109),
+]
+
 # ── consumer replica: the ONLY user-facing consumer of geometric['hbu'] ──
 # evaluate_unified.py:4428-4438. Returns the hbu_analysis dict the user sees, or
 # None when the gate `if hbu.get('hbu_potential') or hbu.get('industrial_adjacency')`
@@ -165,41 +180,129 @@ def layer2_live():
               "(Rule #36). Layer 1 stands on its own: it isolates the hint's effect.")
 
 
+def live_hbu_positive_confirm():
+    """Closes the §20.4 CAVEAT: confirm the with-hint vs no-hint divergence on a
+    REAL HBU-positive Qatar-GIS point (not a mock). lat/lon from
+    probe_find_hbu_positive.py."""
+    lat, lon, subj = LIVE_HBU_POSITIVE
+    print("\n── LIVE HBU-positive (real GIS) · confirms lever-1 finding on real data ──")
+    try:
+        wh = gf.analyze_geometric_factors(1, lat, lon, subj)
+        nh = gf.analyze_geometric_factors(1, lat, lon, None)
+    except Exception as e:
+        print(f"   [net-fail] {lat},{lon}: {e}")
+        print("   [note] live HBU-positive NOT confirmed this run (Rule #36); "
+              "Layer 1 synthetic proof + the structural line-611 gate still stand.")
+        return None
+    raw_equal = _canon(wh) == _canon(nh)
+    uf_equal = _canon(user_facing_hbu_analysis(wh)) == _canon(user_facing_hbu_analysis(nh))
+    print(f"   point=({lat},{lon}) subject_zone='{subj}'  "
+          f"hbu_potential(with-hint)={wh.get('hbu', {}).get('hbu_potential')}")
+    print(f"   RAW identical={raw_equal}  user-facing hbu_analysis identical={uf_equal}  "
+          f"(with-hint hbu key={'hbu' in wh}, no-hint hbu key={'hbu' in nh})")
+    if not uf_equal:
+        print("   ⟹ LIVE proof: the hint-removal drops user-facing hbu_analysis on a "
+              "REAL HBU-positive property. §20.4 CAVEAT closed.")
+    return uf_equal
+
+
+def _canon_extent(extent):
+    """Canonical JSON of an AssetExtent (dataclass → dict; enums/objects → str)."""
+    if extent is None:
+        return "None"
+    from dataclasses import asdict, is_dataclass
+    obj = asdict(extent) if is_dataclass(extent) else extent
+    return json.dumps(obj, ensure_ascii=False, sort_keys=True, default=str)
+
+
+def layer3_lever3_dedup():
+    """ACTIVE SPRINT GATE (2.22.0a.6): prove the seed get_plot dedup is byte-identical.
+    detect_extent(pin) [old: re-fetches seed] must equal
+    detect_extent(pin, seed_plot=get_plot(pin)) [new: reuses prefetched]."""
+    print("\n" + "=" * 72)
+    print("LEVER-3 GATE (seed get_plot dedup) — ACTIVE this sprint (2.22.0a.6)")
+    print("=" * 72)
+    try:
+        from qatar_gis import QatarGIS
+        gis = QatarGIS(verbose=False)
+    except Exception as e:
+        print(f"   [import-fail] {e}")
+        return None
+    results = []
+    for label, pin in LEVER3_PINS:
+        try:
+            plot = gis.get_plot(pin)
+            if plot is None:
+                print(f"   [skip] {label} (PIN {pin}): get_plot → None")
+                continue
+            # determinism floor: is get_plot itself stable for this pin?
+            plot2 = gis.get_plot(pin)
+            getplot_stable = _canon_extent(plot) == _canon_extent(plot2)
+            old = gis.detect_extent(pin)                     # OLD path (re-fetch seed)
+            new = gis.detect_extent(pin, seed_plot=plot)     # NEW path (reuse prefetched)
+        except Exception as e:
+            print(f"   [net-fail] {label} (PIN {pin}): {type(e).__name__}: {e}")
+            continue
+        equal = _canon_extent(old) == _canon_extent(new)
+        results.append(equal)
+        at = getattr(getattr(old, 'asset_type', None), 'value', None)
+        npins = len(getattr(old, 'included_pins', []) or [])
+        print(f"   {label} (PIN {pin}): byte-identical={equal}  "
+              f"[asset_type={at}, included_pins={npins}, get_plot_stable={getplot_stable}]")
+        if not equal:
+            print(f"      ⚠ DIVERGENCE — old vs new detect_extent differ. If "
+                  f"get_plot_stable=False this is pre-existing GIS nondeterminism, "
+                  f"NOT the dedup; else investigate the dedup.")
+    if not results:
+        print("   [note] no PIN exercised (GIS unreachable) → lever-3 gate INCONCLUSIVE "
+              "(Rule #36).")
+        return None
+    return all(results)
+
+
 def main():
     print("=" * 72)
-    print("Branch B determinism harness — hint-removal GATE (task step 3)")
-    print("Assertion under test: analyze_geometric_factors(with-hint) == (no-hint)")
+    print("Branch B determinism harness")
+    print("  Gate 1 (lever-1, geometric overlap): DOCUMENTED Gate-2 finding (§20.4)")
+    print("  Gate 2 (lever-3, seed get_plot dedup): ACTIVE sprint 2.22.0a.6")
     print("=" * 72)
 
-    # Case A: HBU-POSITIVE property (adjacent commercial). This is the case the
-    # 4 R1-in-R1 anchors do NOT cover — the brief's "anchors insufficient" point.
-    rawA, ufA = layer1_case("HBU-POSITIVE (adjacent commercial 'C')", _HBU_POSITIVE)
-
-    # Case B: HBU-NEGATIVE property (R1 surrounded by R1 — like the anchors).
+    # ── LEVER-1 hint-removal (documented Gate-2 finding; NOT implemented this sprint) ──
+    print("\n#### LEVER-1 hint-removal (informational — geometric overlap is Gate-2) ####")
+    rawA, ufA = layer1_case("HBU-POSITIVE (synthetic stub)", _HBU_POSITIVE)
     rawB, ufB = layer1_case("HBU-NEGATIVE (R1-in-R1, like the anchors)", _HBU_NEGATIVE)
-
     layer2_live()
+    live_uf = live_hbu_positive_confirm()
+    lever1_invariant = bool(rawA and rawB and ufA and ufB)
+
+    # ── LEVER-3 dedup (the gate that governs THIS sprint's commit) ──
+    lever3 = layer3_lever3_dedup()
 
     print("\n" + "=" * 72)
     print("VERDICT")
     print("=" * 72)
-    print(f"  RAW geometric dict invariant to hint  : "
-          f"{'YES' if (rawA and rawB) else 'NO — diverges'}")
-    print(f"  USER-FACING output invariant to hint  : "
-          f"{'YES' if (ufA and ufB) else 'NO — diverges on HBU-positive'}")
-    print(f"  Anchors (HBU-negative) coincidentally  user-facing-match : {ufB}")
-    gate_pass = rawA and rawB and ufA and ufB
+    print(f"  LEVER-1 (geometric overlap) hint-invariant : "
+          f"{'YES' if lever1_invariant else 'NO — diverges on HBU-positive (Gate-2, §20.4)'}")
+    if live_uf is False:
+        print("      └ confirmed LIVE on a real HBU-positive property (CAVEAT closed)")
+    elif live_uf is None:
+        print("      └ live HBU-positive NOT confirmed this run (synthetic proof stands)")
+    print(f"  LEVER-3 (seed dedup) byte-identical        : "
+          f"{'YES' if lever3 else ('INCONCLUSIVE' if lever3 is None else 'NO — DIVERGES')}")
+
     print()
-    if gate_pass:
-        print("  GATE: PASS — hint removal is perf-only. Proceed to refactor (step 4).")
+    # Exit code is governed by the ACTIVE sprint gate (lever 3). Lever-1's
+    # divergence is the already-documented Gate-2 finding, not a sprint blocker.
+    if lever3 is True:
+        print("  ACTIVE GATE (lever-3): PASS — seed dedup is byte-identical. "
+              "Proceed to regression + commit.")
         return 0
-    print("  GATE: FAIL — removing the hint changes geometric's output.")
-    print("        Naive lever-1 overlap (geometric launched before the valuation")
-    print("        produces the zoning_code hint) = behaviour change → 🔴 Gate 2.")
-    print("        STOP. Do NOT refactor. Return to Anas sign-off (task step 3).")
-    print("        Note: Case B shows the 4 R1-in-R1 anchors coincidentally match")
-    print("        at the user-facing surface — exactly why anchors alone are")
-    print("        insufficient (BRIEF §8.3).")
+    if lever3 is None:
+        print("  ACTIVE GATE (lever-3): INCONCLUSIVE — GIS unreachable. Re-run where "
+              "GIS is reachable before commit (Rule #36).")
+        return 2
+    print("  ACTIVE GATE (lever-3): FAIL — seed dedup changed detect_extent output. "
+          "ROLLBACK the dedup (Rule #11). Do NOT commit.")
     return 1
 
 

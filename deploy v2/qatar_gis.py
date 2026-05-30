@@ -1476,7 +1476,7 @@ class QatarGIS:
             return None
         return classify_asset(plot)
 
-    def detect_extent(self, seed_pin, force_type=None) -> Optional[AssetExtent]:
+    def detect_extent(self, seed_pin, force_type=None, seed_plot=None) -> Optional[AssetExtent]:
         """
         Find the full extent of an asset starting from one PIN.
 
@@ -1486,7 +1486,23 @@ class QatarGIS:
 
         force_type: override classification with a specific AssetType (advanced use).
         """
-        seed = self.get_plot(seed_pin)
+        # Sprint 2.22.0a.6 (Branch B lever 3 — seed get_plot dedup): full_property_lookup
+        # already fetched get_plot(loc.pin) at the top; this method then re-fetched the
+        # SAME pin — a redundant cadastre call + ESRI projection round-trip (~1.5s on
+        # every address/PIN evaluation). When the caller supplies the already-fetched
+        # plot via `seed_plot`, reuse it. Byte-identical: get_plot(pin) is deterministic
+        # for a given pin, and classify_asset(seed) below stays the SAME (no-arg) call
+        # either way. seed_plot=None (e.g. the CLI caller) keeps legacy behaviour.
+        #
+        # SCOPE NOTE (Rule #39): the redundant classify_asset is intentionally NOT
+        # deduped. full_property_lookup calls classify_asset(plot, location_metadata,
+        # input_mode) (subtype/land-aware Branch 0); this method must keep calling
+        # classify_asset(seed) with NO args (area heuristic) so the extent's asset_type
+        # stays byte-identical. The two calls can legitimately differ (tower / land-PIN
+        # paths) — reusing FPL's classification here would be an output change, not a
+        # perf-only dedup. The re-classification is pure CPU (no network), so there is
+        # no perf reason to dedup it.
+        seed = seed_plot if seed_plot is not None else self.get_plot(seed_pin)
         if seed is None:
             return None
 
@@ -2082,7 +2098,7 @@ class QatarGIS:
             _meta = {'building_subtype': loc.building_subtype,
                      'lat': loc.lat, 'lon': loc.lon}
         classification = classify_asset(plot, location_metadata=_meta, input_mode=input_mode)
-        extent = self.detect_extent(plot.pin)
+        extent = self.detect_extent(plot.pin, seed_plot=plot)   # Sprint 2.22.0a.6: reuse the seed plot already fetched above (lever 3 dedup)
 
         # ─── Sprint 2.18.1.1 — compound-misroute fix ────────────────────────
         # Discovered 2026-05-23 evening via Anas's visual verification of

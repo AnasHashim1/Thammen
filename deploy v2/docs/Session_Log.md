@@ -1595,9 +1595,40 @@ closed A6 compound-latency case (Rule #53 — distinct tag). Fix = Branch B.
   deliberately include an HBU-positive property** — HBU-negative anchors coincidentally pass
   and mask the gate. Now baked into `harness_branchB_determinism.py`.
 
+### 20.6 🆕 Sprint 2.22.0a.6 — lever 3 (seed `get_plot` dedup) — SHIPPED to commit (NOT pushed)
+
+> Engine `thammen-sprint2p22p0a6-seed-getplot-dedup` / SPRINT_TAG `2.22.0a.6`.
+> **perf-only / byte-identical.** Committed, **held at 🔴 Gate 1** for Anas PR sign-off.
+> Full detail: `CHANGELOG_v57.md`.
+
+- **Change:** `qatar_gis.detect_extent` gains optional `seed_plot=`; `full_property_lookup`
+  passes the seed it already fetched (`detect_extent(plot.pin, seed_plot=plot)`). Eliminates
+  the **redundant 2nd `get_plot(seed)`** (cadastre fetch + ESRI projection round-trip,
+  ~1.5 s) on every address/PIN evaluation. `seed_plot=None` (CLI) = legacy byte-for-byte.
+- **Recon deviation (Rule #39):** `classify_asset` is **NOT** deduped — FPL calls it with
+  `location_metadata`+`input_mode` (subtype/land-aware) while `detect_extent` calls it
+  no-arg (area heuristic); the two can legitimately diverge → reusing FPL's classification
+  would change `extent.asset_type` (an output change, not perf-only). Re-classify is pure
+  CPU (no network) → no perf reason to dedup. So the signed "+ classify_asset" was dropped.
+- **Gate (harness, live GIS):** old vs new `detect_extent` **byte-identical** on villa
+  56090294 (single-parcel) **and** compound 51500109 (multi-parcel BFS, 5 included_pins,
+  compound_large); `get_plot_stable=True`.
+- **Regression:** 45 / 392 / 15 / **49 files** all green (broad sweep grew from the 47/48
+  baseline; zero failures; every GIS/extent/classify test passed).
+- **§20.4 CAVEAT closed:** the lever-1 HBU-positive divergence was confirmed **LIVE** on a
+  real R2-adjacent-R3 property (25.320057, 51.483856) via `probe_find_hbu_positive.py` —
+  with-hint carries `hbu_analysis`, no-hint drops it.
+- **Latency:** expected ~1.5 s/eval saved (cross-platform, every classify+expand path); NOT
+  yet measured live (owed post-deploy per #51). One lever — does **not** alone close A14
+  (lever 1 is Gate-2-blocked).
+
 -----
 
-*Last updated: 2026-05-30 (Branch B implementation session — lever-1 determinism gate FAILED
+*Last updated: 2026-05-30 (Sprint 2.22.0a.6 — lever 3 seed `get_plot` dedup committed
+[`qatar_gis.detect_extent` optional `seed_plot`], perf-only/byte-identical [harness: villa +
+compound BFS old≡new, get_plot deterministic], regression 45/392/15/49 green, classify_asset
+dedup dropped per Rule #39 recon; **held at Gate 1, not pushed**; §20.4 lever-1 CAVEAT closed
+live. Prior same session — lever-1 determinism gate FAILED
 → Gate 2: `geometric_factors.py:611` gates HBU entirely on the zoning hint, §8.3's
 "self-fetches geom.zoning" assumption FALSIFIED; the 4 R1-in-R1 anchors coincide & mask it;
 HBU-positive Phase-0 proof was SYNTHETIC, live confirmation deferred to the 2.22.0a.6 gate.
