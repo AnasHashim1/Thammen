@@ -1722,7 +1722,82 @@ Added Empirical **E21** (cold-latency coupled to the serial GIS chain, not dyno 
 
 -----
 
-*Last updated: 2026-05-30 (Sprint **2.22.0a.8** — RICS/IVS 2025 citation correctness, **DEPLOYED
+## 20.10 🆕 2026-05-30 — Sprint 2.22.0a.9 (widened-path age/quality elasticity, facet a) — DEPLOYED Heroku v148
+
+> Engine `thammen-sprint2p22p0a9-widened-elasticity` / SPRINT_TAG `2.22.0a.9` / api-health
+> `3.1.0-sprint2.22.0a.9`. **Methodology — headline value changes on two comparison paths**
+> (single-purpose, Rule #38). Commits `acb1e40` (facet a, isolated) + `dda656b` (deploy-prep) →
+> Heroku **v148** (`git subtree push`, clean fast-forward `86b24a8..17e0bc8`, on explicit Anas
+> Gate-1 "go") → origin backup. CHANGELOG_v61.
+
+**Symptom + root cause (measured, Rule #33).** Operator report (Marikh 54/541/6): headline doesn't
+respond to building age/plot. Path-normal, not PIN-specific: `_select_primary_comparison`
+(`evaluate_unified.py:955`) sources the headline from `geo_value` on the two widened cases
+(`comparison_widened` + `comparison_widened_indicative`) — from `geo_reference_v2` (inter-district
+price-normalized median) — which **bypass the bracket path's `×(1+adj)`** → zero age/quality
+elasticity. Bracket/thin/preliminary use `fair_price_total` (full adj) and were never affected.
+Live baseline: Marikh flat **4.5M** at building_age 0/20/45.
+
+**The arc — recon killed a wrong brief, then validation closed a wrong hypothesis.**
+- First brief (`…_widened_comp_path.md`) **withdrawn**: its map conflated files (cited
+  `evaluate_property.py:3431/:3107/:835` — non-existent / mischaracterized; real logic is in
+  `evaluate_unified.py`). CC empirical recon corrected it; v2 brief signed (Gate 2).
+- **Facet (b) DROPPED** (not deferred): the accuracy-tier (`:4226`) + MVU-downgrade (`:4569`)
+  "widening-to-healthy-n = strengthened evidence" framing is the principled **RICS VPS 3** remedy
+  for a thin bracket (guarded `geo_n≥20 AND ≥max(bracket×3,15)`); the "1.c fix" recomputed MVU on
+  the n actually used to AVOID over-stating uncertainty. Reversing it (VPGA 10 "relocates" reading)
+  would re-introduce that over-statement. a9 is orthogonal and makes the estimate MORE
+  property-specific — supporting, not opposing, the framing. Any revisit = separate Rule #54.
+- **Fork 3 corrected by recon:** the first scoping grouped `comparison_thin` with the widened
+  family, but thin/preliminary use `bracket_value` (already full adj) → including them would
+  double-count. Final scope = the two `geo_value` paths ONLY.
+- **10-Year-Rule recon (read-only) → companion sprint dropped.** geo_v2 pools comps by
+  area+category+size-bracket+24mo with **no stock/age stratification**; the engine's "10-Year Rule"
+  (`:838-861`) is a building-substantiality **uplift suppressor** (positive-only, BUA-gated), never
+  a land-floor — on EITHER path. Marikh is `classification=None` (thin bracket can't classify) so
+  stratum logic structurally can't fire. The suspected over-valuation was then **falsified** by an
+  external MoJ cross-check (Claude.ai lane): Marikh 54/541/6 = 2-story villa+annex ~20yr; MoJ median
+  for that built type (`nw_l_qr`) = **681 QAR/ft²** (n=25, plot ~590m²) ≈ engine widened **682/ft²**
+  (4.5M) → MATCH. The n=22 "luxury" comps are Marikh's OWN 2-story villas (p75=798/max=867), not
+  Al-Waab. a9 ships alone; **the 54/541/6 investigation is CLOSED (validated correct)**.
+
+**Shipped (backend only, `evaluate_unified.py`).** New `_age_quality_adj(valuation)` sums the
+`building_age` + `plot_shape` weights from `factors_detail`, clamped to `property_factors.MAX_ADJUSTMENT`
+(±0.10, Fork 2); applied to `geo_value`/`range_low`/`range_high` in Cases 2 & 3 only (Fork 3). Empty
+factor detail → aq=0 → byte-identical no-op. **Signed asymmetry** (Fork 1): bracket = full adj;
+widened = age/quality-only (geo_v2 owns location). No new user strings, no new input fields.
+
+**Verification.** Isolated `test_sprint_2p22p0a9_widened_elasticity.py` **28/28** (deterministic
+class-boundary: bracket/thin/preliminary byte-stable, widened scaled once, no double-count, no-op
+identity). DoD: aggregator **392**, security **15**, surface-honesty **45**, broad **52 files** —
+green pre- and post-bump; a8 citation **43/43** with the relaxed pin. **Post-deploy live smoke (v148):**
+Marikh 54/541/6 → **4.6 / 4.4 / 4.3M** at age 0/20/45 (was flat 4.5M); control 56/565/21 →
+**2,500,000** (bracket, unchanged); apt 52/903/90 → insufficient. Backend-only → mobile 390×844
+unaffected (no `index.html` change).
+
+**Deploy-prep (Gate-1).** Bumped ENGINE_VERSION/SPRINT_TAG → a9 (`/api/health` auto-derives);
+**relaxed the brittle a8 version-pin** in `test_sprint_2p22p0a8_rics_citation.py` to a format/regex
+assertion (`^thammen-sprint\d+p\d+p\d+` / `^\d+\.\d+\.\d+`) — R6 / a7 "no exact version pins"; the
+pin would otherwise break on every bump.
+
+**Deferred / backlog (Rule #42):** (a) whether `building_age` (−2% at 20yr) is strong enough for
+older villas — future refinement tied to the 10-Year Rule; (b) stratum-aware value / land-flooring
+on thin-bracket/widened paths — its own Gate-2 audit, Phase 0 = "can we classify the subject's
+stratum + detect real age on that path at all?"; (c) scratch probes `probe_2p22p0a9_*.py` left
+untracked (reusable for re-verification).
+
+-----
+
+*Last updated: 2026-05-30 (Sprint **2.22.0a.9** — widened-path age/quality elasticity (facet a):
+the `geo_value` widened headline (Cases 2 & 3 of `_select_primary_comparison`) now applies the
+age/quality slice (`building_age` + `plot_shape`) of the property-factor adjustment, clamped ±0.10;
+location factors excluded (geo_v2 already inter-district-normalizes); bracket/thin/preliminary
+byte-stable; facet (b) tier/MVU reframe DROPPED (principled VPS 3 framing). **DEPLOYED Heroku v148**,
+commits `acb1e40` (facet a) + `dda656b` (deploy-prep), clean fast-forward `86b24a8..17e0bc8`; live
+smoke: Marikh 54/541/6 = 4.6/4.4/4.3M across age 0/20/45 (was flat 4.5M), control 56/565/21 = 2.5M,
+apt 52/903/90 insufficient; isolated 28/28 + DoD 392/15/45/52 green; external MoJ built-type
+validation 681≈682/ft² (a9 correct, 54/541/6 contamination track CLOSED); R6 a8 version-pin relaxed
+to format; full narrative §20.10. Prior: Sprint **2.22.0a.8** — RICS/IVS 2025 citation correctness, **DEPLOYED
 Heroku v147**, commit `1e07a2a`, CHANGELOG_v60: added the AVM models standard VPS 5/IVS 105 +
 AVM-not-standalone disclosure on a secondary collapsible surface (the 2.22.0a.4-deferred surface),
 remapped EVERY stale citation — approaches VPS 4→VPS 3/IVS 103, HBU→VPS 2/IVS 102 (genus,
