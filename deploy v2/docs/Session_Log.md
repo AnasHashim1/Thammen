@@ -1655,6 +1655,9 @@ closed A6 compound-latency case (Rule #53 — distinct tag). Fix = Branch B.
 - **Still OPEN:** Bug A15 (silent-HBU-drop when the zoning hint is absent — §20.5), separate
   Gate-2 correctness sprint; ~12 `.py` "VPS 4" method-labels (separate RICS-label pass).
 
+### 20.8 🆕 2026-05-30 — GA-2 docs consolidation (docs-only, origin-only)
+Added Empirical **E21** (cold-latency coupled to the serial GIS chain, not dyno spin-up) + 2 testing-discipline lessons (HBU+E7 determinism coverage; no exact-version pins); Operational **Rule #59** (major-station 4-section reporting format) + **#60** (measure-gate for lever sequencing); created **`docs/ROLES_AND_COMMS.md`**; CLAUDE.md counters bumped (#60 / E21). No `.py` / Heroku change; #55/#56 stay reserved-pending.
+
 -----
 
 *Last updated: 2026-05-30 (Sprint A14 — villa cold-503 **FIXED** via lever 2 (geometric_factors

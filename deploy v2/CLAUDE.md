@@ -41,9 +41,9 @@ to Sprint 2.21.5. Session_Log §15 still holds the most recent NARRATIVE
 §14 covered Sprint 2.18.0 earlier that morning; §13 covered Sprint 2.21.0.9
 Stage 1; §11-12 covered the Land Arc through Sprint 2.21.0.7.1. The
 `Session_Update_2026-05-19.md` file is an older delta (Bug A11 era) kept
-for history. Newest operational rules: `Operational_Rules.md` #43–#53
-(latest = #53 "Closed cases stay closed — including as comparison anchors").
-Newest empirical rules: `Empirical_Findings.md` E13–E20 (Rule E3 itself
+for history. Newest operational rules: `Operational_Rules.md` #43–#60
+(latest written = #60 "measure-gate for lever sequencing"; #55/#56 reserved-pending).
+Newest empirical rules: `Empirical_Findings.md` E13–E21 (Rule E3 itself
 expanded to 8 numbered constraints by Sprint 2.21.2 — listings now allowed
 tier-weighted entry via `hybrid_valuation_v1()`).
 

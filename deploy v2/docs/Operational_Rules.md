@@ -1481,6 +1481,23 @@ expected) and #57. **Recall**: "تذكر #58" / "measured wins".
 
 -----
 
+## 59. ⚠️ Major-station reporting format (v2.1)
+
+Rule #59 — Major-station reporting format (v2.1). At every MAJOR station (sprint close, Gate decision, scope-lock, significant diagnostic), Claude.ai reports in 4 sections:
+(1) «ما تم بشكل جيد» 🟢 — what worked; flag reusable wins as candidate Empirical/Rule.
+(2) «ما الذي اختلّ» 🔴/🟡 — what broke; route incidents to RISK_REGISTER; write «🟢 لا خلل» if clean.
+(3) «كيف لا نكرّره» — prevention.
+(4) «ماذا سنعمل» — plan + 🔮 forward-risk + guard (pre-mortem); if options exist, present them NEUTRALLY, then 💡 Claude.ai recommendation + rationale, then «القرار المطلوب» (Anas decides).
+Conventions: tag load-bearing facts measured✓ / assumed~; scale to station weight (minor station = 1-2 lines; minor stations exempt).
+
+-----
+
+## 60. ⚠️ Measure-gate for lever sequencing under borderline projection
+
+Rule #60 — Measure-gate for lever sequencing under borderline projection. When a refactor's projected margin against a hard SLA wall (e.g. Heroku 30s) falls WITHIN the variance band of the estimate, ship the lower-risk PROVEN lever first and gate any higher-risk lever behind a BINDING post-deploy live measurement (forced cold x N). Do not ship the riskier lever on projection alone; do not defer the safe lever waiting for certainty. Origin: A14 — lever 2 (parallelize, low-risk) shipped with binding H_lat; lever 1 (core-path concurrency, higher-risk) deferred, H_A-cleared and ready if margin regresses. Relation to #51: #51 is the audit->rollback->re-verify loop; #60 governs WHICH lever to ship when margins are uncertain.
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added

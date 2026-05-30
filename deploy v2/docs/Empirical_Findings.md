@@ -490,6 +490,19 @@ the broken response renderable; the boundary itself is methodology.
 **Recall**: **"تذكر E20"** / **"تذكر 15K compound"** /
 **"تذكر 15,027 m²"**.
 
+### 🆕 Rule E21 — Cold-latency penalty is coupled to the serial GIS chain, not dyno spin-up
+
+E21 — Cold-latency penalty is coupled to the serial GIS chain, not dyno spin-up.
+Measured (A14, 2026-05-30): villa cold path was 503 @ ~31s. After parallelizing the ~12 internal serial GIS road/zoning/landmark calls in geometric_factors (lever 2), cold dropped to ~14-16s with cold ~= warm. Conclusion: on this stack the dominant cold-penalty driver is the serial external-I/O chain, NOT Heroku dyno wake. Corollary: in any latency sprint, parallelize serial external I/O first; treat dyno spin-up as a minor additive, not the primary cost. Evidence: forced cold x3 via ps:restart — 56/565/21 cold#1 200@14.4s, cold#2 200@15.0s; 56/647/6 200@15.9s; zero 503 (was 503@31s).
+
+### 🆕 Testing-discipline lessons (A14, 2026-05-30)
+
+**Lesson 1 — HBU-positive + E7 coverage in determinism tests.**
+Determinism regression tests must include HBU-positive and E7/stale-subtype cases, not just clean anchors. (A14: harness_HA_zoning_equiv.py + test_sprint_2p22p0a7_geometric_determinism.py promoted as PERMANENT regression, retaining HBU + E7 coverage. Self-timing field corner.time_taken_s is excluded from H_det — it is not in /api/evaluate output and varies by design.)
+
+**Lesson 2 — no exact version/identity pins in assertion tests.**
+Assertion tests must not pin exact version/identity strings that legitimately change every sprint. (R6: a hard version-pin in test_sprint_2p22p0a5_request_budget.py broke the broad suite 48/49 on an unrelated engine bump.) Scope DoD and assertions to RUNTIME BEHAVIOUR; exempt history/guardrail artefacts from exact-string pins.
+
 -----
 
 ## 3. Empirical benchmarks for Qatar (validated 2026-05)
