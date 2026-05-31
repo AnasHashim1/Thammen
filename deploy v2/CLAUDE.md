@@ -3,7 +3,7 @@
 > **Project:** thammen.qa — Qatar real-estate AVM (RICS Red Book Global Standards, effective 31 January 2025 — VPGA 10 + VPS 6 + IVS 106)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-30 (Sprint 2.22.0a.9 deployed — widened-path age/quality elasticity, facet a; CHANGELOG_v61 + Session_Log §20.10). **LIVE: engine `thammen-sprint2p22p0a9-widened-elasticity` · api/health 3.1.0-sprint2.22.0a.9 · Heroku v148 · commits `acb1e40`+`dda656b` · CHANGELOG_v61** (the `geo_value` widened headline [Cases 2 & 3 of `_select_primary_comparison`] now applies the age/quality slice [building_age + plot_shape] of the property-factor adjustment, clamped ±0.10; location factors excluded [geo_v2 inter-district-normalizes]; bracket/thin/preliminary byte-stable; facet (b) tier/MVU reframe DROPPED [principled RICS VPS 3]; live Marikh 54/541/6 = 4.6/4.4/4.3M across age 0/20/45 [was flat 4.5M], control 56/565/21 = 2.5M, apt insufficient; external MoJ 681≈682/ft² cross-check [**later OVERTURNED 2026-05-31: coincidence — built-type-blind size-bracketed median; 54/541/6 RE-OPENED/over-anchored, NOT validated; see §20.10.1 + RISK_REGISTER R7**]; isolated 28/28 + DoD 392/15/45/52; R6 a8 version-pin relaxed to format). Prior: Sprint 2.22.0a.8 — RICS/IVS 2025 citation correctness (Heroku v147, commit `1e07a2a`, CHANGELOG_v60): added the AVM models standard VPS 5 / IVS 105 + AVM-not-standalone disclosure on a secondary collapsible surface [the 2.22.0a.4-deferred surface]; remapped ALL stale citations — approaches VPS 4→VPS 3 / IVS 103, HBU→VPS 2 / IVS 102 [genus, triple-confirmed], scope→VPS 1, VPN 13→VPGA 10 [D5 widened]; bare `methodology_ar` untouched; copy-only — valuations unchanged [villa 56/565/21 = 2.5M = v101]; regression 392/15/45/51 + 43/43; origin in sync `b560920..1e07a2a`). Prior: Sprint A14 lever 2 — geometric_factors parallelized, **A14 CLOSED** (Heroku v146, CHANGELOG_v59, cold villa 200 @~15s, was 503@31s; lever 1 deferred + H_A-cleared/ready). The production-state snapshot block below + Session_Log §20 are authoritative. Prior: 2026-05-29 Sprint 2.22.0a.4 — Disclosure & Framing Honesty (Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
+> **Last update:** 2026-05-31 (Sprint 2.22.0a.10 deployed — Stage-1 honest range under built-type/condition uncertainty; CHANGELOG_v62 + Session_Log §20.10.2). **LIVE: engine `thammen-sprint2p22p0a10-stage1-honest-range` · api/health 3.1.0-sprint2.22.0a.10 · Heroku v149 · commits `41a17be`+`21c5fe3` · CHANGELOG_v62** (USER-VISIBLE: widened villas with a dispersed comp pool now show an indicative P25–P75 range + lowered tier + widened MVU + AR/EN disclosure, the median retained as the central estimate; `_stage1_dispersion_gate` T=0.30 on the geo_value widened paths — live Marikh 54/541/6 → 3.3–5.4M indicative, Maamoura 56/647/6 → 2.9–4.4M indicative, Abu Hamour 56/565/21 bracket = 2.5M unchanged; backend-only, no index.html; isolated 16/16 + DoD 392/15/45/53; origin in sync `21c5fe3`. **Built-type/condition blindness [RISK_REGISTER R7] is BIDIRECTIONAL & affects BOTH paths** — over-anchors below-avg-condition [54/541/6 widened, RE-OPENED], under-anchors above-avg-condition [56/565/21 bracket → defensible ~2.5–2.8M, NOT the 2.5M point]; a10 = necessary-NOT-sufficient, real fix = Gate-2 (c) built-type stratification via 2.22.0b Stage-2 Q&A). Prior: Sprint 2.22.0a.9 — widened-path age/quality elasticity, facet a (Heroku v148, CHANGELOG_v61; the geo_value widened headline applies the age/quality slice clamped ±0.10; the a9 ship-time 681≈682/ft² "match" was **later OVERTURNED** — coincidence, 54/541/6 RE-OPENED, §20.10.1 / R7). Prior: Sprint 2.22.0a.8 — RICS/IVS 2025 citation correctness (Heroku v147, commit `1e07a2a`, CHANGELOG_v60): added the AVM models standard VPS 5 / IVS 105 + AVM-not-standalone disclosure on a secondary collapsible surface [the 2.22.0a.4-deferred surface]; remapped ALL stale citations — approaches VPS 4→VPS 3 / IVS 103, HBU→VPS 2 / IVS 102 [genus, triple-confirmed], scope→VPS 1, VPN 13→VPGA 10 [D5 widened]; bare `methodology_ar` untouched; copy-only — valuations unchanged [villa 56/565/21 = 2.5M = v101]; regression 392/15/45/51 + 43/43; origin in sync `b560920..1e07a2a`). Prior: Sprint A14 lever 2 — geometric_factors parallelized, **A14 CLOSED** (Heroku v146, CHANGELOG_v59, cold villa 200 @~15s, was 503@31s; lever 1 deferred + H_A-cleared/ready). The production-state snapshot block below + Session_Log §20 are authoritative. Prior: 2026-05-29 Sprint 2.22.0a.4 — Disclosure & Framing Honesty (Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
 
 ## Quick orientation
 
@@ -108,49 +108,48 @@ the per-change loop; Claude Code does not pause mid-execution for it.
   available for review on request; not a mandatory gate on reversible work.
 
 ```
-Engine version deployed:  thammen-sprint2p22p0a9-widened-elasticity
-                          (Heroku v148, 2026-05-30, commits acb1e40 [facet a] + dda656b
-                          [deploy-prep]; Sprint 2.22.0a.9 — widened-path age/quality
-                          elasticity. Methodology: headline changes on the two geo_value
-                          widened paths only — success-path bracket unchanged
-                          [villa 56/565/21 = 2.5M = v101])
-api/health version:       3.1.0-sprint2.22.0a.9
-Latest CHANGELOG:         CHANGELOG_v61.md  (Sprint 2.22.0a.9 — widened age/quality
-                          elasticity, facet a: _select_primary_comparison Cases 2 & 3 now
-                          apply the age/quality slice [building_age + plot_shape] of the
-                          property-factor adj to the geo_value headline, clamped ±0.10;
-                          location factors excluded [geo_v2 inter-district-normalizes];
-                          bracket/thin/preliminary byte-stable. Facet (b) tier/MVU reframe
-                          DROPPED [principled RICS VPS 3]. Live: Marikh 54/541/6 4.6/4.4/4.3M
-                          across age 0/20/45 [was flat 4.5M], control 2.5M, apt insufficient.
-                          External MoJ 681≈682/ft² cross-check [later OVERTURNED 2026-05-31:
-                          COINCIDENCE — built-type-blind size-bracketed median; 54/541/6
-                          RE-OPENED/over-anchored, NOT validated — see §20.10.1 + RISK_REGISTER
-                          R7]. R6 a8 version-pin relaxed to format. Full
-                          narrative Session_Log §20.10. Prior: v60=2.22.0a.8 RICS/IVS 2025
-                          citation correctness [v147])
+Engine version deployed:  thammen-sprint2p22p0a10-stage1-honest-range
+                          (Heroku v149, 2026-05-31, commits 41a17be [impl] + 21c5fe3
+                          [deploy-prep]; Sprint 2.22.0a.10 — Stage-1 honest range. USER-VISIBLE:
+                          widened villas with a dispersed comp pool now show an indicative
+                          P25–P75 range + lowered tier + widened MVU + AR/EN disclosure;
+                          bracket path unchanged [56/565/21 = 2.5M])
+api/health version:       3.1.0-sprint2.22.0a.10
+Latest CHANGELOG:         CHANGELOG_v62.md  (Sprint 2.22.0a.10 — Stage-1 honest range, backend
+                          only: _stage1_dispersion_gate [T=0.30 tunable] on the widened geo_value
+                          paths → when (p75−p25)/median ≥ 0.30 present the P25–P75 range as the
+                          honest headline, drop tier to indicative, widen MVU, disclose AR+EN [via
+                          the already-rendered accuracy + MVU surfaces; median retained as central,
+                          backward-compat]. Built-type/condition BLINDNESS [RISK_REGISTER R7] is
+                          BIDIRECTIONAL & BOTH paths: over-anchors below-avg-condition [54/541/6
+                          widened, RE-OPENED], under-anchors above-avg-condition [56/565/21 bracket
+                          → defensible ~2.5–2.8M, NOT the 2.5M point]. a10 = necessary NOT
+                          sufficient [misses tight-pool-above-avg]; real fix = Gate-2 (c) built-type
+                          stratification via 2.22.0b Stage-2 Q&A. Full narrative Session_Log
+                          §20.10.1 + §20.10.2. Prior: v61=2.22.0a.9 widened age/quality
+                          elasticity [v148; the a9 681≈682 "match" OVERTURNED])
 A14 (CLOSED 2026-05-30):  villa cold-dyno first-try 503 — FIXED by Sprint A14 lever 2 (v146).
                           Live post-deploy H_lat: 56/565/21 cold first-try 200@14.4s + 200@15.0s
                           (×2) · 56/647/6 cold 200@15.9s — all <30s, margin ~15s, ZERO 503
                           (baseline was 503@31s). Lever 1 (overlap, H_A-cleared) DEFERRED —
                           unneeded (lever-2 margin huge). Bug A15 (silent-HBU-drop) still OPEN
                           (§20.5, separate sprint). NOT the closed A6 case (#53).
-Latest Sprint:            2.22.0a.9 Widened-Path Age/Quality Elasticity (facet a)
-                          - _age_quality_adj() sums building_age + plot_shape from
-                            factors_detail, clamped ±0.10 (property_factors.MAX_ADJUSTMENT);
-                            applied to geo_value/range_low/range_high in
-                            _select_primary_comparison Cases 2 & 3 ONLY
-                            (comparison_widened + comparison_widened_indicative)
-                          - signed asymmetry: bracket = full adj; widened = age/quality-only
-                            (geo_v2 owns location); empty factor detail → aq=0 → byte-stable
-                          - facet (b) [accuracy-tier :4226 + MVU-downgrade :4569] DROPPED
-                            (not deferred) — widening-to-healthy-n is the principled VPS 3 remedy
-                          - backend-only (no index.html); no new user strings / input fields
-                          - isolated 28/28; DoD 392/15/45/52 (aggregator/security/surface/broad);
-                            a8 citation 43/43 (pin relaxed to format, R6)
-                          - external MoJ 681≈682/ft² cross-check later OVERTURNED 2026-05-31:
-                            COINCIDENCE (built-type-blind median); 54/541/6 RE-OPENED — §20.10.1 / R7
-                          (full narrative: Session_Log §20.10; CHANGELOG_v61; deferred items there)
+Latest Sprint:            2.22.0a.10 Stage-1 Honest Range (built-type/condition uncertainty)
+                          - _stage1_dispersion_gate(primary, geo_v2_result), T=0.30 tunable:
+                            fires on comparison_widened + _widened_indicative when
+                            (p75_m2−p25_m2)/weighted_median_m2 ≥ 0.30 (Marikh 0.469, Maamoura
+                            0.406 both fire; bracket/thin/preliminary excluded by method)
+                          - when gated: tier → indicative (🟡 شواهد محدودة), MVU → high +
+                            AR/EN disclosure, range_is_headline + central_estimate; median
+                            retained as the point (backward-compat). Override block wrapped in
+                            try/except; backend-only, NO index.html change
+                          - live (v149): Marikh 54/541/6 → 3.3–5.4M indicative; Maamoura 56/647/6
+                            → 2.9–4.4M indicative; Abu Hamour 56/565/21 bracket 2.5M UNCHANGED
+                          - isolated 16/16; DoD 392/15/45/53; a8 citation 43/43 (format pin)
+                          - R7 generalised BIDIRECTIONAL/both-paths; 54/541/6 RE-OPENED (over-anchor);
+                            56/565/21 UNDER-anchored (~2.5–2.8M, NOT a validated point); a10
+                            necessary-not-sufficient → Gate-2 (c) built-type stratification
+                          (full narrative: Session_Log §20.10.1 + §20.10.2; CHANGELOG_v62)
 
 --- snapshot block below is PRE-2.22.0a (2.21.4-era), kept for reference ---
 Engine (pre-arc):         thammen-sprint2p21p4-t3-aryan-lusail  (Heroku v125 code,
