@@ -1755,11 +1755,13 @@ Live baseline: Marikh flat **4.5M** at building_age 0/20/45.
   area+category+size-bracket+24mo with **no stock/age stratification**; the engine's "10-Year Rule"
   (`:838-861`) is a building-substantiality **uplift suppressor** (positive-only, BUA-gated), never
   a land-floor — on EITHER path. Marikh is `classification=None` (thin bracket can't classify) so
-  stratum logic structurally can't fire. The suspected over-valuation was then **falsified** by an
-  external MoJ cross-check (Claude.ai lane): Marikh 54/541/6 = 2-story villa+annex ~20yr; MoJ median
-  for that built type (`nw_l_qr`) = **681 QAR/ft²** (n=25, plot ~590m²) ≈ engine widened **682/ft²**
-  (4.5M) → MATCH. The n=22 "luxury" comps are Marikh's OWN 2-story villas (p75=798/max=867), not
-  Al-Waab. a9 ships alone; **the 54/541/6 investigation is CLOSED (validated correct)**.
+  stratum logic structurally can't fire. **⚠️ CORRECTION (2026-05-31):** the ship-time "external MoJ
+  cross-check → 681≈682/ft² MATCH → 54/541/6 CLOSED (validated correct)" was a **COINCIDENCE** and is
+  **OVERTURNED** (see §20.10.1 + RISK_REGISTER **R7**): the engine's 682 is a built-type-AND-condition-blind,
+  size-bracketed villa median that landed on the area-wide **+penthouse** number, while the subject is a
+  PLAIN 2-story+annex (~20yr, ordinary finish). **54/541/6 is OVER-ANCHORED; its 4.5M is NOT a validated
+  point — RE-OPENED.** (Superseded ship-time claim, kept for the record: «MoJ 681/ft² n=25 ≈ engine
+  682/ft² → MATCH; the n=22 'luxury' comps = Marikh's own 2-story villas, not Al-Waab; CLOSED».)
 
 **Shipped (backend only, `evaluate_unified.py`).** New `_age_quality_adj(valuation)` sums the
 `building_age` + `plot_shape` weights from `factors_detail`, clamped to `property_factors.MAX_ADJUSTMENT`
@@ -1788,7 +1790,59 @@ untracked (reusable for re-verification).
 
 -----
 
-*Last updated: 2026-05-30 (Sprint **2.22.0a.9** — widened-path age/quality elasticity (facet a):
+## 20.10.1 🆕 2026-05-31 — 54/541/6 RE-OPENED (a9 "validation" overturned by read-only recon)
+
+> **Record correction.** The a9 ship-time close of 54/541/6 ("681≈682/ft² built-type MATCH → validated
+> correct → CLOSED", §20.10 + CHANGELOG_v61) was a **COINCIDENCE**. An Anas-signed read-only trace
+> (`probe_widened_trace.py` + `probe_widened_systemic.py`) overturned it. Doc edits Anas-signed; committed
+> locally, origin push held (Anas batches). NO engine change in this step.
+
+**Mechanism (RISK_REGISTER R7).** The widened (`geo_value`) villa path returns a **built-type- AND
+condition-BLIND, size-bracketed** weighted **median** — NOT a geographically-widened value
+("comparison_widened" is a misnomer; for 54/541/6 the decision was `primary_sufficient`, **0 adjacent**).
+`geo_reference_v2._categorize` (`:105`) lumps basic / 2-story+annex / +penthouse / مسكن / مجلس into one
+`'villa'`; condition (finish/maintenance) is not an input. The **size bracket** (plot×0.80–1.20) is the
+dominant lever:
+
+| 54/541/6 (Marikh) | scope | n | median |
+|---|---|---|---|
+| WITH bracket [490–736 m²] (the engine path) | امريخ الجنوبي, villa, 24mo | 42 | **681/ft²** → 4.495M |
+| NO bracket (all villa sizes) | same | 68 | 509/ft² |
+
+→ **+34%** from the bracket (smaller Qatar plots carry higher ppf). The pool (n=42) mixes فيلا(554)/
+مسكن(819)/2story+annex(828)/+penthouse(722)/مجلس+penthouse(513) → median 681 **coincided** with the
+analyst's area-wide **+penthouse** number; the **subject is PLAIN 2-story+annex, ordinary finish, ~20yr**.
+Defensible ≈ **3.0–3.4M** (analyst, 512/ft² plain ceiling discounted). **54/541/6 is OVER-ANCHORED; 4.5M is
+NOT a validated point. Status: RE-OPENED. Do NOT use it as a point regression anchor** (circular — it is the
+canonical reference).
+
+**Systemic vs Marikh-specific.** The blindness is **systemic** (every widened villa); the over-anchor
+**magnitude is stock-mix-dependent** — severe in heterogeneous/high-end-skewed pools (Marikh +34%), mild
+where tight (Maamoura 56/647/6 widened: bracketed 540 vs unbracketed 499 = **+8%**). Bracket-path villas
+(56/565/21 = 516/ft²) and Lusail apartments (hybrid_t2) are unaffected.
+
+**a9 inert on default (Empirical E22).** a9's age elasticity is a **no-op** on the default flow (age not
+auto-detected → aq=0 → raw median); even forced, ±4% (652–697/ft²) can't offset the +33% built-type/
+condition gap. a9's measured live effect on 54/541/6 default ≈ **0**.
+
+**New bug A16.** `apply_moj_strategy` found **n=1** while geo_v2 found **n=42** for the *same* area+bracket
+→ the MoJ-bracket matcher under-matches (مريخ ↔ امريخ الجنوبي alias/NBSP normalization). Medium, backlog;
+separate from 2.22.0a.10.
+
+**The fix (Anas-decided).** NOT a standalone (b) re-baseline (band-aid on an unpinnable number). **NOW =
+Sprint 2.22.0a.10** — Stage-1 honest range: dispersion-gated P25–P75 range + indicative tier + MVU widen +
+disclosure, **no new input** (RICS-defensible, staged model E16). **LATER = (c) built-type stratification**
+(512↔681 axis) as a Gate-2 sprint, gated on a broker-confirmed built-type + condition input (QARS carries no
+built-type) — real fix, deferred not dropped.
+
+-----
+
+*Last updated: 2026-05-31 (**54/541/6 RE-OPENED** — a9 "validation" overturned by read-only recon: the
+widened path is a built-type/condition-blind size-bracketed median [RISK_REGISTER **R7**], so the 4.5M is
+**over-anchored, NOT a validated point**; mitigation = Sprint **2.22.0a.10** [Stage-1 honest range] + a later
+Gate-2 built-type stratification; a9 inert-on-default [Empirical **E22**]; new bug **A16** MoJ-bracket
+under-match. Doc-only correction, committed locally, origin push held. See §20.10.1. Prior, still live:
+Sprint **2.22.0a.9** — widened-path age/quality elasticity (facet a):
 the `geo_value` widened headline (Cases 2 & 3 of `_select_primary_comparison`) now applies the
 age/quality slice (`building_age` + `plot_shape`) of the property-factor adjustment, clamped ±0.10;
 location factors excluded (geo_v2 already inter-district-normalizes); bracket/thin/preliminary
@@ -1796,7 +1850,8 @@ byte-stable; facet (b) tier/MVU reframe DROPPED (principled VPS 3 framing). **DE
 commits `acb1e40` (facet a) + `dda656b` (deploy-prep), clean fast-forward `86b24a8..17e0bc8`; live
 smoke: Marikh 54/541/6 = 4.6/4.4/4.3M across age 0/20/45 (was flat 4.5M), control 56/565/21 = 2.5M,
 apt 52/903/90 insufficient; isolated 28/28 + DoD 392/15/45/52 green; external MoJ built-type
-validation 681≈682/ft² (a9 correct, 54/541/6 contamination track CLOSED); R6 a8 version-pin relaxed
+cross-check 681≈682/ft² [**later OVERTURNED 2026-05-31 — coincidence; 54/541/6 RE-OPENED/over-anchored,
+see §20.10.1 + RISK_REGISTER R7**]; R6 a8 version-pin relaxed
 to format; full narrative §20.10. Prior: Sprint **2.22.0a.8** — RICS/IVS 2025 citation correctness, **DEPLOYED
 Heroku v147**, commit `1e07a2a`, CHANGELOG_v60: added the AVM models standard VPS 5/IVS 105 +
 AVM-not-standalone disclosure on a secondary collapsible surface (the 2.22.0a.4-deferred surface),

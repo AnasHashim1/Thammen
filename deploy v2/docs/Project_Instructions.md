@@ -514,6 +514,8 @@ for compound_small remains queued as Sprint 2.18.2 candidate.
 |---|---|---|
 |A5|`asset_type: unknown` بدون شرح|backlog|
 |A7|`rics_compliant` دائماً false|backlog|
+|A15|HBU silently dropped when the zoning hint is absent (reachable under QARS degradation) — `geometric_factors.py:611` + consumer `evaluate_unified.py:4428`; graceful-disclosure fix = Gate 2 (Session_Log §20.5)|backlog|
+|A16|MoJ-bracket matcher under-matches: `apply_moj_strategy` n=1 vs geo_v2 n=42 for the SAME area+bracket (54/541/6) — مريخ ↔ امريخ الجنوبي alias/NBSP normalization gap (separate from Sprint 2.22.0a.10)|backlog|
 
 ### 🟢 Deferred
 

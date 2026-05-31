@@ -495,6 +495,23 @@ the broken response renderable; the boundary itself is methodology.
 E21 — Cold-latency penalty is coupled to the serial GIS chain, not dyno spin-up.
 Measured (A14, 2026-05-30): villa cold path was 503 @ ~31s. After parallelizing the ~12 internal serial GIS road/zoning/landmark calls in geometric_factors (lever 2), cold dropped to ~14-16s with cold ~= warm. Conclusion: on this stack the dominant cold-penalty driver is the serial external-I/O chain, NOT Heroku dyno wake. Corollary: in any latency sprint, parallelize serial external I/O first; treat dyno spin-up as a minor additive, not the primary cost. Evidence: forced cold x3 via ps:restart — 56/565/21 cold#1 200@14.4s, cold#2 200@15.0s; 56/647/6 200@15.9s; zero 503 (was 503@31s).
 
+### 🆕 Rule E22 — an adjustment gated on a NON-auto-detected input is INERT in the default flow
+
+✓ **Discovered 2026-05-31** (54/541/6 widened-path recon). Sprint 2.22.0a.9 added an
+age/quality elasticity (`building_age` + `plot_shape`) to the widened headline. But on the
+**default** evaluation flow the building age is **not auto-detected** → `aq = 0` → the
+adjustment is a **no-op**, and the headline is the raw geo_v2 median. The elasticity only
+fires when an age is **explicitly supplied** (the verification sweep), and even then the
+±4% band (652–697/ft² on 54/541/6) cannot offset the +33% built-type/condition gap.
+
+**The rule**: when an adjustment is gated on an input that is **not populated by default**
+(broker/user-supplied, or an auto-detector that frequently returns None), it contributes
+**nothing** to the value most users actually see. **Always verify the DEFAULT flow**, not
+just forced-input cases — a sweep that injects the gating input proves the *mechanism*, not
+the *production effect*. Pairs with Rule #52 (post-deploy content check) and E14 (validation
+must exercise the real default path). **Measured**: a9's live effect on 54/541/6 default ≈ **0**.
+Recall: **"تذكر E22"** / **"تذكر inert-on-default"**.
+
 ### 🆕 Testing-discipline lessons (A14, 2026-05-30)
 
 **Lesson 1 — HBU-positive + E7 coverage in determinism tests.**

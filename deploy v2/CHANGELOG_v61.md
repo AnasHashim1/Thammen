@@ -105,16 +105,25 @@ scaled once; no-op identity; no double-count).
 - surface-honesty `test_sprint_2p22p0a3_surface_honesty.py` — **45 / 45**
 - broad `2p22p0_pre/run_regression_2p22p0a.py` — **52 / 52 files** (auto-includes the new test)
 
-**External MoJ cross-check (Claude.ai lane — why a9 shipped, and why the contamination track closed):**
-Ref property 54/541/6 is a **2-story villa + annex, ~20 yr**. Decomposing the MoJ 24-month data by
-built type (`nw_l_qr`), the MoJ median for that **exact built type** in Marikh = **681 QAR/ft²**
-(n=25, matched plot ~590 m²); the engine's widened value = **682 QAR/ft²** (4.5 M) → **MATCH**. The
-widened path compared the subject to the correct built-type segment and landed right. The earlier
-"luxury-contamination / Al-Waab" hypothesis is **DROPPED**: the n=22 "luxury" comps are Marikh's
-**own** 2-story villas (p75 = 798, max = 867 QAR/ft²), not Al-Waab. a9's age factor correctly steps
-the 20-yr villa 4.5 M → 4.4 M (right direction; the median is age-blind, so a 20-yr villa sits in
-the lower half of the type range). **Backlog (not now):** whether `building_age` (−2% at 20 yr) is
-strong enough for older villas — a possible future refinement tied to the 10-Year Rule.
+**⚠️ CORRECTION (2026-05-31) — the ship-time cross-check below was a COINCIDENCE; 54/541/6 is RE-OPENED.**
+The a9 ship-time rationale read the engine's widened **682 QAR/ft²** (4.5 M) as a built-type MATCH
+against an MoJ median of **681 QAR/ft²** and CLOSED 54/541/6 as "validated correct." A later read-only
+trace (`probe_widened_*.py`; RISK_REGISTER **R7**; Session_Log §20.10.1) **overturned** this: the engine
+value is a **built-type- AND condition-BLIND, size-bracketed** villa median (`geo_reference_v2._categorize:105`
+lumps basic / 2-story+annex / +penthouse / مسكن / مجلس into one `'villa'`), and the 682 **coincided** with
+the area-wide **+penthouse** number while the subject is a **PLAIN 2-story+annex, ordinary finish, ~20 yr**.
+The size bracket (plot×0.80–1.20) is the **+34%** lever (Marikh unbracketed 509 → bracketed 681/ft²); the
+"luxury-contamination / Al-Waab" framing was wrong but so was the "match" conclusion. **54/541/6 is
+OVER-ANCHORED — its 4.5 M is NOT a validated point. Status: RE-OPENED. Do NOT use it as a point regression
+anchor** (circular — it is the canonical reference). Mitigation: Sprint **2.22.0a.10** (Stage-1 honest range:
+dispersion-gated P25–P75 + indicative tier + MVU widen + disclosure, **no new input**) + a later **Gate-2
+built-type stratification** sprint. **a9 inert note (Empirical E22):** a9's age elasticity is a NO-OP on the
+default flow (age not auto-detected → aq=0 → raw median); even forced, ±4% (652–697/ft²) can't offset the
++33% built-type/condition gap — a9's measured live effect on 54/541/6 default ≈ **0**.
+
+**Original (superseded) ship-time note, kept for the record:** "MoJ median for that exact built type in
+Marikh = 681/ft² (n=25) ≈ engine widened 682/ft² → MATCH; the n=22 'luxury' comps are Marikh's own 2-story
+villas (p75 798/max 867), not Al-Waab; 54/541/6 CLOSED."
 
 ## 5. Hypotheses
 
