@@ -14,6 +14,7 @@ import csv, json, re, sys
 from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
+from usage_filter import _is_residential_usage   # Sprint 2.22.0a.11 (A1): residential-usage whitelist (villa pool)
 
 DATE_COL = 'تاريخ\xa0التثبيت'  # has non-breaking space
 DEFAULT_WINDOW_DAYS = 730   # 24 months
@@ -72,12 +73,15 @@ def build_reference(rows, area, max_d, return_transactions=False):
     out['municipality'] = munis.most_common(1)[0][0]
 
     for cat in ('land', 'villa'):
+        # Sprint 2.22.0a.11 (A1): residential-usage filter on the VILLA pool only (land untouched).
         in24 = [r for r in area_rows
                 if (d := parse_date(r[DATE_COL])) and d >= cutoff_24
-                and categorize(r) == cat]
+                and categorize(r) == cat
+                and (cat != 'villa' or _is_residential_usage(r))]
         in36 = [r for r in area_rows
                 if (d := parse_date(r[DATE_COL])) and d >= cutoff_36
-                and categorize(r) == cat]
+                and categorize(r) == cat
+                and (cat != 'villa' or _is_residential_usage(r))]
         # Pick window
         use, window = (in24, 24) if len(in24) >= MIN_N else (in36, 36)
         if not use:

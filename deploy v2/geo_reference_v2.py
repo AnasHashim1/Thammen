@@ -43,6 +43,8 @@ import ssl
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Tuple
 
+from usage_filter import _is_residential_usage   # Sprint 2.22.0a.11 (A1): residential-usage whitelist (villa pool)
+
 
 # ============================================================
 # CONSTANTS
@@ -334,6 +336,9 @@ def _get_area_transactions(
         if area not in moj_names:
             continue
         if category != 'all' and _categorize(r) != category:
+            continue
+        # Sprint 2.22.0a.11 (A1): residential-usage filter on the VILLA pool only (land untouched).
+        if category == 'villa' and not _is_residential_usage(r):
             continue
         d = _parse_date(r.get(date_col, ''))
         if not d or d < cutoff:
