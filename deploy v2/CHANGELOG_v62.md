@@ -53,7 +53,8 @@ geo_v2 emits `p25_m2` / `p75_m2` / `weighted_median_m2`, and the engine already 
   **already-rendered** accuracy badge + MVU banner (no `index.html` change → mobile layout unaffected).
   Old clients ignoring the new fields keep working.
 
-**Not changed:** the median computation; the bracket path (validated clean); built-type
+**Not changed:** the median computation; the bracket path (validated clean **for average-condition
+subjects only** — see §9); built-type
 stratification (the later Gate-2 fix); any inputs.
 
 ## 4. Verification
@@ -102,3 +103,21 @@ Built-type stratification (Gate-2 (c)); broker/condition input; the MoJ-bracket 
 2. Re-run the four DoD suites (the a8 citation test is format/regex-pinned since a9 — the bump is safe).
 3. `git subtree push --prefix "deploy v2" heroku master`; post-deploy live smoke (Rule #52) on
    54/541/6 + 56/647/6 + 56/565/21; `git push origin master` backup.
+
+## 9. Addendum (2026-05-31) — a10 is necessary, NOT sufficient; the blindness is bidirectional
+
+Post-a10 re-examination (Session_Log §20.10.2; RISK_REGISTER **R7** generalised): the built-type +
+condition blindness is **bidirectional** and affects **both** comparison paths — the engine returns the
+comp pool's central tendency, blind to where the subject sits.
+- **Over-anchors** below-average-condition subjects (54/541/6, widened) — a10's dispersion gate catches
+  this (dispersed pool).
+- **Under-anchors** above-average-condition subjects (**56/565/21** Abu Hamour, **bracket**: excellent
+  G+1 + secure govt lease → engine 2.5M ≈ P68 **under-anchors ~10%**; defensible **~2.5–2.8M**, market +
+  income basis). The pool is TIGHT (dispersion 0.211 → correctly NOT gated by a10), so **a10 does NOT
+  catch this case.**
+
+Therefore: the §4 "56/565/21 UNCHANGED" row and the §3 "bracket path (validated clean)" note hold **only
+for average-condition subjects** and as a9/a10 regression invariants (those sprints don't touch the bracket
+path) — **not** as a claim that 2.5M is this property's validated value. **a10 = necessary, not sufficient;
+the real fix is Gate-2 (c) built-type/condition stratification (BOTH directions, ALL areas), input via
+2.22.0b Stage-2 Q&A, not blocked on broker data sourcing.**

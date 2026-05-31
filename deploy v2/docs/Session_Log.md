@@ -1837,7 +1837,43 @@ built-type) — real fix, deferred not dropped.
 
 -----
 
-*Last updated: 2026-05-31 (**54/541/6 RE-OPENED** — a9 "validation" overturned by read-only recon: the
+## 20.10.2 🆕 2026-05-31 — R7 generalised (bidirectional, both paths) + 56/565/21 under-anchor (post-a10 addendum)
+
+> **Record-keeping addendum** following a10 completion (commit `41a17be`). Anas-signed; committed locally,
+> origin push batched with the a10 deploy. NO engine change.
+
+**(a) 56/565/21 (Abu Hamour) — record as a defensible RANGE ~2.5–2.8M, NOT the 2.5M point.** Re-examined
+vs MoJ: the comp pool is TIGHT (dispersion **0.211** → correctly NOT gated by a10), but the subject
+(excellent G+1, secure government lease) sits at the **upper end**. Two convergences: **~2.5M** = market
+median ≈ income@5% (average property); **~2.75M** = market P90 (567/ft²) ≈ income@4.5% (this property's
+condition + secure income). The engine's 2.5M (~P68) **under-anchors ~10%**; its internal range (2.2–2.6M)
+under-represents this property. Defensible upper-end **~2.5–2.8M** (market + income basis, NOT replacement
+cost). **Do NOT treat 56/565/21's 2.5M as a validated point** (same lesson as 54/541/6, opposite direction).
+NOTE: 2.5M remains the correct bracket-path OUTPUT and a valid a9/a10 regression invariant (those sprints
+don't touch the bracket path); the under-anchor is Gate-2 (c) territory.
+
+**(b) R7 generalised — built-type/condition blindness is BIDIRECTIONAL and affects BOTH paths.** Not
+widened-only: the engine returns the comp pool's central tendency, blind to where the subject sits →
+**over-anchors** below-average-condition subjects (54/541/6, widened) and **under-anchors**
+above-average-condition subjects (56/565/21, bracket). **"Bracket path validated clean" holds ONLY for
+average-condition subjects.** (RISK_REGISTER R7 updated.)
+
+**(c) Gate-2 (c) scope corrected.** Built-type/condition stratification must fix **BOTH directions across
+ALL areas** (not just the widened over-anchor). Input = built-type + condition via **2.22.0b Stage-2 Q&A**
+(user-reported, broker-verified at Stage 4) — **NOT blocked on broker data sourcing**. **a10's dispersion
+gate is necessary but NOT sufficient:** it catches dispersed pools (over-anchor) but does NOT catch the
+tight-pool-above-average case (56/565/21) — only (c) does.
+
+-----
+
+*Last updated: 2026-05-31 (post-a10 addendum §20.10.2: **R7 generalised** — built-type/condition blindness
+is BIDIRECTIONAL & both-paths [over-anchors below-average-condition 54/541/6 widened; **under-anchors**
+above-average-condition 56/565/21 bracket → defensible **~2.5–2.8M**, NOT the 2.5M point]; a10 dispersion
+gate necessary-not-sufficient [misses the tight-pool-above-average case]; Gate-2 (c) = stratification
+both-directions/all-areas, input via 2.22.0b Stage-2 Q&A, not broker-blocked. **Sprint 2.22.0a.10**
+[Stage-1 honest range] implemented + local-tested [commit `41a17be`, isolated 16/16 + DoD 392/15/45/53 +
+live smoke Marikh/Maamoura GATE 3.3–5.4M/2.9–4.4M indicative, Abu Hamour bracket unchanged], **push HELD
+for Gate 1**. Prior: **54/541/6 RE-OPENED** — a9 "validation" overturned by read-only recon: the
 widened path is a built-type/condition-blind size-bracketed median [RISK_REGISTER **R7**], so the 4.5M is
 **over-anchored, NOT a validated point**; mitigation = Sprint **2.22.0a.10** [Stage-1 honest range] + a later
 Gate-2 built-type stratification; a9 inert-on-default [Empirical **E22**]; new bug **A16** MoJ-bracket
