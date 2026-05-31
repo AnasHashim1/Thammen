@@ -1866,7 +1866,71 @@ tight-pool-above-average case (56/565/21) — only (c) does.
 
 -----
 
-*Last updated: 2026-05-31 (post-a10 addendum §20.10.2: **R7 generalised** — built-type/condition blindness
+## 20.11 🆕 2026-05-31 — Sprint 2.22.0a.11 (A1 — residential-usage filter on the villa comp pool) — DEPLOYED Heroku v150
+
+> Engine `thammen-sprint2p22p0a11-usage-filter` / SPRINT_TAG `2.22.0a.11` / api-health
+> `3.1.0-sprint2.22.0a.11`. **Methodology — villa comparable-pool selection** (Gate 2, signed). Commit
+> `ec0d1b9` → Heroku **v150** (`git subtree push`, clean fast-forward `4487541..aa7847f`, on explicit
+> Anas "go ahead") → origin in sync `a7b3512..ec0d1b9`. CHANGELOG_v63. **First sprint of the A→B
+> built-type track.**
+
+**What shipped.** New shared `usage_filter._is_residential_usage(row)` — a WHITELIST
+`_RESIDENTIAL_USAGES = {فلل او بيوت سكنية, مسكن, مساكن كبار الموظفين}` + **KEEP blank usage** (blanks
+price like residential — +5% vs the residential median, NOT like the +101% non-residential
+contamination); everything else excluded by default (robust to the ~40 spelling variants —
+`عمارات او مجمعات سكنية` [apartment/complex] + commercial/farm/school/office + every misspelling).
+Applied to **BOTH** villa selectors, **VILLA pool ONLY** (land untouched): `moj_reference.build_reference`
+(bracket path) + `geo_reference_v2._get_area_transactions` (geo/widened path). TYPE categorizers UNCHANGED.
+
+**Root + impact (measured).** The villa pool was selected by `نوع العقار` (TYPE) only, **no `الاستخدام`
+(USAGE) filter** → carried non-residential rows priced **~+101%** above residential, **inflating the villa
+median ~5%** (Phase-1b / R8). Pooled villa median **−4.75%** (FULL) / −5.20% (24mo). End-to-end
+before/after: **56/565/21 Abu Hamour 2,500,000 → 2,400,000 (−4.00%)**; **54/541/6 Marikh 4,500,000 →
+4,500,000 (0.00%, orthogonal)**; apt 52/903/90 None → None. Verification: py_compile 4/4, isolated
+`test_sprint_2p22p0a11_usage_filter.py` **13/13**, DoD **392/15/45/54** green, live post-deploy smoke
+**3/3** (56/565/21=2.4M, 54/541/6=4.5M, 52/903/90=None, all engine a11). No `index.html` change → mobile
+unaffected.
+
+**56/565/21 (Abu Hamour) NOW 2,400,000 live** (was 2.5M). This is the **correct CONTAMINATION removal**
+and is **condition-BLIND**; the **~2.5–2.8M** figure is the **WITH-CONDITION** target (R7 / §20.10.2),
+pending **Sprint B** (condition axis). **56/565/21 is NO LONGER an a8–a10 regression invariant under a11**
+(a8–a10 didn't touch the bracket pool; a11 does). a11 (contamination → down) and B (condition → up)
+**compose** — distinct fixes.
+
+**🆕 COMPOUND correction (PO, this session) — to be reflected in A2.** "Compound" = **`مجمع فلل`** (a
+10–200-villa development), already handled by **Empirical E20's AREA boundary** (extent > 15K m² → no MoJ
+comparable → Income Approach) — **NOT** `فيلتان`. **`فيلتان`** = a **2-villa** property, **villa-adjacent**
+(the default keeps it in/near the villa pool). The earlier Phase-1b "pull COMPOUND (فيلتان) out" framing is
+**superseded for A2**: فيلتان is not a compound. (a11 left فيلتان IN the pool via the unchanged TYPE
+categorizer.)
+
+**STRATA (settled for A2).** **LAND / HOUSE / STANDALONE_VILLA.** Penthouse (`بنت هاوس`) **FOLDED into
+STANDALONE_VILLA** (it is a villa; dilutive in the Marikh bracket — §20.10.x). Compound
+**deferred/excluded** (E20 area boundary). Palace / heterogeneous "other" **excluded**.
+
+**Sequencing — A → B confirmed.** **A1 DONE** (this sprint). **Next A2** = built-type stratification
+(LAND/HOUSE/STANDALONE_VILLA within size brackets + credibility shrinkage) **+ the window-widening
+fallback** (24mo → 36mo at cell n<20 → FULL, paired with the a10 dispersion gate; R8 / E23). **Then B**
+(`2.22.0b` Stage-2 condition axis — the under-anchor fix, Gate-2 (c)).
+
+**Multi-AI calibration (Rule #54).** Reserve GPT-5 / Gemini for **evolving / contested standards** + **subtle
+methodology design** — NOT data-grounded mechanics (here the **data is the authority**). A1 was pure measured
+mechanics (no multi-AI needed). **A2 = the natural next multi-AI point** (stratification design + shrinkage
+`k` + window/dispersion interaction are methodology-design calls).
+
+**Open / deferred for A2 (Rule #42).** (a) the **`مسكن` TYPE-categorizer divergence** — `geo_v2._categorize`
+counts `مسكن`→villa, `moj_reference.categorize` counts it→`dwelling` (excluded); reconcile in A2.
+(b) **window-widening fallback** (R8 / E23). (c) **land-usage filtering** (out of A1 scope). (d) **methodology
+doc §4 compound correction** (folds into A2 prep — فيلتان ≠ compound). (e) `compute_trend` villa selection
+(trend chart, still unfiltered).
+
+-----
+
+*Last updated: 2026-05-31 (**Sprint 2.22.0a.11 SHIPPED** — A1 villa residential-usage filter, Heroku
+**v150** / commit `ec0d1b9` / CHANGELOG_v63 / §20.11; 56/565/21 now **2.4M** [contamination removal,
+condition-blind; with-condition ~2.5–2.8M pending Sprint B]; villa median ~−4.75%; isolated 13/13 + DoD
+392/15/45/54 + live smoke 3/3; **A1 closes the R8 pool-purity lever**; the `مسكن` TYPE divergence = A2.
+Prior post-a10 addendum §20.10.2: **R7 generalised** — built-type/condition blindness
 is BIDIRECTIONAL & both-paths [over-anchors below-average-condition 54/541/6 widened; **under-anchors**
 above-average-condition 56/565/21 bracket → defensible **~2.5–2.8M**, NOT the 2.5M point]; a10 dispersion
 gate necessary-not-sufficient [misses the tight-pool-above-average case]; Gate-2 (c) = stratification
