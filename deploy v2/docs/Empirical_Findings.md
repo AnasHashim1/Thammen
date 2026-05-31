@@ -512,6 +512,36 @@ the *production effect*. Pairs with Rule #52 (post-deploy content check) and E14
 must exercise the real default path). **Measured**: a9's live effect on 54/541/6 default ≈ **0**.
 Recall: **"تذكر E22"** / **"تذكر inert-on-default"**.
 
+### 🆕 Rule E23 — Over-anchor is diagnosed by DISPERSION, not thinness
+
+✓ **Discovered 2026-05-31** (Phase-1b built-type stratification validation; PO may refine wording).
+
+A comparable pool can pass the **n≥20 "sufficient"** gate yet still **over-anchor** when recent
+high sales are concentrated in a narrow time window (genuine market appreciation, not noise).
+So **thinness (low n) is NOT the right detector** — **dispersion** is (the a10 dispersion gate,
+fires at `(p75−p25)/median ≥ 0.30`).
+
+**The rule:**
+- **Detector = dispersion ≥ 0.30**, NOT an n-threshold. A pool with n≥20 but high dispersion is
+  an over-anchor candidate → present the honest range (a10) and/or widen the window.
+- **Window-widening** (24mo default → 36mo at cell n<20 → FULL) helps **genuinely-thin** cells and
+  limits staleness bias (prefer **36mo** — it cuts ~half the recency drift), but is
+  **necessary-not-sufficient** for **dispersed-but-sufficient** pools.
+- **Durable homogenizers = built-type stratification + the condition axis (Stage-2 Q&A)** — they
+  shrink the dispersion at source, so the median stops depending on where the subject sits in a
+  heterogeneous pool.
+
+**Evidence (Phase-1b, measured):** Marikh standalone-villa bracket[490-736] =
+**681 (24mo, n=29) → 554 (36mo) → 517 (FULL, n=43)**. n=29 ≥ 20 = the engine's `N_SUFFICIENT`, so
+**no n-based widening fires**, yet the 24mo median is **+32% over FULL** — caught only by
+**dispersion**. Penthouse rows are *cheaper* (517) than strict villas (790) in that bracket, so the
+lump is penthouse-**diluted**, not inflated: the over-anchor is **window-driven** (recent high villa
+sales).
+
+**Pairs with:** the a10 dispersion gate (Sprint 2.22.0a.10); RISK_REGISTER **R7** (refined by
+Phase-1b) + **R8**; Rule **#52** / **E22** (verify the default flow). Recall: **"تذكر E23"** /
+**"تذكر dispersion not thinness"**.
+
 ### 🆕 Testing-discipline lessons (A14, 2026-05-30)
 
 **Lesson 1 — HBU-positive + E7 coverage in determinism tests.**
