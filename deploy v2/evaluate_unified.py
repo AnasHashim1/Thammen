@@ -4102,6 +4102,36 @@ def evaluate_thammen(
 # Output builder (backward-compatible + new RICS fields)
 # ============================================================
 
+# ── Sprint 2.22.0a.10: Stage-1 honest-range dispersion gate ──
+# The widened (geo_value) villa path is built-type- AND condition-BLIND (RISK_REGISTER R7):
+# geo_reference_v2._categorize lumps basic / 2-story+annex / +penthouse / مسكن / مجلس into one
+# 'villa', so when the size-bracketed comp pool's price/m² is highly dispersed, a precise point
+# median is FALSE PRECISION for a Stage-1 subject (built-type + condition always unconfirmed).
+# Gate on the pool's own spread (p75−p25)/median; when high, the engine drops the tier to
+# indicative, widens the MVU, and discloses — the P25–P75 range (already in valuation.low/high)
+# becomes the honest headline while the median is retained as the central indicative estimate.
+# T=0.30 is a TUNABLE default calibrated on n=2 widened villas (Marikh 0.469, Maamoura 0.406 —
+# both fire; bracket path excluded by method); revisit as the widened-villa sample grows.
+# Presentation only — the median computation is unchanged (RICS VPS 3 / IVS uncertainty
+# disclosure under thin/heterogeneous evidence; staged model E16).
+STAGE1_DISPERSION_T = 0.30
+_WIDENED_METHODS = ('comparison_widened', 'comparison_widened_indicative')
+
+
+def _stage1_dispersion_gate(primary, geo_v2_result):
+    """Return {'dispersion', 'gated', 'threshold'} for the widened (geo_value) paths, or None
+    when not applicable. Gated when (p75_m2 - p25_m2)/weighted_median_m2 >= STAGE1_DISPERSION_T."""
+    if not primary or primary.get('method') not in _WIDENED_METHODS:
+        return None
+    g = geo_v2_result or {}
+    p25, p75, med = g.get('p25_m2'), g.get('p75_m2'), g.get('weighted_median_m2')
+    if not (p25 and p75 and med) or med <= 0:
+        return None
+    disp = (p75 - p25) / med
+    return {'dispersion': round(disp, 3), 'gated': disp >= STAGE1_DISPERSION_T,
+            'threshold': STAGE1_DISPERSION_T}
+
+
 def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, geometric, audience,
                           user_inputs, stock_strata=None) -> Dict:
@@ -4766,6 +4796,69 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     _multi_qars = getattr(ev, 'multi_qars', None) if ev else None
     if _multi_qars:
         output['multi_qars'] = _multi_qars
+
+    # ── Sprint 2.22.0a.10: Stage-1 honest range under built-type/condition uncertainty ──
+    # When the widened (geo_value) villa pool is highly dispersed (built-type/condition blind,
+    # RISK_REGISTER R7), the point median is false precision. Gate → keep the P25–P75 range
+    # (already in valuation.low/high) as the honest headline, drop the tier to indicative, widen
+    # the MVU, and disclose (AR+EN, via the already-rendered accuracy + MVU surfaces). The median
+    # is retained as the central indicative estimate (backward compat: clients reading
+    # valuation.amount keep working). Presentation only; wrapped in try/except. Runs LAST so it is
+    # the final word on accuracy/MVU when gated.
+    try:
+        _g = _stage1_dispersion_gate(primary, geo_v2_result)
+        _val = output.get('valuation') or {}
+        if _g and _g['gated'] and _val.get('amount') is not None:
+            # (1) range stays headline; the point becomes the central indicative estimate
+            _val['range_is_headline'] = True
+            _val['central_estimate'] = _val.get('amount')
+            _val['pool_dispersion'] = _g['dispersion']
+            _val['range_disclosure_ar'] = (
+                'النطاق المعروض هو التقدير الأصدق لهذا العقار في هذه المرحلة. الصفقات المقارنة '
+                'المتاحة تشمل أنواع بناء وحالات متفاوتة (فيلا عادية، ملحق، بنتهاوس)، ولم يُؤكَّد بعد '
+                'نوع بناء هذا العقار وحالته — لذلك القيمة المركزية إرشادية ضمن النطاق. تأكيد نوع '
+                'البناء والحالة بالمعاينة الميدانية أو عبر الوسيط (المرحلة الثانية) يضيّق النطاق.'
+            )
+            _val['range_disclosure_en'] = (
+                'The shown range is the most honest estimate at this stage. The available '
+                'comparable sales span different built types and conditions (plain villa, annex, '
+                'penthouse), and this property’s built type and condition are not yet '
+                'confirmed, so the central value is indicative within the range. Confirming built '
+                'type and condition by field inspection or a broker (Stage 2) narrows it.'
+            )
+            output['valuation'] = _val
+            # (2) tier → indicative (lowest qualitative tier in the شواهد taxonomy)
+            output['accuracy'] = {
+                'score': 50,
+                'label': '🟡 شواهد محدودة',
+                'tier': 'medium',
+                'explanation_ar': (
+                    'تقدير إرشادي بنطاق واسع: المقارنات المتاحة تختلف في نوع البناء والحالة، '
+                    'ونوع بناء هذا العقار وحالته غير مؤكدين بعد. اعتمد النطاق المعروض لا الرقم '
+                    'المفرد؛ المعاينة الميدانية تضيّق النطاق.'
+                ),
+            }
+            # (3) MVU → widen / do not downgrade; state that the spread is real
+            _mu = dict(output.get('material_uncertainty') or {})
+            _mu['level'] = 'high'
+            _mu['banner_ar'] = (
+                '⚠️ تحفّظ مادي مرتفع — النطاق واسع لأن الصفقات المقارنة المتاحة تختلف في نوع '
+                'البناء والحالة، ولم يُؤكَّد نوع بناء العقار وحالته. النتيجة إرشادية حتى التحقق الميداني.'
+            )
+            _mu['banner_en'] = (
+                '⚠️ HIGH material uncertainty — the range is wide because the available '
+                'comparable sales differ in built type and condition, and the subject’s built '
+                'type and condition are unconfirmed. Indicative pending field verification.'
+            )
+            _facts = list(_mu.get('factors') or [])
+            _facts.append(
+                'تشتت المقارنات مرتفع (نوع البناء والحالة غير مؤكدين) — اعتمد النطاق المعروض لا الرقم المفرد'
+            )
+            _mu['factors'] = _facts
+            _mu['stage1_dispersion_gated'] = True
+            output['material_uncertainty'] = _mu
+    except Exception as _e:
+        print(f'[stage1_honest_range] skipped: {_e}', file=sys.stderr)
 
     return output
 
