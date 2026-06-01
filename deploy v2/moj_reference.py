@@ -116,6 +116,7 @@ def build_reference(rows, area, max_d, return_transactions=False):
                      if (a := to_float(r['المساحة بالمتر المربع'])) and lo <= a < hi]
             tp24 = quartile_stats([to_float(r['قيمة العقار']) for r in sub24])
             tp36 = quartile_stats([to_float(r['قيمة العقار']) for r in sub36])
+            pm36 = quartile_stats([to_float(r['سعر المتر المربع']) for r in sub36])  # (vi) 36mo ppm² → dispersion gate
             bracket_data = {
                 'n': len(sub),
                 'price_per_m2_p25':    ppm2.get('p25')    if ppm2 else None,
@@ -132,6 +133,9 @@ def build_reference(rows, area, max_d, return_transactions=False):
                 'total_price_median_36': tp36.get('median') if tp36 else None,
                 'total_price_p25_24':    tp24.get('p25')    if tp24 else None,
                 'total_price_p75_24':    tp24.get('p75')    if tp24 else None,
+                # (vi) Sprint 2.22.0a.14 — 36mo ppm² dispersion for the bracket honest-range gate:
+                'ppm2_dispersion_36': (((pm36['p75'] - pm36['p25']) / pm36['median'])
+                                       if (pm36 and pm36.get('median')) else None),
             }
             if return_transactions:
                 bracket_data['transactions'] = [

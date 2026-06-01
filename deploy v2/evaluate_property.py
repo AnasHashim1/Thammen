@@ -341,6 +341,9 @@ class MoJValuation:
     fair_price_per_m2: Optional[float] = None       # for per-m² view
     factors_detail: Optional[list] = None           # list of factor dicts
     notes: list = field(default_factory=list)
+    # Sprint 2.22.0a.14 (vi) — bracket honest-range + window disclosure (thin-cell follow-up):
+    bracket_ppm2_dispersion: Optional[float] = None  # (a) 36mo ppm² (p75-p25)/median; gated vs 0.30
+    bracket_window_used: Optional[str] = None        # (b) recent/total split string when n is a 36mo count
 
 
 @dataclass
@@ -614,6 +617,8 @@ def apply_moj_strategy(asset_type: str, plot_area_m2: float,
     # also drops n24=1 single-point A16 artifacts). Tier on the 36mo fallback count.
     # Cap = 36mo (prior is the cell's own 36mo, never all-time). ppm² is NOT shrunk.
     cred_applied = False
+    _vi_disp = None   # (vi)(a) 36mo ppm² dispersion → bracket honest-range gate
+    _vi_win = None    # (vi)(b) recent/total window split → source_ar + Methodology brief
     if moj_cat == 'villa' and bracket:
         _n24 = bracket.get('n_24') or 0
         _m24 = bracket.get('total_price_median_24')
@@ -625,6 +630,8 @@ def apply_moj_strategy(asset_type: str, plot_area_m2: float,
             n = _n36
             reliable = _n36 >= 20
             cred_applied = True
+            _vi_disp = bracket.get('ppm2_dispersion_36')                  # (vi)(a) gate input
+            _vi_win = f'{_n36} معاملة، منها {_n24} خلال 24 شهراً'         # (vi)(b) window split
             strategy_label = (f'MoJ {moj_cat} ({bracket_key} m², credibility 24->36 '
                               f'n24={_n24}/n36={_n36})')
             notes.append(
@@ -696,6 +703,8 @@ def apply_moj_strategy(asset_type: str, plot_area_m2: float,
         estimated_value_median=est_median,
         estimated_value_high=est_high,
         notes=notes,
+        bracket_ppm2_dispersion=_vi_disp,
+        bracket_window_used=_vi_win,
     )
 
 

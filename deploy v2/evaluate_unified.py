@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0a13-thincell-credibility'
-SPRINT_TAG = '2.22.0a.13'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0a14-bracket-honest-range'
+SPRINT_TAG = '2.22.0a.14'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1031,6 +1031,11 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
 
     # Case 1: Bracket has strong sample
     if bracket_n >= MIN_N_RELIABLE and bracket_value:
+        # Sprint 2.22.0a.14 (vi): when bracket_n is a 36mo (credibility) count, disclose the window
+        # on the headline (b) + carry the 36mo ppm² dispersion for the bracket honest-range gate (a).
+        _bwin = getattr(ev.valuation, 'bracket_window_used', None) if ev.valuation else None
+        _bdisp = getattr(ev.valuation, 'bracket_ppm2_dispersion', None) if ev.valuation else None
+        _win_sfx = ' (نافذة 36 شهراً)' if _bwin else ''
         return {
             'value': bracket_value,
             'low':   ev.valuation.estimated_value_low,
@@ -1038,7 +1043,9 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
             'method': 'comparison_bracket',
             'method_label_ar': 'مقارنة شريحية مباشرة (‎RICS VPS 3 / IVS 103‎)',
             'n': bracket_n,
-            'source_ar': f'وسيط {bracket_n} معاملة في نفس الشريحة والمنطقة',
+            'source_ar': f'وسيط {bracket_n} معاملة في نفس الشريحة والمنطقة{_win_sfx}',
+            'window_used': _bwin,        # (vi)(b) recent/total split → Methodology brief
+            'ppm2_dispersion': _bdisp,   # (vi)(a) 36mo ppm² dispersion → _stage1_dispersion_gate
         }
 
     # Case 2: Bracket weak but widening succeeded
@@ -4119,15 +4126,27 @@ _WIDENED_METHODS = ('comparison_widened', 'comparison_widened_indicative')
 
 
 def _stage1_dispersion_gate(primary, geo_v2_result):
-    """Return {'dispersion', 'gated', 'threshold'} for the widened (geo_value) paths, or None
-    when not applicable. Gated when (p75_m2 - p25_m2)/weighted_median_m2 >= STAGE1_DISPERSION_T."""
-    if not primary or primary.get('method') not in _WIDENED_METHODS:
+    """Return {'dispersion', 'gated', 'threshold'} for the widened (geo_value) paths OR the
+    comparison_bracket success path, or None when not applicable. Gated when the pool's ppm²
+    (p75 - p25)/median >= STAGE1_DISPERSION_T. Sprint 2.22.0a.14 (vi) extends the a10 gate to the
+    bracket SUCCESS surface — closes R10 (the a13-rescued dispersed cells) AND the pre-existing
+    dispersed-reliable cells (20/37 villa reliable cells measured dispersed). Presentation only."""
+    if not primary:
         return None
-    g = geo_v2_result or {}
-    p25, p75, med = g.get('p25_m2'), g.get('p75_m2'), g.get('weighted_median_m2')
-    if not (p25 and p75 and med) or med <= 0:
+    method = primary.get('method')
+    if method == 'comparison_bracket':
+        # (vi)(a): the bracket cell's 36mo ppm² dispersion, precomputed in apply_moj_strategy.
+        disp = primary.get('ppm2_dispersion')
+        if disp is None or disp <= 0:
+            return None
+    elif method in _WIDENED_METHODS:
+        g = geo_v2_result or {}
+        p25, p75, med = g.get('p25_m2'), g.get('p75_m2'), g.get('weighted_median_m2')
+        if not (p25 and p75 and med) or med <= 0:
+            return None
+        disp = (p75 - p25) / med
+    else:
         return None
-    disp = (p75 - p25) / med
     return {'dispersion': round(disp, 3), 'gated': disp >= STAGE1_DISPERSION_T,
             'threshold': STAGE1_DISPERSION_T}
 
@@ -4224,6 +4243,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'method_label_ar': primary['method_label_ar'],
             'source_ar':    primary['source_ar'],
             'n_transactions': primary['n'],
+            'window_used':  primary.get('window_used'),  # (vi)(b) Methodology-brief window surface
         }
     else:
         output['valuation'] = {
