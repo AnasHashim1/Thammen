@@ -180,12 +180,13 @@ Reliability gate: n ≥ 10 per stratum.
 - DO NOT rebuild the formula in Thammen's code (IP concern + maintenance burden)
 - If user asks "how does Mthamen calculate?", explain the methodology from §20.2-20.4
 - If user asks "can Thammen call Mthamen?", point to §20.8 decision (no, with 3 revival conditions)
+- **NOTE (§20.9, 2026-05-31):** an INDEPENDENT from-scratch DRC as a **SECONDARY** method is **approved for post-2.22.0b** — this is **NOT** rebuilding Mthamen's reversed formula (still barred, §20.8). See `METHODOLOGY_cost_triangulation_v1.md`.
 
 -----
 
 ## 5. MoJ Data Reality
 
-- Last `data.gov.qa` update: **2025-12-31** (measured 2026-05-30: **150 days** stale)
+- Last `data.gov.qa` update: **2025-12-31** (measured 2026-06-01: **152 days** stale; `/api/health` is the live source)
 - Sprint 2.7 surfaces via banner — **never claim "weekly updates"**
 - Self-healing: when government resumes, `/api/health` recomputes freshness
 
@@ -303,7 +304,7 @@ User triggers any of these by saying **"Read Section X"** where X is relevant se
 - 🆕 **"تذكر أشغال 61/875/20"** — The reference case for Bug A11
 - 🆕 **"تذكر Rule E7"** — QARS subtype requires Zoning cross-check
 - **"تذكر إغلاق Confirmed Sales"** — Sprint 2.16.16 (Confirmed Sales DB) **deferred indefinitely**: no viable internal source (secretary source closed 2026-05-24 + brokerage closed). NOT an awaiting-secretary dependency; T2 "broker" = ad-hoc only
-- **"راجع EMPIRICAL_FINDINGS"** — audit rules E1-E7
+- **"راجع EMPIRICAL_FINDINGS"** — audit rules E1-E23
 - **"اقرأ القسم X من Project Instructions"** — load specific section
 
 -----

@@ -353,8 +353,38 @@ heroku run python smoke_<endpoint>.py
 
 ### Deferred Sprints
 
-> **AUTHORITATIVE ROADMAP (single source), updated 2026-05-30.** CLAUDE.md's roadmap
+> **AUTHORITATIVE ROADMAP (single source), updated 2026-06-01.** CLAUDE.md's roadmap
 > block is a convenience copy that points here; when they drift, **this table wins**.
+
+**Launch posture (locked, 2026-06-01):** tier = **BETA-FIRST** (Anas). Beta scope = **villas + land only**
+(apartments already refuse → gracefully excluded). Full tier register: `docs/LAUNCH_READINESS_GATES_v1.md`;
+beta plan: `docs/BETA_LAUNCH_PLAN_v1.md`.
+
+**Shipped since this list was last sequenced (2.22.0a arc — Session_Log §20.8–§20.15):** a.8 RICS/IVS-2025
+citations · a.9 widened age/quality · a.10 Stage-1 honest-range · a.11 A1 usage filter · a.12 A2 built-type ·
+a.13 thin-cell credibility · a.14 bracket honest-range · **a.15 beta instrumentation (DORMANT, Heroku v154)**.
+
+**PRIORITY QUEUE (confirmed-current — this is the authoritative "next"):**
+
+|#|Item|What / why|Blocker|
+|---|---|---|---|
+|**1**|**A7 — `rics_compliant` always false**|Beta-credibility quick-win (a cohort member might check). Closed-as-by-design in a8; the field-rename / surfacing is the remaining work.|none|
+|**2**|**Sprint 2 — feedback UI prompt**|`index.html` (390×844) consuming `POST /api/feedback`, echoing the `valuation_id` already in the client JSON. Meaningful **at/after** a15 ACTIVATION.|a15 activation (#3)|
+|**3**|**ACTIVATION of a15 instrumentation**|Flip the dormant capture/feedback live. Counsel-gated **§8.1 PDPPL** + **§8.2 cross-border** (RISK_REGISTER **R11**) **+** the a15 capture-surface **security pass** (`LAUNCH_READINESS_GATES_v1` gate 11). Then provision Postgres → `DATABASE_URL` + `EVAL_CAPTURE_ENABLED=true`.|counsel + security pass|
+|**4**|**B — condition sprint**|The R7 built-type / **condition** axis (bidirectional anchor fix). Prereq for 2.22.0b Stage-2. Own §5 audit + signed brief.|signed brief|
+|**5**|**2.22.0b — 5-stage UX + Stage-2 elicitation**|Consumer value prop (staged Q&A; built-type/condition input). Gated on B.|B (#4)|
+|**6**|**Cost-triangulation (independent DRC)**|Own from-scratch DRC as a **secondary** method (§20.9 + `METHODOLOGY_cost_triangulation_v1.md`) — **NOT** the barred Mthamen API/formula (§20.8). **POST-2.22.0b**; BLOCKED on Open Decision #4 (a curated ground-truth sample).|Open Decision #4 + post-2.22.0b|
+
+**Open mediums (backlog):** A5 (`asset_type unknown`) · A15 (silent-HBU-drop under QARS degradation, §20.5) ·
+**A16** (bracket area-name under-match — the only Marikh lever, R9; own sprint after a LIVE Marikh trace).
+
+**Older detail table below — all verified UNSHIPPED (2026-06-01), kept, ordering SUPERSEDED:** behind-beta =
+2.21.5 (hybrid UI), 2.21.4.1/.2 (data expansion), 2.21.3.2 (arady), 2.21.0.11/.12 (cosmetic), 2.18.2 (GIS
+dedup), 2.17 (QARS snapshot), 2.20 (A8 grid — size R²≈0.05 + corner BLOCKED by E12); **villa Stage-2** =
+**2.21.0.10** (wall-to-wall E18, footprint-probe-gated — was missing from the table below); **deferred-
+indefinite** = 2.16.16 Confirmed Sales · Mthamen (§20.8) · MME apartments (tagged 2.21.1 / 2.29, auth).
+
+### Older backlog detail (kept for reference; the Order column below is SUPERSEDED by the priority queue above)
 
 |Order|Sprint|Description|Blocker|
 |---|---|---|---|
