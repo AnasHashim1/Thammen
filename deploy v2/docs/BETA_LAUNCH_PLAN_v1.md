@@ -22,7 +22,7 @@
 | 1 | **Decision-support framing in UI** | content | Anas + Claude.ai drafts | not started | A clear "what this is / isn't" + the not-certified line on the result surface. |
 | 2 | **Basic ToS + disclaimer + privacy/consent notice** | legal-light | Anas + **counsel** (Claude.ai drafts a starting point) | not started | Limitation of liability + PDPPL consent for the cohort. **Draft + get review — not lawyer-authoritative from me.** Proportionate to a small consented cohort. |
 | 3 | **A7 fix** (`rics_compliant` always false) | sprint (S) | CC | open bug | Shouldn't ship even to a beta cohort that might check. Small. |
-| 4 | **Beta instrumentation — prediction log + feedback** | sprint (S) | CC | partial? | `valuation_id` already exists in the API response → logging infra likely present. Extend to capture inputs + output + tier/MUC per eval, and add a lightweight "was this close? / I actually transacted at X" feedback channel. **This is what closes gate 4 over time.** |
+| 4 | **Beta instrumentation — prediction log + feedback** | sprint (S) | CC | not started | Recon (2026-06-01) measured: valuation_id is generated but NOTHING is persisted — the handler logs only the input address to stdout/Heroku logs; output is stored nowhere. So this is NET-NEW durable capture (Postgres; location counsel-gated on cross-border) + a feedback channel, backend-only behind a feature-flag-off. This is what closes gate 4 over time. |
 | 5 | **Scope + banner confirm** | audit | CC / Claude.ai | mostly done | Villas/land only; apt-refusal copy beta-appropriate; stale-data banner prominent. |
 | 6 | **Cohort + access setup** | business/ops | Anas | not started | Who's in, how they get access, how feedback reaches you. |
 
@@ -40,7 +40,7 @@
 
 ## §3 — Critical path to beta-live (honest)
 
-- **Engineering:** A7 (#3) + instrumentation (#4) ≈ **1–2 small sprints** (each gets its own §5 UI-first audit at kickoff). #4 may be smaller than it looks if logging already persists behind `valuation_id`.
+- **Engineering:** A7 (#3) + instrumentation (#4) ≈ **1–2 small sprints** (each gets its own §5 UI-first audit at kickoff). #4 is NET-NEW durable capture — recon (2026-06-01) measured that nothing persists today — so scope it as standing up the first persistent store (Postgres) + feedback endpoint behind a flag, not a small extension.
 - **Parallel, Anas-owned:** framing + ToS + privacy (#1, #2) with counsel review; cohort setup (#6).
 - **Net:** beta-live ≈ a couple of small sprints + one legal/content pass + your cohort decision — **weeks on the engineering side**, gated mostly by the legal-light pass and the cohort, both your calls.
 - **B** starts as a parallel fast-follow whenever you want — its own measure-first kickoff (recon: do age + E4 stock-strata actually *explain* the anchor residuals, before designing the adjustment).
