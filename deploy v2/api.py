@@ -975,8 +975,10 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
             # Sprint 2.22.0a.15 — dormant prediction capture (flag-off OR no
             # DATABASE_URL → no-op; isolated inside, never alters/breaks output).
             if _INSTR_OK:
-                _instr.capture_prediction(
+                _cap_id = _instr.capture_prediction(
                     result, {'zone': req.zone, 'street': req.street, 'building': req.building})
+                if _cap_id:                      # active mode only -> dormant byte-identical
+                    result['capture_id'] = _cap_id
             return _attach_freshness(result)
         # Fallback: v2 engine
         ev = evaluate_property(
@@ -1043,8 +1045,10 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
             )
             # Sprint 2.22.0a.15 — dormant prediction capture (see /api/evaluate).
             if _INSTR_OK:
-                _instr.capture_prediction(
+                _cap_id = _instr.capture_prediction(
                     result, {'zone': req.zone, 'street': req.street, 'building': req.building})
+                if _cap_id:                      # active mode only -> dormant byte-identical
+                    result['capture_id'] = _cap_id
             return _attach_freshness(result)
 
         # Fallback: v2 engine path (original code)
@@ -1120,25 +1124,28 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
         _qg.clear_request_deadline(_deadline_token)
 
 
-# ── Sprint 2.22.0a.15: beta feedback channel (dormant unless active) ──
+# ── Sprint 2.22.0a.16: beta feedback channel (dormant unless active) ──
 class FeedbackRequest(BaseModel):
     # extra='forbid' per Operational #31 / Bug A2 — reject unknown fields (422).
     model_config = ConfigDict(extra='forbid')
 
-    valuation_id: str
+    # Sprint 2.22.0a.16 privacy hardening: FK to the prediction UUID returned in
+    # active mode (replaces the address-embedding valuation_id, which is no longer
+    # stored). Free-text `note` REMOVED (D1) -> a `note` field now 422s.
+    prediction_id: str
     outcome: str                       # e.g. 'accurate' | 'too_high' | 'too_low' | 'transacted'
     transacted_price: Optional[float] = Field(default=None, ge=0, lt=_ASKING_PRICE_MAX)
-    note: Optional[str] = Field(default=None, max_length=2000)
 
 
 @app.post("/api/feedback")
 @limiter.limit(";".join(RATE_LIMIT_LIST))
 async def submit_feedback(req: FeedbackRequest, request: Request):
-    """Beta feedback on a prior valuation, keyed on valuation_id. Backend-only
-    (no UI yet — Sprint 2). DORMANT by default: persists only when capture is
-    enabled AND a DB is configured; otherwise validates + acknowledges WITHOUT
-    storing. The client IP is logged for ops only, never stored (BRIEF §3)."""
-    log.info(f"feedback: vid={req.valuation_id} outcome={req.outcome} "
+    """Beta feedback on a prior prediction, keyed on the prediction UUID
+    (`prediction_id`, returned in active mode). Backend-only (no UI yet —
+    Sprint 2). DORMANT by default: persists only when capture is enabled AND a
+    DB is configured; otherwise validates + acknowledges WITHOUT storing. The
+    client IP is logged for ops only, never stored (BRIEF §3)."""
+    log.info(f"feedback: pred={req.prediction_id} outcome={req.outcome} "
              f"from {get_remote_address(request)}")
     stored = False
     if _INSTR_OK:
