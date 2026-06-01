@@ -2071,7 +2071,75 @@ categorizer alignment + methodology doc §4 (still owed from a12).
 
 -----
 
-*Last updated: 2026-06-01 (**Sprint 2.22.0a.13 SHIPPED** — thin-cell credibility, Heroku **v152** / commit
+## 20.14 🆕 2026-06-01 — Sprint 2.22.0a.14 (vi) (bracket honest-range + window disclosure) — DEPLOYED Heroku v153
+
+> Engine `thammen-sprint2p22p0a14-bracket-honest-range` / SPRINT_TAG `2.22.0a.14` / api-health
+> `3.1.0-sprint2.22.0a.14`. **Presentation/copy ONLY — NO method/value change** ((b) wording = Gate-2 copy
+> sub-decision, Anas-signed). Commit `78ffd9b` → Heroku **v153** (`git subtree push`, clean fast-forward
+> `c77a3dd..02bba4f`, on explicit Anas "Approved — push a14") → origin in sync `369a213..78ffd9b` (0/0).
+> CHANGELOG_v66. **Immediate follow-up to a13 — closes R10 + CHECK-3-live.**
+
+**What shipped.** (a) `_stage1_dispersion_gate` extended with a `comparison_bracket` branch gating on the
+cell's **36mo ppm² dispersion** vs `STAGE1_DISPERSION_T=0.30`; **the a10 application block reuses
+UNCHANGED** (range_is_headline + central_estimate + AR/EN disclosure + accuracy→🟡 شواهد محدودة + MUC high).
+`moj_reference.build_reference` adds additive `ppm2_dispersion_36`; `apply_moj_strategy` threads
+`bracket_ppm2_dispersion` + `bracket_window_used` (villa, `n24≥5` cred only); `_select_primary_comparison`
+Case 1 carries them. (b) headline `source_ar` appends **«(نافذة 36 شهراً)»**; the "Methodology Applied"
+brief `window` field (`output_briefs.py:852`, previously unpopulated) shows **«{n36} معاملة، منها {n24}
+خلال 24 شهراً»** — both only when n is a 36mo count; pure-24mo unchanged. **No median/value change** (a13's
+blend untouched).
+
+**Scope (signed) — the gap was SYSTEMIC, not a13-specific.** All **20 of 37** reliable villa bracket cells
+dispersed (ppm² ≥0.30) are gated = **7 a13-rescued + 13 PRE-EXISTING** always-reliable cells that already
+presented as clean reliable points before a13. The gate fires on dispersion, not cell-history. **Anchors
+NOT gated** (Abu Hamour 0.208, Marikh 0.197).
+
+**Verification.** Isolated `test_sprint_2p22p0a14_bracket_honest_range.py` **19/19**. End-to-end live (real
+build_reference→apply_moj_strategy→gate): Abu 0.208→not gated + window; الغرافة 600-900 0.428→gated; العب
+0.632→gated; الخريطيات 600-900 (pre-existing) 0.445→gated; Marikh 0.197→not gated. DoD **392/15/45/57**
+(broad 56→57, +1 new test). py_compile 3/3.
+
+**Live post-deploy smoke v153 (Anas — POST works his side; Rule #52 closed MEASURED):**
+
+| PIN | a14 live | verdict |
+|---|---|---|
+| 56/565/21 Abu Hamour | 2,400,000 comparison_bracket n=37, NOT gated, acc 85, MUC mod | value IDENTICAL; **(b) LIVE**: source_ar «…(نافذة 36 شهراً)» + window_used «37 معاملة، منها 28 خلال 24 شهراً» → **CHECK-3 closed on the anchor** ✅ |
+| 54/541/6 Marikh | 4,500,000 comparison_widened, range-headline, disp 0.425, MUC high | unchanged (widened path) ✅ |
+| 55/296/13 المعراض | 2,600,000 comparison_thin n=8 | unchanged (thin ≠ Case-1 bracket → gate doesn't fire) ✅ |
+| 52/903/90 apt | None / insufficient_data | unchanged ✅ |
+| /api/health | a14, v153, qars healthy | ✅ |
+
+**(a) evidence (all 3 parts).** Field-threading proven LIVE (Abu's window_used populated through the full
+/api/evaluate path; dispersion rides the same MoJValuation threading); application proven LIVE by Marikh
+(the reused a10 block); bracket DECISION proven by the offline e2e (الغرافة 0.428 / العب 0.632 / الخريطيات
+0.445 all gated). **Residual (FAST-FOLLOW, not scheduled):** a DIRECT live hit on a gated bracket cell
+(الغرافة/العب 600-900) — confirm the central estimate is identical to a13 while the framing flips to
+range-headline/indicative.
+
+**Boundary (E23 hysteresis candidate).** 3 cells within ±0.006 of T=0.30 (الثمامة 50 0.294, نعيجة 44 0.302,
+ام عبيرية 0.305) may flip gated↔clean on a future MoJ refresh — **expected, not a regression**; hysteresis
+is the fix if it ever bites; dormant while MoJ is frozen (152d).
+
+**Known-minor (optional, not scheduled).** The window suffix fires on `comparison_bracket` only, not
+`comparison_thin` (thin cells are already heavily caveated).
+
+**Carried forward (Rule #42).** R10 → CLOSED-by-a14. A16 = still the only Marikh lever (R9, own sprint
+after a LIVE Marikh trace); A7 still open (by-design); R7 built-type/**condition** axis = Branch B
+(2.22.0b); LAND bracket path unchanged (villa-only); `compute_trend` categorizer alignment + methodology
+doc §4 (owed since a12).
+
+-----
+
+*Last updated: 2026-06-01 (**Sprint 2.22.0a.14 SHIPPED** — (vi) bracket honest-range + window disclosure,
+Heroku **v153** / commit `78ffd9b` / CHANGELOG_v66 / §20.14; **presentation/copy ONLY — no value change**;
+(a) `comparison_bracket` dispersion gate (36mo ppm² vs 0.30) reusing the a10 block, (b) «نافذة 36 شهراً» on
+`source_ar` + recent/total split in the Methodology brief, when n is a 36mo count; scope ALL 20 dispersed
+reliable villa cells [7 a13-rescued + 13 pre-existing], anchors clean [Abu 0.208, Marikh 0.197]; live smoke
+v153 4/4 [56/565/21=2.4M value IDENTICAL + window disclosed → CHECK-3 closed, 54/541/6=4.5M, 55/296/13
+comparison_thin n=8, 52/903/90 refusal]; **R10 generalized → CLOSED-by-a14**; boundary 3 cells ±0.006 of
+T=0.30 may flip on refresh [expected]; known-minor window-suffix bracket-only; fast-follow = direct live
+hit on a gated bracket cell; isolated 19/19 + DoD 392/15/45/57; origin in sync `78ffd9b`. Prior:
+**Sprint 2.22.0a.13 SHIPPED** — thin-cell credibility, Heroku **v152** / commit
 `c366d66` / CHANGELOG_v65 / §20.13; per-cell 36mo-capped P2 shrinkage of the villa bracket TOTAL-PRICE
 median toward the cell's own 36mo [k=10, n24≥5 floor, cap 36mo, ppm² untouched]; +10 thin→reliable,
 reliable-move guard PASS [max 2.2%, #>5%=0], <5 floor preserved; live smoke v152 4/4 [56/565/21=2.4M
