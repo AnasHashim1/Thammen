@@ -1939,7 +1939,14 @@ None` (NBSP-normalized `نوع العقار`) + `matches_category`. Applied at t
 (`moj_reference.build_reference` bracket + `geo_reference_v2._get_area_transactions` geo), **composing with
 A1's residential-usage filter** (a comp row must pass BOTH). **Multi-AI (Rule #54):** GPT + Gemini →
 APPROVE WITH CONDITIONS; every condition resolved by recon (فيلتان discount, penthouse villa-range,
-compound label-based, subject can't distinguish).
+compound label-based, subject can't distinguish). **Consult-record addendum (2026-06-01, Sprint
+2.22.0a.13 prep — no fresh round per the a13 lock):** Gemini's a12 reply cited the AVM models standard
+as «IVS-105» loosely — **Rule #54 deviation note:** the correct 2025 mapping is **IVS 105 = Valuation
+Models** / **IVS 103 = Approaches** (RICS **VPS 5** = models, **VPS 3** = approaches); the engine's
+`rics_methodology_note` (Sprint 2.22.0a.8) already cites them correctly, so no code impact.
+**Rule #42 citation item → VERIFY-AND-CLOSED:** the 2025 numbering (VPS 3/5/6 ↔ IVS 103/105/106) is
+triple-confirmed (GPT-5 + Gemini + IVSC/RICS primary sources, §20.9) — no open RICS/IVS numbering
+question remains.
 
 **LOCKED decisions (post recon + multi-AI):**
 - **فيلتان / فيلتين → EXCLUDED (None)** — measured **−6 to −10% discount** vs single villa (distinct
