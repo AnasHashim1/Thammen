@@ -65,6 +65,17 @@ except ImportError as e:
     SPRINT_TAG = 'fallback'
     log.warning(f"Unified engine not available: {e} — using v2 fallback")
 
+# ── Sprint 2.22.0a.15: dormant beta instrumentation (prediction capture +
+#    feedback). Defensive import — a helper-import failure must NEVER take the
+#    API down (backward-compat rule). Every entry point is internally guarded:
+#    flag-off OR no DATABASE_URL → silent no-op (zero data footprint).
+try:
+    import instrumentation as _instr
+    _INSTR_OK = True
+except Exception as _instr_err:  # pragma: no cover
+    _INSTR_OK = False
+    log.warning(f"instrumentation module unavailable: {_instr_err}")
+
 # ── Config (via environment variables) ──
 MOJ_CSV = Path(os.getenv("MOJ_CSV_PATH", "moj_weekly.csv"))
 MOJ_DB = Path(os.getenv("MOJ_DB_PATH", "moj_weekly.db"))
@@ -961,6 +972,11 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
                 use_listings=True,
                 use_geo_v2=True,
             )
+            # Sprint 2.22.0a.15 — dormant prediction capture (flag-off OR no
+            # DATABASE_URL → no-op; isolated inside, never alters/breaks output).
+            if _INSTR_OK:
+                _instr.capture_prediction(
+                    result, {'zone': req.zone, 'street': req.street, 'building': req.building})
             return _attach_freshness(result)
         # Fallback: v2 engine
         ev = evaluate_property(
@@ -1025,6 +1041,10 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
                 use_listings=True,
                 use_geo_v2=True,
             )
+            # Sprint 2.22.0a.15 — dormant prediction capture (see /api/evaluate).
+            if _INSTR_OK:
+                _instr.capture_prediction(
+                    result, {'zone': req.zone, 'street': req.street, 'building': req.building})
             return _attach_freshness(result)
 
         # Fallback: v2 engine path (original code)
@@ -1098,6 +1118,32 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         _qg.clear_request_deadline(_deadline_token)
+
+
+# ── Sprint 2.22.0a.15: beta feedback channel (dormant unless active) ──
+class FeedbackRequest(BaseModel):
+    # extra='forbid' per Operational #31 / Bug A2 — reject unknown fields (422).
+    model_config = ConfigDict(extra='forbid')
+
+    valuation_id: str
+    outcome: str                       # e.g. 'accurate' | 'too_high' | 'too_low' | 'transacted'
+    transacted_price: Optional[float] = Field(default=None, ge=0, lt=_ASKING_PRICE_MAX)
+    note: Optional[str] = Field(default=None, max_length=2000)
+
+
+@app.post("/api/feedback")
+@limiter.limit(";".join(RATE_LIMIT_LIST))
+async def submit_feedback(req: FeedbackRequest, request: Request):
+    """Beta feedback on a prior valuation, keyed on valuation_id. Backend-only
+    (no UI yet — Sprint 2). DORMANT by default: persists only when capture is
+    enabled AND a DB is configured; otherwise validates + acknowledges WITHOUT
+    storing. The client IP is logged for ops only, never stored (BRIEF §3)."""
+    log.info(f"feedback: vid={req.valuation_id} outcome={req.outcome} "
+             f"from {get_remote_address(request)}")
+    stored = False
+    if _INSTR_OK:
+        stored = _instr.capture_feedback(req.model_dump())
+    return {"status": "recorded" if stored else "accepted", "stored": stored}
 
 
 # ── Static file serving ──
