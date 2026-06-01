@@ -3,7 +3,7 @@
 > **Project:** thammen.qa — Qatar real-estate AVM (RICS Red Book Global Standards, effective 31 January 2025 — VPGA 10 + VPS 6 + IVS 106)
 > **User:** Anas (Qatari, Windows, Heroku deploy)
 > **Working directory:** `C:\Thammen\deploy v2`
-> **Last update:** 2026-05-31 (Sprint 2.22.0a.11 deployed — A1 residential-usage filter on the villa comparable pool; CHANGELOG_v63 + Session_Log §20.11). **LIVE: engine `thammen-sprint2p22p0a11-usage-filter` · api/health 3.1.0-sprint2.22.0a.11 · Heroku v150 · commit `ec0d1b9` · CHANGELOG_v63** (USER-VISIBLE: villa headlines now exclude non-residential-usage comps [priced ~+101%] → villa median ~−4.75%; Abu Hamour 56/565/21 → 2.4M [was 2.5M — contamination removal, condition-blind; the ~2.5–2.8M with-condition target is pending Sprint B]; Marikh 54/541/6 = 4.5M + apt 52/903/90 unchanged; villa-only on both selectors; isolated 13/13 + DoD 392/15/45/54; live smoke 3/3; origin in sync `ec0d1b9`. **A1 closes the R8 pool-purity lever; the `مسكن` TYPE-categorizer divergence = A2 [open].** Prior: Sprint 2.22.0a.10 — Stage-1 honest range (USER-VISIBLE: widened villas with a dispersed comp pool now show an indicative P25–P75 range + lowered tier + widened MVU + AR/EN disclosure, the median retained as the central estimate; `_stage1_dispersion_gate` T=0.30 on the geo_value widened paths — live Marikh 54/541/6 → 3.3–5.4M indicative, Maamoura 56/647/6 → 2.9–4.4M indicative, Abu Hamour 56/565/21 bracket = 2.5M unchanged; backend-only, no index.html; isolated 16/16 + DoD 392/15/45/53; origin in sync `21c5fe3`. **Built-type/condition blindness [RISK_REGISTER R7] is BIDIRECTIONAL & affects BOTH paths** — over-anchors below-avg-condition [54/541/6 widened, RE-OPENED], under-anchors above-avg-condition [56/565/21 bracket → defensible ~2.5–2.8M, NOT the 2.5M point]; a10 = necessary-NOT-sufficient, real fix = Gate-2 (c) built-type stratification via 2.22.0b Stage-2 Q&A). Prior: Sprint 2.22.0a.9 — widened-path age/quality elasticity, facet a (Heroku v148, CHANGELOG_v61; the geo_value widened headline applies the age/quality slice clamped ±0.10; the a9 ship-time 681≈682/ft² "match" was **later OVERTURNED** — coincidence, 54/541/6 RE-OPENED, §20.10.1 / R7). Prior: Sprint 2.22.0a.8 — RICS/IVS 2025 citation correctness (Heroku v147, commit `1e07a2a`, CHANGELOG_v60): added the AVM models standard VPS 5 / IVS 105 + AVM-not-standalone disclosure on a secondary collapsible surface [the 2.22.0a.4-deferred surface]; remapped ALL stale citations — approaches VPS 4→VPS 3 / IVS 103, HBU→VPS 2 / IVS 102 [genus, triple-confirmed], scope→VPS 1, VPN 13→VPGA 10 [D5 widened]; bare `methodology_ar` untouched; copy-only — valuations unchanged [villa 56/565/21 = 2.5M = v101]; regression 392/15/45/51 + 43/43; origin in sync `b560920..1e07a2a`). Prior: Sprint A14 lever 2 — geometric_factors parallelized, **A14 CLOSED** (Heroku v146, CHANGELOG_v59, cold villa 200 @~15s, was 503@31s; lever 1 deferred + H_A-cleared/ready). The production-state snapshot block below + Session_Log §20 are authoritative. Prior: 2026-05-29 Sprint 2.22.0a.4 — Disclosure & Framing Honesty (Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
+> **Last update:** 2026-05-31 (Sprint 2.22.0a.12 deployed — A2 built-type stratification of the villa comparable pool; CHANGELOG_v64 + Session_Log §20.12). **LIVE: engine `thammen-sprint2p22p0a12-builttype-stratification` · api/health 3.1.0-sprint2.22.0a.12 · Heroku v151 · commit `9fa375c` · CHANGELOG_v64** (USER-VISIBLE: villa comparable pool is now PURE-villa — house [بيت/مسكن], فيلتان [−6 to −10% discount product], and compound rows removed → pooled villa ppm2 median ~+9.7%; net A1+A2 ~+4.5% above the original contaminated median. HEADLINE effect VARIABLE: reference anchors STABLE [Abu Hamour 56/565/21 = 2.4M, Marikh 54/541/6 = 4.5M] because the bracket headline uses the robust TOTAL-PRICE median [removed house rows weren't at the median position]; anchors' under/over-valuation = CONDITION → Sprint B, not stratification. **Subject side CANNOT distinguish HOUSE from VILLA** [QARS subtype 1 = "Villa/House", no HOUSE AssetType] → house subjects pool as standalone_villa [live-confirmed 55/296/13]; house-subject fix DEFERS to B. DRY `built_type.py` at both comp sites, composes with A1 usage filter; `categorize`/`_categorize` KEPT for the out-of-scope `compute_trend` + geo non-villa categories [Rule #39]. Isolated 28/28 + DoD 392/15/45/55; live smoke 4/4 [incl. `comparison_thin n=8` proving graceful thinning]; origin in sync `9fa375c`. **NEXT = window-fallback 36mo-cap + light shrinkage** [recon F: 36mo captures ~half the +8-13% staleness drift]. Prior: Sprint 2.22.0a.11 — A1 residential-usage filter on the villa comparable pool (Heroku v150, commit `ec0d1b9`, CHANGELOG_v63; villa headlines shed non-residential-usage comps [~+101%] → villa median ~−4.75%; 56/565/21 → 2.4M [contamination removal, condition-blind, ~2.5–2.8M with-condition pending B]; isolated 13/13 + DoD 392/15/45/54; §20.11). Prior: Sprint 2.22.0a.10 — Stage-1 honest range (USER-VISIBLE: widened villas with a dispersed comp pool now show an indicative P25–P75 range + lowered tier + widened MVU + AR/EN disclosure, the median retained as the central estimate; `_stage1_dispersion_gate` T=0.30 on the geo_value widened paths — live Marikh 54/541/6 → 3.3–5.4M indicative, Maamoura 56/647/6 → 2.9–4.4M indicative, Abu Hamour 56/565/21 bracket = 2.5M unchanged; backend-only, no index.html; isolated 16/16 + DoD 392/15/45/53; origin in sync `21c5fe3`. **Built-type/condition blindness [RISK_REGISTER R7] is BIDIRECTIONAL & affects BOTH paths** — over-anchors below-avg-condition [54/541/6 widened, RE-OPENED], under-anchors above-avg-condition [56/565/21 bracket → defensible ~2.5–2.8M, NOT the 2.5M point]; a10 = necessary-NOT-sufficient, real fix = Gate-2 (c) built-type stratification via 2.22.0b Stage-2 Q&A). Prior: Sprint 2.22.0a.9 — widened-path age/quality elasticity, facet a (Heroku v148, CHANGELOG_v61; the geo_value widened headline applies the age/quality slice clamped ±0.10; the a9 ship-time 681≈682/ft² "match" was **later OVERTURNED** — coincidence, 54/541/6 RE-OPENED, §20.10.1 / R7). Prior: Sprint 2.22.0a.8 — RICS/IVS 2025 citation correctness (Heroku v147, commit `1e07a2a`, CHANGELOG_v60): added the AVM models standard VPS 5 / IVS 105 + AVM-not-standalone disclosure on a secondary collapsible surface [the 2.22.0a.4-deferred surface]; remapped ALL stale citations — approaches VPS 4→VPS 3 / IVS 103, HBU→VPS 2 / IVS 102 [genus, triple-confirmed], scope→VPS 1, VPN 13→VPGA 10 [D5 widened]; bare `methodology_ar` untouched; copy-only — valuations unchanged [villa 56/565/21 = 2.5M = v101]; regression 392/15/45/51 + 43/43; origin in sync `b560920..1e07a2a`). Prior: Sprint A14 lever 2 — geometric_factors parallelized, **A14 CLOSED** (Heroku v146, CHANGELOG_v59, cold villa 200 @~15s, was 503@31s; lever 1 deferred + H_A-cleared/ready). The production-state snapshot block below + Session_Log §20 are authoritative. Prior: 2026-05-29 Sprint 2.22.0a.4 — Disclosure & Framing Honesty (Heroku **v140**, commit `f7870a3`, CHANGELOG_v55; engine `thammen-sprint2p22p0a4-disclosure-framing-honesty`). `methodology_ar` → universal bare line «أساس التقدير هو منهج المقارنة بالمبيعات.» (dropped «توفيق ثلاثي الطرق» + Latin); main-path Layer A fold (6→5, 5 genuine caveats preserved); D/C4 canonical from 2.22.0a.2 untouched. Multi-AI Rule #54 (GPT-5+Gemini) Path A bare-line. Live smoke villa 56/565/21 (200 on A6 retry @22s) + apt 52/903/90 PASS. **Arabic-Surface arc since 2.21.4:** 2.22.0a (v50) → a.1 QARS fallback (v51/Heroku v132) → a.2 content fixes (v52) → 2.16.17 security (v53) → a.3 honesty (v54/v139) → a.4 framing (v55/v140). Full bridge + deferred items in Session_Log §18. **NOTE:** the production-state snapshot block below predates the 2.22.0a arc — trust the four updated lines there + Session_Log §17–§18 over the older body until a full snapshot rewrite.)
 
 ## Quick orientation
 
@@ -108,51 +108,59 @@ the per-change loop; Claude Code does not pause mid-execution for it.
   available for review on request; not a mandatory gate on reversible work.
 
 ```
-Engine version deployed:  thammen-sprint2p22p0a11-usage-filter
-                          (Heroku v150, 2026-05-31, commit ec0d1b9; Sprint 2.22.0a.11 — A1
-                          residential-usage filter on the villa comparable pool. USER-VISIBLE:
-                          villa headlines now shed non-residential-usage comps [priced ~+101%] →
-                          villa median ~−4.75%; Abu Hamour 56/565/21 → 2.4M [was 2.5M,
-                          contamination removal, condition-blind]; Marikh 54/541/6 = 4.5M +
-                          apt 52/903/90 unchanged. origin in sync ec0d1b9)
-api/health version:       3.1.0-sprint2.22.0a.11
-Latest CHANGELOG:         CHANGELOG_v63.md  (Sprint 2.22.0a.11 — A1 usage filter, backend only.
-                          New shared usage_filter._is_residential_usage [WHITELIST {فلل او بيوت
-                          سكنية, مسكن, مساكن كبار الموظفين} + KEEP blank; exclude all else incl.
-                          عمارات او مجمعات سكنية + commercial/farm/office + the ~40 misspellings]
-                          applied to BOTH villa selectors [moj_reference.build_reference bracket
-                          path + geo_reference_v2._get_area_transactions geo/widened path], VILLA
-                          pool ONLY [land + TYPE categorizers untouched]. Root: villa pool was
-                          نوع العقار-only [no usage filter] → non-residential rows priced ~+101%
-                          inflated the median ~5% [Phase-1b / R8]. 56/565/21 now 2.4M [−4% e2e,
-                          contamination removal — NOT the R7 condition under-anchor, which points
-                          UP ~2.5–2.8M via Sprint B]; NO LONGER an a8–a10 regression invariant.
-                          Isolated 13/13; DoD 392/15/45/54; live smoke 3/3. Prior: v62=2.22.0a.10
-                          Stage-1 honest range [dispersion gate, R7 BIDIRECTIONAL; §20.10])
+Engine version deployed:  thammen-sprint2p22p0a12-builttype-stratification
+                          (Heroku v151, 2026-05-31, commit 9fa375c; Sprint 2.22.0a.12 — A2
+                          built-type stratification of the villa comparable pool. USER-VISIBLE:
+                          villa pool now PURE-villa [house بيت/مسكن + فيلتان + compound removed] →
+                          pooled villa ppm2 median ~+9.7%; reference anchors STABLE [56/565/21 =
+                          2.4M, 54/541/6 = 4.5M — robust total-price median]. origin in sync 9fa375c)
+api/health version:       3.1.0-sprint2.22.0a.12
+Latest CHANGELOG:         CHANGELOG_v64.md  (Sprint 2.22.0a.12 — A2 built-type stratification,
+                          backend only. New shared built_type.py [built_type(row) → LAND / HOUSE /
+                          STANDALONE_VILLA / None] applied at the two comp-selection sites
+                          [moj_reference.build_reference bracket + geo_reference_v2.
+                          _get_area_transactions geo], composes with A1's usage filter. LOCKS:
+                          فيلتان EXCLUDED [measured −6 to −10% discount, distinct product — overturned
+                          the earlier "fold"]; بنت هاوس FOLDED into villa [villa-range +18%, far from
+                          APT ~827]; compound EXCLUDED by LABEL [مجمع/فلل/count-words]; بيت+مسكن →
+                          HOUSE [resolved the مسكن categorizer split], removed from the villa pool.
+                          Impact: villa ppm2 +9.7% pooled [pure-villa, H1]; net A1+A2 ~+4.5% above the
+                          original contaminated median. Subject side CANNOT distinguish HOUSE from
+                          VILLA → house subjects pool as standalone_villa → fix DEFERS to B. categorize/
+                          _categorize KEPT for compute_trend + geo non-villa [Rule #39]. Isolated 28/28;
+                          DoD 392/15/45/55; live smoke 4/4. Prior: v63=2.22.0a.11 A1 usage filter
+                          [villa median −4.75%, §20.11])
 A14 (CLOSED 2026-05-30):  villa cold-dyno first-try 503 — FIXED by Sprint A14 lever 2 (v146).
                           Live post-deploy H_lat: 56/565/21 cold first-try 200@14.4s + 200@15.0s
                           (×2) · 56/647/6 cold 200@15.9s — all <30s, margin ~15s, ZERO 503
                           (baseline was 503@31s). Lever 1 (overlap, H_A-cleared) DEFERRED —
                           unneeded (lever-2 margin huge). Bug A15 (silent-HBU-drop) still OPEN
                           (§20.5, separate sprint). NOT the closed A6 case (#53).
-Latest Sprint:            2.22.0a.11 A1 — residential-usage filter on the villa comparable pool
-                          - usage_filter._is_residential_usage(row): u=='' (KEEP blank) OR u in
-                            {فلل او بيوت سكنية, مسكن, مساكن كبار الموظفين}; WHITELIST (robust to the
-                            ~40 spelling variants) — excludes عمارات او مجمعات سكنية +
-                            commercial/farm/school/office + every misspelling
-                          - applied VILLA-ONLY on BOTH selectors (land untouched, A1 scope):
-                            moj_reference.build_reference + geo_reference_v2._get_area_transactions
-                          - root: villa pool was نوع العقار-only (no usage filter) → carried
-                            non-residential rows priced ~+101% → median inflated ~5% (R8)
-                          - impact: pooled villa median −4.75% (FULL)/−5.20% (24mo); end-to-end
-                            56/565/21 2.5M→2.4M (−4%, contamination removal — NOT R7 condition,
-                            which points UP ~2.5–2.8M via Sprint B); 54/541/6 4.5M + apt unchanged
-                          - 56/565/21 NO LONGER an a8–a10 regression invariant under a11
-                          - py_compile 4/4; isolated 13/13; DoD 392/15/45/54; live smoke 3/3
-                          - OUT of scope (A2/later): مسكن TYPE divergence (geo_v2→villa, bracket→
-                            dwelling); window-widening (R8/E23); land-usage; methodology doc §4
-                            compound correction (فيلتان ≠ compound)
-                          (full narrative: Session_Log §20.11; CHANGELOG_v63)
+Latest Sprint:            2.22.0a.12 A2 — built-type stratification of the villa comparable pool
+                          - built_type.py: built_type(row) → LAND / HOUSE / STANDALONE_VILLA / None
+                            (NBSP-normalized نوع العقار) + matches_category; DRY, like usage_filter
+                          - applied at BOTH comp sites (villa→STANDALONE_VILLA pool, land→LAND);
+                            composes with A1 usage filter (a row must pass BOTH)
+                          - LOCKS: فيلتان→None (measured −6 to −10% discount); بنت هاوس→villa (fold,
+                            +18% villa-range); مجمع/فلل/count-words→None (LABEL-based); بيت/مسكن→HOUSE
+                            (resolves the مسكن split), removed from villa
+                          - impact: pooled villa ppm2 +9.7% FULL/+11.6% 24mo (H1; removed 41.5%:
+                            house@350 + فيلتان/compound); reference anchors STABLE (56/565/21 2.4M,
+                            54/541/6 4.5M — robust total-price median; anchors' valuation = CONDITION→B)
+                          - subject side UNCHANGED: engine can't distinguish HOUSE from VILLA (QARS
+                            subtype 1 = "Villa/House") → house subjects pool as standalone_villa
+                            (live 55/296/13) → house-subject fix DEFERS to B (2.22.0b)
+                          - thinning HONEST-not-broken: reliable cells 20%→12%, insufficient 48%→56%,
+                            absorbed by 36mo fallback + a10 gate (live proof 55/296/13 = comparison_thin
+                            n=8); a10 gate share ~unchanged 37%→39%
+                          - Rule #39: categorize/_categorize KEPT for compute_trend + geo non-villa
+                          - py_compile 4/4; isolated 28/28; DoD 392/15/45/55; live smoke 4/4
+                          - CORRECTION to §20.11: compound exclusion is LABEL-based (نوع العقار), NOT
+                            "via E20 area" — E20 is a SUBJECT-side guard, never touches comp rows
+                          - NEXT: window-fallback 36mo-cap + light shrinkage (recon F: 36mo ≈ half the
+                            +8-13% staleness drift); compute_trend categorizer alignment; methodology
+                            doc §4 (3 strata + فيلتان excluded + compound label-based)
+                          (full narrative: Session_Log §20.12; CHANGELOG_v64)
 
 --- snapshot block below is PRE-2.22.0a (2.21.4-era), kept for reference ---
 Engine (pre-arc):         thammen-sprint2p21p4-t3-aryan-lusail  (Heroku v125 code,
