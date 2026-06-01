@@ -1514,6 +1514,23 @@ post-deploy smoke (2026-06-01) — urllib POST 403×5 → browser-UA curl 200 / 
 
 -----
 
+## 62. ⚠️ A hash of a low-entropy / enumerable input is NOT de-identification — use a random UUID surrogate
+
+Rule #62 — When de-identifying a record, do NOT use a **hash of a low-entropy / enumerable field** as the
+surrogate / join key. A fast cryptographic hash (SHA-256, etc.) over a small, structured, enumerable input is
+**brute-force-reversible** — the attacker just hashes the whole input space and matches. Thammen's
+`valuation_id` = `THM-{ts}-{zone}{street}{building}` is exactly that (a bounded address space × a bounded
+timestamp), so `SHA-256(valuation_id)` is trivially preimage-able (known property: hash over ~86,400 ts/day =
+milliseconds; unknown record: GPU-feasible). A hash of an enumerable address is **not** de-identification.
+**Use a random UUID (`uuid4`) surrogate** as the stored key + join target, and keep the precise re-identifiers
+(street / building) in a **separately-droppable, encrypted** column. Origin: Sprint 2.22.0a.16 (Q1 —
+`SHA-256(valuation_id)` proposed, then REJECTED → UUID-FK). Contrast **E12** (the MoJ `PN…` hash is a *keyed*
+cipher over a bounded id — uncrackable without the key — the opposite case: de-id holds there, but it also
+blocks our own join). Pairs with RISK_REGISTER **R11** (the dormant capture's privacy posture). **Recall:**
+"تذكر #62" / "hash of enumerable ≠ de-id".
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added

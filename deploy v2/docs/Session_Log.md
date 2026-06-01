@@ -2194,7 +2194,74 @@ decision (Heroku US/EU vs Qatar/GCC — TYPE↔LOCATION tension flagged in the b
 
 -----
 
-*Last updated: 2026-06-01 (**Sprint 2.22.0a.15 SHIPPED** — beta instrumentation: prediction capture + `POST
+## 20.16 🆕 2026-06-01 — Sprint 2.22.0a.16 (pre-activation capture privacy-hardening) — DEPLOYED Heroku v155
+
+> Engine `thammen-sprint2p22p0a16-precapture-privacy-hardening` / SPRINT_TAG `2.22.0a.16` / api-health
+> `3.1.0-sprint2.22.0a.16`. **Privacy hardening of the a15 dormant capture — additive/structural, NO
+> valuation-logic change; capture STILL DORMANT.** Brief `docs/BRIEF_precapture_privacy_hardening.md`
+> (Rule #32 SIGNED; recon → Claude.ai CONFIRM: Q1 rejected→UUID-FK, Q2–Q5 confirmed). Commits `03a4fb8`
+> (code) + `94075f2` (label tweak) → Heroku **v155** (`git subtree push`, clean fast-forward
+> `3ca0dc6..6ee8dde`, on Anas Gate-1 "GO") → origin in sync `94075f2`. CHANGELOG_v68.
+
+**What shipped (signed Q1–Q4 + D1–D3).** (Q1) UUID `id` = the SOLE surrogate key + join target; the
+address-embedding `valuation_id` is **never stored** (display-only in the response); active mode
+`capture_prediction` RETURNS the UUID → handler echoes `result['capture_id']`; feedback carries it back as
+`prediction_id` (FK → prediction.id). **SHA-256(valuation_id) REJECTED** — `THM-{ts}-{zone}{street}{building}`
+is low-entropy/enumerable → a fast-hash preimage is brute-forceable → NOT de-identification (→ Operational
+**#62**). (Q2) `zone` PLAINTEXT (coarse, for zone-aggregation); `street`+`building` **Fernet-encrypted**,
+separately droppable, **gated on `CAPTURE_ENC_KEY`** (NULL — never plaintext — without a key). (Q3)
+`created_at` + 180-day `expires_at`; dormant `aggregate_and_purge_expired()` → `prediction_zone_agg`
+(zone-level) + DROP per-record rows; `erase_prediction()` row-level; **backup erasure = activation runbook**.
+(Q4/D1) free-text `note` REMOVED (schema + `api.FeedbackRequest` → `note` **or** `valuation_id` now 422).
+(D3) the 4 OUTPUT labels «التقييم» → «التقدير السوقي» (PROVISIONAL — «آلي» dropped mobile-safe; final Arabic
+in the next Arabic-surface pass); disclaimer/scope/signed-valuation/Stage-5/RICS untouched. +`cryptography`
+(lazy). ENGINE/SPRINT_TAG → a16.
+
+**Dormancy unchanged.** Default prod env (no flag, no `DATABASE_URL`, no `CAPTURE_ENC_KEY`) → `is_active()`
+False → every capture/purge/erase entry point is a no-op; zero footprint. Active-mode-only delta = the
+response gains `capture_id` (dormant byte-identical). `psycopg2` + `cryptography` lazy-imported.
+
+**Verification.** py_compile 3/3; isolated `test_sprint_2p22p0a16_precapture_hardening.py` **26/26** (the a15
+test was superseded — its schema is gone). DoD **392/15/45/58** (broad: one transient live-GIS flake on
+`test_sprint_2p22p0a7_geometric_determinism` in the first run — **passed in isolation + on re-run 58/58**;
+the diff touches no `geometric_factors`).
+
+**Live two-lane post-deploy smoke v155 (CC browser-UA curl + Anas):**
+
+| PIN / call | a16 live | vs a15 |
+|---|---|---|
+| 56/565/21 | 2,400,000 comparison_bracket, no `capture_id` | byte-identical |
+| 54/541/6 | 4,500,000 comparison_widened | byte-identical |
+| 55/296/13 | 2,600,000 comparison_thin | byte-identical |
+| 52/903/90 | None / insufficient_data | byte-identical |
+| `POST /api/feedback {prediction_id,outcome}` | `200 {accepted, stored:false}` | FK contract live |
+| feedback `+note` / `+valuation_id` | **422** | extra=forbid |
+
+4 anchors byte-identical (only `engine_version`→a16; **no `capture_id`** injected → dormant confirmed).
+**Mobile (390×844):** `.rt` result-card header wraps (no clip); `.tbar-st` is `nowrap`@.7rem and «نتيجة
+التقدير السوقي» (~130px) fits the ~340px bar → expected clean; Anas's lane = the pixel-confirm.
+
+**Tooling lesson → Operational #62.** A hash of a low-entropy / enumerable identifier (here
+`THM-ts-zone-street-building`) is brute-force-reversible → it is **not** de-identification; use a random UUID
+surrogate (cross-ref E12, R11).
+
+**Carried forward (Rule #42).** **R11 — dormant-pending-activation**, now with the 3 pre-activation steps
+appended (verify the Fernet round-trip on Heroku before any real data; set PG backup retention short;
+backup-erasure runbook) alongside §8.1 PDPPL + §8.2 cross-border + the gate-11 security pass. **Sprint 2** =
+the feedback UI prompt (echoes `capture_id` back as `prediction_id`). **A7** still a separate quick-win. The
+«التقدير السوقي» term is PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-01 (**Sprint 2.22.0a.16 SHIPPED** — pre-activation capture privacy-hardening, Heroku
+**v155** / commits `03a4fb8`+`94075f2` / CHANGELOG_v68 / §20.16; **capture STILL DORMANT**, additive, NO
+valuation change; UUID-only key [valuation_id NOT stored] + street/building Fernet-enc [gated on
+`CAPTURE_ENC_KEY`] + 180d retention/aggregate/purge/erase + `note` removed + label «التقدير السوقي»
+[provisional]; SHA-of-enumerable REJECTED → Operational **#62**; two-lane smoke v155 4 anchors BYTE-IDENTICAL
+[no `capture_id` → dormant] + /api/feedback {prediction_id} 200 dormant + note/valuation_id → 422; isolated
+26/26 + DoD 392/15/45/58; ACTIVATION counsel-gated [§8.1 PDPPL + §8.2 cross-border + gate-11: Fernet
+round-trip on Heroku + short PG backup retention + backup-erasure runbook]; origin in sync `94075f2`.
+Prior: **Sprint 2.22.0a.15 SHIPPED** — beta instrumentation: prediction capture + `POST
 /api/feedback`, Heroku **v154** / commit `8d6f304` / CHANGELOG_v67 / §20.15; **additive backend, NO
 valuation-logic change; shipped DORMANT** [flag-off + no-op without `DATABASE_URL` → zero data footprint]; §8.3
 UUID PK + redactable address, §8.4 capture refusals, §8.5 tag a15; **ACTIVATION counsel-gated** [§8.1 PDPPL +
