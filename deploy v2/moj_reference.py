@@ -106,6 +106,16 @@ def build_reference(rows, area, max_d, return_transactions=False):
             if not sub: continue
             ppm2 = quartile_stats([to_float(r['سعر المتر المربع']) for r in sub])
             tot  = quartile_stats([to_float(r['قيمة العقار']) for r in sub])
+            # Sprint 2.22.0a.13 (thin-cell credibility): expose the cell's OWN 24mo and 36mo
+            # total-price medians + 24mo quartiles so apply_moj_strategy can shrink the 24mo
+            # cell toward its own 36mo (per-cell 36mo-capped fallback). Additive only — the
+            # fields above (drawn from the per-category `use` window) are unchanged.
+            sub24 = [r for r in in24
+                     if (a := to_float(r['المساحة بالمتر المربع'])) and lo <= a < hi]
+            sub36 = [r for r in in36
+                     if (a := to_float(r['المساحة بالمتر المربع'])) and lo <= a < hi]
+            tp24 = quartile_stats([to_float(r['قيمة العقار']) for r in sub24])
+            tp36 = quartile_stats([to_float(r['قيمة العقار']) for r in sub36])
             bracket_data = {
                 'n': len(sub),
                 'price_per_m2_p25':    ppm2.get('p25')    if ppm2 else None,
@@ -115,6 +125,13 @@ def build_reference(rows, area, max_d, return_transactions=False):
                 'total_price_median':  tot.get('median')  if tot  else None,
                 'total_price_p75':     tot.get('p75')     if tot  else None,
                 'reliable': len(sub) >= 10,
+                # thin-cell credibility ingredients (Sprint 2.22.0a.13) — additive, total-price only:
+                'n_24': len(sub24),
+                'n_36': len(sub36),
+                'total_price_median_24': tp24.get('median') if tp24 else None,
+                'total_price_median_36': tp36.get('median') if tp36 else None,
+                'total_price_p25_24':    tp24.get('p25')    if tp24 else None,
+                'total_price_p75_24':    tp24.get('p75')    if tp24 else None,
             }
             if return_transactions:
                 bracket_data['transactions'] = [

@@ -544,6 +544,11 @@ def _safe_get(d, *keys, default=None):
     return d if d is not None else default
 
 
+# Sprint 2.22.0a.13 — thin-cell credibility (villa bracket comp-selection site)
+_THINCELL_K = 10          # credibility constant: w = n24 / (n24 + k)
+_THINCELL_FLOOR = 5       # refusal floor (= N_REFUSE) — no shrink rescue below n24=5
+
+
 def apply_moj_strategy(asset_type: str, plot_area_m2: float,
                         moj_reference: dict) -> MoJValuation:
     """
@@ -602,12 +607,43 @@ def apply_moj_strategy(asset_type: str, plot_area_m2: float,
         notes.append(f'No transactions in bracket {bracket_key}; using overall {moj_cat} median')
         strategy_label = f'MoJ {moj_cat} (overall, n={n})'
 
+    # ── Sprint 2.22.0a.13: thin-cell credibility (VILLA-only, total-price median) ──
+    # Per-cell 36mo-capped fallback implemented as continuous P2 shrinkage: blend the
+    # bracket's 24mo total-price median toward its OWN 36mo median, w = n24/(n24+k).
+    # Floor: n24 >= _THINCELL_FLOOR (5) preserves the refusal floor (no rescue below;
+    # also drops n24=1 single-point A16 artifacts). Tier on the 36mo fallback count.
+    # Cap = 36mo (prior is the cell's own 36mo, never all-time). ppm² is NOT shrunk.
+    cred_applied = False
+    if moj_cat == 'villa' and bracket:
+        _n24 = bracket.get('n_24') or 0
+        _m24 = bracket.get('total_price_median_24')
+        _m36 = bracket.get('total_price_median_36')
+        _n36 = bracket.get('n_36') or 0
+        if _n24 >= _THINCELL_FLOOR and _m24 and _m36:
+            _w = _n24 / (_n24 + _THINCELL_K)
+            total_median = round(_w * _m24 + (1.0 - _w) * _m36)
+            n = _n36
+            reliable = _n36 >= 20
+            cred_applied = True
+            strategy_label = (f'MoJ {moj_cat} ({bracket_key} m², credibility 24->36 '
+                              f'n24={_n24}/n36={_n36})')
+            notes.append(
+                f'thin-cell credibility (Sprint 2.22.0a.13): window 24->36 shrink, '
+                f'bracket={bracket_key}, n24={_n24}, n36={_n36}, w={_w:.2f}, '
+                f'raw24={_m24:,.0f}, prior36={_m36:,.0f}, blended={total_median:,.0f}'
+            )
+
     # Build estimated value range — keep all three numbers from the SAME level
     # to avoid the inversion bug where bracket-median > category-p75.
     bracket_p25 = _safe_get(bracket, 'price_per_m2_p25')
     bracket_p75 = _safe_get(bracket, 'price_per_m2_p75')
     bracket_total_p25 = _safe_get(bracket, 'total_price_p25')
     bracket_total_p75 = _safe_get(bracket, 'total_price_p75')
+    if cred_applied:
+        # Gate-before-shrink (decision 4): honest range from the RAW 24mo pool;
+        # the shrunk value is the central estimate only.
+        bracket_total_p25 = _safe_get(bracket, 'total_price_p25_24', default=bracket_total_p25)
+        bracket_total_p75 = _safe_get(bracket, 'total_price_p75_24', default=bracket_total_p75)
 
     if bracket_total_p25 is not None and bracket_total_p75 is not None:
         # Best: use total_price quartiles directly from the bracket
