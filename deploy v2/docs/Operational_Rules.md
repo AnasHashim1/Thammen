@@ -1498,6 +1498,22 @@ Rule #60 — Measure-gate for lever sequencing under borderline projection. When
 
 -----
 
+## 61. ⚠️ CC post-deploy POST smoke = browser-UA curl, NOT urllib (Cloudflare 1010)
+
+Rule #61 — Cloudflare blocks the bare `python-urllib` signature on **POST** to thammen.qa with
+**HTTP 403 "error code: 1010"** (bot / browser-integrity), while **GET** `/api/health` passes. So a
+post-deploy POST smoke run from Claude Code with `urllib` silently looks like a deploy failure. **Use
+`curl` with a browser User-Agent** (`-A "Mozilla/5.0 … Chrome/… Safari/537.36"`) for any CC-side POST to
+`/api/evaluate*` or `/api/feedback`; GET may use plain curl. This **updates** the prior "POST smoke only on
+Anas's side" note (Session_Log §20.13/§20.14): **CC can now self-smoke** the POST paths via browser-UA
+curl; fall back to Anas's side / Claude.ai if Cloudflare tightens (e.g. a JS challenge). Pairs with **#34**
+(a file-based `.smoke_X.py` urllib probe will hit 1010 — prefer browser-UA curl, or run the probe from
+Anas's network), **#52** (post-deploy content check), and RISK_REGISTER **R12**. Origin: Sprint 2.22.0a.15
+post-deploy smoke (2026-06-01) — urllib POST 403×5 → browser-UA curl 200 / byte-identical 4 anchors.
+**Recall:** "تذكر #61" / "browser-UA curl POST".
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added

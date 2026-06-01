@@ -2130,7 +2130,79 @@ doc §4 (owed since a12).
 
 -----
 
-*Last updated: 2026-06-01 (**Sprint 2.22.0a.14 SHIPPED** — (vi) bracket honest-range + window disclosure,
+## 20.15 🆕 2026-06-01 — Sprint 2.22.0a.15 (beta instrumentation: prediction capture + feedback) — DEPLOYED Heroku v154
+
+> Engine `thammen-sprint2p22p0a15-eval-capture-feedback` / SPRINT_TAG `2.22.0a.15` / api-health
+> `3.1.0-sprint2.22.0a.15`. **Additive backend — NO valuation-logic change (not Gate-2 on methodology).
+> Shipped DORMANT.** Brief `docs/BRIEF_instrumentation_v1.md` (Anas-signed, Rule #32). Commit `8d6f304`
+> → Heroku **v154** (`git subtree push`, clean fast-forward `02bba4f..3ca0dc6`, on explicit Anas "go")
+> → origin in sync `8d6f304`. CHANGELOG_v67. **First sprint of the beta track.**
+
+**What shipped.** New `instrumentation.py` — `capture_prediction(result, inputs)` + `capture_feedback(payload)`,
+each a guarded no-op unless `is_active()` (`EVAL_CAPTURE_ENABLED` truthy **AND** `DATABASE_URL` set). `api.py`:
+guarded capture call before `return` in BOTH `/api/evaluate*` handlers + new `POST /api/feedback`
+(`FeedbackRequest`, `extra='forbid'` per #31). `requirements.txt` +`psycopg2-binary` (lazy-imported in
+`_connect` only → unused while dormant). `ENGINE_VERSION`/`SPRINT_TAG` → a15.
+
+**Signed decisions (§8).** §8.3 UUID surrogate `id` PK + `valuation_id`/address kept SEPARATE (redactable);
+§8.4 capture refusals too (`method=insufficient_data`, no value); §8.5 keep tag `2.22.0a.15`. §8.1 (PDPPL
+policy) + §8.2 (store location / cross-border) remain **counsel-gated** — they gate ACTIVATION, not the build.
+
+**Field set (data-minimized, §3).** prediction `{id, valuation_id, zone, street, building, value, range_low,
+range_high, method, tier, muc, ts}` (value←valuation.amount, range←valuation.low/high, method←valuation.method,
+tier←accuracy.tier, muc←material_uncertainty.level); feedback `{id, valuation_id, outcome, transacted_price?,
+note?, ts}`. **IP NOT stored.** Capture reads `result` only, never mutates it, swallows all failures (never
+raises into the evaluate path).
+
+**Dormancy / safety.** Default prod env (no flag, no `DATABASE_URL`) → `is_active()=False` → complete no-op,
+**zero data footprint**. The Heroku Postgres add-on is **NOT provisioned** (counsel-gated). Defensive `_INSTR_OK`
+import guard so a helper-import failure can never take the API down.
+
+**Verification (local).** py_compile 3/3; isolated `test_sprint_2p22p0a15_eval_capture_feedback.py` **27/27**
+(H1 one-INSERT + result un-mutated · H2 feedback keyed on valuation_id + real `api.FeedbackRequest`
+extra=forbid + forced-failure swallowed · H3 dormancy: flag-off / no-DB / DB-but-flag-off → zero writes,
+`_connect` never called · §8.4 refusal · §3 no-IP). DoD **392/15/45/58** (curated aggregator unchanged at 392
+— the new test is NOT in its 7-file pin; broad auto-walk 57→**58**). `/api/feedback` registered on `app.routes`.
+
+**Live post-deploy smoke v154 — TWO LANES (CC browser-UA curl + Anas), BYTE-IDENTICAL:**
+
+| PIN / call | a15 live | vs a14 |
+|---|---|---|
+| 56/565/21 Abu Hamour | 2,400,000 comparison_bracket | identical |
+| 54/541/6 Marikh | 4,500,000 comparison_widened | identical |
+| 55/296/13 المعراض | 2,600,000 comparison_thin n=8 | identical |
+| 52/903/90 apt | None / insufficient_data | identical (refusal) |
+| `POST /api/feedback` (dormant) | `200 {"status":"accepted","stored":false}` | new endpoint, inert |
+| feedback + extra field | **HTTP 422** (extra=forbid) | — |
+| /api/health | a15, v154, qars healthy, MoJ 152d | — |
+
+Byte-identical from BOTH lanes → the dormant capture provably altered nothing (only the `engine_version`
+label changed, by design). Rule #52 closed with MEASURED data.
+
+**Tooling finding → Operational #61 + RISK_REGISTER R12.** The CC-side urllib POST smoke hit Cloudflare
+**HTTP 403 "error code: 1010"** (bot signature) on every POST; **curl with a browser User-Agent passed** (GET
+`/api/health` was never blocked). Rule #61 pins: CC post-deploy POST smoke = browser-UA curl, not urllib —
+updating the prior "POST only on Anas's side" note (CC can now self-smoke; fall back to Anas/Claude.ai if
+Cloudflare tightens).
+
+**Carried forward (Rule #42).** **R11 — dormant-pending-activation** (built + live but inert; ACTIVATION gated
+on §8.1 PDPPL + §8.2 cross-border counsel; add-on NOT provisioned). **Sprint 2** = the user-facing feedback UI
+prompt (`index.html`, 390×844 — consumes `/api/feedback`, echoes the `valuation_id` already in the client JSON).
+**A7** (`rics_compliant` always false) still a separate quick-win. Land/PIN evals store null
+zone/street/building (signed §3 field set; `pin` not in scope). Activation will also need the Postgres LOCATION
+decision (Heroku US/EU vs Qatar/GCC — TYPE↔LOCATION tension flagged in the brief).
+
+-----
+
+*Last updated: 2026-06-01 (**Sprint 2.22.0a.15 SHIPPED** — beta instrumentation: prediction capture + `POST
+/api/feedback`, Heroku **v154** / commit `8d6f304` / CHANGELOG_v67 / §20.15; **additive backend, NO
+valuation-logic change; shipped DORMANT** [flag-off + no-op without `DATABASE_URL` → zero data footprint]; §8.3
+UUID PK + redactable address, §8.4 capture refusals, §8.5 tag a15; **ACTIVATION counsel-gated** [§8.1 PDPPL +
+§8.2 cross-border] — add-on NOT provisioned [RISK_REGISTER **R11**]; isolated 27/27 + DoD 392/15/45/58; two-lane
+post-deploy smoke [CC browser-UA curl + Anas] **BYTE-IDENTICAL** 4 anchors [2.4M/4.5M/2.6M/refusal] +
+`/api/feedback` dormant {accepted, stored:false} + extra→422; tooling lesson → Operational **#61** + RISK_REGISTER
+**R12** [Cloudflare 1010 blocks urllib POST → browser-UA curl]; first beta-track sprint; origin in sync `8d6f304`.
+Prior: **Sprint 2.22.0a.14 SHIPPED** — (vi) bracket honest-range + window disclosure,
 Heroku **v153** / commit `78ffd9b` / CHANGELOG_v66 / §20.14; **presentation/copy ONLY — no value change**;
 (a) `comparison_bracket` dispersion gate (36mo ppm² vs 0.30) reusing the a10 block, (b) «نافذة 36 شهراً» on
 `source_ar` + recent/total split in the Methodology brief, when n is a 36mo count; scope ALL 20 dispersed
