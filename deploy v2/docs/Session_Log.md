@@ -2003,7 +2003,84 @@ LAND/HOUSE/STANDALONE_VILLA + فيلتان excluded + compound label-based).
 
 -----
 
-*Last updated: 2026-05-31 (**Sprint 2.22.0a.12 SHIPPED** — A2 built-type stratification, Heroku **v151** /
+## 20.13 🆕 2026-06-01 — Sprint 2.22.0a.13 (thin-cell credibility) — DEPLOYED Heroku v152
+
+> Engine `thammen-sprint2p22p0a13-thincell-credibility` / SPRINT_TAG `2.22.0a.13` / api-health
+> `3.1.0-sprint2.22.0a.13`. **Methodology — villa bracket comp-selection** (Gate 2, Anas-signed Rule #32).
+> Commits `18f0a4a` (Phase-1 docs) + `c366d66` (code) + `2bfec00` (pre-push CHECK findings) → Heroku
+> **v152** (`git subtree push`, clean fast-forward `0154c31..c77a3dd`, on explicit Anas "a" = go) →
+> origin in sync `fa5ad1b..2bfec00` (0/0). CHANGELOG_v65. **Third sprint of the A→B built-type track
+> (A1 usage → A2 built-type → A.13 window/credibility → B condition).**
+
+**What shipped.** Per-cell 36mo-capped fallback implemented as continuous **P2 credibility shrinkage** of
+the surfaced **TOTAL-PRICE** median toward the cell's OWN 36mo median (`w=n24/(n24+10)`, **k=10**,
+**villa-only**, **n24≥5 floor**, **cap 36mo**, range from raw 24mo = gate-before-shrink; **ppm² NOT
+shrunk** — A2 lesson). `moj_reference.build_reference` exposes additive per-bracket
+`n_24/n_36/total_price_median_24/36 + 24mo quartiles` (existing fields untouched →
+`cap_rate`/`moj_db`/tests unaffected); `evaluate_property.apply_moj_strategy` does the blend, tiers on
+**n36**, range from raw 24mo, trace note. **P1 cross-pool DROPPED** (measured size-confounding). a10 gate
+(widened-only, reads `geo_v2`) untouched — shrinkage never feeds it (decision 4).
+
+**Phase-1 recon (accepted as the measured basis; P2 overturned the v4 draft's P1).** Two reframes
+(measured-wins, Rule #58): (1) production ALREADY widens per-CATEGORY (76/109 villa areas at 36mo) so the
+per-CELL lever's gain is **+10 reliable over production (27→37)**, not over strict-24mo (25); (2) no
+unbounded FULL — 36mo is the last stop. Census: 25/254 (10%) 24mo villa cells reach n≥20; 229 thin.
+Staleness: 24mo median +8–13% above all-time, 36mo +5–6% (36mo captures ~half; widening biases DOWN).
+Workflow `wf_81e21f2b-8e0` (read-only, ~655k tok): M1 (bracket+A16) + M3 (staleness) reconciled exactly;
+M2 (shrinkage) agent failed to emit structured output → re-run by hand.
+
+**Verification (local, real functions, E14).** Isolated `test_sprint_2p22p0a13_thincell_credibility.py`
+**16/16**; reliable-move guard PASS (25 cells, median +0.00%, **max |move| 2.20%, #>5% = 0**); effect band
+75 cells median |move| 0.56%, **10 tier-upgrades**; **154 <5-floor cells no-rescue**. DoD **392/15/45/56**
+(broad 55→56, +1 new test). py_compile 3/3.
+
+**Live post-deploy smoke v152 (Anas — POST works his side; Rule #52 closed with MEASURED data):**
+
+| PIN | a13 live | verdict |
+|---|---|---|
+| 56/565/21 Abu Hamour | **2,400,000** comparison_bracket n=37 MUC moderate acc 85 | IDENTICAL to a12; only change = comp count 28→37 (n36 tiering) ✅ |
+| 54/541/6 Marikh | **4,500,000** comparison_widened n=29 disp 0.425 range_is_headline | byte-identical to a12 (A16-starved bracket → geo path, NOT shrunk) ✅ |
+| 55/296/13 المعراض | **2,600,000** comparison_thin n=8 acc 35 | stays thin (n36=8, no upgrade), caveat intact, gentle ~−4% headline ✅ |
+| 52/903/90 apt | **None / refusal** comp_density_sparse | unchanged ✅ |
+| /api/health | a13, v152, MoJ 152d, qars healthy | ✅ |
+| RICS label | "VPS 3 / IVS 103" on the surface | Rule #42 citation confirmed shipped ✅ |
+
+**OPEN — R10 (temporary honesty gap; accepted per the lock, closed by (vi)).** The +10 thin→reliable
+upgrades move onto the bracket path (no dispersion gate). **7 of 10 are dispersed (ppm² ≥0.30):** العب
+600-900 (0.632), جريان جنيحات 400-600 (0.482), الغرافة 600-900 (0.428), غرافة الريان 400-600 (0.398),
+الغرافة 400-600 (0.346), الخور 600-900 (0.317), ام عبيرية 400-600 (0.305) → present as clean
+`comparison_bracket` reliable points with no honest-range. (55/296/13 also dispersed 0.492 but stays
+`comparison_thin` → keeps its weak-sample caveat.)
+
+**CHECK-3-LIVE (broader than the rescued cells).** The bracket **SUCCESS** `source_ar` discloses **NO
+window for ANY villa cell** — Abu Hamour reads «وسيط 37 معاملة في نفس الشريحة والمنطقة» (37 spans up to
+36mo, undisclosed; was 28 last week). The widened path HAS its honest-range; the refusal path states
+"past 6 months"; the bracket-success surface is the ONLY one missing BOTH the dispersion range (R10) and
+the window basis. The 36mo basis lives only in `valuation.notes` (CLI printer) / at most `reasoning_trace`.
+
+**NEXT = (vi), URGENT (scope pending Anas confirm = (a)+(b) together or (a)-only).** Bracket-SUCCESS
+surface ONLY, presentation/copy, **NO method/value change:** (a) extend the a10 dispersion honest-range to
+the bracket path → closes R10 (mechanical, presentation-only); (b) disclose the 24-vs-36mo window basis in
+`source_ar` when n is a 36mo count → closes CHECK 3 (Gate-2 copy sub-decision — Anas signs wording;
+surface 2–3 options at brief time).
+
+**Carried forward (Rule #42).** A16 alias-merge = the only Marikh lever (R9, own sprint after a LIVE
+Marikh trace); A7 (`rics_compliant` always false) still open (by-design; field-rename deferred); LAND
+bracket path unchanged (villa-only, Rule #39 — land not in the measured scope); `compute_trend`
+categorizer alignment + methodology doc §4 (still owed from a12).
+
+-----
+
+*Last updated: 2026-06-01 (**Sprint 2.22.0a.13 SHIPPED** — thin-cell credibility, Heroku **v152** / commit
+`c366d66` / CHANGELOG_v65 / §20.13; per-cell 36mo-capped P2 shrinkage of the villa bracket TOTAL-PRICE
+median toward the cell's own 36mo [k=10, n24≥5 floor, cap 36mo, ppm² untouched]; +10 thin→reliable,
+reliable-move guard PASS [max 2.2%, #>5%=0], <5 floor preserved; live smoke v152 4/4 [56/565/21=2.4M
+IDENTICAL, 54/541/6=4.5M byte-identical, 55/296/13=comparison_thin n=8 ~−4%, 52/903/90=refusal]; **OPEN
+R10** [7/10 rescued cells dispersed ≥0.30 present as clean reliable w/o honest-range] + **CHECK-3-live**
+[bracket-success `source_ar` discloses NO window for ANY villa cell]; **NEXT=(vi) URGENT** [a10
+honest-range→bracket path (a) + 24-vs-36mo window disclosure (b), bracket-success-surface only,
+presentation/copy, no value change]; A16 still the only Marikh lever [R9]; A7 open; isolated 16/16 + DoD
+392/15/45/56; origin in sync `2bfec00`. Prior: **Sprint 2.22.0a.12 SHIPPED** — A2 built-type stratification, Heroku **v151** /
 commit `9fa375c` / CHANGELOG_v64 / §20.12; villa pool now **pure-villa** [house/فيلتان/compound removed] →
 pooled ppm2 **+9.7%**, net A1+A2 ~+4.5% above the original contaminated median; reference anchors **STABLE**
 [56/565/21 2.4M, 54/541/6 4.5M — robust total-price median; valuation = CONDITION→B]; subject side **can't
