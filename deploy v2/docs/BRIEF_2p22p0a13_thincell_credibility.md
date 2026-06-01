@@ -30,7 +30,9 @@ median only **~0% on the total-price headline** (~5% downward on ppf, which is N
 7. **(vi) honest-range / E23 thin-cell dispersion = FAST-FOLLOW** (separate), UNLESS trivial reuse of
    the a10 presentation logic with no new copy. **Assessed: NOT trivial** (the a10 gate is
    widened-method-only; extending it to the bracket path needs new dispersion inputs + new
-   presentation/copy) → **OUT, flagged as fast-follow.**
+   presentation/copy) → **OUT of a13, but ELEVATED to URGENT by pre-push CHECK 1:** measured **7 of
+   10** rescued cells are dispersed (ppm² ≥0.30) and now present as clean `comparison_bracket` reliable
+   points without an honest-range (RISK_REGISTER **R10**) → (vi) = the immediate next sprint.
 8. **No fresh multi-AI** — already over-validated.
 
 ## 3. Implementation (surgical, two files)
