@@ -384,7 +384,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <div class="screen" id="resultsScreen">
   <div class="tbar">
     <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
-    <div class="tbar-st">نتيجة التقدير السوقي الآلي</div>
+    <div class="tbar-st">نتيجة التقدير السوقي</div>
   </div>
   <div class="rwrap">
     <button class="bbtn" onclick="go('form')">→ تقييم جديد</button>
@@ -667,7 +667,7 @@ function copyResult(){
   if(d.plot_area_m2)lines.push('مساحة الأرض: '+fmt(d.plot_area_m2)+' م²');
   const v=d.valuation||{};
   if(v.amount){
-    lines.push('');lines.push('قيمة التقدير السوقي الآلي: '+fmt(v.amount)+' ر.ق');
+    lines.push('');lines.push('قيمة التقدير السوقي: '+fmt(v.amount)+' ر.ق');
     if(v.low&&v.high)lines.push('النطاق: '+fmt(v.low)+' – '+fmt(v.high)+' ر.ق');
   }else if(v.reason_ar){
     lines.push('');lines.push('ملاحظة: '+v.reason_ar);
@@ -893,7 +893,7 @@ function show(d){
     let bc='rb-w',bt=acc.label||'⚠️ يحتاج فحص';
     if(acc.score>=70){bc='rb-ok';bt=acc.label||'🟢 تقدير موثوق'}
     else if(acc.score<40){bc='rb-bad';bt=acc.label||'🟠 تقدير تقريبي'}
-    h+='<div class="rc"><div class="rh"><div class="rt">نتيجة التقدير السوقي الآلي</div><div class="rb '+bc+'">'+bt+'</div></div><div class="rg">';
+    h+='<div class="rc"><div class="rh"><div class="rt">نتيجة التقدير السوقي</div><div class="rb '+bc+'">'+bt+'</div></div><div class="rg">';
     if(d.address)h+=ri('العنوان',d.address,0,1);
     if(d.district)h+=ri('المنطقة',d.district);
     if(d.plot_area_m2)h+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
@@ -920,7 +920,7 @@ function show(d){
     // Sprint 2.22.0a/8 — calc-block modifier applies calculator-style M1 visual:
     // light-grey bg, dashed border, no box-shadow, line-height 1.6 (whole card);
     // monospace + tabular-nums (scoped to .rv numeric values via CSS).
-    h+='<div class="rc calc-block"><div class="rt" style="margin-bottom:14px">التقدير السوقي الآلي</div>';
+    h+='<div class="rc calc-block"><div class="rt" style="margin-bottom:14px">التقدير السوقي</div>';
     // Sprint 2.22.0a/2 — tier_label TYPE badge (defensive read; empty if absent or unknown).
     // For 2.22.0a, non-refusal responses emit 'analytical_range' → 'نطاق تحليلي' display.
     // Refusal responses emit None → no badge (refusal_reason in /5 will carry the surface).
