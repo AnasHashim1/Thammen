@@ -44,6 +44,7 @@ from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Tuple
 
 from usage_filter import _is_residential_usage   # Sprint 2.22.0a.11 (A1): residential-usage whitelist (villa pool)
+from built_type import matches_category as _bt_matches, _CATEGORY_TO_BUILT_TYPE   # Sprint 2.22.0a.12 (A2): built-type stratification
 
 
 # ============================================================
@@ -335,7 +336,13 @@ def _get_area_transactions(
         area = _norm(r.get('اسم المنطقة', ''))
         if area not in moj_names:
             continue
-        if category != 'all' and _categorize(r) != category:
+        # Sprint 2.22.0a.12 (A2): for the stratified categories ('villa'→STANDALONE_VILLA,
+        # 'land'→LAND) use the shared built_type classifier (house/فيلتان/compound now excluded
+        # from villa; the مسكن split resolved). Other categories keep the legacy _categorize.
+        if category in _CATEGORY_TO_BUILT_TYPE:
+            if not _bt_matches(r, category):
+                continue
+        elif category != 'all' and _categorize(r) != category:
             continue
         # Sprint 2.22.0a.11 (A1): residential-usage filter on the VILLA pool only (land untouched).
         if category == 'villa' and not _is_residential_usage(r):
