@@ -50,6 +50,13 @@ tier-weighted entry via `hybrid_valuation_v1()`).
 
 ## Current production state (snapshot)
 
+> **🧭 CURRENT STATE + NEXT STEP (Rule #65a — CC maintains; read first at the #57 handshake):**
+> - **Live:** Heroku **v155** · engine `thammen-sprint2p22p0a16-precapture-privacy-hardening` (a16) · capture **DORMANT** · `master == origin` (read the exact tip live via #57).
+> - **Engineering machine = IDLE** — no new sprints pending the counsel gate.
+> - **Rule-count = FROZEN** — no new Operational rules beyond #65; lean defaults live as `ROLES_AND_COMMS` conduct, not rules.
+> - **NEXT = counsel sign-off** on Q14 (Aqarat licensing) + Q8 (residual re-identifiability), THEN scope a small consented villas/land beta for measured accuracy.
+> - **OPEN HUMAN GATE: counsel.** Earned gates (safety / compliance / valuation-honesty / counsel) stay; only delivery ceremony is trimmed.
+
 > **Operating Mode (Autonomous Lead) — adopted 2026-05-29.** Supersedes the
 > implicit "Claude.ai drafts → Anas signs every step → Claude Code implements"
 > loop for **reversible** work only. The two hard gates below are unchanged from

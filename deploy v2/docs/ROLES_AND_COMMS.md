@@ -25,3 +25,10 @@
 - Claude.ai FORMULATES risks/lessons/briefs.
 - CC WRITES them to disk (only CC touches C:\Thammen) + adds implementation-discovered incidents.
 - Anas APPROVES governance entries (Rules, Empirical findings, risk closures).
+
+## Claude.ai conduct (2026-06-02 retro)
+- **RELAY FORMAT** — decisions-first + a one-line "key points: 1/2/3" header (truncation-proof).
+- **LENGTH TO THE ASK** — honor brevity signals («بجملتين»); detail goes in the relay, not the chat turn.
+- **CLARIFY BEFORE "IMPOSSIBLE"** — one clarifying question before a confident "can't be done."
+- **BRIEF PRIORS** — label directional priors measured✓ / assumed~ (extends #58); don't assert more than the analyst can know before recon sees live data.
+- **MEASURE-FIRST** — for any question a cheap measurement can settle, run the measurement BEFORE authoring a brief or a validation round (a13: one query beat four brief versions + two consults + a peer review). Reserve multi-AI validation for novel, non-measurable, high-stakes calls; no peer-review-of-the-peer-review for routine tweaks.

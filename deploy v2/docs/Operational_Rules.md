@@ -1546,6 +1546,42 @@ discipline). **Recall:** "تذكر #63" / "docs auto-persist".
 
 -----
 
+## 64. ⚠️ Session cadence + hard stop before compaction
+
+Rule #64 — Session cadence + hard stop before compaction.
+**(a) FIRM ONE-UNIT CADENCE.** A session does ONE shippable unit (a single sprint or one bounded task) + its
+docs-close, then STOPS. At that boundary Claude.ai does NOT start new work — it runs the #65 handoff and ends
+the session. Firm default, not a suggestion. Continuing is reserved only for a genuinely atomic follow-up that
+cannot be split, and only with a wide context margin.
+**(b) COMPACTION AVOIDANCE.** Reaching context-compaction is a failure to avoid (it degraded fidelity and
+caused the 2026-06-02 relay-truncation + doc-drift). Claude.ai calls the break with a WIDE margin, well before
+any context pressure, and keeps turns/pastes bounded (no huge blobs — relays stay tight per ROLES). NOTE:
+behavioral default, NOT a platform guarantee — Claude.ai cannot see an exact token gauge or control the
+compaction trigger; the protection is stopping early.
+**(c) CRITICAL-PATH CHECK.** At session start (#57 handshake) confirm the planned work is on the
+launch-readiness critical path (LAUNCH_READINESS_GATES); if not on the binding constraint, Claude.ai says so
+plainly — off-critical-path is a conscious PO decision, not drift.
+Basis: 2026-06-02 whole-session retro. Recall «تذكر #64».
+
+-----
+
+## 65. ⚠️ Standing session-handoff protocol (zero-ask restart)
+
+Rule #65 — Standing session-handoff protocol (zero-ask restart).
+**(a) NEXT-STEP POINTER.** At every docs-close, CC maintains a single "CURRENT STATE + NEXT STEP" block in the
+CLAUDE.md snapshot: git anchor, live engine/Heroku, the ONE next action on the critical path, and any open
+human gate. Both lanes' #57 handshake reads it.
+**(b) HANDOFF BLOCK.** At the #64 stop, Claude.ai emits ONE paste-ready handoff block (git anchor + expected
+/api/health + #57 handshake reminder + the single next step). Anas pastes it as the first message into the new
+Claude.ai session, and a CC-tailored variant into the new CC session. No "what's next / how to handshake"
+question is needed — it is pre-packaged.
+**(c) LANES STILL DON'T TALK.** Anas remains the paste-bridge; this shrinks it to one paste per lane per
+session — it does not eliminate it. A fresh Claude.ai session still needs the docs/ upload for full context;
+the handoff block alone carries state + next-step, not the full rulebook.
+Recall «تذكر #65».
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added
