@@ -52,10 +52,10 @@ tier-weighted entry via `hybrid_valuation_v1()`).
 
 > **🧭 CURRENT STATE + NEXT STEP (Rule #65a — CC maintains; read first at the #57 handshake):**
 > - **Live:** Heroku **v155** · engine `thammen-sprint2p22p0a16-precapture-privacy-hardening` (a16) · capture **DORMANT** · `master == origin` (read the exact tip live via #57).
-> - **Engineering machine = IDLE** — no new sprints pending the counsel gate.
+> - **Engineering machine = IDLE** — no new sprints pending the regulatory gate (Aqarat enquiry + open-data licence, both pre-monetization).
 > - **Rule-count = FROZEN** — no new Operational rules beyond #65; lean defaults live as `ROLES_AND_COMMS` conduct, not rules.
-> - **NEXT = counsel sign-off** on Q14 (Aqarat licensing) + Q8 (residual re-identifiability), THEN scope a small consented villas/land beta for measured accuracy.
-> - **OPEN HUMAN GATE: counsel.** Earned gates (safety / compliance / valuation-honesty / counsel) stay; only delivery ceremony is trimmed.
+> - **NEXT = self-clear conservatively (NO external counsel — Anas 2026-06-02), then a FREE invited villas/land accuracy beta.** التقييم العقاري is regulated (Decision 28/2023); licence BEFORE any paid access. Aqarat regulator enquiry DRAFTED + HOLD (`docs/Aqarat_Enquiry_DRAFT_hold.md`) — send after the product design is complete, before monetization. PDPPL self-cleared conservatively (R11). Checklist: `docs/COMPLIANCE_SELF_CLEARANCE_beta_v1.md`; decision = R13.
+> - **OPEN GATES (pre-monetization): (1) Aqarat regulator enquiry (held until design done) · (2) MoJ open-data commercial-reuse licence.** Earned gates (safety / compliance / valuation-honesty) stay; only delivery ceremony is trimmed.
 
 > **Operating Mode (Autonomous Lead) — adopted 2026-05-29.** Supersedes the
 > implicit "Claude.ai drafts → Anas signs every step → Claude Code implements"
