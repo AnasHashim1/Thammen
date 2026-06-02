@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0a16-precapture-privacy-hardening'
-SPRINT_TAG = '2.22.0a.16'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0a17-clean-bracket-condition-caveat'
+SPRINT_TAG = '2.22.0a.17'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4151,6 +4151,39 @@ def _stage1_dispersion_gate(primary, geo_v2_result):
             'threshold': STAGE1_DISPERSION_T}
 
 
+# ════════════════════════════════════════════════════════════════════
+# Sprint 2.22.0a.17 — clean-bracket condition caveat (copy-only, honesty-additive)
+# ════════════════════════════════════════════════════════════════════
+# Clean villa/house bracket points (pool dispersion < 0.30) are shown as a confident point
+# + tight range with NO condition cushion. Condition-blindness (RISK_REGISTER R7) is
+# bidirectional and invisible there: a renovated subject may sit above the point, a worn one
+# below. The dispersed bracket (a14 honest-range), widened/geo (a10), indicative and thin
+# paths already disclose; this fills the clean-bracket gap. NO valuation logic — additive note.
+CONDITION_NOTE_AR = 'لم تُؤخذ حالة العقار (تجديد أو تهالك) في الحسبان. عقار في حالة أفضل من المتوسط قد يقع أعلى هذه النقطة، وعقار في حالة أدنى قد يقع تحتها.'
+CONDITION_NOTE_EN = 'Property condition (renovation or wear) was not assessed. A better-than-average property may sit above this point; a poorer one may sit below.'
+
+
+def _condition_note_applies(primary, gate, asset_type, amount) -> bool:
+    """Sprint 2.22.0a.17: True when a CLEAN villa/house bracket point should carry the
+    bidirectional condition caveat.
+
+    Scope (gets the note): method == 'comparison_bracket' AND asset_type in
+    {standalone_villa, house, villa} AND a real amount is present AND the dispersion gate is
+    NOT gated. Fail-safe TO DISCLOSURE: a None or malformed gate dict (dispersion unresolved)
+    → include (uses gate.get('gated'), so a missing key never excludes). Excluded by method:
+    widened/geo (a10) + thin + indicative; by asset_type: land + apartment/tower; refusals
+    have no bracket amount. Copy-only — never changes the valuation amount."""
+    if not primary or primary.get('method') != 'comparison_bracket':
+        return False
+    if asset_type not in ('standalone_villa', 'house', 'villa'):
+        return False
+    if amount is None:
+        return False
+    if gate and gate.get('gated'):
+        return False  # dispersed bracket → the a14 honest-range already discloses
+    return True        # clean (gate present, not gated) OR ambiguous (gate None/malformed) → include
+
+
 def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                           geo_v2_result, listings_result, geometric, audience,
                           user_inputs, stock_strata=None) -> Dict:
@@ -4877,6 +4910,13 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             _mu['factors'] = _facts
             _mu['stage1_dispersion_gated'] = True
             output['material_uncertainty'] = _mu
+        # Sprint 2.22.0a.17: clean villa/house bracket → bidirectional condition caveat (R7).
+        # The dispersed bracket carries the a14 honest-range above; clean (or ambiguous-gate)
+        # bracket points have no condition cushion. Additive note only — amount byte-identical.
+        if _condition_note_applies(primary, _g, getattr(ev, 'asset_type', None), _val.get('amount')):
+            _val['condition_note_ar'] = CONDITION_NOTE_AR
+            _val['condition_note_en'] = CONDITION_NOTE_EN
+            output['valuation'] = _val
     except Exception as _e:
         print(f'[stage1_honest_range] skipped: {_e}', file=sys.stderr)
 
