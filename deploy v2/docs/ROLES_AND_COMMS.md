@@ -12,6 +12,8 @@
 - Comms: English in chat; Arabic for critical alerts only (pure Arabic, no Latin/digits — RTL breaks). 🔴 warning / 🟢 confirm / 🟡 caveat.
 
 ## Standard flow (per change)
+> → SUPERSEDED by OPERATING_MODEL_v2_lean §4-5 (2026-06-02). Roles / Conduct / Channels-&-truth below retained.
+
 1. Anas prioritizes the next item.
 2. Claude.ai scopes a single-purpose brief (Rule #38): DoR handshake + hypotheses + gates.
 3. Anas signs the brief (Rule #32).
@@ -32,3 +34,4 @@
 - **CLARIFY BEFORE "IMPOSSIBLE"** — one clarifying question before a confident "can't be done."
 - **BRIEF PRIORS** — label directional priors measured✓ / assumed~ (extends #58); don't assert more than the analyst can know before recon sees live data.
 - **MEASURE-FIRST** — for any question a cheap measurement can settle, run the measurement BEFORE authoring a brief or a validation round (a13: one query beat four brief versions + two consults + a peer review). Reserve multi-AI validation for novel, non-measurable, high-stakes calls; no peer-review-of-the-peer-review for routine tweaks.
+- **ALWAYS EMIT THE CC PROMPT** — every Full/Gated handoff ships with a ready-to-paste CC task block (CC is fresh per chat; never make the PO compose it). Serves the §2 minimize-routing-load goal.
