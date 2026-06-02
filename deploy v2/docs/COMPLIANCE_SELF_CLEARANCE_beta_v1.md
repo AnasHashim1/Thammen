@@ -54,11 +54,9 @@ Status key: **DECIDED** = conservative stance adopted, action is documentation o
 
 ---
 
-## E. Append to `RISK_REGISTER.md` (next ID = R13)
+## E. Risk-register entry
 
-```
-| **R13** | 🟠 | **Regulatory self-clearance without external counsel (free-beta decision, 2026-06-02).** Anas elected NOT to engage licensed counsel and to self-clear conservatively. التقييم العقاري is a *regulated activity* (Amiri Decision 28/2023 Art 5(7), Aqarat) with a broad catch-all, so operating even a FREE AVM on internal / AI-derived assumptions risks (a) being deemed an unlicensed regulated real-estate activity and (b) PDPPL non-compliance — neither *fully* curable by conservatism. | Web research 2026-06-02: Al Meezan confirms التقييم العقاري named among Aqarat-regulated professions + «وغيرها من الأنشطة العقارية» catch-all; Peninsula (May 2026) — Aqarat tightening valuer licensing ("broker-as-valuer no longer acceptable"); gov precedent — free "المثمّن العقاري" approximate-estimate tool with a "not necessarily the actual value" disclaimer. AVM-specific binary NOT in public sources. | **OPEN — accepted-with-mitigations.** (1) Beta is FREE, invite-only, accuracy-research, labelled «تقدير سوقي آلي، وليس تقييماً معتمداً»; NO paid access pre-licence. (2) PDPPL self-cleared conservatively — strict opt-in, all records treated as personal data, 180d retention, full erasure, documented security/breach, Qatar/GCC residency recommended (moots cross-border). (3) Aqarat licensing framework to be entered BEFORE monetization (confirmed required, not hypothetical). (4) Free-beta residual (does the catch-all reach a free automated tool?) closable only by a direct Aqarat enquiry — drafted, pending send. (5) MoJ open-data commercial-reuse licence = separate monetization gate (Q13). Checklist: `COMPLIANCE_SELF_CLEARANCE_beta_v1.md`. Honesty #10. |
-```
+R13 (this decision) is recorded authoritatively in `RISK_REGISTER.md`. A paste-ready draft of the row previously lived here; it was removed to keep a single source of truth.
 
 ---
 
