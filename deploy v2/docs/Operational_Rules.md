@@ -1531,6 +1531,21 @@ blocks our own join). Pairs with RISK_REGISTER **R11** (the dormant capture's pr
 
 -----
 
+## 63. ⚠️ Claude.ai-authored docs auto-persist to the repo
+
+Rule #63 — Any document the Claude.ai lane authors that is worth keeping (briefs, multi-AI validation
+batches, methodology notes, plans, counsel artifacts) is delivered together with an explicit CC instruction
+— **in the SAME message** — to save it into `deploy v2/docs/` and commit it. The repo's `docs/` is the
+**single source of truth** for project documents; there is **NO reliance on manual transfer from Downloads**.
+Anas routes the delivery; CC performs the copy + commit. Keeps `docs/` complete so any Claude.ai-project
+knowledge upload is a **single whole-folder action**. Origin: 2026-06-01 — three session-authored docs
+(`MULTI_AI_VALIDATION_BATCH_PDPPL_beta.md`, `BRIEF_precapture_privacy_hardening.md`,
+`Thammen_Counsel_Brief.docx`) had to be back-filled from Downloads (`b3514a1`), and the a16 brief had even
+been *referenced before it was on disk*. Pairs with **#42** (deferred-work documentation) + **#32** (push
+discipline). **Recall:** "تذكر #63" / "docs auto-persist".
+
+-----
+
 *End of Operational Rules. 30 items migrated from session memory on
 2026-05-19. Item #31 added 2026-05-19 evening after Sprint 2.16.15
 deployment (first Sprint shipped from Claude Code). Item #32 added
