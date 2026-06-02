@@ -2253,7 +2253,77 @@ the feedback UI prompt (echoes `capture_id` back as `prediction_id`). **A7** sti
 
 -----
 
-*Last updated: 2026-06-01 (**Sprint 2.22.0a.16 SHIPPED** — pre-activation capture privacy-hardening, Heroku
+## 20.17 🆕 2026-06-02 — Sprint 2.22.0a.17 (clean-bracket condition caveat) — DEPLOYED Heroku v156
+
+> Engine `thammen-sprint2p22p0a17-clean-bracket-condition-caveat` / SPRINT_TAG `2.22.0a.17` / api-health
+> `3.1.0-sprint2.22.0a.17`. **Copy-only, honesty-additive — NO valuation logic; all values byte-identical.**
+> Brief `docs/BRIEF_2p22p0a17_clean_bracket_condition_caveat.md` (Rule #32 SIGNED; R-PROTOCOL recon-gate
+> accepted, then GO). Commit `37cc66d` → Heroku **v156** (`git subtree push --prefix "deploy v2"`, clean
+> fast-forward `6ee8dde..5182c42`, on explicit Anas "GO") → origin in sync `37cc66d`. CHANGELOG_v69.
+> **First Full-lane sprint routed under Operating Model v2 (lean).**
+
+**What shipped.** Clean reliable villa/house bracket points (pool ppm² dispersion < 0.30 → confident point +
+tight range, with NO condition cushion) now carry a bidirectional **condition-not-assessed** caveat. New
+module constants `CONDITION_NOTE_AR/EN` (verbatim from the brief; Rule #54 skipped per signed decision) + a
+pure predicate `_condition_note_applies(primary, gate, asset_type, amount)` placed next to
+`_stage1_dispersion_gate`; the clean-branch call sits in the SAME a14 `try` block of `_build_unified_output`
+(so any error is swallowed — the note never breaks evaluate). Gets the note iff `method=='comparison_bracket'`
+AND `asset_type ∈ {standalone_villa, house, villa}` AND amount present AND **not** `gate.get('gated')`.
+**Fail-safe to disclosure:** a `None`/malformed gate (dispersion unresolved) → include (uses `.get('gated')`,
+so a missing key never excludes). Frontend (`index.html`): muted neutral `.rn` note rendered directly under the
+range on the main card (locked: `.rn`, not `--warn-bg`). `ENGINE_VERSION`/`SPRINT_TAG` → a17; **`api.py`
+untouched** (version auto-derives from `SPRINT_TAG`; Rule #39 flag). Deploy is the `git subtree push` form
+(Rule #43), not the brief §9 literal `git push heroku master`.
+
+**Why (brief §1/§5).** Condition-blindness (RISK_REGISTER **R7**, bidirectional) is invisible on the clean
+bracket point — a renovated subject sits above it, a worn one below. The dispersed bracket (a14 honest-range),
+widened/geo (a10), indicative and thin paths already disclose; clean bracket (**≈31% of villa lookups**,
+incidence-weighted; 16/34 reliable villa cells clean) was the one surface with no cushion. The dispersion gate
+measures *market spread among comps*, **orthogonal** to the subject's condition → the caveat applies to ALL
+clean villa/house bracket points, not just near-gate ones. `house`/`villa` are forward-safe aliases — a house
+subject still classifies `standalone_villa` (no `house` member in `AssetType`, §20.12), so `standalone_villa`
+is the live match today.
+
+**Verification.** py_compile 0 (evaluate_unified.py + api.py); isolated `test_sprint_2_22_0a17.py` **15/15**
+(imports the PRODUCTION predicate — Rule #40/E14; the 7 brief cases + house/villa aliases + malformed-gate
+fail-safe + amount-None + none-primary + commercial + 2 verbatim-wording guards); DoD **392/15/45/59** (broad
+58→59 with the new test; the lone first-run failure was the known **live-GIS flake** on
+`test_sprint_2p22p0a7_geometric_determinism` — green on isolated re-run, §20.16; a17 touches no
+`geometric_factors`); `findstr condition_note_ar index.html` → index.html:936 (user-visible, not JSON-only);
+`node` absent (§11.3/a8 precedent) → JS verified by proxy (one self-contained `.rn` `if(){…}` reusing a proven
+shipping class); mobile 390×844 by `.rn` reuse (unconstrained block → wraps, no overflow), pixel-confirm =
+Anas's lane. **Local E2E probe (live GIS):** 56/565/21 → standalone_villa, amount **2,400,000**, note PRESENT;
+54/541/6 → amount **4,500,000**, range_is_headline True, note ABSENT.
+
+**Live two-lane post-deploy smoke v156 (browser-UA curl, Rule #61):**
+
+| PIN / call | a17 live | verdict |
+|---|---|---|
+| 56/565/21 Abu Hamour | 2,400,000 comparison_bracket, **condition_note_ar PRESENT**, engine a17 | clean → caveat ✓ |
+| 54/541/6 Marikh | 4,500,000 comparison_widened, **condition_note_ar ABSENT** | widened → a10 honest-range, no caveat ✓ |
+| 52/903/90 apt | insufficient_data | refusal unchanged ✓ |
+| /api/health | `3.1.0-sprint2.22.0a.17` · engine a17 · qars healthy | ✓ |
+
+Values byte-identical to a16 (2.4M / 4.5M / refusal); only the additive note + version label changed → Rule
+#52 closed with MEASURED data.
+
+**Carried forward (Rule #42).** **PENDING (await Anas):** close **A7** in the bug-list as "audited non-bug
+6/2 — JSON-only, `false` is honest" (docs-only); `backtest/README.md` modified-uncommitted (commit vs
+`git checkout --`). **Sprint 2** = the feedback UI prompt. **a15 ACTIVATION** counsel/gate-pending (R11).
+**B** = the bidirectional built-type/**condition** axis (R7) — the durable fix this caveat
+discloses-but-doesn't-solve. The «التقدير السوقي» term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-02 (**Sprint 2.22.0a.17 SHIPPED** — clean-bracket condition caveat, Heroku **v156** /
+commit `37cc66d` / CHANGELOG_v69 / §20.17; **copy-only, honesty-additive — NO valuation logic, values
+byte-identical**; clean villa/house bracket points [ppm² dispersion < 0.30] now carry a bidirectional
+condition-not-assessed caveat via `_condition_note_applies` + muted `.rn` render; excludes
+widened/thin/indicative/land/apartment + dispersed-bracket [a14]; fail-safe to disclosure on None/malformed
+gate; `api.py` untouched [version auto-derives from `SPRINT_TAG`]; isolated 15/15 + DoD 392/15/45/59 [broad +1
+new test; the lone geometric-determinism failure = known live-GIS flake, green isolated]; local E2E + two-lane
+v156 smoke: 56/565/21 = 2,400,000 note PRESENT, 54/541/6 = 4,500,000 note ABSENT, 52/903/90 refusal, health
+a17; origin in sync `37cc66d`. First Full-lane sprint under Operating Model v2 [lean]. Prior: **Sprint 2.22.0a.16 SHIPPED** — pre-activation capture privacy-hardening, Heroku
 **v155** / commits `03a4fb8`+`94075f2` / CHANGELOG_v68 / §20.16; **capture STILL DORMANT**, additive, NO
 valuation change; UUID-only key [valuation_id NOT stored] + street/building Fernet-enc [gated on
 `CAPTURE_ENC_KEY`] + 180d retention/aggregate/purge/erase + `note` removed + label «التقدير السوقي»
