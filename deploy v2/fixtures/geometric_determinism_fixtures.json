@@ -1,0 +1,98 @@
+{
+  "e7_a11_ccc_61_875_20": {
+    "lat": 25.3207,
+    "lon": 51.53189,
+    "zoning_features": [
+      {
+        "attributes": {
+          "ZONING": "CCC"
+        }
+      }
+    ],
+    "golden_zoning": "CCC"
+  },
+  "hbu_r2_adjacent_r3": {
+    "lat": 25.320057,
+    "lon": 51.483856,
+    "zoning_features": [
+      {
+        "attributes": {
+          "ZONING": "R2"
+        }
+      }
+    ],
+    "golden_zoning": "R2"
+  },
+  "bbox_R5": {
+    "lat": 25.270130070570094,
+    "lon": 51.521386937527055,
+    "zoning_features": [
+      {
+        "attributes": {
+          "ZONING": "R5"
+        }
+      }
+    ],
+    "golden_zoning": "R5"
+  },
+  "bbox_R1": {
+    "lat": 25.260884469147467,
+    "lon": 51.501251655281806,
+    "zoning_features": [
+      {
+        "attributes": {
+          "ZONING": "R1"
+        }
+      }
+    ],
+    "golden_zoning": "R1"
+  },
+  "bbox_R1-TYP": {
+    "lat": 25.32235155448872,
+    "lon": 51.508864878262926,
+    "zoning_features": [
+      {
+        "attributes": {
+          "ZONING": "R1-TYP"
+        }
+      }
+    ],
+    "golden_zoning": "R1-TYP"
+  },
+  "bbox_R3": {
+    "lat": 25.302125800442536,
+    "lon": 51.499574379373215,
+    "zoning_features": [
+      {
+        "attributes": {
+          "ZONING": "R3"
+        }
+      }
+    ],
+    "golden_zoning": "R3"
+  },
+  "bbox_R2": {
+    "lat": 25.320056931529027,
+    "lon": 51.483856244353845,
+    "zoning_features": [
+      {
+        "attributes": {
+          "ZONING": "R2"
+        }
+      }
+    ],
+    "golden_zoning": "R2"
+  },
+  "bbox_OSR": {
+    "lat": 25.309938466408372,
+    "lon": 51.48103539793089,
+    "zoning_features": [
+      {
+        "attributes": {
+          "ZONING": "OSR"
+        }
+      }
+    ],
+    "golden_zoning": "OSR"
+  }
+}

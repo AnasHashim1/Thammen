@@ -2313,6 +2313,32 @@ Values byte-identical to a16 (2.4M / 4.5M / refusal); only the additive note + v
 **B** = the bidirectional built-type/**condition** axis (R7) — the durable fix this caveat
 discloses-but-doesn't-solve. The «التقدير السوقي» term remains PROVISIONAL.
 
+**🆕 Fast-lane follow-up (2026-06-02, same day — test-only, origin-only, NO production change; v156
+byte-identical).** Two items, one commit.
+**(1) Gate-integrity miss → RISK_REGISTER R14** (R13 was already the regulatory self-clearance risk).
+The a17 push-gate report had marked the brief-MANDATORY mobile-390×844 check "verified" via `.rn`-reuse
+REASONING and deferred the pixel-confirm to post-deploy, and reported DoD "59/59" when the broad suite was
+58/59 (never a clean pass) + 1/1 isolated — i.e. the gate didn't actually gate. Anas caught it. Post-hoc
+REAL verification (headless server): the actual result card rendered at 390×844 → card right-edge **374<390**,
+note `scrollW==clientW` → **no overflow**; live `index.html` JS parsed → `fmt`/`applyAssetToForm` defined,
+**zero console errors**. Outcome benign, a17 left live. Control = R14 (a "verified"=EXECUTED-not-reasoned;
+b brief-mandatory check blocks the push, downgrade=Anas waiver only; c off-codebase briefs mark code claims
+"CC verify in recon").
+**(2) Geometric-determinism flake-split (Option 2).** Root cause: `property_factors._query_gis` is FAIL-SOFT
+(`[]` on any transient error) → under broad-suite contention one path's `_factor_zoning` returned None while
+the other got the real code → spurious `cur!=early` → `rc=1` (green on isolated re-run). Split into:
+**(A)** `test_sprint_2p22p0a7_geometric_determinism_logic.py` — monkeypatches `_query_gis` with FROZEN
+zoning fixtures (`fixtures/geometric_determinism_fixtures.json`; 8 points incl. the E7/A11 CCC + HBU R2
+anchors + R1/R1-TYP/R2/R3/R5/OSR spread), asserts byte-identical zoning resolution across two runs + H_A
+(parallel fan-out == direct early path) + golden — **NO network, always runs, joins the clean-pass set**;
+**(B)** `test_sprint_2p22p0a7_geometric_determinism_live_smoke.py` — best-effort live canary; None/transient
+→ skip-point, a mismatch is RE-CONFIRMED before it can fail → **never flake-fails** (only a persistent,
+re-confirmed divergence fails), preserving the §20.7 live HBU+E7 coverage. Old combined test retired
+(`git rm`). **DoD broad 59 → 60, a GENUINE CLEAN pass (60/60, 0 failed, 130s — faster than the old 175.8s
+flaky run).** Aggregator 392 / security 15 / surface-honesty 45 unchanged (test-only + docs). Verify: A ran
+twice byte-identical (exit 0); B 4/4 resolved live, E7 anchor HELD, 0 fails. Commit origin-only — Heroku
+untouched (v156 byte-identical).
+
 -----
 
 *Last updated: 2026-06-02 (**Sprint 2.22.0a.17 SHIPPED** — clean-bracket condition caveat, Heroku **v156** /
@@ -2323,7 +2349,7 @@ widened/thin/indicative/land/apartment + dispersed-bracket [a14]; fail-safe to d
 gate; `api.py` untouched [version auto-derives from `SPRINT_TAG`]; isolated 15/15 + DoD 392/15/45/59 [broad +1
 new test; the lone geometric-determinism failure = known live-GIS flake, green isolated]; local E2E + two-lane
 v156 smoke: 56/565/21 = 2,400,000 note PRESENT, 54/541/6 = 4,500,000 note ABSENT, 52/903/90 refusal, health
-a17; origin in sync `37cc66d`. First Full-lane sprint under Operating Model v2 [lean]. Prior: **Sprint 2.22.0a.16 SHIPPED** — pre-activation capture privacy-hardening, Heroku
+a17; origin in sync `37cc66d`. First Full-lane sprint under Operating Model v2 [lean]. **Same-day Fast-lane follow-up:** R14 (gate-integrity control) + geometric-determinism flake-split [A frozen-deterministic + B live skip-safe; old combined test retired] → DoD broad **59→60 GENUINE clean pass** (was a transient live-GIS flake); test-only, origin-only, v156 byte-identical. Prior: **Sprint 2.22.0a.16 SHIPPED** — pre-activation capture privacy-hardening, Heroku
 **v155** / commits `03a4fb8`+`94075f2` / CHANGELOG_v68 / §20.16; **capture STILL DORMANT**, additive, NO
 valuation change; UUID-only key [valuation_id NOT stored] + street/building Fernet-enc [gated on
 `CAPTURE_ENC_KEY`] + 180d retention/aggregate/purge/erase + `note` removed + label «التقدير السوقي»
