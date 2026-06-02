@@ -216,6 +216,11 @@ Reliability gate: n ≥ 10 per stratum.
 - When user asks "what's next?" — never invent priorities; check completed work first
 - When delivering 7+ sprints in one session (like 2026-05-18 marathon), summarize the day's deltas
 
+### Session discipline & conduct (see governing docs — pointers, not copies)
+- **Session cadence + hard-stop-before-compaction + handoff** → Operational Rules **#64 / #65**.
+- **Conduct** (relay-format · length-to-ask · clarify-before-impossible · brief-priors · measure-first) → `ROLES_AND_COMMS.md` "Claude.ai conduct" block.
+- **Current engineering posture + the single next-step** → `CLAUDE.md` snapshot / NEXT STEP block.
+
 -----
 
 ## 8. Reference Tools
@@ -306,6 +311,9 @@ User triggers any of these by saying **"Read Section X"** where X is relevant se
 - **"تذكر إغلاق Confirmed Sales"** — Sprint 2.16.16 (Confirmed Sales DB) **deferred indefinitely**: no viable internal source (secretary source closed 2026-05-24 + brokerage closed). NOT an awaiting-secretary dependency; T2 "broker" = ad-hoc only
 - **"راجع EMPIRICAL_FINDINGS"** — audit rules E1-E23
 - **"اقرأ القسم X من Project Instructions"** — load specific section
+- 🆕 **"تذكر #64"** — session cadence + hard-stop-before-compaction (Operational #64)
+- 🆕 **"تذكر #65"** — standing session-handoff protocol / zero-ask restart (Operational #65)
+- 🆕 **"تذكر الوضع الرشيق"** — lean posture: engineering idle · rule-count frozen at #65 · measure-first (CLAUDE.md NEXT STEP + ROLES conduct)
 
 -----
 
