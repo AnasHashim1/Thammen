@@ -2420,7 +2420,85 @@ PROVISIONAL.
 
 -----
 
-*Last updated: 2026-06-03 (**Sprint 2.22.0a.18 SHIPPED** — R9 bracket-path area-name reconciliation, Heroku
+## 20.19 🆕 2026-06-03 — Sprint 2.22.0a.19 (thin-path condition caveat, path-complete) — DEPLOYED Heroku v158
+
+> Engine `thammen-sprint2p22p0a19-thin-path-condition-caveat` / SPRINT_TAG `2.22.0a.19` / api-health
+> `3.1.0-sprint2.22.0a.19`. **COPY-ONLY / honesty-additive — NO valuation logic; every value byte-identical.**
+> Commit `ca220df` → Heroku **v158** (`git subtree push`, clean fast-forward `987413f..4d4d6cf`, on the PO's
+> standing deploy-on-green authorization) → origin in sync `ca220df`. CHANGELOG_v71. **First Fast-lane follow-up
+> to a18 — closes the live condition-disclosure gap a18 exposed.**
+
+**Why.** a17 scoped the bidirectional condition-not-assessed caveat to the CLEAN `comparison_bracket` villa/house
+point only. a18 then moved Marikh (54/541/6) onto the `comparison_thin` path at ~5.4M — so live (browser-UA, this
+session) **Abu Hamour 56/565/21 [bracket] carried `condition_note_ar`; Marikh 54/541/6 [thin] did NOT**. The
+subject most needing the disclosure (a plain/worn villa, R7-over-anchored) was the one missing it. a17's "thin
+already caveated" conflated the thin **SAMPLE-size** caveat with a **CONDITION** disclosure — orthogonal; R7 is
+method-agnostic (the engine never assesses subject condition on ANY path).
+
+**What shipped (one-constant broadening).** `_condition_note_applies` (`evaluate_unified.py`) now gates on a new
+`_CONDITION_NOTE_METHODS` tuple = {comparison_bracket, thin, widened, widened_indicative, preliminary} instead of
+the single `comparison_bracket` literal, keeping the `gate.get('gated')` exclusion UNCHANGED — the gate does the
+routing: `_stage1_dispersion_gate` returns **gated=True** ONLY for dispersed bracket (a14) / widened (a10), whose
+honest-range text already states "built type and condition not yet confirmed" → those stay excluded (note never
+duplicates); it returns **None** for thin/preliminary → fail-safe-to-disclosure → note INCLUDED; non-dispersed
+widened (gated=False) → included. **Wording byte-identical to a17** (no new copy, no Rule #54 round). `api.py` +
+`index.html` UNTOUCHED (backend-only; the `index.html:936` render is method-agnostic — keys on field presence →
+auto-surfaces on the thin path; **R14**: node/mobile N/A by construction, git-confirmed).
+
+**Verification.** py_compile OK; isolated `test_sprint_2_22_0a19.py` **22/22** (imports the PRODUCTION predicate +
+method tuple per E14; clean-bracket invariant held; thin/preliminary/non-dispersed-widened → note; dispersed
+bracket+widened → excluded; land/apt/commercial/amount-None excluded; fail-safe gate-None/malformed → include;
+house/villa aliases; verbatim AR/EN). `test_sprint_2_22_0a17.py` **15/15** (single now-stale thin assertion
+flipped to PRESENT; all other a17 invariants intact). DoD **392/15/45/62** (broad 61→62, +1 a19 test; genuine
+clean pass, 141.9s). Local E2E (live GIS, production `evaluate_thammen`): Marikh 5,400,000 + note PRESENT, Abu
+Hamour 2,400,000 + note PRESENT, 52/903/90 None/absent — **zero value drift** (predicate only attaches
+`condition_note_ar/en`, never touches amount/range).
+
+**Live post-deploy smoke v158 (browser-UA curl, Rule #61):**
+
+| PIN | method | amount | condition_note | verdict |
+|---|---|---|---|---|
+| 54/541/6 Marikh | **comparison_thin** | **5,400,000** | **PRESENT** | THE FIX — note on thin path, value unchanged ✓ |
+| 56/565/21 Abu Hamour | comparison_bracket | 2,400,000 | PRESENT | no regression ✓ |
+| 52/903/90 apt | insufficient_data | None | absent | refusal unchanged ✓ |
+| /api/health | — | — | — | a19, v158, qars healthy, MoJ 154d ✓ |
+
+Values byte-identical to a18; only the additive note + version label changed → Rule #52 closed MEASURED.
+
+**Confirms folded in (this session).** (a) **Pearl override** — `GIS_TO_MOJ_NAME_OVERRIDES['جزيرة اللؤلؤة'] =
+'اللؤلؤة'` is KEPT (`evaluate_property.py:116`); it is a **1:1 exact-string** GIS→MoJ map (GIS prefixes «جزيرة»),
+**cannot mix precincts** (no multi-name aggregate; «اللؤلؤة» is one island district; a precinct-level ANAME
+wouldn't match the key), and Pearl stock is apartments/towers → kept out of the villa pool by the A1/A2 filters
+regardless. No issue. (b) **Git hygiene** — the +76k/−0 "Create PR" diff = **all regenerable scratch** (probes,
+`*.bak[0-9]`, audit logs, JSON dumps, `_r9_*`/`.r9_*` a18 scratch) + parent-dir junk; **zero real a18 source**
+(a18 = 6 files at `8130dc0`). Added a focused `deploy v2/.gitignore` (scratch families) → untracked under
+`deploy v2/` dropped ~180→15 (remainder = real docs/backtest/READMEs/backups + 1 mojibake junk file
+`C:Thammendeploy`); required sqlites stay tracked; the sprint commit staged **only** the 5 explicit files
+(never `git add -A`).
+
+**Carried forward (Rule #42).** The durable R7 fix = **Sprint B** (built-type/condition axis, 2.22.0b Stage-2
+input) — this caveat **discloses** condition-blindness, does not solve it (Marikh ~5.4M still over-anchors a plain
+villa, defensible ~3.0–3.4M, now disclosed on the thin path). **A7** (`rics_compliant` surfacing) = the queued
+next quick-win (carries a copy sign-off). Fast-follow (a18, still open): a DIRECT live hit on a sub-zone subject
+(معيذر/نعيجة). Pre-existing untracked items (`docs/DESIGN_2p23…`, `docs/learnings/`, `docs/validation/`,
+`backtest/`, READMEs) + the `C:Thammendeploy` junk file left for a PO cleanup decision. The «التقدير السوقي» term
+remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-03 (**Sprint 2.22.0a.19 SHIPPED** — thin-path condition caveat [path-complete], Heroku
+**v158** / commit `ca220df` / CHANGELOG_v71 / §20.19; **COPY-ONLY — NO valuation logic, every value
+byte-identical**; extends the a17 villa/house condition-not-assessed caveat from the clean `comparison_bracket`
+point to ALL value-bearing comparison surfaces [thin + non-dispersed widened + preliminary] via a one-constant
+`_CONDITION_NOTE_METHODS` broadening, keeping the `gate.get('gated')` exclusion so dispersed bracket/widened keep
+routing to their existing a14/a10 honest-range condition disclosure [note never duplicates]; a18 had moved Marikh
+54/541/6 onto the thin path ~5.4M — the subject most needing it; wording byte-identical to a17 [no new copy];
+`api.py`+`index.html` UNTOUCHED [backend-only; method-agnostic render; R14]; isolated a19 22/22 + a17 15/15 + DoD
+392/15/45/62 + local E2E zero-drift; live smoke v158: 54/541/6 = comparison_thin 5,400,000 + note PRESENT [THE
+FIX], 56/565/21 = comparison_bracket 2,400,000 + note PRESENT [no regression], 52/903/90 refusal; origin in sync
+`ca220df`. Confirms folded in: Pearl override جزيرة اللؤلؤة→اللؤلؤة KEPT + cannot mix precincts; git hygiene +
+focused `.gitignore` [untracked ~180→15, all scratch, zero real a18 content]. **NEXT = A7** [`rics_compliant`
+surfacing, copy sign-off] then **Sprint B** [durable R7 condition axis]. Prior: **Sprint 2.22.0a.18 SHIPPED** — R9 bracket-path area-name reconciliation, Heroku
 **v157** / commit `d69d9c0` / CHANGELOG_v70 / §20.18; **VALUATION-AFFECTING** [comparable-pool selection];
 the brief's highest-count-wins→bare-parent was REJECTED at the الثمامة 46 hard gate [MoJ files recent txns
 under sub-zone labels, stale under bare parent → −7.5%/−20%/−40% silent regressions] → adopted **sibling
