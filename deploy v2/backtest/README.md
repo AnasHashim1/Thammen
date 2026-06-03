@@ -1,141 +1,131 @@
-# Thammen Backtest Harness
+# Thammen Backtest Suite
 
-Measures Thammen's reliability and accuracy by running a curated set of
-properties through the live API and comparing results to known truths.
+Two complementary measurement tools. Sprint 2.13 expanded Sprint 2.12 by
+adding **market-side** measurement on top of the engine-side reliability
+test.
 
-Sprint 2.12 deliverable. Engine unchanged; this is **measurement infrastructure**
-that every Sprint after 2.12 will use to prove its claims.
+## The pivot from 2.12 → 2.13
 
-## What this measures
+Sprint 2.12 (`backtest.py`) was designed to measure Thammen against
+**confirmed sale prices**. We don't have those. EMPIRICAL_FINDINGS (2026-05)
+established that:
 
-Two complementary modes coexist in `golden_set.csv`:
+- **Villa** asking prices are contaminated by non-economic premiums
+  (proximity to family, sentimental value). Asking premium for villas is
+  +70.2% — far too noisy to use as truth.
+- **Land** asking premium is +13.6% globally, with a narrow per-area
+  band documented in EMPIRICAL_FINDINGS. Land is fungible — no one pays
+  extra to own a specific vacant plot. So **land listings ARE a valid
+  truth source** with a documented, narrow premium expectation.
 
-| Mode | Trigger | Measures |
-|---|---|---|
-| **Pipeline** | row has no `sale_price_qar` | reliability, latency, asset_type/district correctness |
-| **Accuracy** | row has `sale_price_qar` filled | MAE, MAPE, %within±10%, %within±20%, actual-within-range |
+Sprint 2.13 keeps the engine harness (still works for any test row you add)
+and adds a separate market-side tool that compares current arady land
+listings against MoJ over the EMPIRICAL_FINDINGS bands.
 
-The seed `golden_set.csv` ships with **6 pipeline-only rows** from the
-Sprint 2.11 field audit. Accuracy mode unlocks the moment you add a real
-sale.
+This honors EMPIRICAL_FINDINGS Rule E3: listings stay diagnostic. They
+inform our confidence in the engine; they never become engine input.
 
-## Targets (RICS-aligned aspirations)
+## The two tools
 
-| Metric | Goal |
-|---|---|
-| MAPE | < 10% (RICS-aligned AVMs) |
-| % within ±10% | > 70% |
-| % within ±20% | > 90% |
-| Type match rate | > 95% |
-| Mean latency | < 15s |
-| Success rate | > 98% |
+### `backtest.py` — engine reliability (Sprint 2.12)
 
-These are **directional**, not contractual. The first run establishes a
-baseline; every Sprint after 2.12 should move the needle in one direction.
+Calls `/api/evaluate/details` on the 6 rows in `golden_set.csv` and
+measures:
+- pipeline success rate
+- mean / p95 latency
+- asset_type / district correctness
+- accuracy (only if a row has confirmed `sale_price_qar` — currently none do)
 
-## Usage
+Use this to catch regressions: every time the engine changes (Sprints 2.15+),
+re-run and compare to the prior baseline.
 
 ```cmd
 cd /d "C:\Thammen\deploy v2\backtest"
 python backtest.py
 ```
 
-By default, hits `https://thammen.qa`. Override with an env var to test a
-local server:
+### `backtest_market.py` — market vs MoJ (Sprint 2.13)
+
+Reads `arady_lands_*.csv` + the local `moj_weekly.csv`, computes the asking
+premium per listing, and buckets results against EMPIRICAL_FINDINGS bands:
+
+| Bucket | Band | Meaning |
+|---|---|---|
+| ✅ normal | 0–20% | within documented asking-premium norm |
+| ⚠️ investigate | 20–25% | borderline — check for premium features |
+| 🔴 red flag | >25% | stock mismatch suspected (Rule E5) |
+| 🟦 below MoJ | <0% | unusual — motivated seller or noise |
+| ⚪ insufficient MoJ | — | no comparable transactions; **coverage gap** |
 
 ```cmd
-set THAMMEN_API=http://localhost:8000
-python backtest.py
+cd /d "C:\Thammen\deploy v2\backtest"
+python seed_from_arady.py
+python backtest_market.py
 ```
 
-Outputs to `backtest/reports/`:
-- `backtest_YYYYMMDD_HHMMSS.csv` — raw per-row data
-- `backtest_YYYYMMDD_HHMMSS.md` — rendered report (open in any editor)
+Default paths:
+- arady CSV: latest `arady_lands_*.csv` in this dir
+- MoJ CSV: `..\moj_weekly.csv` (one level up — your deploy v2 root)
 
-The script is idempotent; re-running creates fresh timestamped reports.
-It does not touch `golden_set.csv` or any other file outside `reports/`.
+Override:
+```cmd
+python backtest_market.py --moj path\to\moj.csv --arady path\to\arady.csv
+```
 
-## Growing the golden set
+## What "good" looks like
 
-The single most impactful thing you can do post-Sprint-2.12 is **add real
-sales** to `golden_set.csv`. Even 5 confirmed sales unlock real accuracy
-measurement. 30+ gives statistically meaningful confidence intervals.
+The first 2026-05-13 baseline:
+- Overall median premium = **+14.4%** ✓ (EMPIRICAL_FINDINGS baseline: +13.6%)
+- 12/23 measurable listings in ✅ normal band (52%)
+- 7/30 in ⚪ insufficient MoJ — coverage gaps to investigate
+- 7/30 in 🔴 red flag — concentrated in الرويس (3) and الصخامة (2)
 
-**Required columns for a real-sale row:**
-- `zone`, `street`, `building` — full QARS address
-- `sale_date` — YYYY-MM-DD
-- `sale_price_qar` — confirmed price (not asking price)
-- `actual_asset_type` — one of `standalone_villa`, `palace`, `compound_small`,
-  `compound_large`, `tower`, `apartment_building`, `raw_land`, `commercial`,
-  `industrial`, `agricultural` (matches Thammen's vocabulary)
-- `evidence_source` — *where* you got the price (e.g. "MoJ_PIN_X",
-  "FGRealty_listing_sold_2025", "personal_knowledge", "broker_report")
+Future Sprints that improve coverage or methodology should move:
+- 🔴 red_flag count **down** (if our handling of corner/landmark plots improves)
+- ⚪ insufficient_moj count **down** (Sprint 2.29 MME integration helps here)
+- Overall median premium **stay near 14%** (it's a market property, not a Thammen property)
 
-**Optional columns** (improve test depth):
-- `rental_income` — actual monthly rent (if known)
-- `asking_price` — listing price before sale (to test gap analysis)
-- `floors`, `building_age_years`, `basement` — sent to
-  `/api/evaluate/details` for a deeper test
+## Files in this folder
 
-Leave non-applicable cells empty. The parser handles missing fields.
+```
+backtest.py                  Engine reliability harness (Sprint 2.12)
+golden_set.csv               6 known-good addresses for engine harness
+backtest_market.py           Market-vs-MoJ comparison (Sprint 2.13)
+seed_from_arady.py           Refresh arady listings from the web
+arady_lands_YYYY-MM-DD.csv   Snapshot of current arady listings
+reports/                     Output reports + raw CSVs (gitignored)
+README.md                    This file
+.gitignore                   Excludes individual reports from VCS
+```
 
-### Where to source real sales
+## Refresh cadence
 
-In rough order of reliability:
+| Tool | When to re-run |
+|---|---|
+| `backtest.py` | After every engine Sprint (2.15+) to catch regressions |
+| `seed_from_arady.py` | Weekly or monthly — listings change |
+| `backtest_market.py` | After every `seed_from_arady` refresh + whenever MoJ data updates |
 
-1. **MoJ records you can geolocate** — When you have a MoJ record AND you
-   know which specific property it refers to (via personal knowledge, broker
-   confirmation, or imagery match). High quality.
-2. **FGRealty / PropertyFinder "sold" listings** — When platforms publish
-   final sale prices. Lower volume but high quality.
-3. **Personal investment knowledge** — Anas's own transactions or those of
-   his network. Highest quality if the sale price was actually confirmed.
-4. **Public auction records** — Some Qatar auctions publish final prices.
-   Quality varies.
+If MoJ stops publishing (currently 133 days stale), the market report
+becomes stale too. The window stays 24 months from today so until the
+gap exceeds ~24 months, results are still meaningful.
 
-**Do NOT use asking prices as actual prices.** That biases the test toward
-matching listings, not transactions. Use them only in the `asking_price`
-column.
+## Coverage gaps revealed by 2026-05-13 baseline
 
-## Stratification
+The 7 "insufficient MoJ" listings in the first run highlight districts
+where the engine has **no MoJ comparables** in the last 24 months:
 
-The report breaks down metrics by:
-- `asset_type_returned` (what Thammen classified it as)
-- `district_returned`
+- ام العمد (zone 71) — only one bracket covered
+- اسلطة الجديدة (zone 40) — no land transactions
+- نعيجة (zone 44)
+- الجريان (zone 70)
+- لوسيل (zone 69) — apartments dominate; raw land scarce
+- المعمورة (zone 56)
+- الريان القديم (zone 52) — large-bracket gap
 
-This is how you find **systematic** errors. If MAPE is 8% overall but 35%
-in lusail_marina, that's the next Sprint target.
+For these, Thammen will rely on:
+- Building approach + cost data when available
+- Fallback to broader brackets or area-aggregated data
+- Or return "insufficient data" (Sprint 2.11 behavior)
 
-## What this Sprint does NOT do
-
-- It does not measure inspection-related accuracy (we cannot inspect)
-- It does not compare against certified-valuer reports (we don't have any)
-- It does not run automatically on schedule — manual invocation only
-  (CI integration is a future Sprint)
-- It does not change any engine behavior — engine remains at Sprint 2.11
-
-## Privacy / data handling
-
-`golden_set.csv` may contain identifying information about specific
-transactions. It is checked into the repo but **should not be shared
-externally**. Treat it as confidential. The `reports/` folder is
-gitignored (see `.gitignore` in this directory) so individual reports
-stay local unless explicitly committed.
-
-## Troubleshooting
-
-**`HTTP 403: Forbidden`** — the API rejects requests without a proper
-`User-Agent`. The harness already sends one (`Thammen-Backtest/2.12`), so
-this shouldn't happen on production. If it does, check Cloudflare/WAF
-rules on the production host.
-
-**`HTTP 429: Too Many Requests`** — the rate limiter triggered. The harness
-already throttles to 0.5s/request. If you have >100 rows, raise
-`THROTTLE_S` in `backtest.py` to 1.0.
-
-**Latency > 30s on some rows** — full pipeline borderline-overruns
-Heroku's timeout. Tracked as bug A6 in Sprint 2.11 audit; a future Sprint
-will async-ify the slow paths.
-
-**`status: error` with timeout** — same as above. The row is recorded as
-failed so success rate reflects reality.
+These gaps are **measured**, not assumed. That's the value of the harness.
