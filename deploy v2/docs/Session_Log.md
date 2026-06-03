@@ -2341,7 +2341,96 @@ untouched (v156 byte-identical).
 
 -----
 
-*Last updated: 2026-06-02 (**Sprint 2.22.0a.17 SHIPPED** — clean-bracket condition caveat, Heroku **v156** /
+## 20.18 🆕 2026-06-03 — Sprint 2.22.0a.18 (R9 bracket-path area-name reconciliation) — DEPLOYED Heroku v157
+
+> Engine `thammen-sprint2p22p0a18-area-name-reconciliation` / SPRINT_TAG `2.22.0a.18` / api-health
+> `3.1.0-sprint2.22.0a.18`. **VALUATION-AFFECTING** (comparable-pool selection — data-reconciliation of the
+> existing Sales-Comparison method, not a new methodology). Brief `docs/BRIEF_R9_area_name_reconciliation.md`
+> (signed). Commit `d69d9c0` → Heroku **v157** (`git subtree push`, clean fast-forward `5182c42..987413f`, on
+> the prompt's standing push authorization + PO «افعل الأصوب») → origin in sync `d69d9c0`. CHANGELOG_v70.
+
+**Why.** The matcher mapped a GIS district name to a MoJ area-name by verbatim / «ال» drop-add / 4 overrides —
+**no zone-number handling**. MoJ files one district under several labels: a bare parent («معيذر») AND
+zone-numbered siblings («معيذر 53», «معيذر 55»). So ~12% of villa lookups keyed on one label and missed the
+rest of the district; A16/Marikh («امريخ الجنوبي») starved into the widened path → 4.5M over-anchor.
+
+**The pivot (the brief's first plan was REJECTED at the hard gate — this is the headline lesson).** The signed
+brief proposed FIX#1 = strip the trailing zone-number to the bare parent + keep **highest-transaction-count
+wins**. Pre-deploy validation tripped the **الثمامة 46 hard gate** and a read-only trace showed *why*: **MoJ
+records RECENT transactions under the SUB-ZONE label and STALE ones under the BARE PARENT.** So "highest-TOTAL
+count → bare parent" sends the subject from recent data to stale data:
+
+| sub-zone (a17 live) | highest-count→bare-parent (REJECTED) |
+|---|---|
+| الثمامة 46 400-600: n=63, **n24=63** recent, gated | n=18, **n24=0** all-stale, **−7.5% UNGATED** ← hard gate trip |
+| معيذر 53 400-600: n=32 recent, gated | n=24, n24=1, **−20%** |
+| ازغوى 51 600-900: n=8 recent | n=2, n24=0, **−40%** |
+
+These sub-zones were never starved — they bracket reliably today. CC HALTED, reported, recommended **sibling
+aggregation**; Anas → «افعل الأصوب» (Hard Gate 2 methodology sign-off by delegation, in direct response to the
+aggregate recommendation).
+
+**What shipped — sibling AGGREGATION.** New `moj_reference.area_match_key(s)` = `normalize_area_name`
+(whitespace/NBSP collapse + hamza fold أ/إ/آ→ا) then strip a TRAILING zone-number → «معيذر»/«معيذر 53»/«معيذر
+55» share ONE key and POOL (recovers both recent sub-zone + historical parent = max n + recency). Used by
+`build_reference` + `compute_trend` area filters (was exact) + `resolve_moj_area_name` (tally + match by key,
+returns `(district_key, aggregate_count)`). The `categorize` TYPE path («أرض فضاء») stays on bare UNFOLDED
+`normalize` (the scoped-normalizer requirement). Overrides keep the stem/spelling cases aggregation can't
+bridge — **A16 امريخ الجنوبي→مريخ**, جزيرة اللؤلؤة→اللؤلؤة, اسلطة الجديدة→السلطة الجديدة, لجمليه→لجميليه, +
+originals; **dropped inert المطار العتيق→المطار** (المطار العتيق is itself a rich 567-txn MoJ area). `api.py`
++ `index.html` UNTOUCHED (backend-only; mobile/node N/A by construction, git-confirmed per R14).
+
+**Safety audits (Rule #33).** Hamza-fold **collision-free** (0 distinct MoJ area-names merge). Sibling
+aggregation **over-merge-safe**: across all 161 MoJ area-names, every multi-name collapse (15 districts) is a
+pure zone-number variant of ONE district — **0 distinct districts merged**.
+
+**Verification.** Isolated `test_sprint_2_22_0a18.py` **28/28** (aggregation key + hamza + NBSP + distinct-safe;
+override routing incl. A16; **negative-assert لجميل≠لجميليه**; categorize unfolded; dispersion gate fires on the
+aggregate; real-CSV معيذر 53→معيذر n≥700, بو هامور unchanged, لجميل→None). DoD **392/15/45/61** (broad 60→61).
+**Hard gate الثمامة 46 PASS** (400-600 common bracket +3.7% GATED; the raw −24.5%/+8.5% flags were n=1 /
+n=8-9 thin buckets, not clean-bracket shifts). **Comprehensive 15-district sweep** (every sibling label × bracket)
+= **0 silent clean-bracket regressions** — large moves (نعيجة −20%, معيذر +9%) are all dispersion-GATED → the
+a14 honest-range fires.
+
+**Live two-lane post-deploy smoke v157 (browser-UA curl, Rule #61):**
+
+| PIN | a18 live | vs a17 |
+|---|---|---|
+| 56/565/21 Abu Hamour | 2,400,000 comparison_bracket n=37 + condition_note | **UNCHANGED** (بو هامور no siblings) ✓ |
+| 52/903/90 apt | insufficient_data | unchanged (refusal) ✓ |
+| 54/541/6 Marikh | **comparison_thin 5,400,000 n=15** (same-district «مريخ») | A16 pool-fix: was comparison_widened 4.5M (n=29 cross-district) |
+| /api/health | a18, v157, qars healthy | ✓ |
+
+**Marikh (the A16 result — report transparently).** «امريخ الجنوبي» now resolves to «مريخ» (correct
+same-district pool). The 600-900 bracket has n=15 (<20) → **comparison_thin 5.4M** (indicative, thin-sample
+caveat), NOT the «n≈83 gated bracket» the prompt anticipated (n≈83 was the TOTAL مريخ villa count; the subject's
+bracket is thin). The value **rose** 4.5M→5.4M because مريخ same-district genuinely sells higher than the
+cross-district widened pool. **a18 fixes WHICH pool, not condition** — the subject is a plain/worn villa, so its
+R7 condition over-anchor (defensible ~3.0–3.4M plain) PERSISTS and is now disclosed via the thin caveat (the
+a17 *clean-bracket* condition note does NOT fire on the thin path — minor gap). The durable fix is **Sprint B**
+(condition axis). RISK_REGISTER R9 → resolved-as-pool-fix (condition residual = R7/Sprint B).
+
+**Carried forward (Rule #42).** **فريج العسيري** (26 villa txns) DEFERRED — no GIS ANAME contains «العسيري»,
+unrecoverable this sprint (~0.25% of villa lookups stay widened/refuse); thin «المطار» (12) similarly unreached.
+**Fast-follow** (not scheduled): a DIRECT live hit on a sub-zone subject (معيذر/نعيجة address) to demonstrate
+aggregation end-to-end live (the path is exercised by the live engine + proven offline on real build_reference;
+no PIN was on hand). **Marikh condition over-anchor → Sprint B.** A7 (`rics_compliant`) still a separate
+quick-win. Scratch `_r9_*.py` validation harness left untracked (regenerable). The «التقدير السوقي» term remains
+PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-03 (**Sprint 2.22.0a.18 SHIPPED** — R9 bracket-path area-name reconciliation, Heroku
+**v157** / commit `d69d9c0` / CHANGELOG_v70 / §20.18; **VALUATION-AFFECTING** [comparable-pool selection];
+the brief's highest-count-wins→bare-parent was REJECTED at the الثمامة 46 hard gate [MoJ files recent txns
+under sub-zone labels, stale under bare parent → −7.5%/−20%/−40% silent regressions] → adopted **sibling
+aggregation** via `area_match_key` [hamza-fold + trailing-zone-strip; «معيذر»+«معيذر 53»+«معيذر 55» pool as one
+district], PO «افعل الأصوب»; over-merge audited [0 distinct districts merged] + comprehensive 15-district sweep
+[0 silent clean-bracket regressions]; overrides keep A16 امريخ الجنوبي→مريخ + Pearl/New-Slata/Lijmiliya, drop
+inert المطار العتيق; isolated 28/28 + DoD 392/15/45/61; live smoke v157: 56/565/21 = 2,400,000 UNCHANGED,
+54/541/6 = comparison_thin 5.4M same-district مريخ [was widened 4.5M — A16 pool-fix; condition over-anchor =
+R7/Sprint B], 52/903/90 refusal; `api.py`/`index.html` untouched [backend-only]; origin in sync `d69d9c0`.
+Prior: **Sprint 2.22.0a.17 SHIPPED** — clean-bracket condition caveat, Heroku **v156** /
 commit `37cc66d` / CHANGELOG_v69 / §20.17; **copy-only, honesty-additive — NO valuation logic, values
 byte-identical**; clean villa/house bracket points [ppm² dispersion < 0.30] now carry a bidirectional
 condition-not-assessed caveat via `_condition_note_applies` + muted `.rn` render; excludes
