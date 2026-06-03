@@ -1,24 +1,32 @@
-# Claude.ai Project Knowledge — upload set (2026-05-22)
+# ⚠️ DEPRECATED — STALE upload bundle (frozen 2026-05-22, Heroku v91)
 
-These three files are **point-in-time snapshots** of the canonical `docs/` files,
-renamed for upload to the Claude.ai Project Knowledge store (which is separate
-from this repo). Anas uploads them manually.
+**Do NOT upload from this folder.** The renamed copies here froze at Sprint
+2.21.0.7.1 / Heroku **v91** and are now far behind production (current state:
+see `CLAUDE.md` snapshot + `/api/health`). They are exactly the drift the
+original staging note warned about ("regenerate from `docs/` or they drift") —
+and they drifted ~30+ sprints.
 
-| Upload file | = copy of | Replaces in Claude.ai |
-|---|---|---|
-| `Project_Instructions_v5.md` | `docs/Project_Instructions.md` | Project_Instructions v4 (2026-05-19) |
-| `Session_Log_2026-05-17_to_22.md` | `docs/Session_Log.md` | Session_Log 17→19 |
-| `Empirical_Findings_v3.md` | `docs/Empirical_Findings.md` | Empirical_Findings v2 |
+## Current upload workflow (lean two-lane model)
 
-**Also upload (unchanged-name, already current in repo):** `Operational_Rules.md`
-(#43–#49), `Custom_Instructions.md`, `CLAUDE.md` (snapshot refreshed to v91).
+Upload the **canonical `docs/` files directly** — **no renamed copies are
+maintained here anymore**:
 
-**Source of truth = the `docs/` files**, not these copies. If the docs change
-again, regenerate these (`cp` + rename) rather than editing the copies — they
-will otherwise drift.
+- `docs/Custom_Instructions.md`  ← lane-leading (Claude.ai reads this first)
+- `docs/Project_Instructions.md`
+- `docs/Session_Log.md`
+- `docs/Empirical_Findings.md`
+- `docs/Operational_Rules.md`
+- `CLAUDE.md`
 
-What's new since the 2026-05-19 set (the Land Arc):
-- Sprints 2.19, 2.19.1, 2.20.0, 2.21.0, 2.21.0.5, 2.21.0.7, 2.21.0.7.1
-- Operational_Rules #45, #46 (×2 expansions), #47, #48, #49
-- Empirical_Findings E8–E14
-- Engine: `thammen-sprint2p21p0p7p1-hotfix-removed` (Heroku v91)
+The `docs/` files are the **single source of truth** (Rule #58: live
+engine / sprint / Heroku-vN = the CLAUDE.md snapshot + `/api/health`). The
+three stale snapshots in this folder (`Project_Instructions_v5.md`,
+`Empirical_Findings_v3.md`, `Session_Log_2026-05-17_to_22.md`) are retained
+only as a 2026-05-22 historical marker and can be deleted.
+
+---
+
+*Original 2026-05-22 staging note (historical):* these were point-in-time
+snapshots of the `docs/` files, renamed for manual upload to the Claude.ai
+Project Knowledge store, covering through the Land Arc (Sprints 2.19 → 2.21.0.7.1,
+Operational #45–#49, Empirical E8–E14, engine `…2p21p0p7p1`, Heroku v91).

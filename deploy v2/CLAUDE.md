@@ -427,7 +427,7 @@ Before ANY Sprint proposal:
 
 For external endpoints (especially Qatar government):
 1. Write `smoke_<endpoint>.py` as standalone file
-2. `git push heroku master` + `heroku run python smoke_<endpoint>.py`
+2. `git subtree push --prefix "deploy v2" heroku master` (Rule #43 — not plain `git push heroku master`) + `heroku run python smoke_<endpoint>.py`
 3. Verify reachability + content type + WAF response
 4. Only then build integration
 
@@ -580,11 +580,12 @@ STOP if I:
 
 ```
 cd /d "C:\Thammen\deploy v2"
-copy /Y <file>.py <file>.py.bak_<prev_sprint>
 git add <files>
 git commit -m "<Sprint X.Y.Z>: <description>"
-git push heroku master
+git subtree push --prefix "deploy v2" heroku master
+git push origin master
 ```
+> **Rule #43:** the app lives in the `deploy v2/` subdir → deploy is `git subtree push --prefix "deploy v2" heroku master`, **not** plain `git push heroku master` (rejected by the buildpack — no `requirements.txt` at slug root). `git push origin master` keeps the GitHub backup current (R1 deploy ritual).
 
 ### Post-deploy verification
 
