@@ -368,7 +368,7 @@ a.13 thin-cell credibility · a.14 bracket honest-range · **a.15 beta instrumen
 
 |#|Item|What / why|Blocker|
 |---|---|---|---|
-|**1**|**A7 — `rics_compliant` always false**|Beta-credibility quick-win (a cohort member might check). Closed-as-by-design in a8; the field-rename / surfacing is the remaining work.|none|
+|~~**1**~~|**A7 — `rics_compliant` honest status label** ✅ **SHIPPED a20** (Heroku v159, §20.20, CHANGELOG_v72)|DONE — neutral `rics_compliant_status_ar/en` («بانتظار مراجعة مُقيِّم مُرخّص (المرحلة الخامسة)» / "Pending licensed-valuer review (Stage 5)") added next to the bool on every JSON surface so bare `false` reads "review pending," not "non-compliant"; display/label only, zero value drift. Bool stays by-design (gated on `has_field_inspection`); field-rename NOT done (Rule #47 — its own pass if ever wanted). **A7 → CLOSED.**|—|
 |**2**|**Sprint 2 — feedback UI prompt**|`index.html` (390×844) consuming `POST /api/feedback`, echoing the `valuation_id` already in the client JSON. Meaningful **at/after** a15 ACTIVATION.|a15 activation (#3)|
 |**3**|**ACTIVATION of a15 instrumentation**|Flip the dormant capture/feedback live. Counsel-gated **§8.1 PDPPL** + **§8.2 cross-border** (RISK_REGISTER **R11**) **+** the a15 capture-surface **security pass** (`LAUNCH_READINESS_GATES_v1` gate 11). Then provision Postgres → `DATABASE_URL` + `EVAL_CAPTURE_ENABLED=true`.|counsel + security pass|
 |**4**|**B — condition sprint**|The R7 built-type / **condition** axis (bidirectional anchor fix). Prereq for 2.22.0b Stage-2. Own §5 audit + signed brief.|signed brief|

@@ -2486,7 +2486,82 @@ remains PROVISIONAL.
 
 -----
 
-*Last updated: 2026-06-03 (**Sprint 2.22.0a.19 SHIPPED** — thin-path condition caveat [path-complete], Heroku
+## 20.20 🆕 2026-06-03 — Sprint 2.22.0a.20 (A7 — rics_compliant honest status label) — DEPLOYED Heroku v159
+
+> Engine `thammen-sprint2p22p0a20-rics-compliant-status-label` / SPRINT_TAG `2.22.0a.20` / api-health
+> `3.1.0-sprint2.22.0a.20`. **DISPLAY/LABEL ONLY — NO valuation logic; every value byte-identical.** Brief
+> signed by Claude.ai (Gate 2 pre-satisfied; copy verbatim). Commit `2d5c35a` → Heroku **v159** (`git subtree
+> push`, clean fast-forward `4d4d6cf..b22b235`, on the task's standing deploy-on-green authorization) → origin
+> in sync `2d5c35a`. CHANGELOG_v72. **Closes A7 — the queued beta-credibility quick-win.**
+
+**Why.** `material_uncertainty.rics_compliant` is always `false` on villa/land/refusal paths and, read bare,
+looks like "non-compliant." It is `false` BY DESIGN — gated on `has_field_inspection` (`material_uncertainty.py:382`),
+which an AVM never has; the methodology already follows RICS Red Book (VPS 3/IVS 103 + VPS 5/IVS 105 + VPGA 10 +
+VPS 6/IVS 106, per the live `rics_methodology_note`). What is pending is the licensed-valuer **review/sign-off**
+(Stage 5, IVS 105). A7 was closed as not-a-bug in a8; the remaining work = an honest companion LABEL so the JSON
+reads "review pending," not "non-compliant."
+
+**Recon (R-PROTOCOL).** (1) **The bool renders NOWHERE in index.html** — the `case 'material_uncertainty'`
+renderer (`:1493`) emits only level/factors/recommendations; every generic/fallback dump (`:1510`/`:1687`) handles
+string/number/array, so a **boolean is skipped**. The honest "field inspection needed for RICS compliance"
+disclosure ALREADY renders via `recommendations` (`material_uncertainty.py:385`). ⟹ **backend-only; the UI was
+already honest.** (2) JSON surfaces = root `material_uncertainty.rics_compliant` (fast/refusal via
+`_enrich_material_uncertainty`; main path via the v3 dict at `:4714`) + brief `content.rics_compliant`
+(output_briefs 595/933). (3) Only ONE downstream LOGIC read — `material_uncertainty.py:385 if not rics_compliant:`
+appends a recommendation (display, not value) — **left untouched.** (4) **Wording check (brief-requested):** Stage 5
+= licensed-valuer **review/sign-off** (`2p22p0_pre/CHANGELOG_pre_2p22p0_v2.md:79`), and the **live**
+`rics_methodology_note_ar` already ends «… دون **مراجعة مُقيِّم مُرخّص (المرحلة الخامسة)**» → the signed copy is that
+phrase + «بانتظار» = verbatim-consistent. **"review/مراجعة" correct; NO flag-back.**
+
+**What shipped (3 backend files).** New `material_uncertainty.rics_compliant_status_fields(is_compliant)` + 2 signed
+constants («بانتظار مراجعة مُقيِّم مُرخّص (المرحلة الخامسة)» / «Pending licensed-valuer review (Stage 5)»); returns the
+2 status keys ONLY when False (True → `{}` — no unsigned "compliant" string invented; None/malformed → pending
+fail-safe). Wired via spread / `setdefault` (never clobbers a caller key) at `_enrich_material_uncertainty` (6 fast
+roots), `evaluate_unified.py:4714` (main root, guarded — survives the downstream factor/level mutations, which
+never touch `rics_compliant`), and `output_briefs.py:595/933` (buyer+valuer brief MU section). **The `rics_compliant`
+bool is unchanged everywhere; no value/level/method/tier/MUC/decision touched.** AR copy has no Latin → no LRM/bidi.
+`api.py` + `index.html` UNTOUCHED (R14: `git diff --stat` = 3 files; node/mobile N/A by construction).
+
+**Verification.** py_compile 3/3; isolated `test_sprint_2_22_0a20.py` **20/20** (production helper + `_enrich` +
+real `generate_brief` per E14/#40: false→both signed keys verbatim; true→{}; None→pending; AR no-Latin; enrich
+preserves bool+level + no-mutate + no-clobber; buyer/valuer brief carry/omit correctly). DoD **392/15/45/63**
+(broad 62→63, +1 new test; genuine clean pass 87.3s). **Local E2E (live GIS)** — production `evaluate_thammen`,
+zero value drift: 54/541/6 comparison_thin **5,400,000** + status (root+brief), 56/565/21 comparison_bracket
+**2,400,000** + status (root+brief), 52/903/90 insufficient_data **None** + status (root; refusal fast-brief has no
+MU section). All bools still False.
+
+**Live two-lane post-deploy smoke v159 (browser-UA curl, Rule #61):**
+
+| PIN | method | amount | vs a19 | rics_compliant | status_ar |
+|---|---|---|---|---|---|
+| 56/565/21 Abu Hamour | comparison_bracket | **2,400,000** | identical | False | PRESENT ✓ |
+| 54/541/6 Marikh | comparison_thin | **5,400,000** | identical | False | PRESENT ✓ |
+| 52/903/90 apt | insufficient_data | **None** | identical | False | PRESENT ✓ |
+| /api/health | — | — | — | — | a20, v159, qars healthy, MoJ 154d ✓ |
+
+Values byte-identical to a19; only the additive status label + version changed → Rule #52 closed MEASURED.
+
+**Carried forward (Rule #42).** **A7 → CLOSED** (label shipped; the bool stays by-design — gated on
+`has_field_inspection` — and keeps its name; Rule #47 field-rename remains its own pass if ever wanted). **NEXT =
+Sprint B** (the durable R7 built-type/**condition** axis — own §5 audit + signed brief; a17/a19's condition caveat
+and this label all DISCLOSE condition-blindness, B SOLVES it). a18 fast-follow still open (DIRECT live hit on a
+معيذر/نعيجة sub-zone subject). The «التقدير السوقي» term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-03 (**Sprint 2.22.0a.20 SHIPPED** — A7 rics_compliant honest status label, Heroku **v159**
+/ commit `2d5c35a` / CHANGELOG_v72 / §20.20; **DISPLAY/LABEL ONLY — NO valuation logic, every value
+byte-identical**; adds a neutral companion `rics_compliant_status_ar/en` = «بانتظار مراجعة مُقيِّم مُرخّص (المرحلة
+الخامسة)» / «Pending licensed-valuer review (Stage 5)» next to the `rics_compliant` bool on EVERY JSON surface [root
+MU via `_enrich_material_uncertainty` + main-path `:4714`; brief MU section via output_briefs 595/933] so bare
+`false` reads "review pending (Stage 5)," not "non-compliant"; emitted ONLY when the bool is False [True/hybrid → no
+status; None → pending fail-safe]; the bool + the `if not rics_compliant` recommendation [material_uncertainty.py:385]
+UNTOUCHED; recon: the bool **renders NOWHERE** in index.html [MU case ignores it; generic dumps skip booleans; the
+honest field-inspection recommendation already renders] → **backend-only**, `api.py`+`index.html` UNTOUCHED [R14];
+wording verbatim-matches the live `rics_methodology_note`; isolated 20/20 + DoD 392/15/45/63; live smoke v159:
+56/565/21 = comparison_bracket 2.4M, 54/541/6 = comparison_thin 5.4M, 52/903/90 refusal — all byte-identical +
+status_ar PRESENT; **A7 → CLOSED** [label shipped; bool by-design, no rename per #47]; origin in sync `2d5c35a`.
+**NEXT = Sprint B** [durable R7 built-type/condition axis — DISCLOSE→SOLVE]. Prior: **Sprint 2.22.0a.19 SHIPPED** — thin-path condition caveat [path-complete], Heroku
 **v158** / commit `ca220df` / CHANGELOG_v71 / §20.19; **COPY-ONLY — NO valuation logic, every value
 byte-identical**; extends the a17 villa/house condition-not-assessed caveat from the clean `comparison_bracket`
 point to ALL value-bearing comparison surfaces [thin + non-dispersed widened + preliminary] via a one-constant
