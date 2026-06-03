@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0a18-area-name-reconciliation'
-SPRINT_TAG = '2.22.0a.18'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0a19-thin-path-condition-caveat'
+SPRINT_TAG = '2.22.0a.19'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4152,36 +4152,56 @@ def _stage1_dispersion_gate(primary, geo_v2_result):
 
 
 # ════════════════════════════════════════════════════════════════════
-# Sprint 2.22.0a.17 — clean-bracket condition caveat (copy-only, honesty-additive)
+# Sprint 2.22.0a.17 — condition caveat (copy-only, honesty-additive)
+# Sprint 2.22.0a.19 — extended PATH-COMPLETE to the thin / non-dispersed widened / preliminary
+#   villa/house value surfaces. a18 moved Marikh (54/541/6) onto the comparison_thin path at
+#   ~5.4M, exposing that a17's "thin already caveated" conflated the SAMPLE-size caveat with a
+#   CONDITION disclosure — orthogonal. R7 (built-type/condition blindness) is method-agnostic.
 # ════════════════════════════════════════════════════════════════════
-# Clean villa/house bracket points (pool dispersion < 0.30) are shown as a confident point
-# + tight range with NO condition cushion. Condition-blindness (RISK_REGISTER R7) is
-# bidirectional and invisible there: a renovated subject may sit above the point, a worn one
-# below. The dispersed bracket (a14 honest-range), widened/geo (a10), indicative and thin
-# paths already disclose; this fills the clean-bracket gap. NO valuation logic — additive note.
+# Any villa/house headline value is condition-blind (RISK_REGISTER R7, bidirectional): a
+# renovated subject may sit above the point, a worn one below. The note attaches to every
+# value-bearing villa/house comparison surface EXCEPT the dispersion-GATED pools, whose
+# honest-range text (a14 bracket / a10 widened, lines ~4869-4881) ALREADY states "built type
+# and condition not yet confirmed" — so gate.get('gated') routes those to the existing
+# disclosure and the note never duplicates. NO valuation logic — additive note only; amount
+# byte-identical on every path.
 CONDITION_NOTE_AR = 'لم تُؤخذ حالة العقار (تجديد أو تهالك) في الحسبان. عقار في حالة أفضل من المتوسط قد يقع أعلى هذه النقطة، وعقار في حالة أدنى قد يقع تحتها.'
 CONDITION_NOTE_EN = 'Property condition (renovation or wear) was not assessed. A better-than-average property may sit above this point; a poorer one may sit below.'
 
+# Value-bearing villa/house comparison surfaces that present a headline number the user may
+# read as condition-aware. comparison_widened* with a GATED dispersion already discloses
+# condition via the a10/a14 honest-range (excluded below by gate.get('gated')); non-gated
+# widened + thin + preliminary carry NO such disclosure → they get the note.
+_CONDITION_NOTE_METHODS = (
+    'comparison_bracket',
+    'comparison_thin',
+    'comparison_widened',
+    'comparison_widened_indicative',
+    'comparison_preliminary',
+)
+
 
 def _condition_note_applies(primary, gate, asset_type, amount) -> bool:
-    """Sprint 2.22.0a.17: True when a CLEAN villa/house bracket point should carry the
-    bidirectional condition caveat.
+    """Sprint 2.22.0a.17 (a19 path-complete): True when a villa/house comparison value should
+    carry the bidirectional condition caveat.
 
-    Scope (gets the note): method == 'comparison_bracket' AND asset_type in
+    Scope (gets the note): method in _CONDITION_NOTE_METHODS AND asset_type in
     {standalone_villa, house, villa} AND a real amount is present AND the dispersion gate is
-    NOT gated. Fail-safe TO DISCLOSURE: a None or malformed gate dict (dispersion unresolved)
-    → include (uses gate.get('gated'), so a missing key never excludes). Excluded by method:
-    widened/geo (a10) + thin + indicative; by asset_type: land + apartment/tower; refusals
-    have no bracket amount. Copy-only — never changes the valuation amount."""
-    if not primary or primary.get('method') != 'comparison_bracket':
+    NOT gated. Fail-safe TO DISCLOSURE: a None or malformed gate dict (dispersion unresolved —
+    e.g. the thin / preliminary paths, where _stage1_dispersion_gate returns None) → include
+    (uses gate.get('gated'), so a missing key never excludes). Excluded: dispersion-GATED
+    bracket (a14) + widened (a10) — their honest-range already discloses condition; by
+    asset_type: land + apartment/tower/commercial; refusals have no amount. Copy-only — never
+    changes the valuation amount."""
+    if not primary or primary.get('method') not in _CONDITION_NOTE_METHODS:
         return False
     if asset_type not in ('standalone_villa', 'house', 'villa'):
         return False
     if amount is None:
         return False
     if gate and gate.get('gated'):
-        return False  # dispersed bracket → the a14 honest-range already discloses
-    return True        # clean (gate present, not gated) OR ambiguous (gate None/malformed) → include
+        return False  # dispersed bracket (a14) / widened (a10) → honest-range already discloses condition
+    return True        # clean bracket / thin / non-dispersed widened / preliminary → include
 
 
 def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
@@ -4910,9 +4930,11 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             _mu['factors'] = _facts
             _mu['stage1_dispersion_gated'] = True
             output['material_uncertainty'] = _mu
-        # Sprint 2.22.0a.17: clean villa/house bracket → bidirectional condition caveat (R7).
-        # The dispersed bracket carries the a14 honest-range above; clean (or ambiguous-gate)
-        # bracket points have no condition cushion. Additive note only — amount byte-identical.
+        # Sprint 2.22.0a.17 (a19 path-complete): villa/house value-bearing surfaces →
+        # bidirectional condition caveat (R7). Dispersion-GATED pools (bracket→a14, widened→a10)
+        # already disclose condition in the honest-range above and are excluded by the gate; the
+        # note covers clean bracket + thin + non-dispersed widened + preliminary. a18 put Marikh
+        # 54/541/6 on the thin path (~5.4M) — the subject most needing it. Amount byte-identical.
         if _condition_note_applies(primary, _g, getattr(ev, 'asset_type', None), _val.get('amount')):
             _val['condition_note_ar'] = CONDITION_NOTE_AR
             _val['condition_note_en'] = CONDITION_NOTE_EN

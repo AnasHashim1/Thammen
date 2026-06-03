@@ -39,9 +39,11 @@ CASES = [
     # 2 — widened villa (54/541/6) honest-range → ABSENT (method excluded; a10/a14 disclose)
     ('widened villa 54/541/6',
      {'method': 'comparison_widened'}, _gate(True, 0.425), 'standalone_villa', 4500000, False),
-    # 3 — thin house->villa (55/296/13) → ABSENT (method excluded; thin already caveated)
-    ('thin 55/296/13',
-     {'method': 'comparison_thin'}, None, 'standalone_villa', 2600000, False),
+    # 3 — thin villa (55/296/13): a17 returned ABSENT; Sprint 2.22.0a.19 makes this PRESENT
+    #     (path-complete — the thin SAMPLE caveat is not a CONDITION disclosure; gate None →
+    #     fail-safe include). Full a19 path-coverage in test_sprint_2_22_0a19.py.
+    ('thin 55/296/13 (a19: now PRESENT)',
+     {'method': 'comparison_thin'}, None, 'standalone_villa', 2600000, True),
     # 4 — land clean bracket → ABSENT (no building condition; asset_type excluded)
     ('land clean bracket',
      {'method': 'comparison_bracket'}, _gate(False, 0.10), 'raw_land', 3000000, False),

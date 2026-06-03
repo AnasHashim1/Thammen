@@ -1,0 +1,59 @@
+# ════════════════════════════════════════════════════════════════════
+# Per-sprint validation scratch, probes, backups, caches — REGENERABLE.
+# Never deploy/commit. Real sprint source is committed EXPLICITLY (Rule #32:
+# never `git add -A`). Families confirmed scratch as of Sprint 2.22.0a.19
+# (git hygiene — the +76k untracked "Create PR" noise was all of this).
+# Does NOT ignore: README*, CHANGELOG_v*.md, HOTFIX_NOTE.txt, docs/, backtest/,
+# or the REQUIRED committed sqlites (developer_inventory / building_age_cache /
+# cap_rates) — those stay tracked.
+# ════════════════════════════════════════════════════════════════════
+
+# Leading-dot sprint scratch (probes / smoke / baselines / latency / recon)
+.a[0-9]*_*
+.a[0-9]*drift*
+.base_*
+.checks_*
+.hlat_*
+.kickoff_*
+.live_*
+.m2_*
+.postdeploy_*
+.probe_*
+.r9_*
+.sm_*
+.smoke_*
+.verify_*
+.vi_*
+.wf_*
+
+# Leading-underscore scratch harnesses / dirs
+_r9_*
+_audit_*
+_c1_*
+
+# Probe / audit / recon scratch (file-based throwaway per Rule #34)
+probe_*.py
+probe_*.json
+recon_*.py
+measure_*.py
+audit_*.log
+audit_*.json
+audit_*.txt
+
+# One-off JSON dumps / smoke output / regression logs
+out.json
+test.json
+test_compound.json
+test_investor.json
+test_mam.json
+smoke_live_*.json
+sprint_*_regression.log
+
+# Editor/backup snapshots (root .gitignore covers *.bak_* ; these are *.bak / *.bakN)
+*.bak
+*.bak[0-9]*
+
+# Archives + local regenerable caches (NOT the required tracked sqlites)
+*.zip
+t2_listings_cache.sqlite
+moj_weekly.db
