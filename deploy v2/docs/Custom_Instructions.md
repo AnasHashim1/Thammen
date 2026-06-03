@@ -39,22 +39,25 @@ Before proposing or building ANY Sprint, you MUST:
 
 ## 2. Delivery Format (FIXED RULES)
 
-### One zip per Sprint
+### Two-lane delivery model (since the 2026-05-19 Claude Code migration; lean since 2026-06-02)
 
-- One zip file in `/mnt/user-data/outputs/`, delivered via `present_files`
-- Name: `sprint{Major}p{Minor}p{Patch}-{slug}.zip`
-- Always include `CHANGELOG_v{N}.md` following the style of `CHANGELOG_v33.md` / `v34.md`
+- **Claude.ai** drafts the **signed brief** (methodology framing, multi-AI when needed, Gate-2 sign-off) — **not** zips.
+- **Claude Code** implements: edits the source files **directly** in `C:\Thammen\deploy v2`, runs the tests, deploys, and closes the docs.
+- There is **no** `present_files` / `/mnt/user-data/outputs/` / `sprint*.zip` hand-off anymore (that was the pre-migration claude.ai-chat model).
 
-### Prompt command block
+### Per-Sprint deliverables (Claude Code, on disk)
 
-- Separate code block titled "prompt command"
+- Direct edits to the source files (no zip hand-off).
+- A **`CHANGELOG_v{N}.md`** every Sprint (mandatory; 8-section structure below).
+- An **isolated test** for the new code (5+ cases incl. fallback; must exercise the **real production path** — Rule #40 / E14).
+- **ENGINE_VERSION + SPRINT_TAG** bumped in `evaluate_unified.py` (drives `/api/health`).
+- **Deploy** = `git subtree push --prefix "deploy v2" heroku master` (Rule #43 — the app lives in the `deploy v2/` subdir; plain `git push heroku master` is rejected by the buildpack) **+** `git push origin master` backup.
+- **Docs-close** = this file (lane-leading) + CLAUDE.md §65a NEXT-STEP + Session_Log §20.x + Project_Instructions §11.
+
+### Command discipline (for any command shown to Anas)
+
 - **One command per line. Never combine with `&&` on the same line.**
-- Windows `cmd` syntax (never bash):
-  - `cd /d "C:\Thammen\deploy v2"`
-  - `copy /Y file file.bakN`
-  - `tar -xf "%USERPROFILE%\Downloads\<sprint>.zip"`
-  - `findstr /C:"Sprint X.Y.Z" file.py`
-  - `git subtree push --prefix "deploy v2" heroku master`  (Rule #43 — NOT plain `git push heroku master`, which the buildpack rejects)
+- Windows shell syntax (PowerShell / `cmd`): `cd /d "C:\Thammen\deploy v2"`, `copy /Y file file.bak`, `findstr /C:"..." file.py`, `$null` not `/dev/null`.
 
 ### Sprint numbering
 
@@ -62,14 +65,14 @@ Before proposing or building ANY Sprint, you MUST:
 - **Current production state** (engine / sprint / Heroku vN): see the CLAUDE.md production snapshot + `/api/health` — the SINGLE SOURCE (Rule #58). Do not duplicate version numbers here (they drift).
 - **Mthamen integration**: ⏸️ archived only (decision 2026-05-19, never deployed)
 
-### CHANGELOG_vN.md structure (mirror v33/v34)
+### CHANGELOG_v{N}.md structure (8 sections)
 
 1. Title with engine version + date + files changed
 2. **Why this matters** — concrete user-visible problem
 3. **Root cause** — line numbers, code excerpt
 4. **What this patch does** — backend / frontend / schema
 5. **Verification — empirical evidence** — actual numbers
-6. **Deployment** — exact prompt command
+6. **Deployment** — exact deploy command(s) (`git subtree push` + `git push origin`)
 7. **Verification curl** — one-liner to confirm post-deploy
 8. **What's NOT in this patch** — explicit scope boundary
 
@@ -110,9 +113,9 @@ Use only existing CSS variables: `--bronze`, `--primary`, `--ok`, `--ok-bg`, `--
 
 ### File workflow
 
-- Read uploaded `deploy_vN.zip` first to get CURRENT state
-- Build edits on latest version, not Project Knowledge stubs
-- Never assume `evaluate_unified.py` looks same as last Sprint
+- Read the file **on disk** first (`C:\Thammen\deploy v2`) to get the CURRENT state — there is no uploaded zip anymore
+- Build edits on the **on-disk** version, never on memory / Project-Knowledge stubs (verify current code; #57 ground-truth handshake)
+- Never assume `evaluate_unified.py` looks the same as last Sprint
 
 ### Tower-aware input handling (Sprint 2.16.10)
 
