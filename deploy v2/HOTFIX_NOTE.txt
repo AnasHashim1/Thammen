@@ -1,0 +1,20 @@
+HOTFIX for Sprint 2.2: NameError in evaluate_thammen
+
+PROBLEM:
+The substantiality + MU-enhancement blocks referenced `bua_breakdown` and
+`_plot_area_for_bua` from inside `_build_unified_output()`, but those names
+only exist in the outer `evaluate_thammen()` scope. Result: NameError on
+every call to /api/evaluate/details, returning Heroku Application Error.
+
+FIX:
+Moved both blocks out of `_build_unified_output()` and into
+`evaluate_thammen()` after the call returns. Both blocks now have proper
+access to `bua_breakdown` and `_plot_area_for_bua`. Wrapped each in
+try/except so any future bug there doesn't kill the whole evaluation.
+
+FILES CHANGED:
+- evaluate_unified.py (only this file — no other files affected)
+
+TESTED:
+Local end-to-end call with floors=2 basement=true annexes=2 ext_majlis=true
+returns amount=4,900,000 with substantiality.index=1.78, adj=20%.

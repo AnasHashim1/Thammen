@@ -53,6 +53,9 @@ sprint_*_regression.log
 *.bak
 *.bak[0-9]*
 
+# Pre-sprint full-tree backup snapshots (git IS the backup; never commit)
+backup_before_*/
+
 # Archives + local regenerable caches (NOT the required tracked sqlites)
 *.zip
 t2_listings_cache.sqlite
