@@ -57,10 +57,14 @@ except ImportError:
 
 # moj_reference is a sibling script. We need its build_reference function.
 try:
-    from moj_reference import build_reference, parse_date, MIN_N, compute_trend
+    from moj_reference import build_reference, parse_date, MIN_N, compute_trend, area_match_key
     _MOJ_AVAILABLE = True
 except ImportError:
     _MOJ_AVAILABLE = False
+    import re as _re_r9_fallback
+    def area_match_key(s):   # Sprint 2.22.0a.18 (R9) fallback if moj_reference missing
+        base = _re_r9_fallback.sub(r'\s+', ' ', s or '').strip().replace('أ', 'ا').replace('إ', 'ا').replace('آ', 'ا')
+        return _re_r9_fallback.sub(r'\s*\d+$', '', base).strip()
 
 # property_factors is an optional, GIS-driven adjustment layer. If available,
 # we apply ±10% adjustments per the expert rule based on objective GIS factors
@@ -102,6 +106,16 @@ GIS_TO_MOJ_NAME_OVERRIDES = {
     'ابو هامور': 'بو هامور',
     'أم قرن': 'ام قرن',
     'ام قرن': 'ام قرن',
+    # Sprint 2.22.0a.18 (R9): stem/spelling differences the «ال» drop/add + sibling
+    # aggregation (area_match_key) can't bridge — distinct base strings. Each VALUE
+    # verified present in moj_weekly.csv «اسم المنطقة»; each KEY verified a real GIS
+    # ANAME (recon). NOTE «المطار العتيق» is intentionally NOT overridden — it is
+    # itself a rich MoJ area (567 txns) and resolves on its own; the thin «المطار»
+    # (31) is a separate unreached label.
+    'امريخ الجنوبي': 'مريخ',          # A16 — GIS sub-district name ≠ MoJ «مريخ» (was widened 4.5M over-anchor)
+    'جزيرة اللؤلؤة': 'اللؤلؤة',        # Pearl: GIS prefixes «جزيرة»
+    'اسلطة الجديدة': 'السلطة الجديدة',  # New Slata: GIS article transcription variant (اسلطة → السلطة)
+    'لجمليه': 'لجميليه',               # Lijmiliya: GIS spelling «لجمليه» (NOT «لجميل» = Lejmail, a different district)
 }
 
 
@@ -110,9 +124,15 @@ def _candidate_moj_names(gis_name: str) -> list:
     Generate candidate MoJ area-name strings for a single GIS name.
 
     Returns variants in priority order:
-      1. exact match
-      2. without leading 'ال'
+      1. verbatim
+      2. drop / add a leading 'ال'
       3. hardcoded override from GIS_TO_MOJ_NAME_OVERRIDES
+
+    Trailing zone-number siblings («معيذر 53» ↔ «معيذر») are NOT enumerated here —
+    Sprint 2.22.0a.18 pools them downstream via area_match_key (sibling
+    aggregation), so the verbatim candidate's pooling key already reaches the full
+    district pool. Overrides cover the stem/spelling cases aggregation can't bridge
+    (e.g. امريخ الجنوبي → مريخ).
     """
     candidates = []
     if not gis_name:
@@ -142,37 +162,37 @@ def resolve_moj_area_name(rows: list, gis_name: str) -> Optional[tuple]:
     Find the matching MoJ area name for a single GIS district name.
 
     GIS is the sole authority. We do NOT substitute aliases or popular
-    market names. We only normalize trivial variations:
-      - exact match
-      - drop leading 'ال'
-      - hardcoded overrides for areas where MoJ uses a known different
-        spelling (e.g. أبو هامور → بو هامور)
+    market names. We only normalize trivial variations (Sprint 2.22.0a.18 R9),
+    via the shared area_match_key applied symmetrically to the MoJ column and the
+    candidates:
+      - whitespace/NBSP collapse + hamza fold (أ/إ/آ → ا)
+      - trailing zone-number SIBLING aggregation («معيذر 53» pools with «معيذر»
+        and «معيذر 55» — one district, addressing-only variants)
+      - drop / add a leading 'ال'
+      - hardcoded overrides for stem/spelling cases (e.g. أبو هامور → بو هامور,
+        امريخ الجنوبي → مريخ)
 
-    Returns (best_name, transaction_count) or None.
+    Returns (pooling_key, aggregate_transaction_count) or None. The pooling key
+    (the suffix-stripped, hamza-folded district stem) is exactly what
+    build_reference / compute_trend filter on, so the resolved pool == the
+    aggregate counted here.
     """
-    import re
-    def normalize(s):
-        return re.sub(r'\s+', ' ', s or '').strip()
-
-    # Build tally of area-names actually present in MoJ
-    moj_areas = {}
+    # Tally MoJ transactions by aggregate pooling key (district + zone siblings).
+    moj_keys = {}
     for r in rows:
-        a = normalize(r.get('اسم المنطقة', ''))
-        if a:
-            moj_areas[a] = moj_areas.get(a, 0) + 1
+        k = area_match_key(r.get('اسم المنطقة', ''))
+        if k:
+            moj_keys[k] = moj_keys.get(k, 0) + 1
 
-    # Try variants of the single GIS name
+    # Try variants of the GIS name; pick the candidate whose district pool has the
+    # most transactions (an override can route to a different district, e.g. مريخ).
     best = None
     for variant in _candidate_moj_names(gis_name):
-        n_variant = normalize(variant)
-        # Exact match
-        if n_variant in moj_areas:
-            count = moj_areas[n_variant]
+        k = area_match_key(variant)
+        if k in moj_keys:
+            count = moj_keys[k]
             if best is None or count > best[1]:
-                best = (n_variant, count)
-        # Sub-zone matches (e.g. 'الثمامة 46', 'ازغوى 51')
-        # NOTE: We only match these if the user explicitly asks.
-        # Auto-resolution sticks to the parent name for stability.
+                best = (k, count)
     return best
 
 

@@ -24,6 +24,26 @@ MIN_N = 20
 SIZE_BRACKETS = [(0,400),(400,600),(600,900),(900,1500),(1500,99999)]
 
 def normalize(s): return re.sub(r'\s+', ' ', s or '').strip()
+def normalize_area_name(s):
+    """Sprint 2.22.0a.18 (R9): AREA-NAME normalizer. Folds hamza variants
+    (أ/إ/آ → ا) on top of whitespace/NBSP collapse, so GIS spellings reach
+    their MoJ counterpart (e.g. «ام بشر»↔«أم بشر»). NOT used by the نوع العقار
+    `categorize` type path — its 'أرض فضاء' literal must stay UNFOLDED, so that
+    path keeps bare `normalize`. Hamza-fold is collision-free across MoJ area
+    names (verified: 0 distinct names merge)."""
+    return re.sub(r'\s+', ' ', s or '').strip().replace('أ', 'ا').replace('إ', 'ا').replace('آ', 'ا')
+
+def area_match_key(s):
+    """Sprint 2.22.0a.18 (R9): canonical AREA POOLING key — normalize_area_name
+    then strip a TRAILING zone-number, so «معيذر», «معيذر 53», «معيذر 55» share
+    ONE key and pool together. The zone-number after a district name is a Qatari
+    ADDRESSING artifact, not a distinct market — MoJ files recent transactions
+    under the sub-zone label and older ones under the bare parent, so pooling by
+    this key recovers BOTH (max n + recency) instead of starving on one label.
+    Over-merge audited: across all 161 MoJ area-names, every multi-name collapse
+    is a pure zone-number variant of one district (0 distinct districts merged).
+    Used for the resolve tally + build_reference / compute_trend area filters."""
+    return re.sub(r'\s*\d+$', '', normalize_area_name(s)).strip()
 def to_float(s):
     try: return float(str(s or '').replace(',', '').strip())
     except: return None
@@ -61,8 +81,8 @@ def quartile_stats(values):
 
 def build_reference(rows, area, max_d, return_transactions=False):
     """Build a single area's reference. Auto-fallback to 36m if sample too small."""
-    area_norm = normalize(area)
-    area_rows = [r for r in rows if normalize(r.get('اسم المنطقة', '')) == area_norm]
+    area_norm = area_match_key(area)   # Sprint 2.22.0a.18 (R9): pool district + zone-number siblings (hamza-folded)
+    area_rows = [r for r in rows if area_match_key(r.get('اسم المنطقة', '')) == area_norm]
     if not area_rows:
         return {'area': area, 'error': 'area_not_found_in_moj'}
 
@@ -171,8 +191,8 @@ def compute_trend(rows, area, max_d, category='all'):
           'latest_vs_peak_pct': float, # how far current is from peak
         }
     """
-    area_norm = normalize(area)
-    area_rows = [r for r in rows if normalize(r.get('اسم المنطقة', '')) == area_norm]
+    area_norm = area_match_key(area)   # Sprint 2.22.0a.18 (R9): pool district + zone-number siblings
+    area_rows = [r for r in rows if area_match_key(r.get('اسم المنطقة', '')) == area_norm]
     if not area_rows:
         return None
 
