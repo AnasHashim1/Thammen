@@ -21,7 +21,7 @@ Before proposing or building ANY Sprint, you MUST:
 
 **🆕 For Sprints involving external endpoints (especially Qatar government):**
 1. Write `smoke_<endpoint>.py` as standalone file (no inline `heroku run "python -c \"..."` — Windows cmd breaks on `&` in URLs)
-2. `git push heroku master` + `heroku run python smoke_<endpoint>.py`
+2. `git subtree push --prefix "deploy v2" heroku master` (Rule #43 — app lives in the `deploy v2/` subdir; plain `git push heroku master` is rejected by the buildpack) + `heroku run python smoke_<endpoint>.py`
 3. Verify: reachability + content type + WAF response
 4. ONLY THEN build the integration
 
@@ -54,7 +54,7 @@ Before proposing or building ANY Sprint, you MUST:
   - `copy /Y file file.bakN`
   - `tar -xf "%USERPROFILE%\Downloads\<sprint>.zip"`
   - `findstr /C:"Sprint X.Y.Z" file.py`
-  - `git push heroku master`
+  - `git subtree push --prefix "deploy v2" heroku master`  (Rule #43 — NOT plain `git push heroku master`, which the buildpack rejects)
 
 ### Sprint numbering
 
