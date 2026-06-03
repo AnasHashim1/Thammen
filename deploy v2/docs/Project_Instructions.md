@@ -34,16 +34,13 @@
 
 ### Delivery format — fixed rules
 
-1. **ملف zip واحد** لكل Sprint، يُسلَّم عبر `present_files` إلى `/mnt/user-data/outputs/`
-2. **prompt command** = code block منفصل، **أمر واحد لكل سطر** (لا `&&` على نفس السطر)
-3. **Shell flavor:** Windows `cmd` (وليس bash):
-   - `cd /d "C:\Thammen\deploy v2"`
-   - `copy /Y file file.bakN` (وليس `cp`)
-   - `tar -xf "%USERPROFILE%\Downloads\<sprint>.zip"`
-   - `findstr /C:"Sprint X.Y.Z" file.py` (وليس `grep`)
-   - `git push heroku master`
-4. **CHANGELOG_vN.md** مع كل Sprint، يتبع نمط `CHANGELOG_v33.md`, `v34.md`
-5. **أرقام الـ Sprints متسلسلة** ولا تتكرر أبداً. آخر إصدار → انظر `CHANGELOG_v34.md` (Sprint 2.16.12).
+> **النموذج ثنائي المسار** (منذ هجرة Claude Code 2026-05-19؛ lean منذ 2026-06-02): **Claude.ai** يكتب الـ **brief الموقَّع** (تأطير منهجي + multi-AI عند الحاجة + توقيع Gate-2) — **لا** zips. **Claude Code** ينفّذ: يحرّر الملفات **مباشرة** في `C:\Thammen\deploy v2`، يشغّل الاختبارات، ينشر، ويُغلق الوثائق. **لا** `present_files` / `/mnt/user-data/outputs/` / `sprint*.zip` بعد الآن (كان نموذج claude.ai-chat قبل الهجرة).
+
+1. **مخرجات كل Sprint (Claude Code، على القرص):** تحرير مباشر للملفات + **`CHANGELOG_v{N}.md`** (إلزامي، بنية الـ8 أقسام) + **اختبار معزول** يستدعي المسار الإنتاجي الفعلي (Rule #40 / E14) + رفع **ENGINE_VERSION + SPRINT_TAG** في `evaluate_unified.py` (يُغذّي `/api/health`).
+2. **انضباط الأوامر:** **أمر واحد لكل سطر** (لا `&&` على نفس السطر). صياغة Windows shell (PowerShell / `cmd`): `cd /d "C:\Thammen\deploy v2"`، `copy /Y file file.bak` (وليس `cp`)، `findstr /C:"..." file.py` (وليس `grep`)، `$null` لا `/dev/null`.
+3. **النشر:** `git subtree push --prefix "deploy v2" heroku master` (Rule #43 — التطبيق تحت `deploy v2/`؛ `git push heroku master` المجرّد يُرفض من الـ buildpack) **+** `git push origin master` (نسخة احتياطية).
+4. **CHANGELOG_vN.md** مع كل Sprint — البنية ذات الـ8 أقسام (Custom_Instructions §2).
+5. **أرقام الـ Sprints متسلسلة** ولا تتكرر أبداً. **الحالة الحيّة (engine / sprint / Heroku vN) = CLAUDE.md snapshot + `/api/health` (المصدر الوحيد، Rule #58)** — لا تُكرَّر هنا (تنجرف).
 
 ### RTL conventions
 
