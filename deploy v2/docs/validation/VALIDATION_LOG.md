@@ -28,6 +28,8 @@ When 2.22.y computes delta, **filter to GT-1/GT-2**; GT-3/GT-4 are directional c
 | id | pin | district | thammen_point | gt_value | gt_type | delta | status |
 |---|---|---|---|---|---|---|---|
 | V001 | 56/647/6 | المعمورة 56 | 3,800,000 | 3,800,000 | GT-3 (rejected/sticky asking — unsold ~5y, 4.8M→3.8M since 2020) | 0% vs ask | open — re-verified a20 (2026-06-03): still 3.8M widened n=34, still unsold; + independent structural inspection |
+| **V002** | **56/565/10** | بو هامور (Abu Hamour) | **2,500,000** | **4,000,000** | **GT-2 (confirmed sale)** | **engine −37.5%** | open — new premium villa (built ~1mo, was empty land 1y ago); engine UNDER-anchors (age/condition-blind) |
+| **V003** | **56/565/12** | بو هامور (Abu Hamour) | **2,400,000** | **4,000,000** | **GT-2 (confirmed sale)** | **engine −40.0%** | open — adjacent twin of V002; same spec, same 4.0M |
 
 ---
 
@@ -70,11 +72,48 @@ When 2.22.y computes delta, **filter to GT-1/GT-2**; GT-3/GT-4 are directional c
   the a20 honesty label **«بانتظار مراجعة مُقيِّم مُرخّص (المرحلة الخامسة)»** (A7). The point
   **still equals the sticky ask** → R7 condition-blindness persists; this remains the canonical
   **Sprint B** motivating case.
-- **Sprint-B flag (verify):** the a17/a19 `condition_note_ar` did **not** attach on this widened
-  path (`condition_note=None`); confirm whether the dispersed-widened **a10 honest-range** is
-  carrying the condition disclosure instead, or whether this premium-condition case is slipping
-  through both — i.e. the property that most needs the condition disclosure may not be getting it.
+- **CORRECTION (2026-06-03, same day):** an earlier note here claimed the a17/a19 caveat did NOT
+  attach on this widened path — that was an **extraction artifact** (I queried top-level
+  `condition_note_ar`; the field lives at **`valuation.condition_note_ar`**). **Verified:** the
+  caveat **DOES fire** on this widened path (and on the bracket path, V002/V003). a17/a19 works as
+  designed — no B-0 bug. (Rule #36: re-examined, corrected.)
 - **Analyst read (decision-support, not a verdict):** clearing band ≈ **land (~2.63M) → ~3.0–3.2M**
   for a live-in buyer who values the ready premium finishes; **not** the 3.8M ask (5+ years unsold).
   Owner redirects buyers to an **adjacent empty plot** → reveals the real fork: pay a real-but-modest
   ready-home premium over land for the villa, **or** buy the plot and build new. Strong buyer leverage.
+
+---
+
+## V002 / V003 — 56/565/10 + 56/565/12 (بو هامور / Abu Hamour) — **FIRST GT-2 (confirmed sales)**
+
+- **date_logged:** 2026-06-03 · **engine:** a20 · sprint2p22p0a20 (Heroku v159)
+- **What:** two **adjacent, identical-spec NEW villas**, **450 m²** each, **built ~1 month ago**
+  (empty land ~1 year ago), modern build — elevator, G+1+penthouse (3rd floor sharing the roof),
+  modern marble / doors / smart-home tech. Same **Street 565** as the V-anchor 56/565/21.
+- **Ground truth:** **SOLD 4,000,000 QAR each** · **GT-2 (confirmed sale)** · source: buyer-side /
+  brokerage knowledge (Anas). Two independent confirmations at the same price → tight anchor.
+- **Thammen (a20, by address):** 56/565/10 → **2,500,000** · 56/565/12 → **2,400,000** ·
+  method **comparison_bracket** n=37 (36mo window) · tier high · MUC moderate ·
+  `valuation.condition_note_ar` **present** (a17/a19 fired).
+- **delta_vs_gt:** **−37.5% / −40.0%** (engine UNDER-anchors). The engine gives **~2.4M to all three
+  Street-565 villas** (V002, V003, and the old anchor 21) — **blind to built type / age / condition**.
+- **PIN-path note:** entered by PIN (56099695/96) the engine correctly **reality-stops**
+  (`building_present`, qars_in_polygon=1, "use the Address tab") — Sprint 2.21.0.7 guard working.
+- **per-m²:** confirmed **8,889 QAR/m²** (4.0M / 450) vs the engine bracket ≈ **5,333/m²** (2.4M / 450)
+  → **new-premium ≈ +67% over the age/condition-blind bracket median.**
+
+### Why these are the most valuable cases yet (project benefit)
+- **FIRST GT-2 (confirmed-sale) data** — breaks the project's #1 calibration blocker (Confirmed
+  Sales 2.16.16 had **no source**). Anas is now feeding confirmed sales → **revive 2.16.16 as an
+  Anas/broker-fed workstream** (the binding constraint for H-A, the condition premium, D5/D6).
+- **MEASURED bidirectional R7, same micro-market:** V002/V003 (new premium → engine **−37–40%**,
+  under-anchor) + V001 Maamoura (old premium → engine matches the rejected ask, over-anchor toward
+  the land-clearing signal). Same Zone 56 / Abu Hamour. Exactly the §20.10.2 thesis, now with real
+  + confirmed data.
+- **VALIDATES a17/a19:** the `condition_note_ar` correctly warned "a better-than-average property
+  may sit ABOVE this point" — and these sat **+60–67% above**. The honesty surface was right; what's
+  missing is the **quantification** (Sprint B).
+- **Discipline:** n = **2 confirmed + 1 asking** → still **n < 20**. **No rule, no weight, no
+  calibration** yet (the −37–40% is a data point, not a coefficient). These **motivate + seed** the
+  corpus; calibration waits for n≥20 GT-2.
+- **status:** open — first GT-2 anchors; grow the corpus before any calibration.

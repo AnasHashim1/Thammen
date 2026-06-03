@@ -8,6 +8,40 @@
 
 ---
 
+## ⭐ UPDATE (2026-06-03, same day) — two CONFIRMED sales + a B-0 correction
+
+Two more real cases arrived (Anas) — and they upgrade the evidence from "directional" to **calibration-grade**:
+
+- **V002 = 56/565/10** + **V003 = 56/565/12** (بو هامور / Abu Hamour): two **adjacent, identical NEW
+  premium villas**, **450 m²**, built ~1 month ago (empty land 1y ago), elevator + G+1+penthouse +
+  modern marble/smart-home. **SOLD 4,000,000 QAR each — GT-2 (confirmed sale), the project's FIRST.**
+  Same **Street 565** as the anchor 56/565/21.
+- **Measured engine deltas (a20, by address):** 56/565/10 → **2.5M (−37.5%)**, 56/565/12 → **2.4M
+  (−40%)**. The engine gives **~2.4M to all three Street-565 villas** — blind to built-type/age/
+  condition → **UNDER-anchors new premium by ~37–40%.** (New-premium ≈ **8,889/m²** vs bracket
+  **5,333/m²** = **+67%**.) PIN entry correctly **reality-stops** (building_present) — guard works.
+- **MEASURED bidirectional R7, same micro-market (Abu Hamour / Zone 56):** under-anchor (V002/V003,
+  new premium, **confirmed**) + over-anchor (V001 Maamoura, old premium, matches the rejected ask).
+  This is the §20.10.2 thesis with real + confirmed data — the **strongest motivation for Sprint B.**
+- **a17/a19 VALIDATED:** `valuation.condition_note_ar` fired on all three + Maamoura, and its warning
+  ("a better-than-average property may sit ABOVE this point") was **literally correct** (these sat
+  +60–67% above). Honesty surface = right; **quantification** = the Sprint-B gap.
+- **❗B-0 CORRECTION (Rule #36):** my earlier "the condition note didn't attach on the widened path"
+  was an **extraction artifact** (top-level vs `valuation.condition_note_ar`). **Verified: the caveat
+  fires on every villa path. There is NO B-0 bug — drop it from the plan below.**
+- **STRATEGIC:** these are broker/owner-confirmed sales → **the confirmed-sales corpus (Sprint
+  2.16.16, long "no source") is being revived, Anas-fed.** That is the **binding unblock** for ALL
+  calibration (H-A age curve, condition premium, D5/D6). Treat "grow the GT-2 corpus" as a parallel
+  workstream — it is the prerequisite that turns Sprint B's *provisional* adjustment into a
+  *calibrated* one.
+- **Discipline unchanged:** n = 2 confirmed + 1 asking → **n < 20**. The −37–40% is a **data point,
+  not a coefficient.** No rule/weight/calibration yet. Motivates + seeds; calibration waits for n≥20.
+
+> Full data: `VALIDATION_LOG.md` V001/V002/V003. **B-0 in the plan below is now obsolete (no bug);
+> B-1 + B-2 stand and are strengthened by the confirmed bidirectional evidence.**
+
+---
+
 ## PART 1 — ملخص الجلسة (what we discussed)
 
 1. **Shipped a20** (`thammen-sprint2p22p0a20-rics-compliant-status-label`, Heroku **v159**, CHANGELOG_v72):
