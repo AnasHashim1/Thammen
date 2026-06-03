@@ -65,6 +65,37 @@ class UncertaintyLevel:
     muc_review_recommendation_ar: Optional[str] = None
 
 
+# ── Sprint 2.22.0a.20 (A7) — honest companion label for the rics_compliant bool ──
+# `rics_compliant=False` does NOT mean "non-compliant": the AVM METHODOLOGY already
+# follows the RICS Red Book (Sales Comparison VPS 3 / IVS 103, valuation models
+# VPS 5 / IVS 105, material uncertainty VPGA 10, reporting VPS 6 / IVS 106 — see the
+# live `rics_methodology_note`). What is pending is the licensed-valuer review /
+# sign-off (Stage 5, per IVS 105) that turns an AVM output into a formally compliant
+# valuation. This status string makes every JSON surface read "review pending," not
+# "non-compliant." Copy is SIGNED verbatim (Claude.ai, Sprint A7) and matches the
+# live rics_methodology_note phrasing «… مراجعة مُقيِّم مُرخّص (المرحلة الخامسة)».
+# DISPLAY/LABEL ONLY — never changes the `rics_compliant` bool or any value.
+RICS_COMPLIANT_STATUS_PENDING_AR = 'بانتظار مراجعة مُقيِّم مُرخّص (المرحلة الخامسة)'
+RICS_COMPLIANT_STATUS_PENDING_EN = 'Pending licensed-valuer review (Stage 5)'
+
+
+def rics_compliant_status_fields(is_compliant) -> dict:
+    """Sprint A7: honest status label adjacent to the `rics_compliant` bool.
+
+    Returns the `rics_compliant_status_ar`/`_en` strings ONLY for the pending
+    (False) case — the one that misleads when read bare as "non-compliant".
+    Returns an empty dict when compliant (True is not misleading, and the
+    signed copy covers only the pending case — no unsigned "compliant" string
+    is invented). Pure; never raises; callers spread/merge the result.
+    """
+    if is_compliant:
+        return {}
+    return {
+        'rics_compliant_status_ar': RICS_COMPLIANT_STATUS_PENDING_AR,
+        'rics_compliant_status_en': RICS_COMPLIANT_STATUS_PENDING_EN,
+    }
+
+
 # Sprint 2.22.0a/9 — Arabic → English mapping for the 4 known ShockLayer
 # instances defined in `market_regime.py`. Used by regime_muc() to render
 # `shock_summary_en` in the English MVU clause (RICS VPGA 10 §6 requires

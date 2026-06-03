@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0a19-thin-path-condition-caveat'
-SPRINT_TAG = '2.22.0a.19'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0a20-rics-compliant-status-label'
+SPRINT_TAG = '2.22.0a.20'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1946,12 +1946,17 @@ def _enrich_material_uncertainty(mu: dict) -> dict:
     enrichment.
     """
     try:
-        from material_uncertainty import regime_muc
+        from material_uncertainty import regime_muc, rics_compliant_status_fields
         muc = regime_muc()
         out = dict(mu)
         for k, v in muc.items():
             if v is not None and k not in out:
                 out[k] = v
+        # Sprint 2.22.0a.20 (A7): honest "review pending" label next to rics_compliant
+        # (display/label only — the bool and all values are untouched). setdefault so a
+        # caller-set status is never clobbered; True → helper returns {} → no-op.
+        for k, v in rics_compliant_status_fields(out.get('rics_compliant', False)).items():
+            out.setdefault(k, v)
         return out
     except Exception:
         return mu
@@ -4712,6 +4717,16 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     # (not the thin bracket n that geo widening already bypassed)
     if v3_result and v3_result.get('material_uncertainty'):
         mu = dict(v3_result['material_uncertainty'])  # shallow copy
+        # Sprint 2.22.0a.20 (A7): main-path honest "review pending" label next to
+        # rics_compliant (display/label only — the bool and all values are untouched;
+        # it survives the downstream factor/level mutations, which never touch
+        # rics_compliant). Wrapped so a status-label failure can never break evaluate.
+        try:
+            from material_uncertainty import rics_compliant_status_fields
+            for _k, _v in rics_compliant_status_fields(mu.get('rics_compliant', False)).items():
+                mu.setdefault(_k, _v)
+        except Exception:
+            pass
         effective_n = primary['n'] if primary else 0
         # Replace any "n=1" or "n=X (thin bracket)" misleading factors with the truth
         if mu.get('factors'):

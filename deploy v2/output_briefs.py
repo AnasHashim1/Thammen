@@ -26,6 +26,15 @@ from dataclasses import dataclass, asdict
 from typing import Optional, Dict, List, Any
 from datetime import datetime
 
+# Sprint 2.22.0a.20 (A7): honest "review pending" companion label for the
+# rics_compliant bool. Guarded import so output_briefs never fails to load if
+# material_uncertainty is somehow unavailable (graceful no-op fallback).
+try:
+    from material_uncertainty import rics_compliant_status_fields
+except Exception:  # pragma: no cover
+    def rics_compliant_status_fields(is_compliant):
+        return {}
+
 
 def _fmt(n):
     """Format number with commas."""
@@ -593,6 +602,8 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
                 'known_unknowns': unc.get('known_unknowns', []),
                 'recommendations': unc.get('recommendations', []),
                 'rics_compliant': unc.get('rics_compliant', False),
+                # Sprint 2.22.0a.20 (A7): honest "review pending" label (display only).
+                **rics_compliant_status_fields(unc.get('rics_compliant', False)),
                 # Sprint 2.22.0a/12 Phase 1.5b — citation reflects current effective
                 # edition: Material Valuation Uncertainty clause fields per VPGA 10
                 # + VPS 6 (RICS Red Book Global Standards, effective 31 January 2025)
@@ -931,6 +942,8 @@ def _valuer_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
                 'known_unknowns': unc.get('known_unknowns', []),
                 'recommendations': unc.get('recommendations', []),
                 'rics_compliant': unc.get('rics_compliant', False),
+                # Sprint 2.22.0a.20 (A7): honest "review pending" label (display only).
+                **rics_compliant_status_fields(unc.get('rics_compliant', False)),
                 # Sprint 2.22.0a/12 Phase 1.5b — citation reflects current effective
                 # edition: Material Valuation Uncertainty clause fields per VPGA 10
                 # + VPS 6 (RICS Red Book Global Standards, effective 31 January 2025)
