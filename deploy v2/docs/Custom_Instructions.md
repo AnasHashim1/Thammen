@@ -186,7 +186,7 @@ Reliability gate: n ≥ 10 per stratum.
 
 ## 5. MoJ Data Reality
 
-- Last `data.gov.qa` update: **2025-12-31** (measured 2026-06-01: **152 days** stale; `/api/health` is the live source)
+- Last `data.gov.qa` update: **2025-12-31** (measured 2026-06-03: **154 days** stale; `/api/health` is the live source)
 - Sprint 2.7 surfaces via banner — **never claim "weekly updates"**
 - Self-healing: when government resumes, `/api/health` recomputes freshness
 
@@ -313,7 +313,7 @@ User triggers any of these by saying **"Read Section X"** where X is relevant se
 - **"اقرأ القسم X من Project Instructions"** — load specific section
 - 🆕 **"تذكر #64"** — session cadence + hard-stop-before-compaction (Operational #64)
 - 🆕 **"تذكر #65"** — standing session-handoff protocol / zero-ask restart (Operational #65)
-- 🆕 **"تذكر الوضع الرشيق"** — lean posture: engineering idle · rule-count frozen at #65 · measure-first (CLAUDE.md NEXT STEP + ROLES conduct)
+- 🆕 **"تذكر الوضع الرشيق"** — lean posture: engineering **ACTIVE on signed briefs** (last shipped a20 / Heroku v159; A7 CLOSED → NEXT = Sprint B) · rule-count frozen at #65 · measure-first (CLAUDE.md NEXT STEP + ROLES conduct)
 
 -----
 
