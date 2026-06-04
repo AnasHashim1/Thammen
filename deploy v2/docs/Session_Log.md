@@ -2638,7 +2638,47 @@ Custom_Instructions one-liner pending (Word lock). The «التقدير السو
 
 -----
 
-*Last updated: 2026-06-04 (**Sprint 2.22.0a.22 SHIPPED** — B-1.1 multi-AI framing tweaks [a21 = B-1
+## 20.23 🆕 2026-06-04 — Sprint 2.22.0a.23 (R15 — stock_strata land-median a18-aware) — DEPLOYED Heroku v162
+
+> Engine `thammen-sprint2p22p0a23-stratum-land-a18` / SPRINT_TAG `2.22.0a.23`. **Gate-2 (strata-card
+> DISPLAY change, signed «go») — HEADLINE value-invariant; the B-1 `value_floor` is UNTOUCHED.** Commit
+> `ff483b0` → Heroku **v162** (`git subtree push`, `e47b924..d66a377`) → origin in sync `ff483b0`.
+> CHANGELOG_v75. §5 audit `docs/PHASE0_R15_stock_strata_a18.md` (Phase-0, read-only) → fix on «go».
+
+**Why.** B-1 surfaced the land floor; R15 (Phase-0) found `stock_strata`'s land reference — shown on the
+strata cards next to that floor — ran **~+2-7% HIGH** because `compute_land_median` matched areas with
+`_norm` exact and **dropped a18 zone-number siblings**, while the floor (via `moj_reference`) is a18-pooled.
+Blast radius (traced): strata cards (display) + income `stock_class` + a conditional listing-gap warning —
+**NEVER `valuation.amount`, NEVER the `value_floor`** (a18-aware via `moj_reference`).
+
+**Fix.** `compute_land_median` now pools areas via `moj_reference.area_match_key` (imported, `_norm`
+fallback) — mirrors `build_reference`. **Refined finding (Rule #36):** the fix removes the genuine
+**sibling-drop** on the **area-wide** cases (المعمورة strata land **4,032 → 3,754**, now ≈ floor 3,768);
+the **bracket-matched** anchors (بو هامور 3,875 · مريخ 3,212 · المعراض 2,607) are **unchanged** — their
+gap vs the area-level floor is **Rule E4 bracket-matching (by-design)**, NOT sibling-drop. So the fix
+closes the data bug and leaves E4's plot-bracket reference intact.
+
+**Verification.** Isolated `test_sprint_2_22_0a23.py` **12/12** (sibling pooling n3→6 + hamza fold +
+no-over-merge + key==`moj_reference.area_match_key`); DoD **392/15/45/66** (broad 65→66, clean; no existing
+stock_strata test broke); **R14 N/A** (`api.py`+`index.html` **0-diff** — strata card renders the same
+fields, only the median value changes). **Live re-smoke v162 (browser-UA #61):** all 5 anchors — headline +
+`value_floor` **byte-identical** (3.8M/2.4M/5.4M/2.6M/None); المعمورة strata `land_reference` 4,032→3,754
+(sibling-drop closed); bracket-matched anchors unchanged. **RISK_REGISTER R15 → ✅ RESOLVED.**
+
+**Carried forward.** **NEXT = Sprint B-2** (durable R7 fix — Stage-2 built-type/condition elicitation,
+2.22.0b). a12 `compute_trend` categorizer alignment = the open sibling of this a18 family. Custom_Instructions
+one-liner pending (Word lock). MULTI_AI verbatim transcript = optional Anas append. The «التقدير السوقي» term
+remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-04 (**Sprint 2.22.0a.23 SHIPPED** — R15 stock_strata land-median a18-aware, Heroku
+**v162** / commit `ff483b0` / CHANGELOG_v75 / §20.23; **Gate-2 strata-card DISPLAY, HEADLINE value-invariant**;
+`compute_land_median` now pools areas via a18 `area_match_key` like the floor → strata-card land sibling-drop
+removed [المعمورة 4032→3754 ≈ floor 3768]; **every headline + the B-1 `value_floor` byte-identical**,
+bracket-matched anchors unchanged [E4 by-design]; `api.py`+`index.html` UNTOUCHED [R14 N/A]; a23 12/12 + DoD
+392/15/45/66; **RISK_REGISTER R15 → RESOLVED**; audit `docs/PHASE0_R15_stock_strata_a18.md`. **NEXT = Sprint
+B-2** [durable R7 fix]. Prior: **Sprint 2.22.0a.22 SHIPPED** — B-1.1 multi-AI framing tweaks [a21 = B-1
 land-floor/HBU], Heroku **v161** / commit `2d401b5` / CHANGELOG_v74 / §20.22; **COPY-ONLY, value-invariant,
 RICS/IVS citations UNCHANGED**; land floor → indicative HBU-premise component, implied building →
 contribution/allocation, widened label names the approach; the models' 2025-renumbering "fixes" REJECTED by
