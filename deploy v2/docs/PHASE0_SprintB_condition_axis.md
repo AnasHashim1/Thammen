@@ -178,8 +178,8 @@ Any calibrated condition/age **adjustment** (→ B-2). Age auto-detection. Land-
 
 ---
 
-## RISK_REGISTER candidate (from this pass)
-- 🟡 **`stock_strata.compute_land_median` is not a18-aware** → its land median (used for E4 ratio classification) diverges ~7% from the a18-pooled `moj_reference` land median (the floor). No live value drift on the floor; classification may mis-stratify near a ratio boundary. **Route to RISK_REGISTER; fix in a future cleanup (same family as the a12 compute_trend categorizer-alignment debt).**
+## RISK_REGISTER entry (recorded this pass → **R15**)
+- 🟡 **`stock_strata.compute_land_median` is not a18-aware** → its land median (used for E4 ratio classification) diverges **~7% (measured✓: 4,032/n=13 vs the floor's 3,768/n=20, المعمورة)** from the a18-pooled `moj_reference` land median (the floor). No live value drift on the floor; classification may mis-stratify near a ratio boundary. **Recorded as RISK_REGISTER R15; fix in a future cleanup (same family as the a12 compute_trend categorizer-alignment debt).**
 
 ---
 
