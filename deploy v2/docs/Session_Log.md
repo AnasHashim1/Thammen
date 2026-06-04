@@ -2607,7 +2607,43 @@ term remains PROVISIONAL.
 
 -----
 
-*Last updated: 2026-06-04 (**Sprint 2.22.0a.21 SHIPPED** — B-1 land-floor / HBU decomposition + condition
+## 20.22 🆕 2026-06-04 — Sprint 2.22.0a.22 (B-1.1 — multi-AI framing tweaks) — DEPLOYED Heroku v161
+
+> Engine `thammen-sprint2p22p0a22-b1p1-framing-copy` / SPRINT_TAG `2.22.0a.22`. **COPY-ONLY,
+> VALUE-INVARIANT; RICS/IVS citation tokens UNCHANGED.** Commit `2d401b5` → Heroku **v161**
+> (`git subtree push`, `53a2109..e47b924`) → origin in sync `2d401b5`. CHANGELOG_v74. Validation record:
+> `docs/MULTI_AI_VALIDATION_BATCH_SprintB1.md`.
+
+**The multi-AI D3 round (B-1/a21 copy) was FIRED & ADJUDICATED, not passed-by-consensus.** GPT-5
+(PASS-with-fixes) + Gemini (FAIL) **both** wanted to renumber the four 2025-revised VPS citations back to
+pre-2025 priors; **Claude.ai primary-source verification (RICS / IVSC 2025) REJECTED the renumbering — the
+live citations are correct, NO CHANGE.** → **Operational Rule #54 refinement** (the primary-source web-check
+**GATES / TRUMPS** the multi-AI pass on standards NUMBERING — inverted from the usual "models catch Claude's
+error" case). What the round ACCEPTED = **three value-invariant framing tweaks** (a22): land floor → «مكوّن
+الأرض الاسترشادي … على أساس افتراض الاستخدام الأمثل؛ وليس تقييماً مستقلاً للأرض» (indicative component on an
+HBU *premise*, not a determination); implied building → «مساهمة البناء الضمنية … تخصيص حسابي» (contribution /
+mathematical allocation, not a "value"); widened `method_label_ar` (both variants) → «منهج المقارنة بالمبيعات
+(مجموعة موسَّعة جغرافياً)…» (names the recognised approach). `api.py` + `index.html` UNTOUCHED.
+
+**Verification.** a21 **33/33** (copy guards refreshed) + a22 **15/15** (citation tokens byte-identical + NO
+rejected renumbering leaked + new framing verbatim + value-invariance + method_label new/old-gone); DoD
+**392/15/45/65** (broad 64→65, clean pass); **R14 EXECUTED** — `index.html` 0-diff + real Chromium 390×844
+re-measure of the new longer strings (`scrollW==clientW`, no overflow). **Live smoke v161 (browser-UA #61) —
+ZERO value drift:** 56/647/6 = 3.8M (widened, new label + framing), 56/565/21 = 2.4M, 55/296/13 = 2.6M
+land_anchored, 52/903/90 refusal; citations VPS 3/IVS 103/VPS 2/IVS 102 unchanged on every surface.
+
+**Carried forward.** **NEXT = R15 §5 audit** (Phase-0, no-deploy — `stock_strata` a18-awareness / land-median
+divergence) then **B-2** (durable R7 fix). MULTI_AI verbatim transcript = optional Anas append.
+Custom_Instructions one-liner pending (Word lock). The «التقدير السوقي» term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-04 (**Sprint 2.22.0a.22 SHIPPED** — B-1.1 multi-AI framing tweaks [a21 = B-1
+land-floor/HBU], Heroku **v161** / commit `2d401b5` / CHANGELOG_v74 / §20.22; **COPY-ONLY, value-invariant,
+RICS/IVS citations UNCHANGED**; land floor → indicative HBU-premise component, implied building →
+contribution/allocation, widened label names the approach; the models' 2025-renumbering "fixes" REJECTED by
+primary-source adjudication → Rule #54 refinement; a21 33/33 + a22 15/15 + DoD 392/15/45/65; R14 Chromium
+390×844 clean; live v161 ZERO value drift. Prior: **Sprint 2.22.0a.21 SHIPPED** — B-1 land-floor / HBU decomposition + condition
 surfacing, Heroku **v160** / commit `62f902a` / CHANGELOG_v73 / §20.21; **PRESENTATION ONLY — NO valuation logic,
 every value byte-identical**; surfaces a villa/house `value_floor` block [land-value FLOOR + implied building +
 land-anchored disclosure] next to the a17/a19 condition caveat via new `_villa_value_floor` [F2-prefer
