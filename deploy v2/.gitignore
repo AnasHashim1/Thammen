@@ -20,6 +20,8 @@
 .postdeploy_*
 .probe_*
 .r9_*
+.r_*.json
+.p0x*
 .sm_*
 .smoke_*
 .verify_*
