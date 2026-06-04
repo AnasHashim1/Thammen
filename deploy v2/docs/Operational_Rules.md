@@ -1431,6 +1431,17 @@ for it. Precedents: the 2.22.0a.4 methodology bare-line resolution (GPT-5 + Gemi
 the VPS-edition catch (both cited VPS 3 → corrected to VPS 6 / IVS 106 for the 2025 edition).
 **Recall**: "تذكر #54" / "Multi-AI sprint-open".
 
+**🆕 Refinement (2026-06-04, Sprint B-1 D3) — primary-source web-check GATES multi-AI on standards
+NUMBERING.** On a **freshly-revised** standard (e.g. the 2025 RICS Red Book renumbering), GPT-5 and Gemini
+share a **stale-training blind spot** and will "correct" *correct* citations back to the prior edition. In
+the B-1 D3 round both models flagged the live cites as wrong on exactly the **four VPS numbers RICS changed
+in 2025** (approach VPS 3, bases/HBU VPS 2, models VPS 5, reports VPS 6) while agreeing on the two unchanged
+since 2022 (VPGA 10, VPS 1) — a textbook training-prior reversion. **Claude.ai primary-source verification
+(RICS / IVSC 2025 pages) ADJUDICATED the models WRONG and the live cites CORRECT — no change.** So for
+standards-**numbering** questions: **run the primary-source web check FIRST; it GATES / TRUMPS the multi-AI
+pass** (inverted from the usual "the models catch Claude's error" case — treat multi-AI as *corroboration*,
+not *authority*, on numbering). Record: `docs/MULTI_AI_VALIDATION_BATCH_SprintB1.md`.
+
 -----
 
 ### Reserved / pending rule numbers (do NOT silently reuse — 2026-05-30)

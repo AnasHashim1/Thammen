@@ -1,100 +1,48 @@
-# Multi-AI Validation Batch — Sprint B-1 (2.22.0a.21: land-floor / HBU decomposition + condition surfacing)
+# Multi-AI Validation — Sprint B-1 (a21) D3 RICS/IVS Copy
+Status: FIRED & ADJUDICATED (not passed-by-consensus)
+Outcome: citations CONFIRMED CORRECT — NO CHANGE
+Date: 2026-06-04 · Engine a21 / Heroku v160
+Validators: GPT-5 + Gemini (independent, identical prompt) + Claude.ai primary-source adjudication
 
-> **Document type:** DECISION-RECORD (authored by CC, 2026-06-04, from the **signed** B-1 brief). The
-> multi-AI round itself was run in the **Claude.ai lane**; the LOCKED, convergent outcomes are reproduced
-> below verbatim from the brief §2 D3 and as-shipped in `evaluate_unified.py` (a21).
-> **Rule #54 status:** REQUIRED (Sprint touches RICS/methodology framing — a land-value-floor disclosure
-> on a single-approach AVM).
-> **Models:** GPT-5 + Gemini — reported **CONVERGENT** (per the signed brief).
-> **Production baseline at decision time:** `thammen-sprint2p22p0a20-rics-compliant-status-label` (Heroku v159).
-> **Shipped as:** Sprint 2.22.0a.21 (Heroku v160, commit `62f902a`, CHANGELOG_v73, Session_Log §20.21).
+## 1. Scope validated
+value_floor block + adjacent RICS surfaces on villa/house comparison outputs:
+Sales-comparison approach (VPS 3 / IVS 103); land/HBU (VPS 2 / IVS 102); AVM/models
+(VPS 5 / IVS 105); report/MUC (VPS 6 / IVS 106); VPGA 10; VPS 1 ToE; + the 3 disclosure
+strings (land-floor note, implied-building note, condition caveat).
 
----
+## 2. Validator verdicts
+- GPT-5: PASS WITH FIXES. Hedged explicitly ("flag conservatively rather than assume");
+  proposed replacing numeric citations with descriptive labels.
+- Gemini: FAIL. Asserted "invented standard (VPS 6)", mischaracterised HBU, used pre-2025
+  IVS numbering; proposed specific renumbered citations.
+- DIAGNOSTIC: both AGREE with live copy on the two citations unchanged since 2022
+  (VPGA 10, VPS 1) and DISAGREE on exactly the four RICS renumbered in 2025 → both reverted
+  to the pre-2025 structure from training priors.
 
-## ⚠️ Honesty note (Rule #36 / #63)
-The **raw GPT-5 / Gemini transcript was NOT delivered to the CC lane** with the brief. This file therefore
-records the **LOCKED outcomes** (citations, discipline, copy) exactly as signed in the brief — it does **not**
-reproduce a verbatim model exchange, and none is fabricated. If a verbatim record is wanted, **Anas appends
-the transcript under "§ Verbatim responses" below** (the Claude.ai lane holds it). The shipped engine copy +
-citations are fully determined by the locked outcomes recorded here; nothing downstream depends on the
-missing transcript.
+## 3. Adjudication vs RICS/IVSC 2025 primary sources
+| Concept | Live (correct) | Model "fix" (rejected) | 2025 basis |
+|---|---|---|---|
+| Approach | VPS 3 / IVS 103 | VPS 5/IVS 105 or strip | RICS split old VPS 5 → VPS 3 (approaches+methods)+VPS 5 (models); IVSC moved old IVS 105→IVS 103 |
+| Land/HBU | VPS 2 / IVS 102 | VPS 4 / IVS Framework | old VPS 4 (bases/assumptions)→VPS 2; IVS 102 = Bases of Value (holds premise/HBU) |
+| AVM/models | VPS 5 / IVS 105 | IVS 104 / "no VPS" | VPS 5 Valuation models = new in 2025; IVS 105 = Models (IVS 104 = Data and Inputs) |
+| Report/MUC | VPS 6 / IVS 106 | "VPS 6 doesn't exist" → VPS 3 | RICS: old VPS 3 (reports) IS NOW VPS 6 |
+Sources: RICS red-book-global page (2022→2025 VPS mapping, verbatim); RICS Property Journal
+(global-red-book-updates); IVSC/ICAEW/SAICA (IVS 2025 chapter list).
 
----
+## 4. Decision
+- Citations: NO CHANGE — live cites match the 2025 editions. Model fixes REJECTED (applying
+  them mis-cites, e.g. VPS 5/IVS 105 for the approach = the *models* standard).
+- Framing: 3 value-invariant tweaks ACCEPTED → B-1.1 (below). Citation numbers untouched.
+- Condition stance: KEEP B-1 disclose-don't-assume; Special Assumption deferred to B-2.
 
-## The question (framing)
-For a single-approach (Sales Comparison) AVM, B-1 surfaces a **land-value floor** + **implied-building**
-decomposition + a **land-anchored** disclosure next to the existing condition caveat. The multi-AI round
-validated: (1) the correct RICS/IVS **citations** for each element against the **in-force 2025 edition**;
-(2) the **discipline** that keeps the land floor an analytical decomposition (not a second valuation basis);
-(3) the **Arabic copy** for the three new disclosure strings.
+## 5. Process learning → Operational Rule #54 refinement
+For standards-NUMBERING questions on a freshly-revised standard, GPT/Gemini share a
+stale-training blind spot; primary-source web verification GATES/TRUMPS the multi-AI pass
+(inverted from the usual "models catch Claude's error" case). Run the web check first; treat
+multi-AI as corroboration, not authority, on numbering.
 
-## Engine reality (load-bearing context)
-- The headline value is `primary['value']` = Sales Comparison alone (100% of cases); cost/income are
-  convergence checks only (per `MULTI_AI_VALIDATION_BATCH_2p22p0a4.md` Phase-0 finding). The land floor is a
-  **decomposition of that one number**, never an independent valuation.
-- Phase-0 §5 (`docs/PHASE0_SprintB_condition_axis.md`): the floor is `value_decomposition.land`
-  (a18-aware `moj_reference`); Patch C suppresses it for the land-priced cohort (F1) → B-1 recomputes it
-  INDEPENDENTLY. Condition is unassessed on every comparison path (R7).
-
----
-
-## LOCKED outcomes (convergent GPT-5 + Gemini — verbatim from the signed brief §2 D3)
-
-### A. Citations (validated vs the in-force 2025 edition)
-| Element | Citation |
-|---|---|
-| Decomposition (Sales Comparison) | **VPS 3 / IVS 103** |
-| Single-basis discipline | **VPS 2 / IVS 102** |
-| HBU land floor | **VPS 2 / IVS 102** (Highest-and-Best-Use) |
-| Not-inspected assumption-limitation | **VPS 2 + VPS 4** (+ scope **VPS 1 / IVS 101**) |
-| Uncertainty | **VPGA 10 + VPS 6 / IVS 106** |
-| Model-derived / not-a-written-valuation | **VPS 5 / IVS 105** |
-| Comparable-data quality | **IVS 104** |
-
-### B. Discipline (both models)
-- The **land floor = ANALYTICAL DECOMPOSITION**, never a standalone "land market value" / second basis.
-- **Condition = material uncertainty + assumption-limitation**, NOT a special assumption, NOT "assumed
-  standard condition."
-- **Land-anchored = a MODEL inference**, never "the market prices it as land."
-
-### C. Arabic copy (synthesized from both models — shipped VERBATIM in a21)
-- **`[land_floor]`** — «تفكيك تحليلي ضمن نموذج المقارنة — قيمة الأرض: ~X ر.ق (وفق صفقات أراضٍ مماثلة؛ يعكس الاستخدام الأمثل للأرض، وليس قيمة سوقية مستقلة).»
-- **`[implied_bldg]`** — «القيمة الضمنية للمبنى (ناتج حسابي: التقدير ناقص الأرض): ~Y ر.ق — غير مُتحقَّقة ميدانياً (نوع البناء والعمر والحالة غير معروفة).»
-- **`[land_anchored]`** — «يشير النموذج إلى أن القيمة المقارنة لا تتجاوز قيمة الأرض المجردة؛ القيمة الضمنية للمبنى ≈ صفر (قد يُعتبر عقاراً للتطوير).»
-- Bidirectional condition disclosure = the LIVE `condition_note_ar` (a17/a19), **REUSED** — NOT re-added.
-- EN brief surface mirrors the AR (analytical land baseline / implied building value (computational, not
-  field-verified) / model land-anchored inference).
-
----
-
-## Resolution — how it shipped (a21)
-- Copy constants `LAND_FLOOR_NOTE_AR/EN`, `IMPLIED_BLDG_NOTE_AR/EN`, `LAND_ANCHORED_NOTE_AR/EN` +
-  `_VALUE_FLOOR_CITATION_AR/EN` (`evaluate_unified.py`), AR numbers LRM-wrapped (U+200E, Operational #25).
-  `X` = land floor, `Y` = implied building (rounded to nearest 10,000 for display; structured fields exact).
-- Citation tag on the block: «منهج المقارنة بالمبيعات (VPS 3 / IVS 103)؛ قيمة الأرض تعكس الاستخدام الأمثل
-  (VPS 2 / IVS 102)» — i.e. decomposition basis + HBU, the two load-bearing citations from §A.
-- Discipline §B enforced by the wording itself ("تفكيك تحليلي … وليس قيمة سوقية مستقلة" = analytical, not
-  standalone; "ناتج حسابي … غير مُتحقَّقة ميدانياً" = computational + uncertainty; "يشير النموذج" = model
-  inference). Condition caveat reused (a17/a19), not duplicated.
-- **Isolated test guards the copy verbatim** (`test_sprint_2_22_0a21.py`: "AR …copy verbatim" ×3 +
-  "no Latin in the 3 AR notes") → a future drift fails loudly. DoD 392/15/45/64; live v160 zero value drift.
-
-## Open / parallel (non-blocking — brief §7)
-- **PDF-prominence check** (Gemini flag): confirm in the RICS Red Book / IVS **PDF** the precise clause +
-  required **PROMINENCE** of uncertainty/variance disclosures in an AVM/automated interface (candidate
-  **IVS 105 / IVS 106**). Does NOT block ship; if the PDF demands greater prominence → fast-follow.
-- The §A citations are at **genus level** for the in-force 2025 edition; the PDF lookup would add sub-clause
-  specificity (same discipline as the a4 "Citation status — OPEN" parallel track).
-
-## § Verbatim responses (GPT-5 / Gemini) — TO BE APPENDED BY ANAS (Claude.ai lane)
-*(empty — the raw transcript was not delivered to CC; paste it here for a verbatim record. The LOCKED
-outcomes above are authoritative for what shipped.)*
-
----
-
-## Cross-references
-- `docs/BRIEF_SprintB1_land_floor_decomposition.md` (signed brief — §2 D3 is the source of the locked copy).
-- `docs/PHASE0_SprintB_condition_axis.md` (Phase-0 §5 recon — F1 / F2 / land-number provenance).
-- `CHANGELOG_v73.md` + `docs/Session_Log.md` §20.21 (as-shipped).
-- `docs/MULTI_AI_VALIDATION_BATCH_2p22p0a4.md` (prior batch — the citation-prominence parallel-track pattern).
-- `docs/Operational_Rules.md` #54 (multi-AI sprint-open) + #63 (Claude.ai-authored docs auto-persist).
+## 6. Verbatim responses (appended by Anas)
+### GPT-5
+<paste>
+### Gemini
+<paste>
