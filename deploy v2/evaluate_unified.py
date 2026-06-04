@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0a20-rics-compliant-status-label'
-SPRINT_TAG = '2.22.0a.20'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0a21-land-floor-hbu-decomposition'
+SPRINT_TAG = '2.22.0a.21'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1299,6 +1299,144 @@ def _decompose_value(
             'هذا الفصل يكشف للمستخدم نسبة مساهمة كل عنصر — حسب RICS Red Book.'
         ),
     }
+
+
+# ════════════════════════════════════════════════════════════════════
+# Sprint 2.22.0a.21 (B-1) — land-floor / HBU decomposition surface
+#   PRESENTATION ONLY — VALUE-INVARIANT (D4). Surfaces, next to the a17/a19
+#   condition caveat, the land-value FLOOR + implied-building decomposition
+#   for villa/house comparison outputs, so an old-stock buyer sees the
+#   land-anchored downside the comp median hides (V001 Maamoura). The land
+#   floor is an ANALYTICAL DECOMPOSITION within Sales Comparison
+#   (VPS 3 / IVS 103), grounded in Highest-and-Best-Use (VPS 2 / IVS 102) —
+#   NEVER a standalone "land market value".
+#   F1 (Phase-0 §5): _decompose_value SUPPRESSES the whole block when
+#   land >= value (Patch C, anti-negative-building). B-1 recomputes the land
+#   floor INDEPENDENTLY from the SAME moj_reference land category so it still
+#   surfaces for the land-priced cohort (~10% of valued villa cells, 0% of
+#   reliable) — WITHOUT touching the Patch-C guard or any amount.
+#   Copy = multi-AI (#54) LOCKED (GPT-5 + Gemini convergent), verbatim.
+#   AR numbers are LRM-wrapped (U+200E) per Operational_Rules #25 (bidi).
+# ════════════════════════════════════════════════════════════════════
+LAND_FLOOR_NOTE_AR = (
+    'تفكيك تحليلي ضمن نموذج المقارنة — قيمة الأرض: ~‎{x}‎ ر.ق '
+    '(وفق صفقات أراضٍ مماثلة؛ يعكس الاستخدام الأمثل للأرض، وليس قيمة سوقية مستقلة).'
+)
+LAND_FLOOR_NOTE_EN = (
+    'Analytical decomposition within the comparison model — land value: ~{x} QAR '
+    '(from comparable land sales; reflects the land’s highest-and-best-use, '
+    'not a standalone market value).'
+)
+IMPLIED_BLDG_NOTE_AR = (
+    'القيمة الضمنية للمبنى (ناتج حسابي: التقدير ناقص الأرض): ~‎{y}‎ ر.ق — '
+    'غير مُتحقَّقة ميدانياً (نوع البناء والعمر والحالة غير معروفة).'
+)
+IMPLIED_BLDG_NOTE_EN = (
+    'Implied building value (computational: estimate minus land): ~{y} QAR — '
+    'not field-verified (built type, age and condition unknown).'
+)
+LAND_ANCHORED_NOTE_AR = (
+    'يشير النموذج إلى أن القيمة المقارنة لا تتجاوز قيمة الأرض المجردة؛ '
+    'القيمة الضمنية للمبنى ≈ صفر (قد يُعتبر عقاراً للتطوير).'
+)
+LAND_ANCHORED_NOTE_EN = (
+    'The model indicates the comparison value does not exceed bare land value; '
+    'implied building value ≈ 0 (may be considered a development property).'
+)
+_VALUE_FLOOR_CITATION_AR = (
+    'منهج المقارنة بالمبيعات (‎VPS 3‎ / ‎IVS 103‎)؛ '
+    'قيمة الأرض تعكس الاستخدام الأمثل (‎VPS 2‎ / ‎IVS 102‎)'
+)
+_VALUE_FLOOR_CITATION_EN = (
+    'Sales Comparison approach (VPS 3 / IVS 103); '
+    'land value reflects Highest-and-Best-Use (VPS 2 / IVS 102)'
+)
+
+
+def _r10k(n):
+    """Round to nearest 10,000 for human-readable ~display copy. Structured
+    fields stay exact; only the {x}/{y} substituted into the notes are softened."""
+    try:
+        return int(round(float(n) / 10000.0) * 10000)
+    except Exception:
+        return n
+
+
+def _villa_value_floor(amount, plot_area_m2, moj_ref_dict, existing_decomp):
+    """Sprint 2.22.0a.21 (B-1) — villa-scoped land-floor / HBU decomposition block.
+
+    PRESENTATION ONLY: never alters `amount`, never touches _decompose_value's Patch-C
+    guard. Prefers the already-computed value_decomposition.land (F2); else recomputes
+    land_ppm² × plot from the SAME moj_reference land category (F1) so the floor surfaces
+    even when _decompose_value suppressed the block (land ≥ value — the land-priced cohort).
+    Returns the value_floor dict, or None when no land basis is available.
+
+    land_anchored: floor ≥ amount → implied building clamped to 0 (NEVER negative); the
+    land-anchored disclosure replaces an implied-building number.
+    """
+    try:
+        if not amount or not plot_area_m2 or plot_area_m2 <= 0:
+            return None
+        land = (existing_decomp or {}).get('land') if isinstance(existing_decomp, dict) else None
+        if land and land.get('estimated_qar'):
+            # F2 — reuse the already-surfaced floor (land < value case)
+            land_floor = land.get('estimated_qar')
+            lpm = land.get('per_m2_qar')
+            ln = land.get('n_transactions')
+            win = land.get('window_months')
+            rel = land.get('reliable', False)
+        else:
+            # F1 — recompute INDEPENDENT of Patch C (land ≥ value case); same moj_ref land category
+            cats = (moj_ref_dict or {}).get('categories') or {}
+            ld = cats.get('land') or {}
+            lpm = (ld.get('price_per_m2') or {}).get('median')
+            ln = ld.get('n', 0)
+            win = ld.get('window_months', 24)
+            rel = ld.get('reliable', False)
+            if not lpm or lpm <= 0 or ln < 3:
+                return None
+            land_floor = round(plot_area_m2 * lpm)
+        implied_building = max(round(amount - land_floor), 0)
+        land_anchored = land_floor >= amount
+        _x = f'{_r10k(land_floor):,}'
+        _y = f'{_r10k(implied_building):,}'
+        block = {
+            'land_floor': land_floor,
+            'land_per_m2_qar': (round(lpm) if lpm else None),
+            'land_n_transactions': ln,
+            'window_months': win,
+            'reliable': bool(rel),
+            'implied_building_value': implied_building,
+            'land_anchored': land_anchored,
+            'citation_ar': _VALUE_FLOOR_CITATION_AR,
+            'citation_en': _VALUE_FLOOR_CITATION_EN,
+            'land_floor_note_ar': LAND_FLOOR_NOTE_AR.format(x=_x),
+            'land_floor_note_en': LAND_FLOOR_NOTE_EN.format(x=_x),
+            'implied_building_note_ar': IMPLIED_BLDG_NOTE_AR.format(y=_y),
+            'implied_building_note_en': IMPLIED_BLDG_NOTE_EN.format(y=_y),
+        }
+        if land_anchored:
+            block['land_anchored_note_ar'] = LAND_ANCHORED_NOTE_AR
+            block['land_anchored_note_en'] = LAND_ANCHORED_NOTE_EN
+        return block
+    except Exception:
+        return None
+
+
+def _inject_value_floor_into_brief(brief, vf):
+    """Surface the value_floor block in the brief's Material-Uncertainty section
+    (buyer + valuer — whichever audience this brief is), per the a20 pattern. Best-effort."""
+    try:
+        if not brief or not isinstance(brief, dict) or not vf:
+            return
+        for sec in (brief.get('sections') or []):
+            if isinstance(sec, dict) and sec.get('id') == 'material_uncertainty':
+                c = sec.get('content')
+                if isinstance(c, dict):
+                    c['value_floor'] = vf
+                break
+    except Exception:
+        pass
 
 
 def _build_cost_crosscheck(ev) -> Optional[dict]:
@@ -3966,6 +4104,22 @@ def evaluate_thammen(
             )
             if decomp:
                 output['valuation']['value_decomposition'] = decomp
+            # ── Sprint 2.22.0a.21 (B-1): land-floor / HBU decomposition surface ──
+            # PRESENTATION ONLY — value-invariant. Rides the a17/a19 condition gate
+            # (_condition_note_applies) so the floor + the live condition_note are ONE
+            # coherent villa/house surface. F1: surfaces even when _decompose_value
+            # suppressed `decomp` (land ≥ value) by recomputing from the same moj_ref.
+            try:
+                _g_vf = _stage1_dispersion_gate(primary, geo_v2_result)
+                _amt_vf = output['valuation'].get('amount')
+                if _condition_note_applies(primary, _g_vf, output.get('asset_type'), _amt_vf):
+                    _vf = _villa_value_floor(_amt_vf, getattr(ev, 'plot_area_m2', None), moj_ref, decomp)
+                    if _vf:
+                        output['valuation']['value_floor'] = _vf
+                        _inject_value_floor_into_brief(output.get('brief'), _vf)
+            except Exception as _e:
+                import sys
+                print(f'[value_floor warning] {_e}', file=sys.stderr)
         except Exception as e:
             import sys
             print(f'[value decomposition warning] {e}', file=sys.stderr)

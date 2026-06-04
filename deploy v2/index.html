@@ -934,6 +934,15 @@ function show(d){
       h+='<div class="ri"><div class="rl">الحد الأعلى</div><div class="rv">'+fmt(v.high)+' ر.ق</div></div></div>'}
     // Sprint 2.22.0a.17: clean-bracket condition caveat — muted neutral note directly under the range.
     if(v.condition_note_ar){h+='<div class="rn" style="margin-top:10px;font-size:.8rem">'+v.condition_note_ar+'</div>';}
+    // Sprint 2.22.0a.21 (B-1): land-floor / HBU decomposition — muted block under the range (value-invariant).
+    if(v.value_floor){
+      const vf=v.value_floor;
+      h+='<div class="rn" style="margin-top:10px;font-size:.8rem">';
+      if(vf.land_floor_note_ar)h+='<div>'+vf.land_floor_note_ar+'</div>';
+      if(vf.land_anchored){if(vf.land_anchored_note_ar)h+='<div style="margin-top:6px">'+vf.land_anchored_note_ar+'</div>';}
+      else if(vf.implied_building_note_ar){h+='<div style="margin-top:6px">'+vf.implied_building_note_ar+'</div>';}
+      h+='</div>';
+    }
     // Clearer MoJ wording + explanation
     if(d.moj_sample_size){
       h+='<div class="ri" style="margin-bottom:10px"><div class="rl">صفقات البيع المسجلة لعقارات مشابهة</div><div class="rv">'+d.moj_sample_size+' صفقة</div></div>';
