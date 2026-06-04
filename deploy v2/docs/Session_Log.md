@@ -2597,9 +2597,10 @@ brief MU `value_floor` present on all 4 villas; health a21 / v160 / qars healthy
 byte-identical to a20 → Rule #52 closed MEASURED.
 
 **Carried forward (Rule #42).** **NEXT = B-2** — the durable R7 fix (Stage-2 built-type/condition elicitation,
-2.22.0b; B-1 discloses, B-2 solves). **MULTI_AI batch doc** (`MULTI_AI_VALIDATION_BATCH_SprintB1.md`) **PENDING
-Anas's paste** — the GPT-5/Gemini transcript was NOT delivered with the brief; the LOCKED outcomes are recorded
-in the brief §2 D3. **Flags (non-blocking):** PDF-prominence check (brief §7 — IVS 105/106 disclosure prominence
+2.22.0b; B-1 discloses, B-2 solves). **MULTI_AI batch** → decision-record **COMMITTED**
+(`docs/MULTI_AI_VALIDATION_BATCH_SprintB1.md` — LOCKED outcomes from brief §2 D3: citation table + discipline
++ verbatim copy + as-shipped); only the **optional raw GPT-5/Gemini transcript** remains for Anas to append
+(Claude.ai lane holds it; nothing downstream depends on it). **Flags (non-blocking):** PDF-prominence check (brief §7 — IVS 105/106 disclosure prominence
 in an AVM interface) → fast-follow if it demands more; **R15** (`stock_strata` not a18-aware, ~7% land-median
 divergence — separate cleanup). a18 fast-follow still open (معيذر/نعيجة sub-zone live hit). The «التقدير السوقي»
 term remains PROVISIONAL.
