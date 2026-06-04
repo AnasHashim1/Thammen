@@ -56,6 +56,9 @@ sprint_*_regression.log
 # Pre-sprint full-tree backup snapshots (git IS the backup; never commit)
 backup_before_*/
 
+# Microsoft Office temp / owner-lock files (created when a .docx/.md is opened in Word)
+~$*
+
 # Archives + local regenerable caches (NOT the required tracked sqlites)
 *.zip
 t2_listings_cache.sqlite
