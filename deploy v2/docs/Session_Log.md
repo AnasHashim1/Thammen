@@ -2549,7 +2549,75 @@ and this label all DISCLOSE condition-blindness, B SOLVES it). a18 fast-follow s
 
 -----
 
-*Last updated: 2026-06-03 (**Sprint 2.22.0a.20 SHIPPED** — A7 rics_compliant honest status label, Heroku **v159**
+## 20.21 🆕 2026-06-04 — Sprint 2.22.0a.21 (B-1 — land-floor / HBU decomposition + condition surfacing) — DEPLOYED Heroku v160
+
+> Engine `thammen-sprint2p22p0a21-land-floor-hbu-decomposition` / SPRINT_TAG `2.22.0a.21` / api-health
+> `3.1.0-sprint2.22.0a.21`. **PRESENTATION/DISCLOSURE ONLY — NO valuation logic; every value byte-identical.**
+> Gate-2 signed brief `docs/BRIEF_SprintB1_land_floor_decomposition.md` (multi-AI #54 GPT-5 + Gemini
+> convergent, copy LOCKED). Phase-0 §5 `docs/PHASE0_SprintB_condition_axis.md`. Commit `62f902a` → Heroku
+> **v160** (`git subtree push`, clean fast-forward `b22b235..53a2109`, on the brief's standing
+> deploy-on-green) → origin in sync `62f902a`. CHANGELOG_v73. **First R7-axis shippable (DISCLOSE; B-2 SOLVES).**
+
+**What shipped.** A villa/house `value_floor` block surfaced next to the a17/a19 condition caveat on every
+value-bearing comparison output: the **land-value FLOOR** (analytical HBU decomposition, VPS 2/IVS 102 within
+Sales Comparison VPS 3/IVS 103) + the **implied-building** residual (= amount − floor, clamped ≥ 0) + a
+**land-anchored** disclosure when floor ≥ value. New `evaluate_unified._villa_value_floor` — **F2-prefer** the
+already-surfaced `value_decomposition.land`; **F1-fallback** recompute `land_ppm² × plot` from the SAME
+`moj_reference` land category, **INDEPENDENT of Patch C**, so it surfaces for the land-priced cohort where
+`_decompose_value` returns None. LOCKED multi-AI copy constants (AR LRM-wrapped, U+200E). Attached under the
+`_condition_note_applies` gate (**Rule #39 deviation:** placed at the decomposition site,
+post-`_build_unified_output`, NOT the brief's literal a14 try-block — that runs before `value_decomposition`
+exists; same JSON surface / gate / error-swallow / value-invariance) + `_inject_value_floor_into_brief` (MU
+section, buyer+valuer). Frontend: muted `.rn` block (the a17-proven class) under the range. `api.py` UNTOUCHED.
+
+**Why (Phase-0 F1).** Patch C (`evaluate_unified.py:1204`) suppresses the WHOLE decomposition when `land > value`
+— exactly the land-priced/old-stock cohort (**~10% of valued villa cells, 0% of reliable**, measured✓ offline)
+that B-1 exists for. B-1 recomputes the floor without touching the guard; implied building clamped to 0 (NEVER
+negative). R7 = condition-blind over-anchor (V001 Maamoura 3.8M = a ~5y-rejected ask); **B-1 DISCLOSES the
+land-anchored downside, B-2 (Stage-2 elicitation) SOLVES it.**
+
+**Verification.** py_compile OK; isolated `test_sprint_2_22_0a21.py` **33/33** (production functions, E14:
+F2/F1/anchored/guards/value-invariance/gate-scope/verbatim-copy/no-Latin/citation); DoD **392/15/45/64** (broad
+63→64, genuine clean pass 127.6s, zero failures, **no GIS flake**). **R14 EXECUTED (not reasoned)** — `node`
+absent → real Chromium (Claude_Preview): the served `index.html` loaded with **all inline functions defined + 0
+console errors** (whole-file JS syntax PASS incl. the new block); at **390×844** the value_floor `.rn` block
+`scrollW==clientW`, right-edge **350 < 390**, `overflowX=false`.
+
+**Live two-lane post-deploy smoke v160 (browser-UA curl, #61) — ZERO value drift:**
+
+| PIN | method | amount | value_floor |
+|---|---|---|---|
+| 56/565/21 | comparison_bracket | 2,400,000 | floor 1,700,100 / implied 699,900 / anchored False |
+| 54/541/6 | comparison_thin | 5,400,000 | floor 1,851,260 / implied 3,548,740 / anchored False |
+| 55/296/13 | comparison_thin | 2,600,000 | **floor 2,674,350 / implied 0 / land_anchored TRUE** [F1 LIVE] |
+| 56/647/6 | comparison_widened | 3,800,000 | floor 2,456,736 / implied 1,343,264 / anchored False |
+| 52/903/90 | insufficient_data | None | no block (refusal) |
+
+brief MU `value_floor` present on all 4 villas; health a21 / v160 / qars healthy / MoJ 155d. All 5 amounts
+byte-identical to a20 → Rule #52 closed MEASURED.
+
+**Carried forward (Rule #42).** **NEXT = B-2** — the durable R7 fix (Stage-2 built-type/condition elicitation,
+2.22.0b; B-1 discloses, B-2 solves). **MULTI_AI batch doc** (`MULTI_AI_VALIDATION_BATCH_SprintB1.md`) **PENDING
+Anas's paste** — the GPT-5/Gemini transcript was NOT delivered with the brief; the LOCKED outcomes are recorded
+in the brief §2 D3. **Flags (non-blocking):** PDF-prominence check (brief §7 — IVS 105/106 disclosure prominence
+in an AVM interface) → fast-follow if it demands more; **R15** (`stock_strata` not a18-aware, ~7% land-median
+divergence — separate cleanup). a18 fast-follow still open (معيذر/نعيجة sub-zone live hit). The «التقدير السوقي»
+term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-04 (**Sprint 2.22.0a.21 SHIPPED** — B-1 land-floor / HBU decomposition + condition
+surfacing, Heroku **v160** / commit `62f902a` / CHANGELOG_v73 / §20.21; **PRESENTATION ONLY — NO valuation logic,
+every value byte-identical**; surfaces a villa/house `value_floor` block [land-value FLOOR + implied building +
+land-anchored disclosure] next to the a17/a19 condition caveat via new `_villa_value_floor` [F2-prefer
+`value_decomposition.land`, F1-recompute from the `moj_reference` land category **INDEPENDENT of Patch-C** →
+surfaces for the land-priced cohort where `_decompose_value` returns None]; rides the `_condition_note_applies`
+gate; `api.py`+`index.html`-render reuses the proven `.rn` class; isolated 33/33 + DoD 392/15/45/64; **R14
+EXECUTED** [real Chromium whole-file JS syntax + 390×844 overflow, node absent]; live smoke v160 **ZERO value
+drift** [56/565/21 2.4M, 54/541/6 5.4M, 55/296/13 2.6M land_anchored, 56/647/6 3.8M, 52/903/90 refusal]; origin
+in sync `62f902a`. **NEXT = B-2** [durable R7 fix — Stage-2 built-type/condition elicitation, 2.22.0b; B-1
+DISCLOSES, B-2 SOLVES]. MULTI_AI batch doc pending Anas paste; PDF-prominence + R15 + a18 sub-zone hit =
+non-blocking flags. Prior: **Sprint 2.22.0a.20 SHIPPED** — A7 rics_compliant honest status label, Heroku **v159**
 / commit `2d5c35a` / CHANGELOG_v72 / §20.20; **DISPLAY/LABEL ONLY — NO valuation logic, every value
 byte-identical**; adds a neutral companion `rics_compliant_status_ar/en` = «بانتظار مراجعة مُقيِّم مُرخّص (المرحلة
 الخامسة)» / «Pending licensed-valuer review (Stage 5)» next to the `rics_compliant` bool on EVERY JSON surface [root
