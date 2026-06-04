@@ -18,10 +18,10 @@
 
 | Q | Verdict | One-line |
 |---|---|---|
-| **Q1** [BLOCKER] | 🟢 **available — with one carve-out** | The land floor **IS** surfaced today at `valuation.value_decomposition.land.estimated_qar` on bracket/widened/thin (reliable, n≥20). The "None" was a **wrong-field-path artifact** (queried a `cost`-keyed `land_value`, not `value_decomposition`). **Carve-out:** Patch C suppresses the **whole** decomposition when `land_value > comp value` — i.e. the **land-priced/old-stock case** (55/296/13), exactly where B-1 wants the floor. **B-1 = re-surface, recompute only for the Patch-C case.** |
+| **Q1** [BLOCKER] | 🟢 **available — with one carve-out** | The land floor **IS** surfaced today at `valuation.value_decomposition.land.estimated_qar` on bracket/widened/thin (reliable, n≥20). The "None" was a **wrong-field-path artifact** (queried a `cost`-keyed `land_value`, not `value_decomposition`). **Carve-out:** Patch C suppresses the **whole** decomposition when `land_value > comp value` — i.e. the **land-priced/old-stock case** (55/296/13: land 2,547/m² → floor **2.67M > 2.6M value**, measured✓), exactly where B-1 wants the floor. **B-1 = re-surface, recompute only for the Patch-C case.** |
 | **Q2** [→D2] | 🟢 recommend gate (a) | Reuse the **existing a17/a19 `_condition_note_applies` scope** (villa/house + the 5 value-bearing comparison methods + amount present). Age-input-free (E22-safe), method-agnostic, ≈100% of valued villa lookups. |
 | **Q3** [=B-0] | 🟢 **COVERED — no gap** | Every value-bearing villa surface discloses condition: non-gated → `condition_note_ar` (proven live ×5); dispersion-gated → `range_disclosure_ar` which explicitly says «لم يُؤكَّد بعد نوع بناء هذا العقار وحالته» (code-verified). **No B-0 bug** — confirms the proposer's same-day correction. |
-| **Q4** [scope] | measured✓ + assumed~ | B-1 trigger ≈ **~100%** of valued villa lookups (= the a17/a19 scope, unconditional). Land-FLOOR sub-availability ≈ 100% minus the **Patch-C/land-priced share** (assumed~ ~15–30% of old large-plot brackets; precise scan deferred to brief if D-needs). |
+| **Q4** [scope] | 🟢 **measured✓** | B-1 trigger ≈ **~100%** of valued villa lookups (a17/a19 scope, unconditional). Floor **suppressed by Patch-C in ~10.0% of valued villa cells / ~5.2% tx-weighted** (**0%** of reliable n≥20 cells) — **all large-plot old-stock** (900-1500+), the B-1 land-priced target cohort. E4 land_priced band (ratio<1.15) ≈ 26% cells / 13.5% tx. |
 | **Q5** [land #] | 🟢 reconciled | **3,768** (n=20, `value_decomposition` ← `moj_reference`, **a18-aware**) vs **4,032** (n=13, `stock_strata.land_reference` ← `_norm` exact, **a18-NOT-applied**). Different modules, different area-pooling. **Use 3,768** for the floor (it's already the surfaced number). The 4,032/strata path is a **latent inconsistency** to flag — not B-1's job. |
 
 ---
@@ -74,7 +74,9 @@ if land_value > valuation_amount:
 ```
 `_decompose_value` returns None (whole block gone) when **any** of: no value / no plot / no `moj_ref` / `land_per_m2` ≤ 0 / `land_n < 3` / **`land_value > valuation_amount`**.
 
-**Live proof — 55/296/13 (المعراض, plot 1050, value 2.6M):** `value_decomposition` is **absent**, yet it is a valued villa with land comps (strata found land n=11 @ 2607). The other None-triggers are excluded (value present, plot present, land comps exist) → **the only remaining trigger is Patch C**: land ≈ 2607 × 1050 = **2,737,350 > 2,600,000**. Its `dominant_stratum = land_priced (62.5%)` — i.e. **the textbook old-stock case** (building barely credited, clears toward land).
+**Live proof — 55/296/13 (المعراض, plot 1050, value 2.6M):** `value_decomposition` is **absent**, yet it is a valued villa with land comps (strata found land n=11 @ 2607). The other None-triggers are excluded (value present, plot present, land comps exist) → **the only remaining trigger is Patch C**. Its `dominant_stratum = land_priced (62.5%)` — i.e. **the textbook old-stock case** (building barely credited, clears toward land).
+
+**Confirmed offline against production `moj_reference.build_reference` (E14, measured✓):** المعراض `categories.land.price_per_m2.median` = **2,547/m²** (n=25, 36mo) → floor = 2,547 × 1050 = **2,674,350 > 2,600,000 → Patch-C TRIP = True**, definitively (the exact land number the live API hides when it suppresses the block). The **same** offline build reproduces Maamoura's land = **3,768 → 2,456,736**, **byte-identical to the live `value_decomposition.land`** — validating the floor source end-to-end.
 
 > ⚠️ **This is the crux for B-1.** Patch C exists to kill the *negative-building* compound bug (51/835/17: land 218M vs total 6.8M). But it ALSO suppresses the **legitimate land floor** for ordinary **land-priced villas** — exactly the Maamoura-class case B-1 is built to serve. When the market clears toward land, the engine currently shows **no land number at all**.
 
@@ -118,8 +120,17 @@ The 5 value-bearing villa methods are exactly `_CONDITION_NOTE_METHODS`; the gat
 ## Q4 — Incidence in the beta cohort (villas + land) [scope]
 
 - **B-1 surface trigger** under the recommended gate (a) = **the a17/a19 scope = every valued villa/house comparison output.** Incidence among villa lookups that return a value ≈ **~100%** (measured✓: the predicate is unconditional on condition, which is never assessed). The condition disclosure already fires there today.
-- **Land-FLOOR sub-availability** within that = ~100% **minus** the **Patch-C / land-priced share** (where the floor is currently suppressed, Q1d). From this sample: 4/5 valued villas have the floor; **1/5 (55/296/13) is land_priced → no floor.** Land-priced incidence is **stock-mix-dependent** and concentrated in **old, large-plot brackets** (Empirical_Findings: عين خالد 900-1500 was "all land-priced"). **Estimate (assumed~): ~15–30% of old-district villa brackets are land-priced-dominant.**
-- **Method:** to give D2 a hard number, a quick read-only scan over `moj_weekly.csv` can compute, per villa area×bracket, the dominant stratum and the share where `land_median × plot > comp value` (the Patch-C trip). **Deferred** to the brief if a precise figure is needed (rough band suffices for scoping).
+- **Land-FLOOR sub-availability** within that = ~100% **minus** the **Patch-C share**. **Measured✓** — offline scan over **all valued villa cells in `moj_weekly.csv` via production `build_reference`** (ratio = villa_ppm² ÷ area land_ppm²; Patch-C trips when ratio < ~1.0):
+
+  | villa cells (n≥5): **110 cells / 1,936 tx** | by cell | tx-weighted |
+  |---|---|---|
+  | **ratio < 1.00 — floor SUPPRESSED (Patch-C)** | **10.0%** | **5.2%** |
+  | ratio < 1.15 — E4 land_priced band | 26.4% | 13.5% |
+  | ratio ≥ 1.15 — floor present | 73.6% | 86.5% |
+  | **reliable cells (n≥20): 25 cells** | **0% suppressed** | 0% |
+
+  The suppressed cohort is **entirely large-plot old-stock** (900-1500 & 1500+): الوعب, المرخية, معيذر, لقطيفية, دحيل, عين خالد, المعراض, بو سدرة, حزم المرخية… all **n=5–18** (never reliable n≥20). So Patch-C suppression is **small in volume (~5% tx) but is exactly the land-priced cohort B-1 exists for** — not a rare edge.
+- **Proxy note (honesty):** ratio<1.0 ≈ the Patch-C trip (`land_ppm²×plot > villa_total`); the live engine's +~4.5% GIS adjustment makes the *actual* trip marginally rarer, so ~5–10% is a slight upper bound. Widened-path cells (local n<5) aren't in this count but behave identically by ratio.
 
 **Beta relevance:** an old-premium-villa buyer (V001) and a new-premium-villa buyer (V002/V003) are **both core beta users**; the surface fires for essentially all of them. The land-priced subset is precisely where the floor matters most **and** is currently missing — so Q1d's recompute is the load-bearing B-1 decision, not an edge case.
 
@@ -148,7 +159,7 @@ The 5 value-bearing villa methods are exactly `_CONDITION_NOTE_METHODS`; the gat
 
 ## Findings that become B-1 brief lines (flag-and-HOLD, #38)
 
-1. **F1 (Q1d) — Patch-C land-floor suppression.** B-1 must surface the land floor **even in the land-priced case** (`land ≥ comp value`), where `_decompose_value` currently returns None. Needs a small, presentation-scoped recompute of the land number that **does not touch** Patch C's anti-negative-building guard. **Load-bearing decision for the brief.**
+1. **F1 (Q1d) — Patch-C land-floor suppression.** B-1 must surface the land floor **even in the land-priced case** (`land ≥ comp value`), where `_decompose_value` currently returns None. Needs a small, presentation-scoped recompute of the land number that **does not touch** Patch C's anti-negative-building guard. Incidence **~10% of valued villa cells / ~5% tx-weighted (measured✓), 0% of reliable cells — all large-plot old-stock.** **Load-bearing decision for the brief.**
 2. **F2 (Q1b) — field path.** B-1 reads `valuation.value_decomposition.land.{estimated_qar, per_m2_qar, n_transactions, reliable}` — **not** any `land_value`/`cost` key (those are the Cost-approach crosscheck, legitimately None for villas).
 3. **F3 (Q2) — gate.** Recommend reusing `_condition_note_applies` (gate a) so the floor + bidirectional disclosure ride the same predicate as the live condition caveat → one coherent surface.
 4. **F4 (Q3) — B-0 is obsolete.** Condition is disclosed on every villa surface (condition_note ⊕ range_disclosure). No bug to fix. Drop B-0 from the plan.
