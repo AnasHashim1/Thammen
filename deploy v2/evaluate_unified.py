@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0a21-land-floor-hbu-decomposition'
-SPRINT_TAG = '2.22.0a.21'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0a22-b1p1-framing-copy'
+SPRINT_TAG = '2.22.0a.22'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1055,7 +1055,7 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
             'low':   geo_low,
             'high':  geo_high,
             'method': 'comparison_widened',
-            'method_label_ar': 'مقارنة بتوسيع جغرافي (‎RICS VPS 3 / IVS 103‎)',
+            'method_label_ar': 'منهج المقارنة بالمبيعات (مجموعة موسَّعة جغرافياً) (‎RICS VPS 3 / IVS 103‎)',
             'n': geo_n,
             'source_ar': f'وسيط {geo_n} معاملة بعد توسيع للمناطق المجاورة مع تسوية موقع',
         }
@@ -1068,7 +1068,7 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
             'high':  geo_high,
             'method': 'comparison_widened_indicative',
             # Sprint 2.22.0a.2 C3: relabel "إرشادي" -> "شواهد محدودة"
-            'method_label_ar': 'مقارنة بتوسيع جغرافي — شواهد محدودة (‎RICS VPS 3 / IVS 103‎)',
+            'method_label_ar': 'منهج المقارنة بالمبيعات (مجموعة موسَّعة جغرافياً) — شواهد محدودة (‎RICS VPS 3 / IVS 103‎)',
             'n': geo_n,
             'source_ar': f'وسيط {geo_n} معاملة بعد توسيع — شواهد محدودة بسبب عينة صغيرة',
         }
@@ -1318,22 +1318,25 @@ def _decompose_value(
 #   Copy = multi-AI (#54) LOCKED (GPT-5 + Gemini convergent), verbatim.
 #   AR numbers are LRM-wrapped (U+200E) per Operational_Rules #25 (bidi).
 # ════════════════════════════════════════════════════════════════════
+# Sprint 2.22.0a.22 (B-1.1): multi-AI-validated framing tweaks (value-invariant; citations UNCHANGED).
+# land floor → "indicative land component" on an HBU PREMISE (not a determination); implied building →
+# "contribution / mathematical allocation" (not a "value"). See MULTI_AI_VALIDATION_BATCH_SprintB1.md.
 LAND_FLOOR_NOTE_AR = (
-    'تفكيك تحليلي ضمن نموذج المقارنة — قيمة الأرض: ~‎{x}‎ ر.ق '
-    '(وفق صفقات أراضٍ مماثلة؛ يعكس الاستخدام الأمثل للأرض، وليس قيمة سوقية مستقلة).'
+    'تفكيك تحليلي ضمن نموذج المقارنة — مكوّن الأرض الاسترشادي: ~‎{x}‎ ر.ق '
+    '(من صفقات أراضٍ مماثلة، على أساس افتراض الاستخدام الأمثل؛ وليس تقييماً مستقلاً للأرض).'
 )
 LAND_FLOOR_NOTE_EN = (
-    'Analytical decomposition within the comparison model — land value: ~{x} QAR '
-    '(from comparable land sales; reflects the land’s highest-and-best-use, '
-    'not a standalone market value).'
+    'Analytical decomposition within the comparison model — indicative land component: ~{x} QAR '
+    '(from comparable land sales, on a highest-and-best-use premise; '
+    'not a standalone valuation of the land).'
 )
 IMPLIED_BLDG_NOTE_AR = (
-    'القيمة الضمنية للمبنى (ناتج حسابي: التقدير ناقص الأرض): ~‎{y}‎ ر.ق — '
-    'غير مُتحقَّقة ميدانياً (نوع البناء والعمر والحالة غير معروفة).'
+    'مساهمة البناء الضمنية (ناتج حسابي متبقٍّ: التقدير ناقص الأرض): ~‎{y}‎ ر.ق — '
+    'تخصيص حسابي، غير مُتحقَّق ميدانياً (نوع البناء والعمر والحالة غير معروفة).'
 )
 IMPLIED_BLDG_NOTE_EN = (
-    'Implied building value (computational: estimate minus land): ~{y} QAR — '
-    'not field-verified (built type, age and condition unknown).'
+    'Implied building contribution (computational residual: estimate minus land): ~{y} QAR — '
+    'a mathematical allocation, not field-verified (built type, age and condition unknown).'
 )
 LAND_ANCHORED_NOTE_AR = (
     'يشير النموذج إلى أن القيمة المقارنة لا تتجاوز قيمة الأرض المجردة؛ '

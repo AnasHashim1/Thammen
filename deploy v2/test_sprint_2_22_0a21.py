@@ -103,12 +103,13 @@ check('gate house alias -> fires',
 check('_stage1_dispersion_gate(thin) is None', _stage1_dispersion_gate({'method': 'comparison_thin'}, None) is None)
 
 # ── 8. Verbatim LOCKED copy (multi-AI) — fail loudly on drift ──
-check('AR land-floor copy verbatim',
+check('AR land-floor copy verbatim (a22 framing)',
       'تفكيك تحليلي ضمن نموذج المقارنة' in LAND_FLOOR_NOTE_AR
-      and 'يعكس الاستخدام الأمثل للأرض، وليس قيمة سوقية مستقلة' in LAND_FLOOR_NOTE_AR)
-check('AR implied-building copy verbatim',
-      'القيمة الضمنية للمبنى (ناتج حسابي: التقدير ناقص الأرض)' in IMPLIED_BLDG_NOTE_AR
-      and 'غير مُتحقَّقة ميدانياً' in IMPLIED_BLDG_NOTE_AR)
+      and 'مكوّن الأرض الاسترشادي' in LAND_FLOOR_NOTE_AR
+      and 'على أساس افتراض الاستخدام الأمثل؛ وليس تقييماً مستقلاً للأرض' in LAND_FLOOR_NOTE_AR)
+check('AR implied-building copy verbatim (a22 framing)',
+      'مساهمة البناء الضمنية (ناتج حسابي متبقٍّ: التقدير ناقص الأرض)' in IMPLIED_BLDG_NOTE_AR
+      and 'تخصيص حسابي، غير مُتحقَّق ميدانياً' in IMPLIED_BLDG_NOTE_AR)
 check('AR land-anchored copy verbatim',
       'لا تتجاوز قيمة الأرض المجردة' in LAND_ANCHORED_NOTE_AR
       and 'القيمة الضمنية للمبنى ≈ صفر' in LAND_ANCHORED_NOTE_AR)
