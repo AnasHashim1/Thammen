@@ -257,9 +257,74 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   /* Hide audience switcher artifacts */
   .aud-btn { display: none !important; }
 }
+/* ── Sprint 2.22.0a.24 — Beta entry gate (onboarding + affirmative consent) + Terms & Privacy modal ── */
+.bgate{position:fixed;inset:0;z-index:2000;background:rgba(18,52,77,.55);display:flex;align-items:center;justify-content:center;padding:14px;direction:rtl}
+.bgate-card{background:var(--surface);max-width:640px;width:100%;max-height:92vh;overflow-y:auto;border-radius:var(--r);padding:24px 22px;box-shadow:0 10px 44px rgba(0,0,0,.28)}
+.bgate-logo{text-align:center;margin-bottom:12px}.bgate-logo img{height:40px;width:auto}
+.bgate h2{color:var(--primary);font-size:1.12rem;text-align:center;margin-bottom:6px;line-height:1.55}
+.bg-sub{color:var(--bronze);font-size:.9rem;text-align:center;margin-bottom:16px;font-weight:500;line-height:1.6}
+.bgate ul{list-style:none;margin:0 0 12px;padding:0}
+.bgate li{font-size:.85rem;line-height:1.7;color:var(--text);padding:9px 12px;background:var(--alt);border-radius:8px;margin-bottom:7px;border-right:3px solid var(--bronze)}
+.bgate li strong{color:var(--primary)}
+.bg-note{font-size:.84rem;line-height:1.7;color:var(--muted);text-align:center;margin:4px 0 14px}
+.bg-ack{font-size:.86rem;line-height:1.7;color:var(--text);background:var(--bronze-g);border-radius:8px;padding:12px 14px;margin:0 0 16px}
+.bgate .hbtn{display:block;width:100%;padding:15px;font-size:1.1rem;box-shadow:0 4px 15px rgba(166,130,82,.3)}
+.bg-links{text-align:center;margin-top:14px;font-size:.84rem}
+.bg-links a{color:var(--muted);text-decoration:underline;cursor:pointer}
+.bg-en{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
+.bg-en summary{cursor:pointer;color:var(--muted);font-size:.82rem;text-align:center;list-style:none}
+.bg-en summary::-webkit-details-marker{display:none}
+.bg-en .en{direction:ltr;text-align:left;font-size:.8rem;line-height:1.6;color:var(--muted);margin-top:10px}
+.bg-en .en ul{list-style:disc;padding-left:18px;margin:6px 0}
+.bg-en .en li{background:none;border:none;padding:3px 0;font-size:.8rem;color:var(--muted);line-height:1.55}
+.tmodal-body{font-size:.88rem;line-height:1.85;direction:rtl;text-align:right;color:var(--text)}
+.tmodal-body h3{color:var(--primary);font-size:.96rem;margin:16px 0 6px}
+.tmodal-body p{margin-bottom:9px}
+.tmodal-body .tm-contact{background:var(--alt);border-radius:8px;padding:10px 12px;font-weight:500}
+.tmodal-body .en{direction:ltr;text-align:left;color:var(--muted);font-size:.82rem;line-height:1.7;margin-top:20px;border-top:1px dashed var(--border);padding-top:14px}
+.tmodal-body .en h4{color:var(--primary);font-size:.9rem;margin:12px 0 4px}
 </style>
 </head>
 <body>
+
+<!-- ── Sprint 2.22.0a.24 — Beta entry gate: onboarding framing + single affirmative consent.
+     Session-only (sessionStorage, in-memory fallback). No cookie, no server write, stores nothing.
+     Shown on first load of a session; an affirmative click reveals the tool. Complements the
+     result-surface disclaimers + MUC banner + B-1 land-floor — does not duplicate them. ── -->
+<div class="bgate" id="betaGate" role="dialog" aria-modal="true" aria-labelledby="bgTitle">
+  <div class="bgate-card">
+    <div class="bgate-logo"><img src="logo.png" alt="ثمّن"></div>
+    <h2 id="bgTitle">ثمّن — تقدير سوقي آلي للفلل والأراضي في قطر</h2>
+    <div class="bg-sub">نسخة تجريبية مجانية بالدعوة — هدفها قياس دقّة التقدير قبل الإطلاق العام.</div>
+    <ul>
+      <li><strong>ما هذا؟</strong> تقدير سوقي آلي مبني على بيانات معاملات وزارة العدل ومصادر السوق، غرضه دعم القرار بمعلومة سريعة.</li>
+      <li><strong>ما ليس هذا؟</strong> ليس تقييماً رسمياً ولا تقريراً معتمداً صادراً عن مُقيِّم مُرخّص وفق معايير &lrm;RICS/IVS&lrm;. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.</li>
+      <li><strong>ماذا يغطّي؟</strong> الفلل والأراضي فقط في هذه المرحلة — الشقق والأبراج غير مشمولة بعد.</li>
+      <li><strong>حدود نعرضها بصراحة:</strong> البيانات الحكومية لم تُحدَّث منذ نهاية ديسمبر &lrm;2025&lrm; (يظهر تنبيه بذلك)؛ والتقدير لا يأخذ بعد حالة العقار الداخلية وتشطيباته — لذلك قد ينخفض السعر الفعلي نحو قيمة الأرض (عقار قديم/بسيط) أو يتجاوز التقدير (جديد/فاخر).</li>
+      <li><strong>دورك:</strong> جرّب التقدير، وشاركنا أي سعر فعلي تعرفه — ملاحظاتك تُحسّن الدقّة.</li>
+    </ul>
+    <div class="bg-note">بالمتابعة تُقرّ بأن هذه نتيجة بحثية للدعم، وليست تقييماً معتمداً.</div>
+    <div class="bg-ack">أُقرّ بأنني فهمت أن ثمّن تقدير سوقي آلي للدعم وليس تقييماً معتمداً، وأوافق على المشاركة في النسخة التجريبية على الأساس الموضّح في الشروط وإشعار الخصوصية.</div>
+    <button class="hbtn" onclick="ackBeta()">أوافق وأكمل</button>
+    <div class="bg-links"><a onclick="openTerms();return false;">الشروط وإشعار الخصوصية الكاملة ↓</a></div>
+    <details class="bg-en">
+      <summary>English summary</summary>
+      <div class="en">
+        <strong>Thammen — automated market estimate for villas &amp; land in Qatar</strong><br>
+        A free, invite-only accuracy beta — to validate estimate accuracy before public launch.
+        <ul>
+          <li><strong>What it is:</strong> an automated market estimate built on Ministry of Justice transaction data + market sources, to support decisions with a fast figure.</li>
+          <li><strong>What it is NOT:</strong> not an official or certified valuation by a licensed valuer under RICS/IVS. Official purposes (loans, courts, accounting) require an accredited valuer.</li>
+          <li><strong>Coverage:</strong> villas and land only for now — apartments and towers are not yet included.</li>
+          <li><strong>Limits, stated plainly:</strong> government data hasn't refreshed since end-Dec 2025 (a notice shows this); and the estimate doesn't yet account for interior condition/finishes — so the actual price may fall toward the land value (older/basic) or exceed the estimate (newer/luxury).</li>
+          <li><strong>Your part:</strong> try it, and share any real sale price you know — your feedback improves accuracy.</li>
+        </ul>
+        By continuing you acknowledge this is a research estimate for decision support, not a certified valuation.
+      </div>
+    </details>
+  </div>
+</div>
+<script>(function(){try{if(sessionStorage.getItem('thammen_beta_ack')==='1'){var g=document.getElementById('betaGate');if(g)g.style.display='none';}}catch(e){}})();</script>
 
 <!-- Sprint 2.7: Data Freshness sticky banner — populated by JS on page load -->
 <div class="dfb" id="dfBanner" role="status" aria-live="polite" hidden></div>
@@ -275,6 +340,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <a href="#" onclick="openScope();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer">
       ما يدعمه ثمّن وما لا يدعمه ↓
     </a>
+  </div>
+  <!-- Sprint 2.22.0a.24 — Beta Terms & Privacy footer link -->
+  <div style="margin-top:8px;font-size:.8rem;color:var(--light);position:relative;z-index:1">
+    <a href="#" onclick="openTerms();return false;" style="color:var(--light);text-decoration:underline;cursor:pointer">الشروط وإشعار الخصوصية</a>
   </div>
 </div>
 
@@ -393,6 +462,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       هذا التقييم إرشادي ومبني على بيانات وزارة العدل المتاحة للعموم.<br>
       لا يُعتبر تثميناً رسمياً ولا يحل محل المثمّن المعتمد.<br>
       ننصح بالاستعانة بمثمّن معتمد للمعاملات فوق ٥ مليون ريال.<br><br>
+      <a href="#" onclick="openTerms();return false;" style="color:var(--light);text-decoration:underline">الشروط وإشعار الخصوصية</a><br><br>
       <span style="color:var(--bronze)">ثمّن</span> — بيانات وزارة العدل القطرية
     </div>
   </div>
@@ -483,6 +553,20 @@ function openScope(){
   }).catch(e=>{c.innerHTML='<div style="color:var(--bad)">تعذّر تحميل نطاق الخدمة</div>'});
 }
 function closeScope(){document.getElementById('scopeModal').style.display='none'}
+
+// Sprint 2.22.0a.24 — Beta Terms & Privacy modal (frontend-only, stores nothing)
+function openTerms(){document.getElementById('termsModal').style.display='flex'}
+function closeTerms(){document.getElementById('termsModal').style.display='none'}
+// Sprint 2.22.0a.24 — Beta entry gate: a single affirmative click reveals the tool for the
+// session. Session-only (sessionStorage; in-memory fallback if blocked). No cookie, no server
+// write — the gate persists nothing beyond a per-session client flag (returning within the
+// session skips it; a new session shows it again).
+function ackBeta(){
+  try{sessionStorage.setItem('thammen_beta_ack','1');}catch(e){window._betaAck=true;}
+  var g=document.getElementById('betaGate');
+  if(g)g.style.display='none';
+  window.scrollTo(0,0);
+}
 
 async function chk(){const b=document.getElementById('statusBar');try{const r=await fetch(API+'/api/health');const d=await r.json();if(d.status==='ok'){const ok=d.moj_db&&(typeof d.moj_db==='object'?d.moj_db.available:d.moj_db);b.innerHTML=ok?'متصل <span class="sdot on"></span>':'متصل — قاعدة البيانات غير جاهزة <span class="sdot off"></span>'}}catch(e){b.innerHTML='غير متصل <span class="sdot off"></span>'}}
 
@@ -1714,5 +1798,59 @@ function prettify(k){return k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase
 function ri(l,v,hl,fl){return'<div class="ri'+(fl?' full':'')+'"><div class="rl">'+l+'</div><div class="rv'+(hl?' hl':'')+'">'+v+'</div></div>'}
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('formScreen').classList.contains('active'))run()});
 </script>
+
+<!-- ── Sprint 2.22.0a.24 — Beta Terms of Use & Privacy Notice (free beta). Reachable from the
+     entry gate + home + results footer. Frontend-only; no server route, stores nothing. ── -->
+<div id="termsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2100;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeTerms()">
+  <div style="background:#fff;max-width:720px;max-height:88vh;overflow-y:auto;border-radius:12px;padding:28px;direction:rtl">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--alt);padding-bottom:12px">
+      <h2 style="margin:0;color:var(--primary);font-size:1.1rem">ثمّن — شروط الاستخدام وإشعار الخصوصية</h2>
+      <button onclick="closeTerms()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted)">×</button>
+    </div>
+    <div class="tmodal-body">
+      <div style="color:var(--bronze);font-weight:500;margin-bottom:10px">النسخة التجريبية المجانية</div>
+      <h3>1) الموافقة على المشاركة</h3>
+      <p>هذه نسخة تجريبية مجانية بالدعوة لقياس دقّة التقدير. باستخدامك للأداة تُقرّ بفهمك لما ورد أدناه وتوافق طوعاً على المشاركة. المشاركة اختيارية ويمكنك التوقف في أي وقت.</p>
+      <h3>2) ما هي الخدمة وما حدودها</h3>
+      <p>ثمّن تقدير سوقي آلي للفلل والأراضي مبني على بيانات معاملات وزارة العدل ومصادر السوق. هذا تحليل معلوماتي للقرار، وليس تقييماً رسمياً ولا تقريراً معتمداً صادراً عن مُقيِّم مُرخّص وفق معايير &lrm;RICS/IVS&lrm;. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.</p>
+      <h3>3) بياناتك في هذه النسخة</h3>
+      <p>• الأداة لا تُخزّن أي بيانات: استعلامك (المنطقة/الشارع/المبنى) يُعالَج آنياً ثم يُهمَل. لا حساب، ولا تسجيل دخول، ولا ملفات تتبّع أو تحليلات.</p>
+      <p>• الاستضافة: تعمل الخدمة على بنية تحتية خارج قطر (الولايات المتحدة/أوروبا عبر <span dir="ltr">Heroku وCloudflare</span>)؛ تُعالَج استعلاماتك هناك مؤقتاً ولا تُحفَظ.</p>
+      <p>• عنوان العقار يُعدّ بياناً شخصياً لمالكه؛ لذلك لا نُخزّنه ولا نربطه بك.</p>
+      <h3>4) الملاحظات التي تختار إرسالها</h3>
+      <p>• أي سعر فعلي أو ملاحظة ترسلها تصل مباشرةً إلى أنس عبر واتساب (<span dir="ltr">+974 70177761</span>)، وتخضع لشروط خصوصية واتساب.</p>
+      <p>• تُستخدم فقط لقياس وتحسين دقّة التقدير — لا تُباع، ولا تُشارَك مع طرف ثالث، ولا تُستخدم للتسويق.</p>
+      <p>• يمكنك طلب حذف ما أرسلته في أي وقت بمراسلة جهة التواصل أدناه.</p>
+      <h3>5) إخلاء المسؤولية</h3>
+      <p>التقدير لأغراض الدعم والمعلومة فقط، ولا يُعتمد للأغراض الرسمية. أي قرار تتخذه بناءً عليه يقع على مسؤوليتك وحدك، ولا نتحمّل مسؤولية أي خسارة ناتجة عن الاعتماد عليه.</p>
+      <h3>6) الأمان والإبلاغ</h3>
+      <p>بما أن الأداة لا تُخزّن بيانات شخصية في هذه النسخة، فإن سطح الخطر محدود بالمعالجة المؤقتة وقناة ملاحظاتك. في حال وقوع حادث جوهري يمسّ ما أرسلته، نلتزم بإبلاغك خلال &lrm;72&lrm; ساعة.</p>
+      <h3>7) التواصل والمسؤول عن البيانات</h3>
+      <p class="tm-contact">أنس — واتساب <span dir="ltr">+974 70177761</span></p>
+      <div class="en">
+        <strong>Thammen — Beta Terms of Use &amp; Privacy Notice (free beta)</strong>
+        <h4>1) Consent to participate</h4>
+        <p>Free, invite-only beta to validate estimate accuracy. By using the tool you acknowledge the points below and voluntarily agree to participate. Participation is optional; you may stop at any time.</p>
+        <h4>2) What the service is, and its limits</h4>
+        <p>Thammen is an automated market estimate for villas and land, built on Ministry of Justice transaction data and market sources. It is an informational decision analysis — NOT an official or certified valuation by a licensed valuer under RICS/IVS. Official purposes (loans, courts, accounting) require an accredited valuer.</p>
+        <h4>3) Your data in this beta</h4>
+        <p>• The tool stores nothing: your query (zone/street/building) is processed in-memory and discarded. No account, no login, no tracking or analytics cookies.</p>
+        <p>• Hosting: the service runs on infrastructure outside Qatar (US/EU, via Heroku and Cloudflare); your queries are processed there transiently and are not retained.</p>
+        <p>• A property address is personal data of its owner; we therefore do not store it or link it to you.</p>
+        <h4>4) Feedback you choose to send</h4>
+        <p>• Any real sale price or note you send reaches Anas directly via WhatsApp (+974 70177761), subject to WhatsApp's own privacy terms.</p>
+        <p>• It is used only to measure and improve estimate accuracy — never sold, shared, or used for marketing.</p>
+        <p>• You may ask to delete what you sent at any time via the contact below.</p>
+        <h4>5) Disclaimer</h4>
+        <p>The estimate is for support and information only and must not be relied on for official purposes. Any decision you make based on it is your sole responsibility; we accept no liability for loss arising from reliance on it.</p>
+        <h4>6) Security &amp; notification</h4>
+        <p>Because the tool stores no personal data in this beta, the risk surface is limited to transient processing and your feedback channel. If a material incident affecting what you sent occurs, we commit to notifying you within 72 hours.</p>
+        <h4>7) Contact / data controller</h4>
+        <p>Anas — WhatsApp +974 70177761</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

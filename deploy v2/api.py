@@ -940,8 +940,10 @@ async def scope():
 @limiter.limit(";".join(RATE_LIMIT_LIST))
 async def evaluate_quick(req: EvaluateRequest, request: Request):
     """Quick evaluation — address only. Returns free-tier result."""
-    log.info(f"evaluate quick: {req.zone}/{req.street}/{req.building} "
-             f"from {get_remote_address(request)}")
+    # Sprint 2.22.0a.24 (§4 / DPIA §5): do NOT log the property address (zone/street/
+    # building). It is personal data of the owner, and the beta privacy notice states the
+    # address is processed in-memory and not stored. Keep only the client IP for ops/abuse.
+    log.info(f"evaluate quick from {get_remote_address(request)}")
     # Sprint 2.22.0a.5 (A14): bound this request's external GIS I/O to a budget
     # under the Heroku 30s router wall. Perf-only/reversible — the deadline only
     # fires when the request was already heading past the wall (would 503); the
@@ -1004,8 +1006,10 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
 @limiter.limit(";".join(RATE_LIMIT_LIST))
 async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
     """Improved evaluation with building details from user."""
-    log.info(f"evaluate details: {req.zone}/{req.street}/{req.building} "
-             f"floors={req.floors} condition={req.condition} "
+    # Sprint 2.22.0a.24 (§4 / DPIA §5): address (zone/street/building) removed from this log
+    # line — personal data, not stored per the beta privacy notice. Building attributes alone
+    # (no address) are not identifying; kept for ops. Client IP kept for ops/abuse.
+    log.info(f"evaluate details: floors={req.floors} condition={req.condition} "
              f"basement={req.basement} footprint={req.footprint_m2} "
              f"age={req.building_age_years} luxury={req.is_luxury} "
              f"from {get_remote_address(request)}")
