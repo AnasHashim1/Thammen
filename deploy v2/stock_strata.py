@@ -246,15 +246,25 @@ def compute_land_median(
     if not latest:
         return None
 
-    names_normalized = {_norm(n) for n in moj_area_names}
+    # ── Sprint 2.22.0a.23 (R15): a18-aware area pooling ──────────────────────
+    # Match areas with the a18 key (area_match_key — strip trailing zone-number +
+    # hamza-fold), EXACTLY as moj_reference.build_reference and the B-1 value_floor
+    # do, so the strata land reference no longer DROPS zone-number siblings (it was
+    # a narrower, ~+2-7% HIGHER pool than the floor → a visible inconsistency once
+    # B-1 surfaced both land numbers in the same report). Legacy whitespace/NBSP
+    # normalizer is the fallback if moj_reference can't be imported.
+    try:
+        from moj_reference import area_match_key as _match_key
+    except Exception:
+        _match_key = _norm
+    area_keys = {_match_key(n) for n in moj_area_names}
     bracket = _bracket_for_plot(plot_area_m2)
 
     def _scan(window_m: int, use_bracket: bool) -> List[float]:
         cutoff = latest - timedelta(days=window_m * 30)
         prices = []
         for r in moj_rows:
-            area = _norm(r.get('اسم المنطقة', ''))
-            if area not in names_normalized:
+            if _match_key(r.get('اسم المنطقة', '')) not in area_keys:
                 continue
             type_ar = r.get('نوع العقار', '')
             if not _is_land(type_ar):
