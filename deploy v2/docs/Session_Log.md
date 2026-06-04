@@ -2672,7 +2672,87 @@ remains PROVISIONAL.
 
 -----
 
-*Last updated: 2026-06-04 (**Sprint 2.22.0a.23 SHIPPED** — R15 stock_strata land-median a18-aware, Heroku
+## 20.24 🆕 2026-06-05 — Sprint 2.22.0a.24 (beta-launch copy + consent entry gate) — DEPLOYED Heroku v163
+
+> Engine `thammen-sprint2p22p0a24-beta-entry-gate` / SPRINT_TAG `2.22.0a.24` / api-health
+> `3.1.0-sprint2.22.0a.24`. **Content + small frontend on `index.html` + a DPIA doc — NO engine /
+> valuation-logic change; every headline + the B-1 `value_floor` byte-identical.** Gate-2 (user-facing
+> copy) SIGNED by Anas verbatim; Gate-1 (push) AUTHORIZED in the brief. Commit `d538e93` → Heroku **v163**
+> (`git subtree push`, `d66a377..2b4d775`) → origin in sync `d538e93`. CHANGELOG_v76. DPIA
+> `docs/DPIA_AI_impact_beta_v1.md`. **First beta-launch sprint** (free, invite-only, capture-DORMANT;
+> villas + land).
+
+**What shipped (`index.html`).** (1) A pre-use **entry gate** (`#betaGate`, z-index 2000): the verbatim
+onboarding framing (what it is / is not / coverage / stated limits / your part + the "بالمتابعة تُقرّ…"
+line) + the verbatim affirmation statement and a single **«أوافق وأكمل»** button. Clicking sets a
+**session-only** flag (`sessionStorage['thammen_beta_ack']`, in-memory fallback) and reveals the tool; a
+synchronous inline script hides the gate before paint for returning-within-session users; **no cookie, no
+server write, stores nothing**; a new session re-shows it. (2) A **Terms & Privacy modal** (`#termsModal`,
+z-index 2100): the full verbatim §2 (7 Arabic sections + English mirror), frontend-only (no server route),
+linked from the **gate + home screen + results footer**. (3) Bidi: Latin/number runs LRM-wrapped
+(`&lrm;`) per Rule #25/a8; the phone numbers and the "Heroku وCloudflare" infra token wrapped as
+`dir="ltr"` islands so they read in the signed order. **It COMPLEMENTS** the result-surface disclaimers +
+MUC banner + stale-data banner + B-1 land-floor — does not duplicate them.
+
+**§4 finding fixed (`api.py`, the one code change).** `LOG_LEVEL` defaults to INFO and both
+`/api/evaluate` (was :943) and `/api/evaluate/details` (was :1007) logged the **property address**
+(zone/street/building) to the Heroku log stream — in tension with the signed notice's "we do not store the
+address." The brief §4 authorizes "disable body logging / minimize retention" → the address was scrubbed
+from both INFO lines (client IP kept for ops/abuse; non-identifying building attributes kept on the details
+line). No behavior/output change. (Heroku router logs method+path only; Cloudflare does not log POST bodies
+by default — the app-side log was the concrete in-our-control item; DPIA §5.)
+
+**Docs.** `docs/DPIA_AI_impact_beta_v1.md` committed verbatim from the brief §5 (DPIA + algorithmic-impact
+note; pairs with COMPLIANCE_SELF_CLEARANCE_beta_v1 / R13). ENGINE_VERSION/SPRINT_TAG → a24.
+
+**Verification.** py_compile (api.py + evaluate_unified.py) OK. **R14 EXECUTED** — `node` absent (a8/a21
+precedent) → real Chromium (Claude_Preview): whole-file inline JS parsed (all functions defined), **0
+console errors** across reloads; 390×844 no horizontal overflow (gate card scrolls internally; Terms modal
+no overflow); desktop 1280×800 no overflow; bidi measured (RICS/IVS + 2025 correct; "Heroku وCloudflare"
+reads L→R as one island; both phone spans render `+974…` with `+` leftmost); gate flow proven (ack →
+hidden + flag="1" + tool revealed; reload-with-flag → stays hidden; clear-flag + reload → re-shows); Terms
+7 AR + 7 EN sections present. DoD (PYTHONIOENCODING=utf-8): aggregator **392/392** · security **15/15** ·
+surface-honesty **45/45** · broad auto-walk **66/66** (205.6s, no flake). No new Python test (presentation-
+only; the gate JS is covered by the Chromium R14 check).
+
+**Live two-lane post-deploy smoke v163 (browser-UA curl, Rule #61):**
+
+| PIN / check | a24 live | vs a23 |
+|---|---|---|
+| 56/565/21 | 2,400,000 comparison_bracket | byte-identical |
+| 54/541/6 | 5,400,000 comparison_thin | byte-identical |
+| 55/296/13 | 2,600,000 comparison_thin | byte-identical |
+| 52/903/90 | None / insufficient_data — apartment refusal renders clean (Income-Approach + needs-data) | byte-identical |
+| /api/health | a24 / v163 / qars healthy / MoJ 155d | — |
+| stale banner (/api/freshness) | severity=warning, banner_ar present | — |
+
+ZERO value drift (only the engine_version label + the additive gate/Terms changed) → Rule #52 closed
+MEASURED. Apartment refusal rendered via the real `show()` path with the live payload (gate dismissed,
+results screen intact): MUC card + «تقييم مشروط — عمارة شقق / منهج الدخل يتطلب الإيجار السنوي» + «التقييم
+يحتاج بيانات إضافية» — clean, no empty/broken cards.
+
+**Carried forward (Rule #42).** **Beta is invite-ready** — the pre-use consent layer (gate + Terms/Privacy
++ DPIA) is live; remaining pre-invite = the human gates (Aqarat enquiry held-until-design-done · MoJ
+open-data licence) + the invite itself. In-beta feedback flows to Anas's WhatsApp per the notice → the
+in-app feedback UI (**Sprint 2**, consumes `/api/feedback`) is **NOT** required for the beta and stays
+gated on a15 ACTIVATION (R11, counsel-gated). **Engineering NEXT = Sprint B-2** (durable R7 built-type/
+condition axis — Stage-2 elicitation, 2.22.0b; a17/a19/B-1/the gate all DISCLOSE, B-2 SOLVES). Minor
+pre-existing (NOT a regression, NOT introduced by a24): the top-level `refusal_reason` dict
+(comp_density_sparse) carries its own message_ar/recommendation_ar in JSON but is subsumed by the more-
+specific apartment→Income refusal card on that path (the user still gets a clean refusal). The «التقدير
+السوقي» term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-05 (**Sprint 2.22.0a.24 SHIPPED** — beta-launch onboarding + affirmative-consent
+entry gate + Terms/Privacy notice + DPIA, Heroku **v163** / commit `d538e93` / CHANGELOG_v76 / §20.24;
+**content/frontend + a doc — NO valuation logic, every headline + B-1 `value_floor` byte-identical**;
+session-only gate [`sessionStorage` + in-memory fallback, no cookie/server write, stores nothing], Terms
+modal verbatim [7 AR + 7 EN] linked from gate/home/footer; **§4: address scrubbed from the two
+`/api/evaluate*` INFO logs**; `docs/DPIA_AI_impact_beta_v1.md` committed; R14 real-Chromium [0 console
+errors, 390×844 + desktop no-overflow, bidi measured] + DoD 392/15/45/66; live v163 ZERO value drift
+[2.4M/5.4M/2.6M/refusal] + apartment refusal clean; origin in sync `d538e93`. **Beta invite-ready** [pre-use
+consent layer live; remaining = human gates + invite]. **NEXT = Sprint B-2** [durable R7 fix]. Prior: **Sprint 2.22.0a.23 SHIPPED** — R15 stock_strata land-median a18-aware, Heroku
 **v162** / commit `ff483b0` / CHANGELOG_v75 / §20.23; **Gate-2 strata-card DISPLAY, HEADLINE value-invariant**;
 `compute_land_median` now pools areas via a18 `area_match_key` like the floor → strata-card land sibling-drop
 removed [المعمورة 4032→3754 ≈ floor 3768]; **every headline + the B-1 `value_floor` byte-identical**,
