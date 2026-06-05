@@ -2744,7 +2744,61 @@ specific apartment→Income refusal card on that path (the user still gets a cle
 
 -----
 
-*Last updated: 2026-06-05 (**Sprint 2.22.0a.24 SHIPPED** — beta-launch onboarding + affirmative-consent
+## 20.25 🆕 2026-06-05 — Sprint 2.22.0a.25 (CC BY 4.0 source attribution for MoJ data) — DEPLOYED Heroku v164
+
+> Engine `thammen-sprint2p22p0a25-moj-source-attribution-ccby` / SPRINT_TAG `2.22.0a.25`. **User-facing
+> copy add / compliance hygiene — NO methodology/valuation change; value-invariant, every headline + the
+> B-1 `value_floor` byte-identical.** Gate-2 (copy) SIGNED by Anas verbatim; Gate-1 (push) authorized
+> (standalone). Commit `d9d148a` → Heroku **v164** (`git subtree push`, `2b4d775..726a6a5`) → origin in
+> sync `d9d148a`. CHANGELOG_v77. **Closes COMPLIANCE Q13 + the open-data sub-item of RISK_REGISTER R13.**
+
+**Why.** The MoJ datasets on `data.gov.qa` are licensed **CC BY 4.0** (verified 2026-06-05 via the
+OpenDataSoft catalog API; publisher = Ministry of Justice; CC BY portal-wide). CC BY permits commercial
+use + derivatives + redistribution; the sole obligation is **attribution + no-endorsement**. Thammen
+surfaced derived MoJ figures with no credit rendered → this adds the required credit. Hard constraint:
+attribution must be present before external users first see derived MoJ figures (before the beta opens) —
+now satisfied.
+
+**What shipped (`index.html` only + version bump).** A persistent **source-attribution credit** in the
+results footer (`.disc`, where derived MoJ figures appear, alongside the a24 Terms link + the existing
+disclaimer): verbatim AR + EN, with the licence name a link → `https://creativecommons.org/licenses/by/4.0/`
+(both lines). Bidi: the Latin/numeric tokens (`data.gov.qa`, `4.0`, `CC BY 4.0`) wrapped in `dir="ltr"`
+islands per the a24 pattern; AR block `dir="rtl"`, EN block `dir="ltr"`. New CSS `.src-credit`. **`api.py`
+UNTOUCHED.** Recon (Operational §12): the engine's comparable fetch ingests `weekly-real-estates-sales-bulletin`
+(`moj_reference.py:11/289`, `reasoning_trace.py:249/421`); the `weekly-residential-units-sales-bulletin` is
+NOT ingested — the credit's "real-estate transaction bulletins" names what's used.
+
+**Verification.** py_compile `evaluate_unified.py` OK. **R14 (real Chromium; a25 adds no JS — inline JS
+byte-identical to a24, console clean):** credit renders; 390×844 no horizontal overflow (creditRight 350
+≤ 390); desktop 1280×800 no overflow; computed dir = rtl (AR) / ltr (3 islands + EN); "CC BY 4.0" reads
+LTR; link href correct; AR + EN verbatim. DoD: aggregator **392/392** · security **15/15** · surface-honesty
+**45/45** · broad auto-walk **66/66** (123.7s). No new test (copy-only).
+
+**Live post-deploy smoke v164 (browser-UA curl, Rule #61).** /api/health = a25; 4 anchors **byte-identical**
+(56/565/21 2.4M · 54/541/6 5.4M · 55/296/13 2.6M · 52/903/90 refusal) → ZERO value drift; live-served
+`index.html` contains the credit (AR «مصدر البيانات» + EN + 2× `creativecommons.org/licenses/by/4.0` +
+`.src-credit`). Rule #52 closed MEASURED.
+
+**Docs-close.** COMPLIANCE_SELF_CLEARANCE Q13 → **VERIFIED** (CC BY 4.0; §D item 3 closed); RISK_REGISTER
+R13 open-data sub-item (4) → **CLOSED**; Empirical_Findings §5 licence note added; CLAUDE.md #65a +
+OPEN-GATES gate (2) closed. Custom_Instructions one-liner still pending (Word lock).
+
+**Carried forward (Rule #42).** **Engineering NEXT = Sprint B-2** (durable R7 built-type/condition axis).
+Beta remains invite-ready; the open-data licence gate is now closed, so the remaining pre-monetization gate
+is the Aqarat regulator enquiry (held until design done) + the invite. The «التقدير السوقي» term remains
+PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-05 (**Sprint 2.22.0a.25 SHIPPED** — CC BY 4.0 MoJ source-attribution footer credit,
+Heroku **v164** / commit `d9d148a` / CHANGELOG_v77 / §20.25; **user-facing copy / compliance hygiene — NO
+valuation change, value-invariant, every headline + B-1 `value_floor` byte-identical**; persistent verbatim
+AR+EN credit + licence link [creativecommons.org/licenses/by/4.0/] in the results footer, bidi `dir="ltr"`
+islands on data.gov.qa/4.0/CC BY 4.0; engine ingests `weekly-real-estates-sales-bulletin`; **closes
+COMPLIANCE Q13 + RISK_REGISTER R13 open-data sub-item** [CC BY 4.0 = commercial+derivatives+redistribution
+OK w/ attribution]; `api.py` UNTOUCHED; R14 real-Chromium [renders, 390×844 + desktop no-overflow, dir
+rtl/ltr measured] + DoD 392/15/45/66; live v164 ZERO value drift + credit live in served HTML; origin in
+sync `d9d148a`. **NEXT = Sprint B-2** [durable R7 fix]. Prior: **Sprint 2.22.0a.24 SHIPPED** — beta-launch onboarding + affirmative-consent
 entry gate + Terms/Privacy notice + DPIA, Heroku **v163** / commit `d538e93` / CHANGELOG_v76 / §20.24;
 **content/frontend + a doc — NO valuation logic, every headline + B-1 `value_floor` byte-identical**;
 session-only gate [`sessionStorage` + in-memory fallback, no cookie/server write, stores nothing], Terms

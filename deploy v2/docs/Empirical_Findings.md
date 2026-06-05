@@ -615,6 +615,14 @@ Assertion tests must not pin exact version/identity strings that legitimately ch
 
 ## 5. Reference data
 
+### MoJ data licence (verified 2026-06-05)
+
+The MoJ datasets on `data.gov.qa` (incl. `weekly-real-estates-sales-bulletin`, the bulletin the engine
+ingests) are licensed **CC BY 4.0** — commercial use + derivatives + redistribution permitted, with the
+sole obligation of **attribution + no-endorsement** (verified via the OpenDataSoft catalog API;
+publisher = Ministry of Justice; CC BY is portal-wide). Attribution is rendered in the results footer
+since Sprint 2.22.0a.25 (Heroku v164). Closes COMPLIANCE Q13 / the open-data sub-item of RISK_REGISTER R13.
+
 ### MoJ area names with NBSP normalization
 
 | Display | MoJ raw | n (24m) |

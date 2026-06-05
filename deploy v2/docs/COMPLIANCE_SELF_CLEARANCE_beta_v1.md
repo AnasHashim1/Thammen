@@ -39,7 +39,7 @@ Status key: **DECIDED** = conservative stance adopted, action is documentation o
 | Q10 | Register/notify? DPO? DPIA? | Prepare a **lightweight DPIA** for the AVM even if not strictly mandatory; no DPO at beta scale (document the reasoning). Registration: fold into the regulator enquiry. | Draft DPIA; add registration to the Aqarat/MCIT enquiry. | ACTION |
 | Q11 | NCSA AI guidelines → algorithmic-impact assessment? | Review the NCSA AI guidelines; document a short algorithmic-impact note. | AI-impact note. | ACTION |
 | Q12 | Are the 2021 MCIT/CDPD guidelines binding? | **Treat as if binding** (over-comply). | — | DECIDED |
-| Q13 | **data.gov.qa licence terms for the MoJ dataset** | Do **not** assume commercial reuse is permitted. Confirm the exact licence (commercial reuse · derivatives · attribution format · redistribution). | **Verify the open-data licence** before monetization; apply attribution as required. *Independent of Aqarat — a separate gate to charging.* | ACTION |
+| Q13 | **data.gov.qa licence terms for the MoJ dataset** | Confirmed 2026-06-05: licence = **CC BY 4.0** (publisher = Ministry of Justice; verified via the OpenDataSoft catalog API — `weekly-real-estates-sales-bulletin`, the dataset the engine ingests; CC BY is portal-wide). **Commercial reuse · derivatives · redistribution all permitted;** sole obligation = attribution + no-endorsement. | **VERIFIED** — attribution applied 2026-06-05 (Sprint 2.22.0a.25 / Heroku v164: verbatim CC BY 4.0 source credit + licence link in the results footer). Non-lawyer reading of a standard licence; revisit before paid (existing posture). | ✅ VERIFIED |
 | Q14 | **Aqarat licensing** | Free beta is **defensible** (free + invited + research + «تقدير لا تقييم» + gov precedent), **but the catch-all gives no guaranteed safe harbour.** No paid access until licensed. | **Send the direct Aqarat enquiry** to close the free-beta question; enter the licensing framework before monetizing. | OPEN→REGULATOR |
 
 ---
@@ -48,7 +48,7 @@ Status key: **DECIDED** = conservative stance adopted, action is documentation o
 
 1. **DB residency decision** (Q3/Q4) — Qatar/GCC vs Heroku US/EU. Choosing local moots the entire cross-border question.
 2. **Activation engineering** (Q8 / R11) — Fernet round-trip verified on Heroku, short backup retention, backup-erasure runbook. Required before the capture flag is ever flipped.
-3. **MoJ open-data licence** (Q13) — confirm commercial-reuse permission + attribution. A monetization gate *independent* of Aqarat.
+3. ~~**MoJ open-data licence** (Q13)~~ — ✅ **CLOSED 2026-06-05**: licence = CC BY 4.0 (commercial + derivatives + redistribution permitted with attribution); attribution applied in Sprint 2.22.0a.25 (Heroku v164). No longer a monetization gate.
 4. **Aqarat enquiry** (Q14) — the one external touch we keep: a crisp regulator question to certify the free beta, and the entry point for the licence we'll obtain before charging.
 5. **Lightweight DPIA + AI-impact note** (Q10/Q11) — recommended documentation; cheap insurance.
 

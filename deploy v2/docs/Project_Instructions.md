@@ -357,15 +357,16 @@ heroku run python smoke_<endpoint>.py
 (apartments already refuse → gracefully excluded). Full tier register: `docs/LAUNCH_READINESS_GATES_v1.md`;
 beta plan: `docs/BETA_LAUNCH_PLAN_v1.md`.
 
-**Shipped since this list was last sequenced (2.22.0a arc — Session_Log §20.8–§20.24):** a.8 RICS/IVS-2025
+**Shipped since this list was last sequenced (2.22.0a arc — Session_Log §20.8–§20.25):** a.8 RICS/IVS-2025
 citations · a.9 widened age/quality · a.10 Stage-1 honest-range · a.11 A1 usage filter · a.12 A2 built-type ·
 a.13 thin-cell credibility · a.14 bracket honest-range · a.15 beta instrumentation (DORMANT) · a.16 capture
 privacy-hardening · a.17 clean-bracket condition caveat · a.18 R9 area-name reconciliation · a.19 thin-path
 condition caveat · a.20 A7 rics_compliant status label · a.21 B-1 land-floor/HBU · a.22 B-1.1 framing · a.23
-R15 strata-land a18 · **a.24 beta-launch entry gate + Terms/Privacy + DPIA (Heroku v163)**. **Beta pre-use
-consent layer is now LIVE → the free invite-only villas/land beta is invite-ready (remaining = the two human
-gates below + the invite; in-beta feedback flows to Anas's WhatsApp per the notice, so the in-app feedback UI
-[Sprint 2] is not required for the beta).**
+R15 strata-land a18 · a.24 beta-launch entry gate + Terms/Privacy + DPIA · **a.25 CC BY 4.0 MoJ source
+attribution (Heroku v164)**. **Beta pre-use consent layer + source attribution are now LIVE → the free
+invite-only villas/land beta is invite-ready (remaining = the Aqarat enquiry [held until design done] + the
+invite; the MoJ open-data licence gate is ✅ CLOSED a25 — CC BY 4.0; in-beta feedback flows to Anas's WhatsApp
+per the notice, so the in-app feedback UI [Sprint 2] is not required for the beta).**
 
 **PRIORITY QUEUE (confirmed-current — this is the authoritative "next"):**
 
