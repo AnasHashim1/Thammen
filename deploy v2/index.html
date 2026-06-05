@@ -283,6 +283,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .tmodal-body .tm-contact{background:var(--alt);border-radius:8px;padding:10px 12px;font-weight:500}
 .tmodal-body .en{direction:ltr;text-align:left;color:var(--muted);font-size:.82rem;line-height:1.7;margin-top:20px;border-top:1px dashed var(--border);padding-top:14px}
 .tmodal-body .en h4{color:var(--primary);font-size:.9rem;margin:12px 0 4px}
+/* Sprint 2.22.0a.25 — MoJ source attribution credit (CC BY 4.0 / Q13) */
+.src-credit{margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:.72rem;line-height:1.75;color:var(--light);text-align:right;direction:rtl}
+.src-credit a{color:var(--muted);text-decoration:underline}
+.src-credit .en{display:block;margin-top:8px;direction:ltr;text-align:left;font-size:.7rem;color:var(--light)}
 </style>
 </head>
 <body>
@@ -464,6 +468,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       ننصح بالاستعانة بمثمّن معتمد للمعاملات فوق ٥ مليون ريال.<br><br>
       <a href="#" onclick="openTerms();return false;" style="color:var(--light);text-decoration:underline">الشروط وإشعار الخصوصية</a><br><br>
       <span style="color:var(--bronze)">ثمّن</span> — بيانات وزارة العدل القطرية
+      <!-- Sprint 2.22.0a.25 — MoJ source attribution (CC BY 4.0 / Q13). Latin/numeric tokens wrapped dir="ltr" per a24 bidi pattern. -->
+      <div class="src-credit">
+        مصدر البيانات: نشرات بيع العقارات الصادرة عن وزارة العدل (دولة قطر) عبر بوابة قطر للبيانات المفتوحة (<span dir="ltr">data.gov.qa</span>)، بموجب رخصة المشاع الإبداعي «نَسب المُصنَّف» <span dir="ltr">4.0</span> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener"><span dir="ltr">CC BY 4.0</span></a>). تُعالَج البيانات وتُجمَّع بواسطة «ثَمِّن»، والتقديرات مُشتقّة وليست تقييمات رسمية صادرة عن وزارة العدل.
+        <span class="en">Source data: real-estate transaction bulletins, Ministry of Justice (State of Qatar), via Qatar Open Data (data.gov.qa), licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Figures are processed and aggregated by Thammen; estimates are derived and are not official Ministry of Justice valuations.</span>
+      </div>
     </div>
   </div>
 </div>
