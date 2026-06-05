@@ -53,7 +53,35 @@ Authority is *how authoritative the output looks*. Finality is *how settled it f
 
 The failure mode to avoid is an *early-stage output that feels final*: a single frozen-looking QAR figure on a clean card reads as a conclusion, not an exploration, regardless of the wording around it. So the two gradients pair: dial authority **and** finality down together in early stages, up together only as accountability accrues.
 
-**Live evidence of the inverse failure (2026-05-28, empirically tested):** the current build does the *opposite* of this principle — it presents an interactive-looking surface over a completely inert engine. `/api/evaluate` accepts only `zone/street/building` and **rejects every other field with HTTP 422** (`extra_forbidden`) — tested directly across area, building age, condition, finishes, rooms, and all common area-override names. Yet the report shows an editable "عدّل المساحة (م²)" field with the instruction "لو حصة الأرض مختلفة، عدّل المساحة يدوياً", and the shipped T2.5 copy says entering property details "may materially adjust the estimate." Both *promise interactivity the engine cannot honour* — the field has no backend path that accepts it, and the recompute that would make details matter is Stage 2 (2.22.0b), unbuilt. The honesty gap here is the reverse of the authority problem: not over-claiming certainty, but over-claiming *interactivity*. The fix is to make the surface honest about what it currently accepts and defer the "details change the estimate" promise to the stage that can actually deliver it.
+**⚠️ CORRECTION (2026-06-05, measured — SUPERSEDES the 2026-05-28 "inert engine" claim below).** The
+originally-cited "live evidence" was **wrong**, and is **retracted**. Re-tested live (a25 / Heroku v164,
+browser-UA curl, Rule #61): the surface is **honest about interactivity — it is NOT inert.**
+(1) The `عدّل المساحة (م²)` control sends **`override_land_area`** (not `area`), which **is accepted +
+consumed** on both request models (`api.py:349/388` → `evaluate_unified.py:3324` `plot_area_override`):
+56/565/21 **2.4M → 4.3M** at override 600 m² (`user_override_applied=true`). It is the shipped Sprint
+2.21.0.9 multi-QARS override.
+(2) The optional property-details form posts to **`/api/evaluate/details`** (not `/api/evaluate`), where
+**every** field — floors / condition / building_age_years / is_luxury / footprint_m2 / basement / annexes /
+asking / rental / unit-pair — is **declared (`EvaluateDetailsRequest` `api.py:373-406`) + consumed
+(`api.py:1041-1046`)**: condition+floors+basement → **2.4M → 2.8M** (HTTP 200, no 422).
+The 2026-05-28 test hit the **wrong endpoint** (`/api/evaluate`, which legitimately doesn't declare detail
+fields) with the **wrong override name** (`area`, not `override_land_area`) → the "rejects every field / dead
+field / completely inert engine" reading was an **artifact**, not the surface's behaviour. **So "entering
+property details adjusts the estimate" is true today — there is NO interactivity over-claim to fix; the
+`عدّل المساحة` field and the T2.5 "details may adjust" copy are honest.** The Stage-1 input-honesty sprint
+that acted on this stale claim was **closed as premise-falsified** (CHANGELOG_v78 / Session_Log §20.26).
+Full recon: `docs/PHASE0_B2_condition_recon.md`.
+
+> **The real, separate finding** (recon §3): those inputs are **mis-calibrated**, not absent — only building
+> SIZE (floors→BUA, +25%-capped, upward-only) moves the headline; condition / finish / age contribute zero →
+> **R7 = calibration + missing-mechanism (Sprint B-2)**, not an interactivity gap.
+
+**What SURVIVES (the valid theme — keep + route to Stage-2 design):** the finality/authority point above
+(§2b paras 1–2) stands entirely on its own and is **unaffected** by the retraction. An early unsigned
+estimate that **visually feels final/authoritative** — a single frozen QAR figure on a clean card reading as
+a conclusion — is the genuine early-stage honesty gap. That is a **Stage-2 / 2.23.x VISUAL-calibration** item
+(dial authority + finality *down* in early stages) → **routed to the Stage-2 design session**, NOT a copy or
+field fix.
 
 ### 2c. Root principle: user-facing copy must be *derived from* engine truth, not *authored* alongside it
 
@@ -64,7 +92,7 @@ This is the common root of the entire season's honesty findings — they are all
 - **Fabricated condition** (`بحالة جيدة`) — engine had no condition input; copy asserted one.
 - **`Mzad` in the source list** — engine excludes Mzad; copy listed it.
 - **`توفيق ثلاثي الطرق`** — engine is single-approach; copy claimed three.
-- **Dead area field + T2.5 "details may adjust"** — engine accepts no such input; UI promised interactivity.
+- ~~**Dead area field + T2.5 "details may adjust"** — engine accepts no such input~~ → **RETRACTED 2026-06-05 (measured):** the engine **does** accept + consume these inputs (`override_land_area` + the `/api/evaluate/details` fields). Ironically the *design-doc claim itself* drifted from engine truth (wrong endpoint + field name) — a §2c violation **by this note**, now corrected in §2b. The real gap is **calibration** (the inputs are mis-sized — only building SIZE moves the value), not a missing input → Sprint B-2.
 
 **The principle:** user-facing copy describing *what the system did* must be **derived from the engine's actual behaviour at render time**, not written independently and maintained by hand. Hand-authored copy decays silently against an evolving engine — there is no test that fails when prose and behaviour diverge, so the gap is invisible until a user (or a ground-truth case) hits it. The structural fixes that follow from this: copy that asserts a method, an input, a data source, or a confidence level should read its claim from the same field the engine computes from (the T-method `reconciliation['status']`-aware string is the first instance of doing this right), and GONE-style sentinels should assert against the *rendered* surface, not source substrings (E14 appendix). Where copy genuinely cannot be derived, it must be the narrowest honest statement the engine can stand behind.
 

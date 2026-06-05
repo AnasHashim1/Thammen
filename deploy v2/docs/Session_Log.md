@@ -2790,7 +2790,63 @@ PROVISIONAL.
 
 -----
 
-*Last updated: 2026-06-05 (**Sprint 2.22.0a.25 SHIPPED** — CC BY 4.0 MoJ source-attribution footer credit,
+## 20.26 🆕 2026-06-05 — Stage-1 input-honesty sprint CLOSED (premise falsified) + B-2 condition recon — READ-ONLY, NOT SHIPPED
+
+> **No engine change, no deploy. Engine stays a25 / Heroku v164 (byte-identical).** Two docs-only artifacts:
+> this closure + the B-2 recon deliverable `docs/PHASE0_B2_condition_recon.md` (committed `ab15a6b`).
+> **CHANGELOG_v78 records the closed-falsified sprint (NOT a Heroku release; a26 engine tag UNUSED).**
+> Handshake (#57): `/api/health` a25/v164, qars healthy, MoJ **156d**, `master == origin` (`1eeb948` →
+> `ab15a6b` after the recon commit).
+
+**(A) Stage-1 input-honesty sprint — CLOSED, PREMISE FALSIFIED (not shipped).** Scoped to "close the
+dead-area-field / over-promise gap" (remove the `عدّل المساحة` field + soften the "details may adjust" copy).
+**Phase-0 recon (live a25, browser-UA curl #61) falsified the premise:**
+- the `عدّل المساحة` control sends **`override_land_area`** (NOT `area`) — an **accepted + consumed** field on
+  both request models (`api.py:349/388` → `evaluate_unified.py:3324` `plot_area_override`): 56/565/21 2.4M →
+  **4.3M** at override 600 m² (`user_override_applied=true`, bracket 450→600). Working Stage-1 multi-QARS
+  feature (Sprint 2.21.0.9), **not dead**.
+- the optional-details form posts to **`/api/evaluate/details`**, where **every** field it sends (floors /
+  annexes / condition / asking / rental / basement / footprint_m2 / external_majlis / building_age_years /
+  is_luxury / unit-pair) is **declared + consumed** (`EvaluateDetailsRequest` 363-406; threaded
+  `api.py:1041-1046`). condition=good+floors=2+basement=true → 2.4M → **2.8M** (HTTP 200, no 422).
+- **No reachable 422 from the actual UI.** The brief's `{"area":600}→422` tested a field name nothing in the
+  UI ever sends; the `DESIGN_2p23 §2b` "inert engine" claim tested the **wrong endpoint** (`/api/evaluate`,
+  not `/details`). The proposed fix would have **removed a working feature** and made **true copy false**.
+- **Disposition:** CLOSED — premise falsified; **nothing shipped; `index.html` UNTOUCHED; a26 unused.** The
+  surviving valid concern (early estimate *visually feels too final/authoritative*) = the §2a/§2b-para2/§2c
+  authority/finality theme → routed to the **Stage-2 design session** (NOT a dead-field copy fix).
+  CHANGELOG_v78 = the closure record. `DESIGN_2p23 §2b` corrected this pass.
+
+**(B) B-2 condition recon (re-pointed deliverable) — `docs/PHASE0_B2_condition_recon.md` (commit `ab15a6b`).**
+Anas re-pointed the session to the B-2 question. **Verdict: R7 is a CALIBRATION + MISSING-MECHANISM problem,
+decisively NOT UX-prominence.** Feeding the GT-2 confirmed-sale subjects their correct attributes via
+`/details` does **NOT** close the residual: V002 56/565/10 + V003 56/565/12 (new luxury, **SOLD 4.0M** GT-2)
+2.4-2.5M → **2.9M** (still −27.5%); V001 56/647/6 (old, ask 3.8M, clears ~2.9M) 3.8M → **3.7M** (over-anchor
+immovable). **Single-axis disentangle: only `floors`→BUA moves the headline (+0.4M); condition / is_luxury /
+building_age_years contribute ZERO.** Mechanism (`evaluate_unified.py:746/835/3925`): the only headline lever
+is a **+25%-capped, UPWARD-ONLY BUA-size bump**; age/luxury merely *modulate* it, `condition` never reaches it
+→ **no finish/new-build premium, no down-re-anchor to land**; the comparable median is condition-blind at
+source (land ppm² identical with/without attrs). n=2 GT-2 + 1 GT-3 → **motivates, does NOT calibrate**
+(coefficients blocked on n≥20, the 2.16.16 Confirmed-Sales revival). **B-2 needs mechanism work** (a
+finish/new-build premium tied to comparable ppm² + a down-anchor for old non-luxury stock) with the
+condition-blind median as the spine — **not** a prominence-only UX pass.
+
+**Carried forward (Rule #42).** Engineering NEXT = **Sprint B-2** (R7 axis), now framed by the recon as
+*calibration + mechanism*, NOT elicitation-prominence; needs a signed brief (**Gate 2**) + §5 audit;
+coefficients gated on the Confirmed-Sales n≥20 corpus (2.16.16, the binding constraint). CLAUDE.md #65a
+left as-is (live state unchanged a25/v164). The «التقدير السوقي» term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-05 (**Stage-1 input-honesty sprint CLOSED — premise FALSIFIED at Phase 0, NOT shipped**
+[the `عدّل المساحة` override (`override_land_area`) + all `/api/evaluate/details` fields are accepted + consumed
+— no reachable 422; the proposed fix would have removed a working feature; §20.26] **+ B-2 condition recon
+DELIVERED** [`docs/PHASE0_B2_condition_recon.md`, commit `ab15a6b`: **R7 = calibration + missing-mechanism, NOT
+UX-prominence** — feeding correct attrs via `/details` does NOT close the GT-2 residual (V002/V003 2.4-2.5M→2.9M
+still −27.5%; V001 3.8M→3.7M immovable), only `floors`→BUA moves the headline, the lever is a +25%-capped
+upward-only size bump with no finish premium + no down-anchor; n<20 motivates-not-calibrates]; **engine
+UNCHANGED — a25 / Heroku v164, byte-identical, no deploy**; CHANGELOG_v78 = the closure record. Prior: **Sprint
+2.22.0a.25 SHIPPED** — CC BY 4.0 MoJ source-attribution footer credit,
 Heroku **v164** / commit `d9d148a` / CHANGELOG_v77 / §20.25; **user-facing copy / compliance hygiene — NO
 valuation change, value-invariant, every headline + B-1 `value_floor` byte-identical**; persistent verbatim
 AR+EN credit + licence link [creativecommons.org/licenses/by/4.0/] in the results footer, bidi `dir="ltr"`
