@@ -364,9 +364,11 @@ privacy-hardening · a.17 clean-bracket condition caveat · a.18 R9 area-name re
 condition caveat · a.20 A7 rics_compliant status label · a.21 B-1 land-floor/HBU · a.22 B-1.1 framing · a.23
 R15 strata-land a18 · a.24 beta-launch entry gate + Terms/Privacy + DPIA · **a.25 CC BY 4.0 MoJ source
 attribution (Heroku v164)**. **Beta pre-use consent layer + source attribution are now LIVE → the free
-invite-only villas/land beta is invite-ready (remaining = the Aqarat enquiry [held until design done] + the
-invite; the MoJ open-data licence gate is ✅ CLOSED a25 — CC BY 4.0; in-beta feedback flows to Anas's WhatsApp
-per the notice, so the in-app feedback UI [Sprint 2] is not required for the beta).**
+invite-only villas/land beta is invite-ready (pre-invite = cohort + access setup [gate #6, Anas] + the invite;
+the **Aqarat enquiry is a pre-MONETIZATION gate** [held until design done; sent before paid access] — **not a
+pre-invite blocker**; MoJ open-data licence gate ✅ CLOSED a25 — CC BY 4.0; in-beta feedback → Anas's WhatsApp
+per the notice, so the in-app feedback UI [Sprint 2] is not required for the beta). Launch-gating canonical =
+CLAUDE.md #65a.**
 
 **PRIORITY QUEUE (confirmed-current — this is the authoritative "next"):**
 
