@@ -402,54 +402,65 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         <div class="aud-btn" onclick="selAud(this,'valuer')"><span class="aud-icon">📋</span>مثمّن</div>
       </div>
     </div>
-    <div class="fcard">
-      <div class="trow" style="margin-top:0;padding-top:0;border-top:none" onclick="tog()">
-        <span>إضافة تفاصيل العقار (اختياري)</span>
-        <div class="tsw" id="dTog"></div>
-      </div>
-      <div class="det" id="dSec">
-        <div class="fr2">
-          <div class="fg"><label>عدد الطوابق فوق الأرض</label><select id="floors"><option value="">— اختر —</option><option value="1">طابق واحد (أرضي)</option><option value="2">طابقين (أرضي + أول)</option><option value="3">ثلاثة (أرضي + أول + ثاني)</option><option value="4">أربعة</option></select></div>
-          <div class="fg"><label>سرداب (تحت الأرض)</label><select id="basement"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد سرداب</option></select></div>
-        </div>
-        <div class="fr2">
-          <div class="fg"><label>عدد الملاحق</label><select id="annexes"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">ملحق واحد</option><option value="2">ملحقين</option><option value="3">ثلاثة</option></select></div>
-          <div class="fg"><label>مجلس خارجي منفصل</label><select id="externalMajlis"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد</option></select></div>
-        </div>
-        <div class="fr2">
-          <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option></select></div>
-          <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من تنظيم المنطقة" min="0"></div>
-        </div>
-        <div class="fr2">
-          <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" min="0" max="100"></div>
-          <div class="fg"><label>تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="">— اختر —</option><option value="0">لا</option><option value="1">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
-        </div>
-        <div class="fr2">
-          <div class="fg"><label>السعر المطلوب (ر.ق)</label><input type="number" id="askingPrice" placeholder="اختياري" min="0"></div>
-          <div class="fg"><label id="rentalIncomeLabel">الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"></div>
-        </div>
-        <!-- Sprint 2.16.10 — tower/compound rental split (shown only after a quick
-             evaluation reveals the asset is a tower / compound_large / apartment_building).
-             Resolves the ambiguity where a single "monthly rent" field could mean
-             one apartment or the whole building. -->
-        <div id="towerRentSection" class="tower-only" style="display:none;background:var(--alt);border-right:3px solid var(--bronze);padding:10px 12px;margin-top:6px;border-radius:0 6px 6px 0">
-          <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px">
-            <strong>للأبراج والمجمعات الكبيرة:</strong> إذا لم تعرف الإجمالي،
-            أدخل تفاصيل الوحدات بدلاً منه. سيُحسب الإجمالي تلقائياً.
-          </div>
-          <div class="fr2">
-            <div class="fg"><label>عدد الوحدات في البرج</label><input type="number" id="unitCount" placeholder="مثال: 80" min="1" max="500"></div>
-            <div class="fg"><label>متوسط الإيجار الشهري لكل وحدة (ر.ق)</label><input type="number" id="avgRentPerUnit" placeholder="مثال: 12000" min="1"></div>
-          </div>
-        </div>
-        <div class="fr2">
-          <div class="fg"><label>الإيجار الشهري المتوقع (ر.ق)</label><input type="number" id="potentialRental" placeholder="تقدير" min="0"></div>
-          <div class="fg"></div>
-        </div>
-      </div>
-    </div>
+    <!-- Sprint 2.22.0b.2.1 — optional property details relocated to a separate
+         screen (#refineScreen). formScreen is now identification-only; the bare
+         eval posts /api/evaluate, then the user may open «حسّن التقدير» (refine). -->
     <button class="sbtn" id="sBtn" onclick="run()">ثمّن</button>
     <div id="fRes"></div>
+  </div>
+</div>
+
+<!-- REFINE — Sprint 2.22.0b.2.1: optional property details on their own screen (Stage 2). -->
+<div class="screen" id="refineScreen">
+  <div class="tbar">
+    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
+    <div class="tbar-st">تحسين التقدير</div>
+  </div>
+  <div class="fwrap">
+    <button class="bbtn" onclick="go('results')">→ رجوع للنتيجة</button>
+    <div class="ftitle">📐 تفاصيل العقار (المرحلة 2)</div>
+    <div class="fcard">
+      <div class="rn" style="font-size:.85rem;color:var(--muted);margin-bottom:12px;line-height:1.6">أدخِل التفاصيل الفعليّة لعقارك لتدقيق التقدير المبدئي. كل الحقول اختيارية — اترك ما لا تعرفه.</div>
+      <div class="fr2">
+        <div class="fg"><label>عدد الطوابق فوق الأرض</label><select id="floors"><option value="">— اختر —</option><option value="1">طابق واحد (أرضي)</option><option value="2">طابقين (أرضي + أول)</option><option value="3">ثلاثة (أرضي + أول + ثاني)</option><option value="4">أربعة</option></select></div>
+        <div class="fg"><label>سرداب (تحت الأرض)</label><select id="basement"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد سرداب</option></select></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label>عدد الملاحق</label><select id="annexes"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">ملحق واحد</option><option value="2">ملحقين</option><option value="3">ثلاثة</option></select></div>
+        <div class="fg"><label>مجلس خارجي منفصل</label><select id="externalMajlis"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد</option></select></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option></select></div>
+        <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من تنظيم المنطقة" min="0"></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" min="0" max="100"></div>
+        <div class="fg"><label>تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="">— اختر —</option><option value="0">لا</option><option value="1">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
+      </div>
+      <div class="trow" style="margin-top:6px;padding-top:10px"><span style="font-size:.82rem;color:var(--muted);font-weight:600">معلومات مالية (اختياري)</span></div>
+      <div class="fr2">
+        <div class="fg"><label>السعر المطلوب (ر.ق)</label><input type="number" id="askingPrice" placeholder="اختياري" min="0"></div>
+        <div class="fg"><label id="rentalIncomeLabel">الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"></div>
+      </div>
+      <!-- Sprint 2.16.10 — tower/compound rental split (revealed by applyAssetToForm
+           when the asset is a tower / compound_large / apartment_building). -->
+      <div id="towerRentSection" class="tower-only" style="display:none;background:var(--alt);border-right:3px solid var(--bronze);padding:10px 12px;margin-top:6px;border-radius:0 6px 6px 0">
+        <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px">
+          <strong>للأبراج والمجمعات الكبيرة:</strong> إذا لم تعرف الإجمالي،
+          أدخل تفاصيل الوحدات بدلاً منه. سيُحسب الإجمالي تلقائياً.
+        </div>
+        <div class="fr2">
+          <div class="fg"><label>عدد الوحدات في البرج</label><input type="number" id="unitCount" placeholder="مثال: 80" min="1" max="500"></div>
+          <div class="fg"><label>متوسط الإيجار الشهري لكل وحدة (ر.ق)</label><input type="number" id="avgRentPerUnit" placeholder="مثال: 12000" min="1"></div>
+        </div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label>الإيجار الشهري المتوقع (ر.ق)</label><input type="number" id="potentialRental" placeholder="تقدير" min="0"></div>
+        <div class="fg"></div>
+      </div>
+    </div>
+    <button class="sbtn" id="refineBtn" onclick="thammenReEvalGeometry()">احسب التقدير المُحسَّن</button>
+    <div id="refineRes"></div>
   </div>
 </div>
 
@@ -479,7 +490,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 
 <script>
 const API='https://thammen-app-123-227a7106a67a.herokuapp.com';
-let dOpen=false,audience='buyer';
+let audience='buyer';
 
 const ASSET_AR={'standalone_villa':'فيلا منفردة','raw_land':'أرض فضاء','palace':'قصر','compound_small':'مجمع فلل صغير','compound_large':'مجمع فلل كبير','apartment_building':'عمارة سكنية','tower':'برج سكني','commercial':'تجاري','industrial':'صناعي','agricultural':'مزرعة','unknown':'غير محدد'};
 
@@ -517,7 +528,9 @@ function applyAssetToForm(assetType){
 // Used by the insufficient-data CTA so users land exactly where their next
 // required input lives (rentalIncome for towers, askingPrice for others).
 function goForm(focusId){
-  go('form');
+  // Sprint 2.22.0b.2.1 — the optional inputs (incl. the tower rent split) now
+  // live on #refineScreen, so the insufficient-data CTA navigates there.
+  go('refine');
   // Sprint 2.16.10 — propagate asset_type from the last result so the form
   // adapts. The last result is cached in window._lastResult by run().
   try{
@@ -608,7 +621,8 @@ function selTab(t){
   document.getElementById('grpAddr').style.display=(t==='address')?'':'none';
   document.getElementById('grpLand').style.display=(t==='land')?'':'none';
 }
-function tog(){dOpen=!dOpen;document.getElementById('dTog').classList.toggle('on',dOpen);document.getElementById('dSec').classList.toggle('open',dOpen)}
+// Sprint 2.22.0b.2.1 — tog()/dOpen removed: the optional-details toggle was on
+// formScreen; those inputs now live on the always-visible #refineScreen.
 function fmt(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('ar-QA')}
 
 async function run(){
@@ -637,40 +651,14 @@ async function run(){
   const stepTimer=setInterval(()=>{stepIdx++;if(stepIdx<steps.length)renderLoading();},6000);
   const elapsedTimer=setInterval(renderLoading,1000);
   try{
-    if(dOpen){
-      const f=document.getElementById('floors').value,
-            a=document.getElementById('annexes').value,
-            c=document.getElementById('condition').value,
-            p=document.getElementById('askingPrice').value,
-            ri=document.getElementById('rentalIncome').value,
-            pr=document.getElementById('potentialRental').value,
-            bsmt=document.getElementById('basement').value,
-            fp=document.getElementById('footprintM2').value,
-            em=document.getElementById('externalMajlis').value,
-            ba=document.getElementById('buildingAge').value,
-            lx=document.getElementById('isLuxury').value,
-            // Sprint 2.16.10 — tower/compound rental split
-            uc=document.getElementById('unitCount').value,
-            apu=document.getElementById('avgRentPerUnit').value;
-      if(f)bd.floors=+f;
-      if(a)bd.annexes=+a;
-      if(c)bd.condition=c;
-      if(p)bd.asking_price=+p;
-      if(ri)bd.rental_income=+ri;
-      if(pr)bd.potential_rental=+pr;
-      if(bsmt!=='')bd.basement=(bsmt==='1');
-      if(fp)bd.footprint_m2=+fp;
-      if(em!=='')bd.external_majlis=(em==='1');
-      if(ba)bd.building_age_years=+ba;
-      if(lx!=='')bd.is_luxury=(lx==='1');
-      // Sprint 2.16.10 — send the pair only when BOTH are present (engine derives total)
-      if(uc&&apu){bd.unit_count=+uc;bd.avg_monthly_rent_per_unit=+apu;}
-    }
-    // Sprint 2.21.0.9 — remember this submission so the multi_qars UI can
-    // re-submit with `override_land_area` (the "value whole structure" toggle
-    // + the manual override field).
-    window._lastSubmit={endpoint:'/api/evaluate/details', body:JSON.parse(JSON.stringify(bd))};
-    const r=await fetch(API+'/api/evaluate/details',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
+    // Sprint 2.22.0b.2.1 — formScreen is identification-only; the bare eval posts
+    // /api/evaluate. Optional property details now live on #refineScreen and are
+    // submitted via thammenReEvalGeometry() → /api/evaluate/details (Stage 2).
+    // Sprint 2.21.0.9 — remember this submission so the multi_qars UI + the refine
+    // step can re-submit (override_land_area / building details). Both endpoints
+    // accept override_land_area (§20.26), so the bare endpoint is safe here.
+    window._lastSubmit={endpoint:'/api/evaluate', body:JSON.parse(JSON.stringify(bd))};
+    const r=await fetch(API+'/api/evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
     if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
     const data=await r.json();
     window._lastResult=data;
@@ -735,23 +723,37 @@ function thammenReEvalOverrideFromInput(){
 // standalone_villa, §20.12); raw_land + refusals are excluded.
 function _b2IsBuilding(at){return at==='standalone_villa'||at==='villa'||at==='house';}
 
-// Sprint 2.22.0b.2 — Stage-2 geometry re-eval (WRAP): re-POST /details with the
-// confirmed footprint/floors/basement via the proven window._lastSubmit pattern.
-// Mirrors thammenReEvalOverride; backend caps the footprint to the zone ceiling
-// and surfaces effective_footprint_m2, which the result card then discloses (F3).
+// Sprint 2.22.0b.2.1 — Stage-2 refine submit (separate screen #refineScreen):
+// read the relocated optional property-details inputs, re-POST
+// /api/evaluate/details via the proven window._lastSubmit pattern, then navigate
+// back to the (refined) results. The backend caps the footprint to the zone
+// ceiling and surfaces effective_footprint_m2, which the result card discloses
+// (F3). Mirrors the field mapping run() used before the inputs were relocated.
 async function thammenReEvalGeometry(){
-  if(!window._lastSubmit||!window._lastSubmit.body){return;}
-  const fpEl=document.getElementById('b2Footprint');
-  const flEl=document.getElementById('b2Floors');
-  const bsEl=document.getElementById('b2Basement');
-  const fp=fpEl?(fpEl.value||'').trim():'';
-  const fl=flEl?(flEl.value||'').trim():'';
+  if(!window._lastSubmit||!window._lastSubmit.body){go('form');return;}
+  const val=function(id){const el=document.getElementById(id);return el?(el.value||'').trim():'';};
+  const f=val('floors'),a=val('annexes'),c=val('condition'),
+        p=val('askingPrice'),ri=val('rentalIncome'),pr=val('potentialRental'),
+        bsmt=val('basement'),fp=val('footprintM2'),em=val('externalMajlis'),
+        ba=val('buildingAge'),lx=val('isLuxury'),
+        uc=val('unitCount'),apu=val('avgRentPerUnit');
   const bd=JSON.parse(JSON.stringify(window._lastSubmit.body));
+  // clear-or-set each optional field so re-refining never carries a stale value
+  if(f)bd.floors=+f; else delete bd.floors;
+  if(a)bd.annexes=+a; else delete bd.annexes;
+  if(c)bd.condition=c; else delete bd.condition;
+  if(p)bd.asking_price=+p; else delete bd.asking_price;
+  if(ri)bd.rental_income=+ri; else delete bd.rental_income;
+  if(pr)bd.potential_rental=+pr; else delete bd.potential_rental;
+  if(bsmt!=='')bd.basement=(bsmt==='1'); else delete bd.basement;
   if(fp&&+fp>0)bd.footprint_m2=+fp; else delete bd.footprint_m2;
-  if(fl)bd.floors=+fl; else delete bd.floors;
-  if(bsEl)bd.basement=!!bsEl.checked;
+  if(em!=='')bd.external_majlis=(em==='1'); else delete bd.external_majlis;
+  if(ba)bd.building_age_years=+ba; else delete bd.building_age_years;
+  if(lx!=='')bd.is_luxury=(lx==='1'); else delete bd.is_luxury;
+  // Sprint 2.16.10 — send the tower pair only when BOTH present (engine derives total)
+  if(uc&&apu){bd.unit_count=+uc;bd.avg_monthly_rent_per_unit=+apu;} else {delete bd.unit_count;delete bd.avg_monthly_rent_per_unit;}
   const ep=window._lastSubmit.endpoint||'/api/evaluate/details';
-  // a footprint/floors confirm is a building-details submission → /details
+  // a property-details confirm is a /details submission (bare eval used /api/evaluate)
   const endpoint=(ep.indexOf('/details')>=0)?ep:'/api/evaluate/details';
   const banner=document.createElement('div');
   banner.id='_mqReevalBanner';
@@ -765,9 +767,11 @@ async function thammenReEvalGeometry(){
     window._lastResult=data;
     window._lastSubmit={endpoint:endpoint, body:bd};
     show(data);
-    window.scrollTo({top:0, behavior:'smooth'});
+    go('results');
   }catch(e){
-    alert('⚠️ '+(e.message||'حدث خطأ'));
+    const rr=document.getElementById('refineRes');
+    if(rr)rr.innerHTML='<div class="err" style="margin-top:14px">⚠️ '+(e.message||'حدث خطأ')+'</div>';
+    else alert('⚠️ '+(e.message||'حدث خطأ'));
   }finally{
     const b=document.getElementById('_mqReevalBanner');
     if(b)b.remove();
@@ -1198,9 +1202,11 @@ function show(d){
     }
   }
 
-  // ── Sprint 2.22.0b.2 — guided Stage-2 geometry confirm (WRAP) ──
-  // BUILDING (villa/house) paths only (brief F2 — excludes raw_land + refusals;
-  // also tightens the b1 quirk of rendering the card on bare land).
+  // ── Sprint 2.22.0b.2.1 — Stage-2 geometry summary (DISPLAY-ONLY) ──
+  // BUILDING (villa/house) paths only (brief F2 — excludes raw_land + refusals).
+  // The INPUTS now live on the separate #refineScreen; this card shows the
+  // assumed/confirmed footprint + F3 cap disclosure + F4 basement note, and the
+  // button navigates to #refineScreen (thammenReEvalGeometry submits from there).
   if(hasValuation&&v.geometry&&v.geometry.suggested_footprint_m2&&_b2IsBuilding(d.asset_type)){
     const g=v.geometry;
     const confirmed=g.footprint_basis==='confirmed';
@@ -1208,9 +1214,6 @@ function show(d){
     const rawFp=lb.footprint_m2||null;                  // value the user submitted (uncapped)
     const eff=g.effective_footprint_m2;                 // value the engine actually used (post-cap)
     const capFired=confirmed&&eff&&rawFp&&eff<rawFp;    // brief F3: disclose ONLY when the zone cap bit
-    const pfFloors=lb.floors||'';
-    const pfFp=confirmed?(rawFp||g.suggested_footprint_m2):g.suggested_footprint_m2;
-    const pfBsmt=(lb.basement===true);
     h+='<div class="rc" style="border-color:#d9c7a8;background:#faf7f1">';
     h+='<div class="rt" style="margin-bottom:6px;color:#8b6e44">📐 '+(confirmed?'مساحة البناء الأرضي (مؤكَّد ✓)':'حسّن التقدير (المرحلة 2)')+'</div>';
     if(confirmed){
@@ -1221,14 +1224,7 @@ function show(d){
       if(g.zone_max_coverage_pct) h+=' · حدّ التغطية النظامي '+(g.zoning_code?('('+g.zoning_code+') '):'')+g.zone_max_coverage_pct+'%';
       h+='). أدخل تفاصيل البناء الفعليّة لتدقيقه:</div>';
     }
-    h+='<div class="fr2" style="margin-top:8px">';
-    h+='<div class="fg"><label style="font-size:.78rem">عدد الطوابق فوق الأرض</label><select id="b2Floors"><option value="">— اختر —</option>'
-       +[1,2,3,4].map(function(n){return '<option value="'+n+'"'+(String(pfFloors)===String(n)?' selected':'')+'>'+n+'</option>';}).join('')
-       +'</select></div>';
-    h+='<div class="fg"><label style="font-size:.78rem">مساحة البناء الأرضي (م²)</label><input type="number" id="b2Footprint" min="0" value="'+(pfFp||'')+'"></div>';
-    h+='</div>';
-    h+='<label style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#555;margin-top:4px;cursor:pointer"><input type="checkbox" id="b2Basement"'+(pfBsmt?' checked':'')+'> يوجد سرداب (تحت الأرض)</label>';
-    h+='<button onclick="thammenReEvalGeometry()" style="margin-top:10px;width:100%;padding:10px;background:var(--bronze);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:.9rem;cursor:pointer">احسب التقدير المُحسَّن</button>';
+    h+='<button onclick="go(\'refine\')" style="margin-top:10px;width:100%;padding:10px;background:var(--bronze);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:.9rem;cursor:pointer">'+(confirmed?'عدّل التفاصيل':'حسّن التقدير (المرحلة 2)')+'</button>';
     h+='<div class="rn" style="font-size:.78rem;color:#999;margin-top:8px">السرداب (إن وُجد) يُعرض ويُلتقَط لكنه لا يُحرّك تقدير المقارنة.</div>';
     h+='</div>';
   }
