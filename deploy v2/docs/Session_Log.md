@@ -2926,7 +2926,81 @@ Engine UNCHANGED a25/v164; commit origin-only (hash in git log). The «التق�
 
 -----
 
-*Last updated: 2026-06-05 (**Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
+## 20.29 🆕 2026-06-06 — Sprint 2.22.0b.1 (Geometry Refinement: zoning-driven footprint + basement excluded) — DEPLOYED Heroku v165
+
+> Engine `thammen-sprint2p22p0b1-geometry-zoning-footprint` / SPRINT_TAG `2.22.0b.1` / api-health
+> `3.1.0-sprint2.22.0b.1`. **Methodology — villa/house building-component refinement** (Gate-2 SIGNED: Anas
+> «افعل الأصوب» ×2 + Claude.ai's R14-verified rulings + «افعلا الأصوب»). Commit `4b39ba2` → Heroku **v165**
+> (`git subtree push`, clean `726a6a5..bcbf933`, on Anas's "b1 يُدفَع أولاً" sequencing directive) → origin in
+> sync `4b39ba2`. CHANGELOG_v79. **First sprint of the 2.22.0b staged-input arc.**
+
+**Recon RESHAPED the signed brief (the §20.26 lesson again).** Phase-0 found the geometry-capture machinery
+already LIVE on `/api/evaluate/details` (the frontend `run()` posts there — index.html:673 → footprint/floors/
+basement → `_build_smart_bua` → `_building_substantiality`). So the brief's §6 ("add fields to the quick
+`/api/evaluate`") was **dead** (the quick endpoint isn't the geometry path), and "basement separate / floors
+above-ground" already held. Claude.ai independently RE-VERIFIED live (R14) and sharpened three points: (1) no
+silent default (no geometry → `bua=None`); (2) the substantiality lever is in a **dead zone for typical villas**
+(fires only at large BUA); (3) **the basement DID drive the comparison headline** (+11.5% on a25, 350/3) —
+confirmed in code (`BuaBreakdown.total_bua` includes `basement_m2` → fed to `_building_substantiality`). → scope
+locked to **3 deltas + augment-existing-panel** (full guided §4 UX deferred — it was built on the now-falsified
+"capture doesn't exist" premise).
+
+**What shipped (`evaluate_unified.py` + `index.html`):**
+- **(أ) zoning-driven footprint** — new QNMP `ZONE_MAX_COVERAGE` (R1=0.60 / R2=0.50) + `_zone_max_coverage` +
+  `_suggested_footprint` (= plot × 0.8 × ceiling, **capped at the legacy `_typical_footprint`** so the assumed
+  default can NEVER silently inflate — §5.2-B) + `_extract_zoning_code` (reuses the already-fetched zoning factor,
+  **zero extra GIS call**). Confirmed footprints are capped at the **zone ceiling** (0.60/0.50) instead of the flat
+  `MAX_COVERAGE=0.80` → anti-inflation on user-entered large footprints.
+- **(ب) basement EXCLUDED from the comparison driver** — at the substantiality stage a dedicated above-ground
+  `subst_bua` is built with `basement=False` + the zone-aware footprint, fed to the UNCHANGED
+  `_building_substantiality`. The DISPLAY `bua_breakdown` (with basement, for `qar_per_m2_bua`/DRC/capture) is left
+  untouched (§5.5 — basement captured/displayed + a future-DRC input, NOT a sales-comp premium).
+- **(ج) MVU labelling** — surfaces `valuation.geometry` {zoning_code, zone_max_coverage_pct, suggested_footprint_m2,
+  footprint_basis, basement_in_comparison:false, note_ar} (additive — does NOT touch `amount`) + an
+  "assumed-footprint" known-unknown when the comparison used the suggestion. Frontend: footprint placeholder hint +
+  a muted `.rc`/`.rn` card («تقديري — عدّل» / «مؤكَّد») — augment-existing-panel, **no auto-prefill** (keeps
+  "assumed" honest until the user enters a measured value). DROPPED §6 (/quick) — superseded by recon.
+
+**Architecture (Rule #39).** The clean zoning code is only available post-factors (parsed in `_run_geometric`), not
+at the `_build_smart_bua` call site → the zoning-aware footprint + basement exclusion are applied at the
+substantiality stage (where zoning is available, reusing it). `_run_geometric`'s zoning parse refactored to the
+shared `_extract_zoning_code` (DRY, byte-identical).
+
+**Verification.** py_compile OK; isolated `test_sprint_2_22_0b1.py` **34/34** (production functions, E14: zoning
+table + legacy fallback; **no-inflation invariant** [suggested ≤ legacy for all plots/zones incl. the large-plot
+cap]; basement-excluded lowers the driver; zone-cap tighter than legacy; no-building-input → None [anchors path
+untouched]). DoD **392 / 15 / 45 / 67** (broad 66→67 = the new test). **R14 real Chromium (EXECUTED, node absent):**
+whole-file JS parses, **0 console errors**, geometry card at **390×844** no overflow (cardScroll==cardClient, page
+no horizontal overflow). **Local E2E on the REAL engine** (GIS reachable here) on 56/565/21 — and it CAUGHT a §5.2
+large-plot inflation edge (0.8×0.60 > legacy 0.45 on >800 m² plots) → fixed by cap-at-legacy + a test invariant,
+re-verified.
+
+**Live two-lane post-deploy smoke v165 (browser-UA curl, #61):**
+
+| case | amount | method | geometry | subst_adj | verdict |
+|---|---|---|---|---|---|
+| 56/565/21 | **2,400,000** | comparison_bracket | 405 assumed R1 | — | anchor byte-identical ✓ |
+| 54/541/6 | **5,400,000** | comparison_thin | 294 assumed R1 | — | byte-identical ✓ |
+| 55/296/13 | **2,600,000** | comparison_thin | 472 assumed R1 | — | byte-identical ✓ |
+| 52/903/90 | None | insufficient_data | — | — | refusal byte-identical ✓ |
+| 56/565/21 floors=3 | 2,800,000 | comparison_bracket | 405 assumed | 15.0 | geometry path ✓ |
+| 56/565/21 floors=3 + **basement** | **2,800,000** ≡ fl3 | comparison_bracket | 405 assumed | **15.0** | **basement EXCLUDED LIVE** ✓ |
+| 56/565/21 floors=3 + fp=600 | 2,900,000 | comparison_bracket | 405 **confirmed** | 20.0 | fp capped 600→540 ✓ |
+
+4 anchors byte-identical (no building input → substantiality skipped); basement no longer moves the headline (was
++11.5% on a25); confirmed footprint capped at the zone ceiling. Rule #52 closed MEASURED.
+
+**Carried forward (Rule #42).** **NEXT = Sprint 2.22.0b.2** (guided 3-stage input flow — **frontend only**,
+consumes b1's geometry surface) = **Gate-2 DRAFT awaiting Anas's signature** (depends on b1 live ✓; §5 audit NOT
+started). **B-2** (R7 condition mechanism) still PARKED on n≥20. Minor follow-ups (out of b1 scope, Rule #38):
+(1) **multi-QARS footprint basis** — the suggestion uses the full `pdarea` (e.g. 900), not the per-villa effective
+(450); pre-existing (`_typical_bua_for_plot` does the same); (2) **display-vs-comparison footprint nuance** — the
+muted `qar_per_m2_bua` line uses the display BUA (with basement); the comparison driver uses the above-ground
+zone-aware BUA (intentional per §5.5). The «التقدير السوقي» term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-06 (**Sprint 2.22.0b.1 [Geometry Refinement — zoning-driven footprint + basement excluded from the comparison driver] SHIPPED** — Heroku **v165** / commit `4b39ba2` / CHANGELOG_v79 / §20.29; **value-invariant on no-building-input anchors** [live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal], **basement excluded LIVE** [fl3 ≡ fl3+basement = 2.8M], fp-cap [600→540 → 2.9M], geometry surfaced; recon reshaped the brief → 3 deltas + augment-panel; isolated 34/34 + DoD 392/15/45/67 + R14 real-Chromium + local E2E [caught/fixed a §5.2 large-plot inflation edge]; origin in sync `4b39ba2`. **NEXT = Sprint 2.22.0b.2** [guided 3-stage flow, frontend-only] = Gate-2 DRAFT awaiting signature. Prior: **Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
 for n≥20** [Fork#1=MODERATE Lever-2 re-anchor; Fork#2=WAIT-for-n≥20; Rule #54 web-check PASS — VPS 2 / VPGA 10 /
 IVS 102 confirmed, stated condition = assumption+MVU NOT Special Assumption, +IVS 104; §5 audit DECISIVE — local
 `luxury_new` stratum **n=0** in both motivating areas → Lever 1 must be corpus-calibrated not per-area MoJ →
