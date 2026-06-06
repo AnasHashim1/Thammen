@@ -625,6 +625,48 @@ function selTab(t){
 // formScreen; those inputs now live on the always-visible #refineScreen.
 function fmt(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('ar-QA')}
 
+// ── Sprint 2.22.0b.2.2 — evidence-quality diagnosis (DESIGN_2p2x §3) ──
+// Four components, each rated قوي/متوسط/محدود and DERIVED from the engine field
+// that governs it (§2c derive-don't-author). The «explanation≠confidence» guard
+// is STRUCTURAL: a component reads ONLY uncertainty-reducing inputs — explanatory
+// content (decomposition / GIS / trend) is NOT an input to any rating, so adding
+// explanation moves no component. Condition stays unverified (caps characterization
+// at متوسط) until B-2 (PARKED). N/A characterization for raw_land. Pure (given d).
+function _evidenceRatings(d){
+  var v=d.valuation||{}, g=v.geometry||{}, ui=d.user_inputs||{}, fr=d.data_freshness||{};
+  var S='قوي', M='متوسط', L='محدود', NA='—';
+  var confirmed=(g.footprint_basis==='confirmed');
+  var n=v.n_transactions, meth=v.method, ft=(fr.tier||'').toLowerCase();
+  // 1 — اكتمال بيانات العقار: coverage of REAL user inputs (moves only via refine)
+  var c1=L; if(confirmed&&ui.condition){c1=S;} else if(confirmed){c1=M;}
+  // 2 — جودة المقارنات: n_transactions + method (RICS thresholds n≥20 reliable / 10-19 indicative)
+  var c2=L; if(n&&n>=20&&meth==='comparison_bracket'){c2=S;} else if(n&&n>=10){c2=M;}
+  // 3 — حداثة بيانات السوق: MoJ freshness tier (market-wide; stale today → محدود for all)
+  var c3=L; if(ft&&ft!=='stale'){c3=(ft.indexOf('fresh')>=0||ft.indexOf('current')>=0)?S:M;}
+  // 4 — جودة توصيف المبنى: building only; condition never verified → caps at متوسط; N/A land
+  var c4; if(d.asset_type==='raw_land'){c4=NA;} else if(confirmed){c4=M;} else {c4=L;}
+  return [['اكتمال بيانات العقار',c1],['جودة المقارنات',c2],['حداثة بيانات السوق',c3],['جودة توصيف المبنى',c4]];
+}
+function _evPill(rt){
+  if(rt==='—')return '<span style="font-size:.78rem;color:#999">غير منطبق — أرض</span>';
+  var m={'قوي':['#0c7d41','#e6f7ed'],'متوسط':['#9a7300','#fff7e6'],'محدود':['#777','#f0f0f0']};
+  var c=m[rt]||m['محدود'];
+  return '<span style="display:inline-block;padding:2px 12px;border-radius:12px;font-size:.78rem;font-weight:600;color:'+c[0]+';background:'+c[1]+'">'+rt+'</span>';
+}
+function evidencePanelHtml(d,acc){
+  var rows=_evidenceRatings(d);
+  var h='<div class="rc"><div class="rt" style="margin-bottom:4px">📊 جودة الأدلّة</div>';
+  h+='<div class="rn" style="font-size:.78rem;color:#999;margin-bottom:6px">قوّة البيانات خلف التقدير على أربعة محاور — تتحسّن بمدخلات حقيقية تخصّ كل محور، لا بالشرح.</div>';
+  rows.forEach(function(row){
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid #f2f2f2;font-size:.85rem"><span>'+row[0]+'</span>'+_evPill(row[1])+'</div>';
+  });
+  if(acc&&acc.explanation_ar){
+    h+='<div class="rn" style="margin-top:8px;font-size:.8rem;color:#666;line-height:1.6"><strong>المقارنات:</strong> '+acc.explanation_ar+'</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
 async function run(){
   // Sprint 2.21.0: build request body from the active input tab (address XOR PIN).
   let bd;
@@ -1031,10 +1073,10 @@ function show(d){
 
   // ── Main info card (only if we have a real valuation) ──
   if(hasValuation){
-    let bc='rb-w',bt=acc.label||'⚠️ يحتاج فحص';
-    if(acc.score>=70){bc='rb-ok';bt=acc.label||'🟢 تقدير موثوق'}
-    else if(acc.score<40){bc='rb-bad';bt=acc.label||'🟠 تقدير تقريبي'}
-    h+='<div class="rc"><div class="rh"><div class="rt">نتيجة التقدير السوقي</div><div class="rb '+bc+'">'+bt+'</div></div><div class="rg">';
+    // Sprint 2.22.0b.2.2 — binary confidence badge removed (DESIGN §3); the
+    // 4-component evidence-quality panel (in the valuation card below) is the
+    // confidence surface. acc.explanation_ar moves into the panel (neutral footer).
+    h+='<div class="rc"><div class="rh"><div class="rt">نتيجة التقدير السوقي</div></div><div class="rg">';
     if(d.address)h+=ri('العنوان',d.address,0,1);
     if(d.district)h+=ri('المنطقة',d.district);
     if(d.plot_area_m2)h+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
@@ -1088,13 +1130,12 @@ function show(d){
     if(d.moj_sample_size){
       h+='<div class="ri" style="margin-bottom:10px"><div class="rl">صفقات البيع المسجلة لعقارات مشابهة</div><div class="rv">'+d.moj_sample_size+' صفقة</div></div>';
     }
-    // ── Accuracy explanation (new — explains what the label means) ──
-    if(acc.explanation_ar){
-      const tierColor=acc.tier==='high'?'#0c7d41':acc.tier==='medium'?'#9a7300':acc.tier==='low'?'#a8131c':'#666';
-      const tierBg=acc.tier==='high'?'#e6f7ed':acc.tier==='medium'?'#fff7e6':acc.tier==='low'?'#fdecec':'#f5f5f5';
-      h+='<div style="margin-top:10px;padding:12px 14px;background:'+tierBg+';border-radius:8px;font-size:.86rem;line-height:1.7;color:'+tierColor+'"><strong>ما معنى ذلك؟</strong> '+acc.explanation_ar+'</div>';
-    }
+    // ── Sprint 2.22.0b.2.2 — evidence-quality diagnosis panel (DESIGN §3 / §2b):
+    // replaces the binary badge + the tier-coloured "ما معنى ذلك؟" block. The
+    // comparables explanation is kept as a neutral footer inside the panel
+    // (evidence-count-forward), no longer tier-coloured.
     h+='</div>';
+    h+=evidencePanelHtml(d,acc);
   }
 
   // ── BRIEF SECTIONS (Sprint D — was missing entirely) ──
