@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b1-geometry-zoning-footprint'
-SPRINT_TAG = '2.22.0b.1'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b2-staged-input-flow'
+SPRINT_TAG = '2.22.0b.2'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -3990,18 +3990,21 @@ def evaluate_thammen(
     _zone_ceiling = _zone_max_coverage(_zoning_code)
     _suggested_fp = _suggested_footprint(_plot_area_for_bua, _zoning_code)
     _fp_confirmed = bool(footprint_m2 and footprint_m2 > 0)
+    # Sprint 2.22.0b.2 — EFFECTIVE ground footprint actually used by the COMPARISON
+    # driver, computed ONCE here (single source of truth) and reused by the
+    # substantiality stage + the geometry surface (effective_footprint_m2), so the
+    # surfaced value can NEVER drift from the value the engine used (brief F3):
+    #   confirmed → user value, capped at the zone ceiling (anti-inflation, §5.2-B)
+    #   assumed   → the conservative zoning suggestion (§4)
+    if _fp_confirmed:
+        _eff_fp = float(footprint_m2)
+        if _plot_area_for_bua:
+            _eff_fp = min(_eff_fp, _plot_area_for_bua * _zone_ceiling)
+    else:
+        _eff_fp = float(_suggested_fp) if _suggested_fp else None
     if (bua_breakdown is not None
             and output.get('valuation') and output['valuation'].get('amount')):
         try:
-            # Effective ground footprint for the COMPARISON driver:
-            #   confirmed → user value, capped at the zone ceiling (anti-inflation)
-            #   assumed   → the conservative zoning suggestion (brief §4 / §5.2-B)
-            if _fp_confirmed:
-                _eff_fp = float(footprint_m2)
-                if _plot_area_for_bua:
-                    _eff_fp = min(_eff_fp, _plot_area_for_bua * _zone_ceiling)
-            else:
-                _eff_fp = float(_suggested_fp) if _suggested_fp else None
             # Above-ground comparison BUA: basement EXCLUDED (Gate-2 §5.5 — the
             # basement is captured/displayed + a future DRC input, NOT a
             # sales-comparison driver). The DISPLAY bua_breakdown (with basement,
@@ -4106,6 +4109,11 @@ def evaluate_thammen(
             'zoning_code': _zoning_code,
             'zone_max_coverage_pct': round(_zone_ceiling * 100),
             'suggested_footprint_m2': _suggested_fp,
+            # Sprint 2.22.0b.2 (brief F3): the post-cap footprint the comparison
+            # ACTUALLY used (confirmed → capped user value; assumed → == suggestion).
+            # Lets the UI show the effective figure + disclose the zone cap, instead
+            # of echoing an uncapped input the engine never used (derive-don't-author).
+            'effective_footprint_m2': (round(_eff_fp) if _eff_fp is not None else None),
             'footprint_basis': 'confirmed' if _fp_confirmed else 'assumed',
             'basement_in_comparison': False,
             'note_ar': (

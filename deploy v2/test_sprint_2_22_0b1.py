@@ -111,7 +111,8 @@ check("unknown zoning suggested == legacy typical", EU._suggested_footprint(700,
 print("=" * 64)
 print("T7 — version format (R6: no exact pins, format only)")
 check("ENGINE_VERSION starts 'thammen-sprint'", EU.ENGINE_VERSION.startswith('thammen-sprint'))
-check("ENGINE_VERSION is the b1 geometry sprint", 'b1' in EU.ENGINE_VERSION and 'geometry' in EU.ENGINE_VERSION)
+check("ENGINE_VERSION dotted-sprint format (R6: no exact pin — survives bumps)",
+      re.match(r'^thammen-sprint\d+p\d+p\d+', EU.ENGINE_VERSION) is not None)
 check("SPRINT_TAG dotted-numeric prefix", re.match(r'^\d+\.\d+\.\d+', EU.SPRINT_TAG) is not None)
 
 print("=" * 64)

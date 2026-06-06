@@ -3042,6 +3042,46 @@ the actual brief (esp. F3 + F5). **HOLD on build** until then.
 
 -----
 
+## 20.31 🆕 2026-06-06 — Sprint 2.22.0b.2 (guided staged-input flow, WRAP) — BUILT + DoD-GREEN, HELD at Gate-1 (push pending)
+
+> **Code complete + locally verified; NOT deployed.** Heroku stays **v165 / b1** until Anas's Gate-1 push
+> consent (CHANGELOG_v80 §6). Local engine code = b2 (`thammen-sprint2p22p0b2-staged-input-flow`). Brief
+> Gate-2 **SIGNED** + saved (`docs/BRIEF_Sprint2p22p0b2_staged_input_flow_SIGNED.md`, `21f2e53`, Rule #63).
+> Committed origin-only. Built under Anas's «افعل الأصوب واكمل» delegation.
+
+**What.** WRAP (not wizard) of the existing single-screen form into an explicit revisable Stage-2 (E16):
+the geometry card frames the first result «تقدير مبدئي» with an inline «حسّن التقدير (المرحلة 2)» confirm
+(floors / footprint / basement) that re-POSTs `/api/evaluate/details` via the proven `window._lastSubmit`
+re-eval loop. Plus the one backend honesty-completion (brief F3): surface `effective_footprint_m2` = the
+**post-cap** footprint the comparison ACTUALLY used (b1 capped 600→540 but exposed only the 405 assumption).
+
+**Signed decisions (brief F1–F5).** F1 WRAP frontend-staging; **F2** gate the confirm to building (villa/
+house) asset-types via `_b2IsBuilding` — excludes raw_land (the b1 card quirk, fixed) + refusals; **F3 = (b)**
+add the value-invariant `effective_footprint_m2` + disclose the zone cap when `effective < input`
+(derive-don't-author, DESIGN_2p23 §2c); **F4** basement copy verbatim; **F5** the §2b authority/finality
+dial-down DEFERRED to a separate **b.3** (multi-AI, #54). Rule #39 deviation: the Stage-2 inputs are realised
+**inline on the results card** (self-contained) not by scrolling to `dSec` — same endpoint + pattern, gated F2.
+
+**Backend (value-invariant).** Hoisted `_eff_fp` to a single source of truth (reused by the substantiality
+stage + the geometry surface → cannot drift, no duplicate cap logic) + added `effective_footprint_m2 =
+round(_eff_fp)`. `api.py` UNTOUCHED.
+
+**Verification.** isolated `test_sprint_2_22_0b2.py` **22/22** + b1 **34/34** (R6 version-pin relaxed to a
+`^thammen-sprint\d+p\d+p\d+` format check — same class as a5/a8, test-only); DoD aggregator **392** gate /
+security **15** / surface-honesty **45** / broad auto-walk **68/68 clean** (164s, no flake); **local E2E on
+the real engine** (GIS reachable) value-invariant — 56/565/21 bare **2.4M** (suggested 405 = effective 405,
+assumed), fl3+fp600 **2.9M** (effective **540** capped, confirmed), +basement **2.9M** (basement excluded);
+**R14 real-Chromium 390×844** (node absent) — **0 console errors**, all functions defined, F2 gate live
+(villa→show, raw_land→**excluded**), confirmed card «اعتُمدت ٥٤٠ م²» + cap disclosure + button + basement
+line, assumed card «حسّن التقدير (المرحلة 2)» + «تقدير مبدئي», **no overflow** (page 390, card 349, right 370).
+CHANGELOG_v80.
+
+**HELD at Gate-1.** Awaiting Anas's explicit push consent → then `git subtree push` Heroku + `git push
+origin` + live 4-anchor (2.4M/5.4M/2.6M/refusal) + `/details` fp600 → effective_footprint_m2:540 smoke (#61,
+#52) → flip this entry to SHIPPED (Heroku vNNN). **B-2 untouched (PARKED, n≥20). b.3 (§2b dial-down) deferred.**
+
+-----
+
 *Last updated: 2026-06-06 (**Sprint 2.22.0b.1 [Geometry Refinement — zoning-driven footprint + basement excluded from the comparison driver] SHIPPED** — Heroku **v165** / commit `4b39ba2` / CHANGELOG_v79 / §20.29; **value-invariant on no-building-input anchors** [live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal], **basement excluded LIVE** [fl3 ≡ fl3+basement = 2.8M], fp-cap [600→540 → 2.9M], geometry surfaced; recon reshaped the brief → 3 deltas + augment-panel; isolated 34/34 + DoD 392/15/45/67 + R14 real-Chromium + local E2E [caught/fixed a §5.2 large-plot inflation edge]; origin in sync `4b39ba2`. **NEXT = Sprint 2.22.0b.2** [guided 3-stage flow, frontend-only] = Gate-2 DRAFT awaiting signature. Prior: **Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
 for n≥20** [Fork#1=MODERATE Lever-2 re-anchor; Fork#2=WAIT-for-n≥20; Rule #54 web-check PASS — VPS 2 / VPGA 10 /
 IVS 102 confirmed, stated condition = assumption+MVU NOT Special Assumption, +IVS 104; §5 audit DECISIVE — local

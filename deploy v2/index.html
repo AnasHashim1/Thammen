@@ -730,6 +730,50 @@ function thammenReEvalOverrideFromInput(){
   thammenReEvalOverride(v);
 }
 
+// Sprint 2.22.0b.2 — Stage-2 geometry confirm gate (brief F2): show the building
+// footprint-confirm only for villa/house subjects (today both classify
+// standalone_villa, §20.12); raw_land + refusals are excluded.
+function _b2IsBuilding(at){return at==='standalone_villa'||at==='villa'||at==='house';}
+
+// Sprint 2.22.0b.2 — Stage-2 geometry re-eval (WRAP): re-POST /details with the
+// confirmed footprint/floors/basement via the proven window._lastSubmit pattern.
+// Mirrors thammenReEvalOverride; backend caps the footprint to the zone ceiling
+// and surfaces effective_footprint_m2, which the result card then discloses (F3).
+async function thammenReEvalGeometry(){
+  if(!window._lastSubmit||!window._lastSubmit.body){return;}
+  const fpEl=document.getElementById('b2Footprint');
+  const flEl=document.getElementById('b2Floors');
+  const bsEl=document.getElementById('b2Basement');
+  const fp=fpEl?(fpEl.value||'').trim():'';
+  const fl=flEl?(flEl.value||'').trim():'';
+  const bd=JSON.parse(JSON.stringify(window._lastSubmit.body));
+  if(fp&&+fp>0)bd.footprint_m2=+fp; else delete bd.footprint_m2;
+  if(fl)bd.floors=+fl; else delete bd.floors;
+  if(bsEl)bd.basement=!!bsEl.checked;
+  const ep=window._lastSubmit.endpoint||'/api/evaluate/details';
+  // a footprint/floors confirm is a building-details submission → /details
+  const endpoint=(ep.indexOf('/details')>=0)?ep:'/api/evaluate/details';
+  const banner=document.createElement('div');
+  banner.id='_mqReevalBanner';
+  banner.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--bronze);color:white;padding:10px 16px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);z-index:1500;font-weight:600';
+  banner.textContent='جاري تحسين التقدير...';
+  try{document.body.appendChild(banner);}catch(_){}
+  try{
+    const r=await fetch(API+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
+    if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
+    const data=await r.json();
+    window._lastResult=data;
+    window._lastSubmit={endpoint:endpoint, body:bd};
+    show(data);
+    window.scrollTo({top:0, behavior:'smooth'});
+  }catch(e){
+    alert('⚠️ '+(e.message||'حدث خطأ'));
+  }finally{
+    const b=document.getElementById('_mqReevalBanner');
+    if(b)b.remove();
+  }
+}
+
 function openMapPicker(lat,lon){
   // Build the picker modal — same UX as WhatsApp's location share dialog.
   // Each link uses its native URL scheme; on mobile the OS routes to the app.
@@ -1154,17 +1198,38 @@ function show(d){
     }
   }
 
-  // ── Sprint 2.22.0b — zoning-driven ground-footprint (confirmable default) ──
-  if(hasValuation&&v.geometry&&v.geometry.suggested_footprint_m2){
+  // ── Sprint 2.22.0b.2 — guided Stage-2 geometry confirm (WRAP) ──
+  // BUILDING (villa/house) paths only (brief F2 — excludes raw_land + refusals;
+  // also tightens the b1 quirk of rendering the card on bare land).
+  if(hasValuation&&v.geometry&&v.geometry.suggested_footprint_m2&&_b2IsBuilding(d.asset_type)){
     const g=v.geometry;
-    const assumed=g.footprint_basis!=='confirmed';
+    const confirmed=g.footprint_basis==='confirmed';
+    const lb=(window._lastSubmit&&window._lastSubmit.body)||{};
+    const rawFp=lb.footprint_m2||null;                  // value the user submitted (uncapped)
+    const eff=g.effective_footprint_m2;                 // value the engine actually used (post-cap)
+    const capFired=confirmed&&eff&&rawFp&&eff<rawFp;    // brief F3: disclose ONLY when the zone cap bit
+    const pfFloors=lb.floors||'';
+    const pfFp=confirmed?(rawFp||g.suggested_footprint_m2):g.suggested_footprint_m2;
+    const pfBsmt=(lb.basement===true);
     h+='<div class="rc" style="border-color:#d9c7a8;background:#faf7f1">';
-    h+='<div class="rt" style="margin-bottom:6px;color:#8b6e44">📐 مساحة البناء الأرضي'+(assumed?' (تقديري — عدّل)':' (مؤكَّد)')+'</div>';
-    h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">المقترح: <strong>'+fmt(g.suggested_footprint_m2)+' م²</strong>';
-    if(g.zone_max_coverage_pct) h+=' · حدّ التغطية النظامي '+(g.zoning_code?('('+g.zoning_code+') '):'')+g.zone_max_coverage_pct+'%';
+    h+='<div class="rt" style="margin-bottom:6px;color:#8b6e44">📐 '+(confirmed?'مساحة البناء الأرضي (مؤكَّد ✓)':'حسّن التقدير (المرحلة 2)')+'</div>';
+    if(confirmed){
+      h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">اعتُمدت مساحة البناء الأرضية: <strong>'+fmt(eff)+' م²</strong></div>';
+      if(capFired) h+='<div class="rn" style="font-size:.8rem;color:#8b6e44;margin-top:6px">حُدِّدت مساحة البناء إلى '+fmt(eff)+'م² — أقصى تغطية أرضية مسموحة للقسيمة وفق اشتراطات المنطقة'+(g.zoning_code?(' ('+g.zoning_code+' '+g.zone_max_coverage_pct+'%)'):'')+'.</div>';
+    }else{
+      h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">هذا تقدير مبدئي يفترض بناءً نموذجياً (المقترح <strong>'+fmt(g.suggested_footprint_m2)+' م²</strong>';
+      if(g.zone_max_coverage_pct) h+=' · حدّ التغطية النظامي '+(g.zoning_code?('('+g.zoning_code+') '):'')+g.zone_max_coverage_pct+'%';
+      h+='). أدخل تفاصيل البناء الفعليّة لتدقيقه:</div>';
+    }
+    h+='<div class="fr2" style="margin-top:8px">';
+    h+='<div class="fg"><label style="font-size:.78rem">عدد الطوابق فوق الأرض</label><select id="b2Floors"><option value="">— اختر —</option>'
+       +[1,2,3,4].map(function(n){return '<option value="'+n+'"'+(String(pfFloors)===String(n)?' selected':'')+'>'+n+'</option>';}).join('')
+       +'</select></div>';
+    h+='<div class="fg"><label style="font-size:.78rem">مساحة البناء الأرضي (م²)</label><input type="number" id="b2Footprint" min="0" value="'+(pfFp||'')+'"></div>';
     h+='</div>';
-    if(g.note_ar) h+='<div class="rn" style="font-size:.8rem;color:#777;margin-top:6px">'+g.note_ar+'</div>';
-    h+='<div class="rn" style="font-size:.78rem;color:#999;margin-top:6px">السرداب (إن وُجد) يُعرض ويُلتقَط لكنه لا يُحرّك تقدير المقارنة.</div>';
+    h+='<label style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#555;margin-top:4px;cursor:pointer"><input type="checkbox" id="b2Basement"'+(pfBsmt?' checked':'')+'> يوجد سرداب (تحت الأرض)</label>';
+    h+='<button onclick="thammenReEvalGeometry()" style="margin-top:10px;width:100%;padding:10px;background:var(--bronze);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:.9rem;cursor:pointer">احسب التقدير المُحسَّن</button>';
+    h+='<div class="rn" style="font-size:.78rem;color:#999;margin-top:8px">السرداب (إن وُجد) يُعرض ويُلتقَط لكنه لا يُحرّك تقدير المقارنة.</div>';
     h+='</div>';
   }
 
