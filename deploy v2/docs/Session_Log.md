@@ -3087,7 +3087,82 @@ Anas) · **B-2 PARKED** (R7, n≥20). The «التقدير السوقي» term r
 
 -----
 
-*Last updated: 2026-06-06 (**Sprint 2.22.0b.1 [Geometry Refinement — zoning-driven footprint + basement excluded from the comparison driver] SHIPPED** — Heroku **v165** / commit `4b39ba2` / CHANGELOG_v79 / §20.29; **value-invariant on no-building-input anchors** [live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal], **basement excluded LIVE** [fl3 ≡ fl3+basement = 2.8M], fp-cap [600→540 → 2.9M], geometry surfaced; recon reshaped the brief → 3 deltas + augment-panel; isolated 34/34 + DoD 392/15/45/67 + R14 real-Chromium + local E2E [caught/fixed a §5.2 large-plot inflation edge]; origin in sync `4b39ba2`. **NEXT = Sprint 2.22.0b.2** [guided 3-stage flow, frontend-only] = Gate-2 DRAFT awaiting signature. Prior: **Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
+## 20.32 🆕 2026-06-06 — Sprint 2.22.0b.2.1 (separate input screens, structural WRAP) — SHIPPED Heroku v167
+
+> Engine `thammen-sprint2p22p0b2p1-separate-input-screens` / SPRINT_TAG `2.22.0b.2.1` / api-health
+> `3.1.0-sprint2.22.0b.2.1`. **FRONTEND-ONLY restructure — NO valuation/backend change (engine diff = the 2
+> version-string lines); 4 anchors byte-identical.** Gate-2 **SIGNED** (Anas «go — وقّعت»); Gate-1 push on
+> explicit «GO». Brief `docs/BRIEF_Sprint2p22p0b2p1_separate_input_screens_SIGNED.md` (Rule #63). Commit
+> `80d0b1a` → Heroku **v167** (`git subtree push --prefix "deploy v2"`, clean `a13cfc8..2ce45bb`) → origin in
+> sync `80d0b1a`. CHANGELOG_v81. **Second sprint of the 2.22.0b staged-input arc.**
+
+**Recon RESHAPED the brief (the §20.26/§20.29 pattern again).** The Claude.ai lane's first b2.1 draft framed
+itself as "Phase 1 of `docs/DESIGN_2p2x_suspense_reveal.md` (v3 SIGNED)" + bundled a permanent honest frame +
+range-as-lead + "full report now." CC's §5 recon found: (a) **the parent design doc does NOT exist on disk** —
+the on-disk `DESIGN_2p23_stage_authority_boundary.md` is explicitly "design input / **§4 open strategic fork
+(Anas decision)**", not a locked signed parent (it even carries a measured RETRACTION of its own §2b "inert
+engine" claim); (b) the range-as-lead/badge dial-down IS that open §2b fork. CC HALTED before signature →
+Claude.ai re-issued a **self-contained, fork-independent structural brief** (separate screens only; the §2b
+dial-down stays the open fork, OUT of scope). Grounding line-anchors all CC-verified accurate (go@498,
+dSec@410 inside formScreen, thammenReEvalGeometry@742, _b2IsBuilding/F2@736 shipped in b2) — **not** a
+falsified-premise case; the structure was sound.
+
+**What shipped (`index.html`, 8 surgical edits + version bump):**
+- **`formScreen` → identification-only.** Removed the `dSec` fcard + `tog()`/`dOpen`. `run()` now POSTs the
+  **bare `/api/evaluate`** + sets `_lastSubmit.endpoint='/api/evaluate'` (both endpoints accept
+  `override_land_area` → the multi-QARS override path is unaffected, §20.26).
+- **NEW `refineScreen`** (4th `.screen`, `go('refine')`) hosts the relocated `dSec` inputs (same IDs), always
+  visible, financial group marked secondary, with a «احسب التقدير المُحسَّن» submit + «→ رجوع للنتيجة».
+- **`thammenReEvalGeometry()` rewritten** to read the relocated full detail set (mirrors the old `run()`
+  mapping, with `else delete` so re-refining never carries a stale field), POST `/details`, then `go('results')`.
+- **Results staging card → DISPLAY-ONLY:** kept the F2 gate, the assumed/confirmed footprint note, the F3
+  zone-cap disclosure, and the verbatim F4 basement copy; removed the in-card inputs; the button now navigates
+  `go('refine')` («حسّن التقدير (المرحلة 2)» / «عدّل التفاصيل» when confirmed).
+- **Tower/apartment path preserved (Rule #39 deviation, flagged + signed-into the brief addendum):** `dSec`
+  also hosted `towerRentSection` (reached by the insufficient-data CTA `goForm()`). The WHOLE optional-details
+  block moved to `refineScreen` and `goForm()` was redirected `go('form')`→`go('refine')`. F2 still gates only
+  the villa/house geometry card/button; tower/apartment reach `refine` via their own CTA, exactly as before.
+- `evaluate_unified.py`: ENGINE_VERSION/SPRINT_TAG bump only. `api.py` UNTOUCHED.
+
+**Verification.** py_compile OK; isolated `test_sprint_2_22_0b2p1.py` **26/26** (reads the REAL `index.html`,
+E14: refineScreen + go() switcher; every detail input relocated, none left on the form, no duplication; run()
+→ bare `/api/evaluate`, `if(dOpen)` gone; card display-only + `go('refine')`, F2 intact, b2* gone, F3/F4
+retained; refine submit reads relocated inputs + `/details` + `go('results')`; tower CTA → refine; tog()/dOpen
+removed). DoD **392 / 15 / 45 / broad 69** (68→69, clean, 176.6s, no flake). **R14 real-Chromium** (served
+`index.html`, real-payload mocks same-origin to dodge CORS): 9 fns defined, **0 console errors** (load + full
+flow); **390×844** form (identification-only, scrollW 390, no leak) → bare eval → results (2.4M, geometry
+card, button→`go('refine')`, no b2 inputs) → refine (all inputs, scrollW 390) → fp600 → results refined
+(**2.9M**, «مؤكَّد ✓» + «اعتُمدت ٥٤٠ م²» [F3] + F4 + «عدّل التفاصيل»); tower CTA `goForm`→refineScreen +
+`towerRentSection` + tower-label; **desktop 1280×800** all no overflow. (A pre-existing ~625px form `.fr3`
+7px-band overflow is NOT a b2.1 regression — the change removed content vertically.) node absent → R14 Chromium
+is the JS gate (a8/a21 precedent).
+
+**Live two-lane post-deploy smoke v167 (browser-UA curl, Rule #61):**
+
+| PIN / call | v167 live | vs v166 |
+|---|---|---|
+| 56/565/21 bare `/api/evaluate` | 2,400,000 comparison_bracket | byte-identical |
+| 54/541/6 bare | 5,400,000 comparison_thin | byte-identical |
+| 55/296/13 bare | 2,600,000 comparison_thin | byte-identical |
+| 52/903/90 bare | None / insufficient_data | byte-identical |
+| `/api/evaluate/details` 56/565/21 fp600 | **2,900,000 + effective_footprint_m2 540 (confirmed)** | unchanged |
+| /api/health | `3.1.0-sprint2.22.0b.2.1` / engine …b2p1 / qars healthy / MoJ 157d | — |
+| served `index.html` | carries `refineScreen` + dSec-removed + bare `/api/evaluate` + card→`go('refine')` + no b2 inputs | — |
+
+4 anchors byte-identical (only the engine_version label + the input-screen location changed) → Rule #52 closed
+MEASURED. The 4-anchor live check also PROVES `/api/evaluate` ≡ `/api/evaluate/details`-empty (the bare
+identification endpoint switch is value-invariant).
+
+**Carried forward (Rule #42).** **NEXT = b.3** — the §2b authority/finality dial-down (range-as-lead +
+recalibrate «🟢 شواهد كافية»), which is the OPEN strategic fork `docs/DESIGN_2p23_stage_authority_boundary.md`
+§4 (Anas's deliberate decision) → own brief + multi-AI (#54). **B-2** (R7 condition mechanism) still PARKED on
+n≥20. Beta go-call = gate #6 (Anas). Minor (out of b2.1 scope): the pre-existing ~625px `.fr3` form band
+overflow (cosmetic, unchanged identification row); the `.b2_*.py` scratch in the working dir (b2-era,
+regenerable, untracked — left for a PO cleanup decision). The «التقدير السوقي» term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-06 (**Sprint 2.22.0b.2.1 [separate input screens — structural frontend WRAP] SHIPPED** — Heroku **v167** / commit `80d0b1a` split `2ce45bb` / CHANGELOG_v81 / §20.32; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal + `/details` fp600 → 2.9M/eff 540]; `formScreen`=identification → bare `/api/evaluate`, new `refineScreen` hosts the relocated optional details, results card display-only → `go('refine')`, tower CTA `goForm`→refine [Rule #39 — preserves the tower/apartment rent path]; `api.py` UNTOUCHED; isolated 26/26 + DoD 392/15/45/69 + R14 real-Chromium [9 fns, 0 console errors, 390×844 + desktop no-overflow, full live flow + tower path]; recon RESHAPED the brief [the staged-reveal Phase-1 draft depended on the unsaved `DESIGN_2p2x_suspense_reveal.md`; the §2b authority/finality dial-down stays the OPEN fork → b.3]; origin in sync `80d0b1a`. **NEXT = b.3** [§2b authority/finality dial-down — own brief + multi-AI #54] · beta go-call [gate #6, Anas] · **B-2 PARKED** [R7, n≥20]. Prior: **Sprint 2.22.0b.1 [Geometry Refinement — zoning-driven footprint + basement excluded from the comparison driver] SHIPPED** — Heroku **v165** / commit `4b39ba2` / CHANGELOG_v79 / §20.29; **value-invariant on no-building-input anchors** [live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal], **basement excluded LIVE** [fl3 ≡ fl3+basement = 2.8M], fp-cap [600→540 → 2.9M], geometry surfaced; recon reshaped the brief → 3 deltas + augment-panel; isolated 34/34 + DoD 392/15/45/67 + R14 real-Chromium + local E2E [caught/fixed a §5.2 large-plot inflation edge]; origin in sync `4b39ba2`. **NEXT = Sprint 2.22.0b.2** [guided 3-stage flow, frontend-only] = Gate-2 DRAFT awaiting signature. Prior: **Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
 for n≥20** [Fork#1=MODERATE Lever-2 re-anchor; Fork#2=WAIT-for-n≥20; Rule #54 web-check PASS — VPS 2 / VPGA 10 /
 IVS 102 confirmed, stated condition = assumption+MVU NOT Special Assumption, +IVS 104; §5 audit DECISIVE — local
 `luxury_new` stratum **n=0** in both motivating areas → Lever 1 must be corpus-calibrated not per-area MoJ →

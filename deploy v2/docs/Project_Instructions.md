@@ -357,7 +357,7 @@ heroku run python smoke_<endpoint>.py
 (apartments already refuse → gracefully excluded). Full tier register: `docs/LAUNCH_READINESS_GATES_v1.md`;
 beta plan: `docs/BETA_LAUNCH_PLAN_v1.md`.
 
-**Shipped since this list was last sequenced (2.22.0a/b arc — Session_Log §20.8–§20.29):** a.8 RICS/IVS-2025
+**Shipped since this list was last sequenced (2.22.0a/b arc — Session_Log §20.8–§20.32):** a.8 RICS/IVS-2025
 citations · a.9 widened age/quality · a.10 Stage-1 honest-range · a.11 A1 usage filter · a.12 A2 built-type ·
 a.13 thin-cell credibility · a.14 bracket honest-range · a.15 beta instrumentation (DORMANT) · a.16 capture
 privacy-hardening · a.17 clean-bracket condition caveat · a.18 R9 area-name reconciliation · a.19 thin-path
@@ -365,7 +365,7 @@ condition caveat · a.20 A7 rics_compliant status label · a.21 B-1 land-floor/H
 R15 strata-land a18 · a.24 beta-launch entry gate + Terms/Privacy + DPIA · a.25 CC BY 4.0 MoJ source
 attribution (Heroku v164) · **2.22.0b.1 Geometry Refinement — zoning-driven footprint + basement excluded
 from the comparison driver (Heroku v165, §20.29; value-invariant on no-building-input anchors; FIRST sprint
-of the 2.22.0b staged-input arc; 2.22.0b.2 guided 3-stage flow = Gate-2 DRAFT awaiting signature)**. **Beta
+of the 2.22.0b staged-input arc)** · **2.22.0b.2 guided staged-input flow WRAP (Heroku v166, §20.31)** · **2.22.0b.2.1 separate input screens (Heroku v167, §20.32 — frontend WRAP, value-invariant: `formScreen`=identification → bare `/api/evaluate`, new `refineScreen` hosts the relocated optional details, results card display-only; engine version-string only). NEXT engineering = b.3 (§2b authority/finality dial-down, OPEN fork — own brief + multi-AI)**. **Beta
 pre-use consent layer + source attribution are now LIVE → the free
 invite-only villas/land beta is invite-ready (pre-invite = cohort + access setup [gate #6, Anas] + the invite;
 the **Aqarat enquiry is a pre-MONETIZATION gate** [held until design done; sent before paid access] — **not a
