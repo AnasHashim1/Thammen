@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0a25-moj-source-attribution-ccby'
-SPRINT_TAG = '2.22.0a.25'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b1-geometry-zoning-footprint'
+SPRINT_TAG = '2.22.0b.1'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -663,6 +663,77 @@ def _typical_bua_for_plot(plot_area_m2: Optional[float]) -> float:
     fp = _typical_footprint(plot_area_m2)
     # Ground (fp) + 1 upper floor (fp × 0.85)
     return fp + fp * UPPER_FLOOR_RATIO_v2
+
+
+# ============================================================
+# Sprint 2.22.0b — Zoning-driven ground coverage (QNMP)  [Gate-2 SIGNED]
+# ============================================================
+# Primary source: Qatar National Master Plan / Ministry of Municipality
+# residential MAX ground-coverage ratios (brief §3):
+#     R1 (low density)        → 60%
+#     R2 (low-medium density) → 50%
+#     compound (R1/R2)        → 40%   (Income path — never reaches this villa code)
+# These make the footprint cap + the suggested default ZONING-AWARE instead of
+# the flat MAX_COVERAGE=0.80 / non-zoning 45-60% default. UNKNOWN zoning falls
+# back to the legacy behaviour so nothing regresses where we cannot classify.
+ZONE_MAX_COVERAGE = {
+    'R1': 0.60, 'R1-TYP': 0.60,
+    'R2': 0.50, 'R2-TYP': 0.50,
+}
+# Suggest a CONSERVATIVE footprint = 80% of the zone ceiling (brief §4): a
+# confirmable starting point that does NOT silently fire a substantiality
+# premium (it sits at/below the typical baseline) — the user confirms/edits it
+# (Gate-2 §5.2, decision B).
+SUGGESTED_COVERAGE_FRACTION = 0.80
+
+
+def _zone_max_coverage(zoning_code: Optional[str], fallback: float = MAX_COVERAGE) -> float:
+    """QNMP max ground-coverage ratio for a zoning code (fallback = legacy cap)."""
+    if not zoning_code:
+        return fallback
+    return ZONE_MAX_COVERAGE.get(str(zoning_code).strip().upper(), fallback)
+
+
+def _suggested_footprint(plot_area_m2: Optional[float],
+                         zoning_code: Optional[str]) -> Optional[int]:
+    """Conservative, confirmable ground-floor footprint suggestion (brief §4).
+
+    Known R1/R2 → plot × SUGGESTED_COVERAGE_FRACTION × zone_ceiling (~80% of the
+    zone's max coverage), but CAPPED at the legacy plot-proportional
+    `_typical_footprint` so the ASSUMED default can never SILENTLY INFLATE the
+    comparison vs prior behaviour (Gate-2 §5.2-B — "conservative default, no
+    auto-premium"; on large plots where 0.8×ceiling > legacy, keep legacy).
+    UNKNOWN/other zoning → the legacy default. None when the plot is unknown.
+    """
+    if not plot_area_m2 or plot_area_m2 <= 0:
+        return None
+    legacy = int(round(_typical_footprint(plot_area_m2)))
+    key = str(zoning_code).strip().upper() if zoning_code else None
+    if key and key in ZONE_MAX_COVERAGE:
+        zoned = int(round(plot_area_m2 * SUGGESTED_COVERAGE_FRACTION * ZONE_MAX_COVERAGE[key]))
+        return min(zoned, legacy)
+    return legacy
+
+
+def _extract_zoning_code(ev) -> Optional[str]:
+    """Parse the GIS zoning code (R1/R2/...) from an evaluation's factor detail.
+
+    Reuses the already-fetched zoning factor (property_factors `_factor_zoning`)
+    — NO extra GIS call. Shared by `_run_geometric` (HBU) and the Sprint 2.22.0b
+    substantiality footprint logic so both read one source (DRY).
+    """
+    try:
+        if ev and ev.valuation and ev.valuation.factors_detail:
+            for f in ev.valuation.factors_detail:
+                if f.get('code') == 'zoning':
+                    ev_str = (f.get('evidence', '') or '') + ' ' + (f.get('label_ar', '') or '')
+                    for code in ['R1', 'R2', 'R3', 'C1', 'C2', 'C', 'MU']:
+                        if code in ev_str:
+                            return code
+                    break
+    except Exception:
+        pass
+    return None
 
 
 def _build_smart_bua(
@@ -3734,16 +3805,7 @@ def evaluate_thammen(
                 gps = rpr.get('gps')
                 if gps and isinstance(gps, (list, tuple)) and len(gps) >= 2:
                     lon, lat = gps[0], gps[1]
-            zoning_code = None
-            if ev.valuation and ev.valuation.factors_detail:
-                for f in ev.valuation.factors_detail:
-                    if f.get('code') == 'zoning':
-                        ev_str = (f.get('evidence', '') or '') + ' ' + (f.get('label_ar', '') or '')
-                        for code in ['R1', 'R2', 'R3', 'C1', 'C2', 'C', 'MU']:
-                            if code in ev_str:
-                                zoning_code = code
-                                break
-                        break
+            zoning_code = _extract_zoning_code(ev)
             if pin and lat and lon:
                 return analyze_geometric_factors(int(pin), float(lat), float(lon), zoning_code)
         except Exception as e:
@@ -3922,10 +3984,37 @@ def evaluate_thammen(
     #   age ≥ 10, lux   → 0.50 × Sprint 2.2 (old luxury, partial)
     #   age ≥ 10, std   → 0.00 × Sprint 2.2 (10-Year Rule: suppress)
     #   age unknown     → 1.00 × Sprint 2.2 + MU flag (caller's discretion)
+    # Sprint 2.22.0b — zoning-driven footprint (computed for every villa/house
+    # comparison path; surfaced below for the UI confirmable default).
+    _zoning_code = _extract_zoning_code(ev)
+    _zone_ceiling = _zone_max_coverage(_zoning_code)
+    _suggested_fp = _suggested_footprint(_plot_area_for_bua, _zoning_code)
+    _fp_confirmed = bool(footprint_m2 and footprint_m2 > 0)
     if (bua_breakdown is not None
             and output.get('valuation') and output['valuation'].get('amount')):
         try:
-            substantiality = _building_substantiality(bua_breakdown, _plot_area_for_bua)
+            # Effective ground footprint for the COMPARISON driver:
+            #   confirmed → user value, capped at the zone ceiling (anti-inflation)
+            #   assumed   → the conservative zoning suggestion (brief §4 / §5.2-B)
+            if _fp_confirmed:
+                _eff_fp = float(footprint_m2)
+                if _plot_area_for_bua:
+                    _eff_fp = min(_eff_fp, _plot_area_for_bua * _zone_ceiling)
+            else:
+                _eff_fp = float(_suggested_fp) if _suggested_fp else None
+            # Above-ground comparison BUA: basement EXCLUDED (Gate-2 §5.5 — the
+            # basement is captured/displayed + a future DRC input, NOT a
+            # sales-comparison driver). The DISPLAY bua_breakdown (with basement,
+            # for qar_per_m2_bua + DRC + capture) is left untouched.
+            _subst_bua = _build_smart_bua(
+                plot_area_m2=_plot_area_for_bua,
+                floors=floors,
+                annexes=annexes,
+                basement=False,
+                footprint_m2=_eff_fp,
+                external_majlis=external_majlis,
+            ) or bua_breakdown
+            substantiality = _building_substantiality(_subst_bua, _plot_area_for_bua)
             raw_adj_pct = max(0.0, substantiality.get('adjustment_pct', 0.0))
 
             # Sprint 2.3: modulate by age regime
@@ -4007,6 +4096,46 @@ def evaluate_thammen(
         except Exception as e:
             import sys
             print(f'[substantiality warning] {e}', file=sys.stderr)
+
+    # ── Sprint 2.22.0b — surface the zoning footprint suggestion (UI default) ──
+    # Additive: lets the UI prefill an editable, confirmable footprint and
+    # disclose the assumed-vs-confirmed basis (§4/§5.2) + that the basement is
+    # NOT a comparison driver (§5.5). Does NOT change valuation.amount.
+    if _plot_area_for_bua and _suggested_fp and output.get('valuation'):
+        output['valuation']['geometry'] = {
+            'zoning_code': _zoning_code,
+            'zone_max_coverage_pct': round(_zone_ceiling * 100),
+            'suggested_footprint_m2': _suggested_fp,
+            'footprint_basis': 'confirmed' if _fp_confirmed else 'assumed',
+            'basement_in_comparison': False,
+            'note_ar': (
+                'مساحة البناء الأرضية المعروضة تقديرية، مبنية على حدّ التغطية '
+                'النظامي للمنطقة — عدّلها إن كنت تعرف المساحة الفعلية لتدقيق التقدير.'
+                if not _fp_confirmed else
+                'تم اعتماد مساحة البناء الأرضية التي أدخلتها.'
+            ),
+        }
+
+    # ── Sprint 2.22.0b (§5.2/ج) — disclose ASSUMED geometry in Material Uncertainty ──
+    # When the comparison used a zoning-suggested (not user-confirmed) footprint,
+    # widen the disclosure so confidence/range reflect the assumption. Confirmed
+    # geometry → no caveat → tighter basis.
+    if (bua_breakdown is not None and not _fp_confirmed
+            and output.get('material_uncertainty')):
+        try:
+            _mu_g = output['material_uncertainty']
+            _fp_unknown = (
+                'مساحة البناء الأرضية المستخدمة في المقارنة تقديرية (مبنية على '
+                'حدّ التغطية النظامي للمنطقة) وليست مؤكَّدة — تأكيدها قد يعدّل التقدير.'
+            )
+            _mu_u = list(_mu_g.get('known_unknowns') or [])
+            if not any('مساحة البناء الأرضية' in u for u in _mu_u):
+                _mu_u.insert(0, _fp_unknown)
+                _mu_g['known_unknowns'] = _mu_u
+            output['material_uncertainty'] = _mu_g
+        except Exception as e:
+            import sys
+            print(f'[geometry MU warning] {e}', file=sys.stderr)
 
     # ── Sprint 2.2: Flag missing building details in Material Uncertainty ──
     # Sprint 2.21.0.7 (P4): a bare-land parcel has no building, so the

@@ -418,7 +418,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         </div>
         <div class="fr2">
           <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option></select></div>
-          <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري" min="0"></div>
+          <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من تنظيم المنطقة" min="0"></div>
         </div>
         <div class="fr2">
           <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" min="0" max="100"></div>
@@ -1152,6 +1152,20 @@ function show(d){
       h+='<div style="margin-top:10px;padding:10px;background:'+bgCol+';border-radius:6px;font-size:.85rem;color:'+textCol+'">'+(bs.methodology_note_ar||'')+'</div>';
       h+='</div>';
     }
+  }
+
+  // ── Sprint 2.22.0b — zoning-driven ground-footprint (confirmable default) ──
+  if(hasValuation&&v.geometry&&v.geometry.suggested_footprint_m2){
+    const g=v.geometry;
+    const assumed=g.footprint_basis!=='confirmed';
+    h+='<div class="rc" style="border-color:#d9c7a8;background:#faf7f1">';
+    h+='<div class="rt" style="margin-bottom:6px;color:#8b6e44">📐 مساحة البناء الأرضي'+(assumed?' (تقديري — عدّل)':' (مؤكَّد)')+'</div>';
+    h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">المقترح: <strong>'+fmt(g.suggested_footprint_m2)+' م²</strong>';
+    if(g.zone_max_coverage_pct) h+=' · حدّ التغطية النظامي '+(g.zoning_code?('('+g.zoning_code+') '):'')+g.zone_max_coverage_pct+'%';
+    h+='</div>';
+    if(g.note_ar) h+='<div class="rn" style="font-size:.8rem;color:#777;margin-top:6px">'+g.note_ar+'</div>';
+    h+='<div class="rn" style="font-size:.78rem;color:#999;margin-top:6px">السرداب (إن وُجد) يُعرض ويُلتقَط لكنه لا يُحرّك تقدير المقارنة.</div>';
+    h+='</div>';
   }
 
   // ── Building details missing notice (Sprint 2.2 + 2.3) ──
