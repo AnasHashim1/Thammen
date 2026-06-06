@@ -3162,7 +3162,63 @@ regenerable, untracked — left for a PO cleanup decision). The «التقدير
 
 -----
 
-*Last updated: 2026-06-06 (**Sprint 2.22.0b.2.1 [separate input screens — structural frontend WRAP] SHIPPED** — Heroku **v167** / commit `80d0b1a` split `2ce45bb` / CHANGELOG_v81 / §20.32; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal + `/details` fp600 → 2.9M/eff 540]; `formScreen`=identification → bare `/api/evaluate`, new `refineScreen` hosts the relocated optional details, results card display-only → `go('refine')`, tower CTA `goForm`→refine [Rule #39 — preserves the tower/apartment rent path]; `api.py` UNTOUCHED; isolated 26/26 + DoD 392/15/45/69 + R14 real-Chromium [9 fns, 0 console errors, 390×844 + desktop no-overflow, full live flow + tower path]; recon RESHAPED the brief [the staged-reveal Phase-1 draft depended on the unsaved `DESIGN_2p2x_suspense_reveal.md`; the §2b authority/finality dial-down stays the OPEN fork → b.3]; origin in sync `80d0b1a`. **NEXT = b.3** [§2b authority/finality dial-down — own brief + multi-AI #54] · beta go-call [gate #6, Anas] · **B-2 PARKED** [R7, n≥20]. Prior: **Sprint 2.22.0b.1 [Geometry Refinement — zoning-driven footprint + basement excluded from the comparison driver] SHIPPED** — Heroku **v165** / commit `4b39ba2` / CHANGELOG_v79 / §20.29; **value-invariant on no-building-input anchors** [live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal], **basement excluded LIVE** [fl3 ≡ fl3+basement = 2.8M], fp-cap [600→540 → 2.9M], geometry surfaced; recon reshaped the brief → 3 deltas + augment-panel; isolated 34/34 + DoD 392/15/45/67 + R14 real-Chromium + local E2E [caught/fixed a §5.2 large-plot inflation edge]; origin in sync `4b39ba2`. **NEXT = Sprint 2.22.0b.2** [guided 3-stage flow, frontend-only] = Gate-2 DRAFT awaiting signature. Prior: **Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
+## 20.33 🆕 2026-06-06 — Sprint 2.22.0b.2.2 (evidence-quality diagnosis panel) — SHIPPED Heroku v168
+
+> Engine `thammen-sprint2p22p0b2p2-evidence-quality-panel` / SPRINT_TAG `2.22.0b.2.2` / api-health
+> `3.1.0-sprint2.22.0b.2.2`. **FRONTEND-ONLY — NO valuation/backend change (engine diff = the 2 version-string
+> lines); 4 anchors byte-identical.** Gate-2 **SIGNED** (Anas «GO» after the §5 recon); Gate-1 push on «GO».
+> Brief `docs/BRIEF_Sprint2p22p0b2p2_evidence_quality_panel_SIGNED.md` (Rule #63). Commit `74233e6` → Heroku
+> **v168** (`git subtree push --prefix "deploy v2"`, clean `2ce45bb..e6aa5b4`) → origin in sync `74233e6`.
+> CHANGELOG_v82. **Implements DESIGN_2p2x §3, Phase 2 of the suspense-reveal arc.**
+
+**The RE-DRAFT story (the §3 correction).** The first b.2.2 draft (a value-decomposition on the results screen)
+**misapplied §3** — it promoted the land/build VALUE split, which is the §2.1 "unsupported decomposition"
+failure mode. CC's §5 recon flagged it; Anas then **persisted the signed parent design**
+`DESIGN_2p2x_suspense_reveal.md` (Rule #63 close, §20.32-adjacent), whose §3 explicitly says «هذه لوحة
+**جودة-أدلّة**، لا تفكيك قيمة». Claude.ai re-drafted b.2.2 as the correct **evidence-quality panel**; CC §5 recon
+on live v167 **fixed the exact field→rating mapping** + 2 clarifications, then built.
+
+**What shipped (`index.html`, frontend-only).** Replaced the single binary confidence badge («🟢 شواهد كافية» /
+the tier-coloured «ما معنى ذلك؟» block) with a 4-component **evidence-quality** panel, each rated قوي/متوسط/محدود
+and **DERIVED from its engine field** (§2c): اكتمال بيانات العقار ← `footprint_basis` + `user_inputs.condition` ·
+جودة المقارنات ← `n_transactions` + `method` (n≥20 bracket → قوي) · حداثة بيانات السوق ← `data_freshness.tier`
+(stale today → محدود for all) · جودة توصيف المبنى ← `footprint_basis` + condition (building only; condition never
+verified [B-2 PARKED] → caps at متوسط; «غير منطبق — أرض» for raw_land). 3 pure helpers (`_evidenceRatings` +
+`_evPill` + `evidencePanelHtml`); the `acc.explanation_ar` comparables text kept as a **neutral footer**
+(evidence-count-forward, no longer tier-coloured). **«explanation≠confidence» enforced by construction:** the
+panel consumes ONLY uncertainty-reducing fields; decomposition/GIS/trend feed NO rating. `evaluate_unified.py` =
+version bump only; `api.py` UNTOUCHED.
+
+**Two §5-recon clarifications (in the signed brief):** (1) recency is **market-wide** (MoJ 157d stale → محدود
+for every property now; honest, becomes discriminating when MoJ refreshes). (2) **§4.3 correction:** the panel
+shows for **ALL valued results** (not building-only) with component 4 adapting to «غير منطبق — أرض» for raw_land
+— gating to buildings would strip land's confidence display (the replaced badge showed for land too).
+
+**Verification.** Isolated `test_sprint_2_22_0b2p2.py` **26/26** (static structure + JS governing-expression
+pins binding a Python mapping-mirror + the 4 live cases + the «explanation≠confidence» proof). DoD
+**392/15/45/broad 70** (69→70, clean, 209s). Engine diff = **version-string only** → value-invariant.
+**R14 real-Chromium** (served `index.html`, real-payload same-origin mocks): **0 console errors** (full flow);
+**390×844** bare villa → panel [اكتمال محدود · مقارنات قوي(n37) · حداثة محدود · توصيف محدود], binary badge gone
+(header = title only); **refine** fp600+condition → [**قوي · قوي · محدود · متوسط**] (the two user-input axes rose,
+comparables/recency held → **«explanation≠confidence» proven LIVE**); **raw-land** → [محدود · قوي(n73) · محدود ·
+**غير منطبق — أرض**]; **desktop 1280** no overflow.
+
+**Live post-deploy smoke v168 (browser-UA curl, Rule #61):** /api/health = `3.1.0-sprint2.22.0b.2.2` / engine
+…b2p2 / qars healthy; **4 anchors byte-identical** (2.4M/5.4M/2.6M/refusal); served `index.html` carries
+`evidencePanelHtml` + the 4 component labels + the «explanation≠confidence» footer, **binary badge absent**.
+Rule #52 closed MEASURED.
+
+**Carried forward (Rule #42).** **NEXT = Phase 3 = b.2.3** (decision-framed chapters + uncertainty-early). Optional
+tight follow-on **b.2.2.1** (condition=sensitivity range-shift — brushes PARKED B-2; the panel already signals
+condition honestly via the «محدود» characterization row). **value-decomposition stays in Chapter 4 (b.2.3)** —
+NOT on the panel (the withdrawn-draft error). Then **b.2.4** (audience-split). **§2b dial-down FOLDED into the arc**
+(b.3 merged). Ball = Claude.ai drafts the b.2.3 brief; standing Anas item = confirm the §4 fork. Minor pre-existing
+(out of scope): the value_floor block still shows «n=N · شواهد كافية» evidence-notes (B-1 Chapter-4 layer, deferred);
+the ~625px `.fr3` form band overflow; `.b2_*.py` scratch. The «التقدير السوقي» term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-06 (**Sprint 2.22.0b.2.2 [evidence-quality diagnosis panel] SHIPPED** — Heroku **v168** / commit `74233e6` split `e6aa5b4` / CHANGELOG_v82 / §20.33; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal]; the binary confidence badge «🟢 شواهد كافية» → a 4-component **evidence-quality** panel [اكتمال · مقارنات · حداثة · توصيف — قوي/متوسط/محدود], each DERIVED from its engine field §2c; **«explanation≠confidence» enforced** [refine improves ONLY the user-input axes — proven live]; component 4 «غير منطبق — أرض» for raw_land; `api.py` UNTOUCHED; isolated 26/26 + DoD 392/15/45/70 + R14 real-Chromium [0 console errors, 390×844 + desktop no-overflow, bare/refine/land]; implements **DESIGN_2p2x §3 Phase 2** of the suspense-reveal arc [the first b.2.2 value-decomposition draft misapplied §3 → withdrawn; signed parent design now persisted, Rule #63 closed]; origin in sync `74233e6`. **NEXT = Phase 3 = b.2.3** [decision-framed chapters + uncertainty-early] · optional **b.2.2.1** [condition=sensitivity, brushes PARKED B-2] · **§2b dial-down FOLDED into the arc** [b.3 merged] · beta go-call [gate #6, Anas] · **B-2 PARKED** [R7, n≥20]. Prior: **Sprint 2.22.0b.2.1 [separate input screens — structural frontend WRAP] SHIPPED** — Heroku **v167** / commit `80d0b1a` split `2ce45bb` / CHANGELOG_v81 / §20.32; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal + `/details` fp600 → 2.9M/eff 540]; `formScreen`=identification → bare `/api/evaluate`, new `refineScreen` hosts the relocated optional details, results card display-only → `go('refine')`, tower CTA `goForm`→refine [Rule #39 — preserves the tower/apartment rent path]; `api.py` UNTOUCHED; isolated 26/26 + DoD 392/15/45/69 + R14 real-Chromium [9 fns, 0 console errors, 390×844 + desktop no-overflow, full live flow + tower path]; recon RESHAPED the brief [the staged-reveal Phase-1 draft depended on the unsaved `DESIGN_2p2x_suspense_reveal.md`; the §2b authority/finality dial-down stays the OPEN fork → b.3]; origin in sync `80d0b1a`. **NEXT = b.3** [§2b authority/finality dial-down — own brief + multi-AI #54] · beta go-call [gate #6, Anas] · **B-2 PARKED** [R7, n≥20]. Prior: **Sprint 2.22.0b.1 [Geometry Refinement — zoning-driven footprint + basement excluded from the comparison driver] SHIPPED** — Heroku **v165** / commit `4b39ba2` / CHANGELOG_v79 / §20.29; **value-invariant on no-building-input anchors** [live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal], **basement excluded LIVE** [fl3 ≡ fl3+basement = 2.8M], fp-cap [600→540 → 2.9M], geometry surfaced; recon reshaped the brief → 3 deltas + augment-panel; isolated 34/34 + DoD 392/15/45/67 + R14 real-Chromium + local E2E [caught/fixed a §5.2 large-plot inflation edge]; origin in sync `4b39ba2`. **NEXT = Sprint 2.22.0b.2** [guided 3-stage flow, frontend-only] = Gate-2 DRAFT awaiting signature. Prior: **Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
 for n≥20** [Fork#1=MODERATE Lever-2 re-anchor; Fork#2=WAIT-for-n≥20; Rule #54 web-check PASS — VPS 2 / VPGA 10 /
 IVS 102 confirmed, stated condition = assumption+MVU NOT Special Assumption, +IVS 104; §5 audit DECISIVE — local
 `luxury_new` stratum **n=0** in both motivating areas → Lever 1 must be corpus-calibrated not per-area MoJ →
