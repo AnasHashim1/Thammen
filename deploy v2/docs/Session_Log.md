@@ -2838,7 +2838,49 @@ left as-is (live state unchanged a25/v164). The «التقدير السوقي» 
 
 -----
 
-*Last updated: 2026-06-05 (**Stage-1 input-honesty sprint CLOSED — premise FALSIFIED at Phase 0, NOT shipped**
+## 20.27 🆕 2026-06-05 — Sprint B-2 (built-type/condition mechanism) — Gate-2 SIGNED + kickoff audit → PARKED for n≥20 — READ-ONLY, NOT SHIPPED
+
+> **No engine change, no deploy. Engine stays a25 / Heroku v164.** Deliverable:
+> `docs/BRIEF_SprintB2_mechanism_elicitation_SIGNED.md` (signed brief + Rule #54 web-check + §5 kickoff audit).
+> Handshake (#57): a25/v164, `master == origin` (`71821ac`).
+
+Claude.ai routed the B-2 methodology brief (two levers: **UP** finish/new-build premium on comparison ppm²;
+**DOWN** 10-Year-Rule land re-anchor reusing the a21 `_villa_value_floor`) with two genuine forks. **Anas
+signed (Gate 2):** Fork #1 (Lever 2 strength) = **MODERATE** (floor + 0–10% band, luxury-finish exception →
+floor +~20%, wide MUC, provisional till n≥20); Fork #2 (ship timing) = **WAIT for n≥20** (ship only when
+calibrated; B-1 keeps disclosing the bias; the beta fills the corpus — never ship an uncalibrated headline
+value-change). CC ran the signed next step (web-check + §5 audit; read-only, no push).
+
+**Rule #54 web-check (the GATE — PASS):** 2025 RICS/IVS framing confirmed primary-source — **VPS 2** = bases
++ assumptions/special assumptions; **VPGA 10** = MVU; **IVS 102** = bases + HBU; user-STATED (not inspected)
+condition = an ordinary **assumption + limitation-on-inspection** (it *applies* at the valuation date → fails
+the special-assumption test) carrying **MVU**, **NOT a Special Assumption**; bonus **IVS 104 (Data & Inputs)**
+*completeness* independently anchors the provisional discipline. No correction needed (GPT/Gemini = Anas's
+corroboration lane).
+
+**§5 kickoff audit (live a25) — the DECISIVE finding:** Lever 1's primary data source — a local `luxury_new`
+E4 stratum with n≥10 — is **EMPTY (n=0)** in BOTH motivating micro-markets (Abu Hamour 56/565: land_priced 5
+/ aging 17 / modern 2 / **luxury_new 0**; Maamoura 56/647: 0 / 1 / 4 / **0**). New-luxury sales aren't in MoJ
+→ **Lever 1 must be calibrated from the cross-area GT-2 corpus, NOT a per-area MoJ lookup** (hard-reinforces
+WAIT — the corpus is the only viable Lever-1 source). **Lever 2 is data-ready** (land floor n=20–33, robust,
+independent of the empty strata) → ship-readiness asymmetry **Lever 2 ≫ Lever 1**. Lever 2 mechanism-confirmed
+for V001 (widened headline 5828/m² ≈ the thin modern stratum 5811/n=4 → over-credits the building → MODERATE
+re-anchor ≈ 2.95M ≈ clearing band). Risk B (double-count vs `_building_substantiality`'s measured +16–20%)
+bounded by WAIT (ceiling set at calibration).
+
+**PARKED — resume trigger:** Confirmed-Sales GT-2 corpus **n≥20** (2.16.16 revival, fed by the beta). Then:
+build (Lever 2 ready; Lever 1 corpus-calibrated) → Gate-2 re-confirm of the *coefficients* → Gate-1 push.
+**Carried forward (Rule #42):** B-2 SIGNED + designed + framing-verified + feasibility-audited, **parked on
+n≥20**; CLAUDE.md #65a NEXT-STEP updated to signed-and-parked. The «التقدير السوقي» term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-05 (**Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
+for n≥20** [Fork#1=MODERATE Lever-2 re-anchor; Fork#2=WAIT-for-n≥20; Rule #54 web-check PASS — VPS 2 / VPGA 10 /
+IVS 102 confirmed, stated condition = assumption+MVU NOT Special Assumption, +IVS 104; §5 audit DECISIVE — local
+`luxury_new` stratum **n=0** in both motivating areas → Lever 1 must be corpus-calibrated not per-area MoJ →
+reinforces WAIT, Lever 2 data-ready floor n=20–33; deliverable `docs/BRIEF_SprintB2_mechanism_elicitation_SIGNED.md`;
+**engine UNCHANGED a25/v164, no build/ship/push**; §20.27]. Prior: **Stage-1 input-honesty sprint CLOSED — premise FALSIFIED at Phase 0, NOT shipped**
 [the `عدّل المساحة` override (`override_land_area`) + all `/api/evaluate/details` fields are accepted + consumed
 — no reachable 422; the proposed fix would have removed a working feature; §20.26] **+ B-2 condition recon
 DELIVERED** [`docs/PHASE0_B2_condition_recon.md`, commit `ab15a6b`: **R7 = calibration + missing-mechanism, NOT
