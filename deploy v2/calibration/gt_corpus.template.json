@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "_comment": "STRUCTURE-ONLY template (committed). The REAL seeded corpus lives in gt_corpus.local.json (gitignored, local-only — privately-sourced transactional data, PDPPL-flagged). The single row below is SYNTHETIC/illustrative — not a real property. thammen_estimate + residual are computed LIVE by residual_harness.py and are null at rest.",
+  "records": [
+    {
+      "id": "EXAMPLE-000",
+      "pin": "00/000/0",
+      "district": "<GIS ANAME>",
+      "area_m2": 500,
+      "asset_type": "standalone_villa",
+      "gt_value": 1000000,
+      "gt_type": "GT-2",
+      "gt_class": "confirmed_sale",
+      "gt_source": "<cohort / brokerage / valuer / listing>",
+      "gt_date": "2026-01-01",
+      "attrs": {
+        "building_age_years": 5,
+        "finish_tier": "good",
+        "condition": "good",
+        "is_luxury": false,
+        "floors": 2,
+        "footprint_m2": null,
+        "luxury_new": false
+      },
+      "analyst_clearing_low": null,
+      "analyst_clearing_high": null,
+      "thammen_estimate": null,
+      "residual": null,
+      "notes": "Synthetic schema example. confirmed_sale=GT-2, valuer_opinion=GT-1 (calibration-eligible); asking=GT-3, broker=GT-4 (directional only).",
+      "status": "open"
+    }
+  ]
+}

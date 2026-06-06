@@ -2875,6 +2875,57 @@ n≥20**; CLAUDE.md #65a NEXT-STEP updated to signed-and-parked. The «التق�
 
 -----
 
+## 20.28 🆕 2026-06-06 — Calibration pipeline (Sprint B-2 prep) ②③ built — INTERNAL / READ-ONLY, NOT SHIPPED
+
+> **No engine change, no Heroku, no value change. Engine stays a25 / Heroku v164 (byte-identical).** Interim
+> infrastructure so incoming GT → calibrated B-2 fast; **B-2 active mechanism stays PARKED** (Gate-2 SIGNED,
+> WAIT-for-n≥20, §20.27). Committed **origin-only** (subtree-push/Heroku untouched). Handshake (#57): live
+> a25/v164, qars healthy, MoJ 157d, `master == origin` (pre-build `f4ce19c`). Workstream brief (Claude.ai)
+> persisted as `deploy v2/calibration/README.md` (Rule #63).
+
+**Built (②③; ① held for Anas's copy)** — new `deploy v2/calibration/`:
+- **② GT corpus** (`corpus_schema.py`) — canonical multi-source schema: `pin | gt_value | gt_type(GT-1..4)
+  | gt_class{valuer_opinion|confirmed_sale|asking|broker} | date | source | attrs{age, finish_tier,
+  condition, is_luxury, luxury_new, floors} | thammen_estimate | residual` (last two computed LIVE, never
+  stored stale). Loader/validate/parse_pin/UTF-8 round-trip + the n≥20 discipline baked into `summarize`.
+  Seeded **V001/V002/V003** (sale-GT vs asking-GT tagged distinctly; only GT-1/GT-2 ever calibration-eligible).
+- **③ harness + Lever-2 what-if** (`residual_harness.py` + pure `lever2_simulation.py`) — runs the **REAL
+  live a25 engine** over the corpus (browser-UA curl, #61) → residual per property (DEFAULT + with-correct-
+  attrs) + per E4 stratum + systematic bias (GT-1/GT-2 only) + a **READ-ONLY Lever-2 simulation** (down-re-
+  anchor OLD stock toward the a21 land floor; MODERATE floor+0–10%, luxury-finish exception floor+~20%).
+  Writes a UTF-8 markdown report to `calibration/reports/` (gitignored).
+- self-check `selfcheck_calibration_pipeline.py` (no network; exercises the real modules — #40/E14).
+
+**Decisions (Rule #39 flags):**
+- **Placement** `deploy v2/calibration/` — follows the tooling/harness precedent; inert in the slug (not
+  imported by `api.py`, not in `Procfile`) → never runs on Heroku.
+- **Privacy / PDPPL** — the seeded corpus DATA (`gt_corpus.local.json`, real confirmed-sale prices) is
+  **gitignored / LOCAL-ONLY**, consistent with `docs/validation/VALIDATION_LOG.md` being untracked + the
+  pending PDPPL counsel review. **Code + schema + structure-only `gt_corpus.template.json` + README
+  committed; real data + reports NOT.** `.gitignore` updated. (Anas can say "commit the data too" — trivially
+  reversible.)
+- **HTTP, not in-process** — khazna GIS is geo-restricted from here; the live a25 engine IS the real
+  `evaluate_unified` path; matches the recon method.
+
+**Validation:** py_compile 4/4; self-check **25/25** (round-trip preserves Arabic; Lever-2 math: V001 luxury-
+exception → **2,948,083** in the clearing band, old-non-luxury → floor+band, new → no-fire, missing-floor
+graceful). **Live smoke reproduces the recon EXACTLY** (a25): V002 default −37.5% / +attrs −27.5%, V003
+−40.0% / −27.5%, V001 0%-vs-ask / −2.6%; systematic bias `new_luxury` n=2 **mean −38.8%** (the measured R7
+under-anchor, GT-2 only; `old_stock` n=0 — V001 correctly excluded as GT-3); Lever-2 sim V001 3.7–3.8M →
+**2,948,083** (inside clearing 2.63–3.2M → **closes the over-anchor**). **n=2 GT-2 → MOTIVATES, does NOT
+calibrate** (need 18 more) — discipline enforced in code.
+
+**① NOT built** (light in-app capture form → paste-ready corpus line via WhatsApp/clipboard, **NO server
+storage**) — awaits Anas's copy (**Gate-2**) + push (**Gate-1**). DO NOT build the stored-DB capture (gated:
+PDPPL + gate-11 = the separate a15 ACTIVATION track, R11).
+
+**Carried forward (Rule #42):** re-run `residual_harness.py` when GT files arrive (refreshable report).
+**VALUER INGESTION:** cited actual transactions → `confirmed_sale` (GT-2); valuer final figures →
+`valuer_opinion` (GT-1, benchmark esp. `luxury_new`) — **don't conflate**. B-2 unparks at **n≥20 GT-1∪GT-2**.
+Engine UNCHANGED a25/v164; commit origin-only (hash in git log). The «التقدير السوقي» term remains PROVISIONAL.
+
+-----
+
 *Last updated: 2026-06-05 (**Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
 for n≥20** [Fork#1=MODERATE Lever-2 re-anchor; Fork#2=WAIT-for-n≥20; Rule #54 web-check PASS — VPS 2 / VPGA 10 /
 IVS 102 confirmed, stated condition = assumption+MVU NOT Special Assumption, +IVS 104; §5 audit DECISIVE — local

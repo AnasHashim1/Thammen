@@ -65,3 +65,12 @@ backup_before_*/
 *.zip
 t2_listings_cache.sqlite
 moj_weekly.db
+
+# ── Calibration pipeline (Sprint B-2 prep, interim) ──────────────────
+# The GT corpus holds privately-sourced TRANSACTIONAL data (confirmed-sale
+# prices) → keep LOCAL-only + flagged for the pending PDPPL counsel review;
+# never commit, never deploy (consistent with docs/validation/ being untracked).
+# The CODE (schema/loader/harness/sim) + the structure-only TEMPLATE are
+# committed; only the real-data corpus + generated reports are ignored.
+calibration/gt_corpus.local.json
+calibration/reports/
