@@ -3042,12 +3042,13 @@ the actual brief (esp. F3 + F5). **HOLD on build** until then.
 
 -----
 
-## 20.31 🆕 2026-06-06 — Sprint 2.22.0b.2 (guided staged-input flow, WRAP) — BUILT + DoD-GREEN, HELD at Gate-1 (push pending)
+## 20.31 🆕 2026-06-06 — Sprint 2.22.0b.2 (guided staged-input flow, WRAP) — SHIPPED Heroku v166
 
-> **Code complete + locally verified; NOT deployed.** Heroku stays **v165 / b1** until Anas's Gate-1 push
-> consent (CHANGELOG_v80 §6). Local engine code = b2 (`thammen-sprint2p22p0b2-staged-input-flow`). Brief
-> Gate-2 **SIGNED** + saved (`docs/BRIEF_Sprint2p22p0b2_staged_input_flow_SIGNED.md`, `21f2e53`, Rule #63).
-> Committed origin-only. Built under Anas's «افعل الأصوب واكمل» delegation.
+> Engine `thammen-sprint2p22p0b2-staged-input-flow` / SPRINT_TAG `2.22.0b.2` / api-health
+> `3.1.0-sprint2.22.0b.2`. **SHIPPED Heroku v166** (`git subtree push` Rule #43, deploy split `a13cfc8`
+> of commit `39fb949`, on Anas's «نعم» Gate-1 consent) → origin in sync. Brief Gate-2 **SIGNED** + saved
+> (`docs/BRIEF_Sprint2p22p0b2_staged_input_flow_SIGNED.md`, `21f2e53`, Rule #63). §5 recon
+> `PHASE0_2p22p0b2` (`a2f26fa`). Built + shipped under Anas's «افعل الأصوب واكمل» delegation.
 
 **What.** WRAP (not wizard) of the existing single-screen form into an explicit revisable Stage-2 (E16):
 the geometry card frames the first result «تقدير مبدئي» with an inline «حسّن التقدير (المرحلة 2)» confirm
@@ -3076,9 +3077,13 @@ assumed), fl3+fp600 **2.9M** (effective **540** capped, confirmed), +basement **
 line, assumed card «حسّن التقدير (المرحلة 2)» + «تقدير مبدئي», **no overflow** (page 390, card 349, right 370).
 CHANGELOG_v80.
 
-**HELD at Gate-1.** Awaiting Anas's explicit push consent → then `git subtree push` Heroku + `git push
-origin` + live 4-anchor (2.4M/5.4M/2.6M/refusal) + `/details` fp600 → effective_footprint_m2:540 smoke (#61,
-#52) → flip this entry to SHIPPED (Heroku vNNN). **B-2 untouched (PARKED, n≥20). b.3 (§2b dial-down) deferred.**
+**SHIPPED — post-deploy live smoke v166 (browser-UA #61, Rule #52 MEASURED):** `/api/health` =
+`3.1.0-sprint2.22.0b.2` / engine b2 / qars healthy; **4 anchors byte-identical** (56/565/21 **2.4M** ·
+54/541/6 **5.4M** · 55/296/13 **2.6M** · 52/903/90 **refusal**); `/api/evaluate/details` 56/565/21
+floors3+fp600 → **2.9M** + **`effective_footprint_m2` = 540** (basis confirmed, suggested 405) → **F3 live +
+value-invariant**. Committed `39fb949` → Heroku **v166** (split `a13cfc8`) → origin in sync.
+**NEXT = b.3** (§2b authority/finality dial-down — needs a brief + multi-AI, #54) · beta go-call (gate #6,
+Anas) · **B-2 PARKED** (R7, n≥20). The «التقدير السوقي» term remains PROVISIONAL.
 
 -----
 
