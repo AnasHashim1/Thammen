@@ -74,3 +74,12 @@ moj_weekly.db
 # committed; only the real-data corpus + generated reports are ignored.
 calibration/gt_corpus.local.json
 calibration/reports/
+
+# ── R7 villa-yield calibration scratch (Sprint 2.19.2) ───────────────
+# Recon/smoke/rebuild probes + the validation-only rebuilt DB. The PRODUCTION
+# cap_rates.sqlite (no leading dot, not *.new.*) stays tracked; only these
+# throwaways are ignored. Never commit the .new DB — it is the local validation
+# artifact pending the Gate-1/Gate-2 sign-off to replace cap_rates.sqlite.
+.cap_*
+.pf_*
+cap_rates.new.*

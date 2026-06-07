@@ -80,3 +80,77 @@ point-estimate sensitivity: the value swings because the yield genuinely isn't p
 **Villa 6 income read (honest, uncalibrated):** gross rent ~16k/mo ÷ a plausible ~5.5–6.5% gross yield
 (larger suburban villa) ≈ **~3.0–3.5M** (centre ~3.2M) — below the condition-blind comparison (3.8M),
 which is the income check doing its job; pin precisely once المعمورة 600-900 villa yield is calibrated.
+
+## 9. Yield-calibration v1 — BUILT + locally validated (2026-06-07) — HELD at Gate-1/Gate-2
+
+**Status:** the stratified villa-yield calibration (Dependency #2, "THE bottleneck") was **built and
+validated LOCALLY** this session. **NOT shipped** — the rebuilt DB is held at **🔴 Gate-1 (Heroku push)**
++ **🔴 Gate-2 (it changes the user-visible income cross-check)**, both pending an explicit Anas «go».
+Engine UNTOUCHED (`evaluate_unified.py` value-invariant); committed `cap_rates.sqlite` UNTOUCHED; the new
+DB lives as a gitignored `cap_rates.new.sqlite`.
+
+**Disposition (Anas «افعل الأصوب», 2026-06-07).** The narrow 3-cell DB is NOT worth a standalone Gate-2
+deploy; the «الأصوب» path = **preserve the work + ship the yield-data WITH broader coverage and/or the §6
+triangulation mechanism, not before**. So this session: the **value-invariant CODE** (`cap_rate_calibrator.py`
++ `propertyfinder_client.py` deep-crawl robustness + `tests/test_cap_rate_calibrator_r7.py` + `.gitignore` +
+this doc) is committed to **origin ONLY** — a backup; **Heroku NOT deployed, `cap_rates.sqlite` NOT swapped**
+(the calibrator is a build-time tool not in the runtime path, so the committed code is provably value-invariant
+until the DB is swapped + deployed). The **DB swap + deploy stay HELD**. **NEXT unit = per-area PF depth**
+(locationId search, §8 lever) — own §5 audit; then ship yield-data + §6 wiring together.
+
+**What was built (data-only, reversible — `cap_rate_calibrator.py` + `propertyfinder_client.py`):**
+- **(d) a18 reconciliation** — the calibrator now reuses the ENGINE's `resolve_moj_area_name` +
+  `build_reference` (Sprint 2.22.0a.18) for the yield DENOMINATOR, so it is **identical to the valuation
+  denominator** (zone-sibling pooling + overrides, e.g. امريخ الجنوبي→مريخ). Replaces the bespoke
+  `area_token`/`_zone_num` double-normalization.
+- **(a) standalone-villa filter** — villa-yield pool restricted to PropertyFinder `Villa` (townhouse
+  excluded), matching the A2 sale-side STANDALONE_VILLA stratification. (No-op on this crawl: the
+  villas-for-rent feed is already pure-Villa — a correct guard, 0 excluded.)
+- **(c) deep crawl + dedupe** — national feed crawled to PF's real serving cap with **dedupe by listing
+  id**: **1254 → 1214 unique villa rentals (≈3× the Sprint-2.19 ~400)**. Connector hardened: PF
+  over-reports `page_count=139` but **404s beyond ~page 50**; `fetch_rentals` now breaks gracefully on a
+  per-page 404 (was crashing the whole crawl).
+- **(e) furnished-consistent rent median** — the rent numerator now excludes fully-FURNISHED listings
+  (basis-consistent with the unfurnished MoJ sale denominator), with the furnished split recorded per cell.
+  Material: المعمورة 400-600 median rent 16.5k→12.5k (a ~24% furnished premium removed). gross/net (villa
+  opex 0.20) unchanged in form.
+
+**Validation (real engine fns + real moj_weekly.csv — E14):** isolated `test_cap_rate_calibrator.py`
+**59/59** + new `test_cap_rate_calibrator_r7.py` **29/29**. Live rebuild (281s): 158 cells, **villa
+reliable 2 · indicative 1 · fallback 142** (was reliable 1 · indic 2). The 3 usable cells are now all
+CORRECT (a18 denominator, furnished-consistent, **no Fix#4 stock=None violation** — the old الغرافة 0-400
+"indicative" was such a violation, now correctly fallback):
+
+| cell | committed (v2.19) | new (v2.19.2) |
+|---|---|---|
+| العب 400-600 | 5.88% gross / reliable n=35 | 5.88% / **reliable n=52** |
+| **المعمورة 56 400-600** | 7.37% / indicative n=13 (furnished-inflated) | **6.04% gross / 4.83% net / reliable n=24** |
+| عين خالد 400-600 | fallback n=4 | **6.72% gross / indicative n=15** (a18+stock rescued) |
+| الغرافة 0-400 | 11.7% / indicative · stock=None (Fix#4 breach) | fallback (correct) |
+
+**Villa-6 (المعمورة, 652 m² → 600-900):** its exact bracket is still thin (n=3, gross 5.29% → fallback),
+**but** المعمورة 400-600 is now **reliable at 6.04% gross / 4.83% net** and the thin 600-900 (5.29%) is
+consistent → a **~5.3–6% gross** band ⟹ **villa-6 income value ≈ 3.2–3.6M** (was the unusable 1.7–4.8M of
+§8). Converges with §8 (~3.2M) + the human read (2.9–3.2M); below the condition-blind comparison (3.8M) —
+the income check doing its job.
+
+**Honest residual (#36).** The usable-cell COUNT is still only **3** — the deep crawl lifted only the
+BIG areas across n≥20 (العب, المعمورة). The binding constraint that remains is **per-cell rental depth**
+(PF caps the national feed at ~50 pages → ~1214 spread over 158 cells ≈ 8/cell) **+ missing MoJ land
+medians** (no land median → stock=None → Fix#4 fallback). **Next lever = per-area PF search by locationId**
+(the §8 method that found 93–284 listings/area) to deepen thin districts — a separate connector sprint
+(national-feed slugs `…-in-<area>.html` 404; needs the `?l=<locationId>` discovery).
+
+**Gate-2 lookup flag (for the wiring step, NOT changed here).** The engine's calibrated-rate lookup
+`evaluate_unified._cap_area_token` strips «ال»+zone+folds but is **NOT override-aware** — a subject in GIS
+«امريخ الجنوبي» would not match a cell stored under «مريخ». Mitigated for now by storing the GIS aname (not
+the a18 key) as `district_aname`, so GIS↔GIS matching holds incl. override areas; the durable fix
+(make `_lookup_calibrated_cap_rate` a18/override-aware) belongs to the Gate-2 income-triangulation wiring.
+
+**The two gates (need an explicit «go»):**
+1. **Gate-1 (push)** — commit `cap_rate_calibrator.py` + `propertyfinder_client.py` + the new test +
+   `.gitignore`, **replace `cap_rates.sqlite` with the rebuilt DB**, `git subtree push heroku` + origin.
+2. **Gate-2 (methodology/output)** — the rebuilt DB changes the user-visible income cross-check for the
+   affected areas (المعمورة 7.37%→6.04%, عين خالد new indicative, الغرافة demoted). This is the
+   yield-data correction; the **headline-triangulation wiring** (income setting the villa headline) is a
+   LATER, separate Gate-2 step (§6) and is NOT in this build.

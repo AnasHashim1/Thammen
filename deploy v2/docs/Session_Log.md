@@ -3356,6 +3356,63 @@ The «التقدير السوقي» term remains PROVISIONAL. Scratch `.rl_*` re
 
 -----
 
+## 20.37 🆕 2026-06-07 — Villa-yield calibration v1 (R7 income cross-check, Dependency #2) — BUILT + validated LOCALLY, HELD at Gate-1/Gate-2 (origin-only, value-invariant)
+
+> **Engine UNCHANGED — stays b4 / Heroku v171 (byte-identical).** Deliverable: improved
+> `cap_rate_calibrator.py` + `propertyfinder_client.py` (deep-crawl robustness) +
+> `tests/test_cap_rate_calibrator_r7.py` + `.gitignore` + `docs/DECISION_income_crosscheck_villa_R7.md` §9.
+> Committed **origin-only** (value-invariant — the calibrator is a build-time tool, NOT in the runtime
+> path); **Heroku NOT deployed, `cap_rates.sqlite` NOT swapped** (the rebuilt DB is a gitignored
+> `cap_rates.new.sqlite`). Handshake (#57): began at b4/v171, qars healthy, MoJ 158d, master==origin `5ea9682`.
+
+**Context.** Per §9 of `DECISION_income_crosscheck_villa_R7.md`: the income cross-check is data-FEASIBLE but
+the villa **yield is the bottleneck** — the committed `cap_rates.sqlite` (built 2026-05-20, pre-a11/a12/a18 +
+pre-Fix#4) had only **1 reliable villa cell**, gross spread 4–11%. The income-cross-check MACHINERY already
+exists in the engine (`_lookup_calibrated_cap_rate` reliable-only + `_build_income_crosscheck`, consumed for
+every asset incl. villa) → more reliable cells WOULD change the user-visible income cross-check → **Gate-2**.
+
+**Built (data-only, reversible).** (a) standalone-villa filter (PF `Villa`, townhouse excluded — A2 parity;
+no-op on the pure-Villa feed, a correct guard); (b) size×stock (existing; a18 helps stock); (c) deep crawl
+**1254→1214 unique villa rentals (≈3× the ~400 of Sprint 2.19)** + **dedupe by id** + connector hardened to
+break gracefully on PF's per-page 404 (PF over-reports `page_count=139` but 404s beyond ~page 50 — was
+crashing the whole crawl); (d) **a18 reconciliation** — calibrator reuses the ENGINE `resolve_moj_area_name`
++ `build_reference` so the yield DENOMINATOR == the valuation denominator (zone-sibling pooling + overrides,
+امريخ الجنوبي→مريخ), replacing the bespoke `area_token`/`_zone_num`; (e) **furnished-consistent rent median**
+(exclude fully-FURNISHED to match the unfurnished MoJ sale denominator — removed a ~24% furnished premium on
+المعمورة 400-600).
+
+**Validation (E14 — real engine fns + real moj_weekly.csv).** isolated `test_cap_rate_calibrator.py`
+**59/59** + new `test_cap_rate_calibrator_r7.py` **29/29**; live rebuild (281s): 158 cells, **villa reliable
+1→2, indicative 2→1** — the 3 usable cells now ALL CORRECT (a18 denominator, furnished-consistent, **no
+Fix#4 stock=None violation** — old الغرافة 0-400 "indicative" was such a breach, now correctly fallback):
+العب 400-600 reliable n=52 (5.88%); **المعمورة 56 400-600 promoted indicative→reliable n=24 (6.04% gross /
+4.83% net** — was a furnished-inflated 7.37%); عين خالد 400-600 fallback→**indicative n=15 (6.72%)**.
+**Villa-6 (المعمورة, 652 m² → 600-900):** exact bracket still thin (n=3, 5.29% fallback) but 400-600 now
+reliable (6.04%) + the thin 600-900 consistent → **~5.3–6% gross → income value ≈ 3.2–3.6M** (was the
+unusable 1.7–4.8M) — converges with §8 (~3.2M) + the human read (2.9–3.2M); below the condition-blind
+comparison (3.8M) = the income check doing its job.
+
+**Honest residual (#36).** Usable-cell COUNT is still **3** — the deep crawl lifted only the BIG areas
+across n≥20. Binding constraints that remain: per-cell rental depth (PF national feed caps ~50 pages →
+~1214 over 158 cells ≈ 8/cell) + missing MoJ land medians (stock=None → Fix#4 fallback). **NEXT lever =
+per-area PF search by `locationId`** (the §8 method, 93–284 listings/area; national-feed `…-in-<area>.html`
+slugs 404) — a separate connector sprint with its own §5 audit.
+
+**Gate-2 lookup flag (for the wiring step, NOT changed).** `evaluate_unified._cap_area_token` (calibrated-
+rate lookup) strips «ال»+zone+folds but is **NOT override-aware** — a subject GIS «امريخ الجنوبي» wouldn't
+match a cell stored «مريخ». Mitigated now by storing the GIS aname (not the a18 key) as `district_aname`
+(GIS↔GIS match holds incl. overrides); the durable fix (a18/override-aware `_lookup_calibrated_cap_rate`)
+belongs to the §6 triangulation wiring.
+
+**Disposition (Anas «افعل الأصوب», 2026-06-07).** The narrow 3-cell DB isn't worth a standalone Gate-2
+deploy → the «الأصوب» path = preserve the work, ship the yield-data WITH broader coverage and/or the §6
+triangulation, not before. Code committed origin-only (value-invariant); DB swap + Heroku deploy HELD.
+Carried forward (Rule #42): NEXT = per-area PF depth (own §5 audit) → then ship yield-data + §6
+income-triangulation wiring together as one Gate-2; the §6 triangulation brief (income setting the villa
+headline) = Claude.ai's ball.
+
+-----
+
 *Last updated: 2026-06-07 (**Sprint 2.22.0b.4 [R7 condition/value axis — `teardown` ↓ land−demolition · `new`+luxury DRC/Cost-Approach ↑ · explicit `penthouse` ×2.5 BUA] SHIPPED** — Heroku **v171** / commit `2cc5d2b` split `d0ecd82` / CHANGELOG_v85 / §20.36; **VALUATION-AFFECTING but OPT-IN** [standard `/api/evaluate` value-invariant — live smoke **4 anchors byte-identical** 2.4M/5.4M/2.6M/refusal; levers fire only on `condition`/`is_luxury`/`penthouse` via `/details`]; built in the prior session + HELD at Gate-1, shipped this session after #57 handshake + **re-measured** DoD **392/15/45/broad 73/73** + isolated **29/29** on Anas's **«go»** [Gate-2 PO-directed, his demolition numbers embedded]; live levers on 56/647/6: `teardown`→2.4M ↓, `new`+luxury+PH→5.9M / −PH→5.2M ↑ [penthouse +0.7M]; **🔴 HONEST RESIDUAL [§20.36, Rule #52]: EXTREMES-ONLY — the good/very-good/renovated MIDDLE still over-anchors at the widened value [56/647/6 → 3.7–3.8M even +age=25]; the 10-Year-Rule DOWN re-anchor is wired ONLY to explicit `teardown`, NOT old-age+good-condition → that is the NEXT R7 step; for the villa-6/V001 «very good condition» question the engine still returns ~3.8M while the defensible value is ~2.9–3.2M [V001 cleared ~2.9M]**; calibration n=2 [V002/V003] → MUC high + 💎 «منهج التكلفة»; origin in sync `2cc5d2b`. **NEXT = middle-case 10-Year-Rule re-anchor [R7 step] · docs-close remainder · beta go-call [gate #6, Anas]**. Prior: **Sprint 2.22.0b.3 [range-as-lead, §2b authority/finality dial-down] SHIPPED** — Heroku **v170** / commit `e39097c` split `29885bb` / CHANGELOG_v84 / §20.35; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal]; the results headline becomes the market RANGE [true low–high, asymmetry-ALLOWED — **NOT** a forced symmetric ±, PHASE0 recon §1: on thin paths the median sits AT the high edge so a symmetric bar would invent refused upside], the median a muted central-estimate marker «الوسيط (التقدير المركزي)», point fallback when no range; old two-box «الحد الأدنى/الأعلى» removed; **value_floor stays SECONDARY** [NOT land-to-median]; condition note + evidence panel + showConfirm UNTOUCHED; `api.py`+engine-logic UNTOUCHED; recon `docs/PHASE0_range_as_lead_recon.md` re-shaped the «symmetric ±» wording → true-range, Anas «GO» signed Gate-2; isolated 15/15 + DoD 392/15/45/72 + R14 real-Chromium [0 console errors, range-lead live on bracket(symmetric)+thin(all-downside, NO invented upside), no overflow 390×844 hlRight 336<390] + live smoke 4 anchors byte-identical + served HTML carries «النطاق التقديري السوقي»; origin in sync `e39097c`. **NEXT thin-flow = (3) condition-sensitivity reading** [B-2 PARKED n≥20] · then (4) decomposition in the polished result + report refinement; multi-AI #54 not run [framing decided by measured data — flag-and-proceed]; beta go-call [gate #6, Anas]; second step of the v4 «thinnest-flow» sequence. Prior: **Sprint 2.22.0b.2.3 [Confirmation Gate, Screen 2] SHIPPED** — Heroku **v169** / commit `6d3ac37` split `39b6f36` / CHANGELOG_v83 / §20.34; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal]; a NEW `confirmScreen` between identification and the result, rendered from the SAME `/api/evaluate` response [no 2nd fetch] — muted preliminary range [`valuation.low–high`] + READ-ONLY review of the GIS-fetched basis [no ✏ pencils/no correction CTA, existing AR labels, plot-area honesty label «المساحة المعتمدة في التقدير»] + the b.2.2 evidence panel reused + explicit «تابِع بهذه البيانات»→refine + permanent «التقرير الكامل الآن»→results; `run()` routes valued non-valuer → confirm, **valuer + refusals skip to results** [v4 two-path, Rule #39]; `api.py`+`evaluate_unified.py`-logic UNTOUCHED; isolated 32/32 + DoD 392/15/45/71 + R14 real-Chromium [9 fns, 0 console errors, no overflow 390/375/1265, full live flow buyer→confirm→refine/results + valuer-skip]; recon `docs/PHASE0_confirmation_gate_recon.md` + signed brief `docs/BRIEF_confirmation_gate_SIGNED.md`; origin in sync `6d3ac37`. **NEXT = (2) range-as-lead** [§2b authority/finality dial-down — symmetric ± bar, NOT the rejected land-to-median; own brief + multi-AI #54] · then (3) condition-sensitivity [B-2 PARKED n≥20] · then (4) decomposition in the polished result + report refinement · beta go-call [gate #6, Anas]; first step of the v4 «thinnest-flow» sequence. Prior: **Sprint 2.22.0b.2.2 [evidence-quality diagnosis panel] SHIPPED** — Heroku **v168** / commit `74233e6` split `e6aa5b4` / CHANGELOG_v82 / §20.33; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal]; the binary confidence badge «🟢 شواهد كافية» → a 4-component **evidence-quality** panel [اكتمال · مقارنات · حداثة · توصيف — قوي/متوسط/محدود], each DERIVED from its engine field §2c; **«explanation≠confidence» enforced** [refine improves ONLY the user-input axes — proven live]; component 4 «غير منطبق — أرض» for raw_land; `api.py` UNTOUCHED; isolated 26/26 + DoD 392/15/45/70 + R14 real-Chromium [0 console errors, 390×844 + desktop no-overflow, bare/refine/land]; implements **DESIGN_2p2x §3 Phase 2** of the suspense-reveal arc [the first b.2.2 value-decomposition draft misapplied §3 → withdrawn; signed parent design now persisted, Rule #63 closed]; origin in sync `74233e6`. **NEXT = Phase 3 = b.2.3** [decision-framed chapters + uncertainty-early] · optional **b.2.2.1** [condition=sensitivity, brushes PARKED B-2] · **§2b dial-down FOLDED into the arc** [b.3 merged] · beta go-call [gate #6, Anas] · **B-2 PARKED** [R7, n≥20]. Prior: **Sprint 2.22.0b.2.1 [separate input screens — structural frontend WRAP] SHIPPED** — Heroku **v167** / commit `80d0b1a` split `2ce45bb` / CHANGELOG_v81 / §20.32; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal + `/details` fp600 → 2.9M/eff 540]; `formScreen`=identification → bare `/api/evaluate`, new `refineScreen` hosts the relocated optional details, results card display-only → `go('refine')`, tower CTA `goForm`→refine [Rule #39 — preserves the tower/apartment rent path]; `api.py` UNTOUCHED; isolated 26/26 + DoD 392/15/45/69 + R14 real-Chromium [9 fns, 0 console errors, 390×844 + desktop no-overflow, full live flow + tower path]; recon RESHAPED the brief [the staged-reveal Phase-1 draft depended on the unsaved `DESIGN_2p2x_suspense_reveal.md`; the §2b authority/finality dial-down stays the OPEN fork → b.3]; origin in sync `80d0b1a`. **NEXT = b.3** [§2b authority/finality dial-down — own brief + multi-AI #54] · beta go-call [gate #6, Anas] · **B-2 PARKED** [R7, n≥20]. Prior: **Sprint 2.22.0b.1 [Geometry Refinement — zoning-driven footprint + basement excluded from the comparison driver] SHIPPED** — Heroku **v165** / commit `4b39ba2` / CHANGELOG_v79 / §20.29; **value-invariant on no-building-input anchors** [live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal], **basement excluded LIVE** [fl3 ≡ fl3+basement = 2.8M], fp-cap [600→540 → 2.9M], geometry surfaced; recon reshaped the brief → 3 deltas + augment-panel; isolated 34/34 + DoD 392/15/45/67 + R14 real-Chromium + local E2E [caught/fixed a §5.2 large-plot inflation edge]; origin in sync `4b39ba2`. **NEXT = Sprint 2.22.0b.2** [guided 3-stage flow, frontend-only] = Gate-2 DRAFT awaiting signature. Prior: **Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
 for n≥20** [Fork#1=MODERATE Lever-2 re-anchor; Fork#2=WAIT-for-n≥20; Rule #54 web-check PASS — VPS 2 / VPGA 10 /
 IVS 102 confirmed, stated condition = assumption+MVU NOT Special Assumption, +IVS 104; §5 audit DECISIVE — local

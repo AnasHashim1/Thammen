@@ -58,6 +58,17 @@ from datetime import datetime, timezone
 import moj_reference as mr
 import propertyfinder_client as pf
 
+# Sprint 2.19.2 (R7 income cross-check) — reuse the ENGINE's GIS→MoJ area
+# reconciliation (Sprint 2.22.0a.18) so the calibration's yield DENOMINATOR is
+# the SAME pooled MoJ villa median the valuation path uses. Guarded: if the
+# engine import chain is unavailable, fall back to the local area_token path.
+try:
+    from evaluate_property import resolve_moj_area_name as _resolve_moj_area_name
+    _A18_OK = True
+except Exception:  # pragma: no cover - defensive
+    _resolve_moj_area_name = None
+    _A18_OK = False
+
 # --------------------------------------------------------------------------
 # Config / constants
 # --------------------------------------------------------------------------
@@ -100,6 +111,22 @@ SERVICE_CHARGE_QAR_SQM_YEAR = {
 
 # Asset types this Sprint actually calibrates from rentals (others -> fallback).
 CALIBRATABLE = {"villa", "compound_small"}
+
+# Sprint 2.19.2 (R7): the villa-yield pool is STANDALONE villa only, to match the
+# A2 (Sprint 2.22.0a.12) sale-side built-type stratification (STANDALONE_VILLA —
+# house/فيلتان/compound excluded). PropertyFinder maps both 'Villa' and
+# 'Townhouse' to asset_type='villa'; a townhouse is an attached product (not
+# standalone), so it is excluded from the villa-yield pool by property_type_raw.
+STANDALONE_VILLA_PF_TYPES = {"villa"}
+
+# Sprint 2.19.2 (R7): the MoJ villa SALE median (the yield denominator) is over
+# villas sold as-is (overwhelmingly unfurnished). A fully-FURNISHED rent listing
+# carries a transient furnishing premium that the sale denominator does not, so
+# pooling it inflates the gross yield. The calibration rent median is therefore
+# computed over non-fully-furnished listings (NO / PARTLY / unknown), keeping the
+# numerator basis consistent with the denominator. Counts are recorded in notes;
+# falls back to all listings if the consistent subset is too thin (<3).
+_FULLY_FURNISHED = {"YES"}
 
 # --------------------------------------------------------------------------
 # Small pure helpers (unit-tested)
@@ -150,6 +177,39 @@ def classify_villa_stock(villa_per_m2, land_per_m2):
     if ratio < 2.20:
         return "modern_stock"
     return "luxury_new"
+
+
+def is_standalone_villa(listing):
+    """Sprint 2.19.2 (R7): True only for a STANDALONE villa rental.
+
+    PropertyFinder maps 'Villa' and 'Townhouse' both to asset_type='villa'; we
+    keep only property_type_raw=='Villa' so the rent pool matches the A2 sale-side
+    STANDALONE_VILLA stratification. Non-villa asset_types are unaffected here.
+    """
+    if (listing or {}).get("asset_type") != "villa":
+        return True  # not a villa cell — this gate doesn't apply
+    raw = (listing.get("property_type_raw") or "").strip().lower()
+    return raw in STANDALONE_VILLA_PF_TYPES
+
+
+def rent_medians(cell_listings):
+    """Sprint 2.19.2 (R7): return (med_rent, med_rent_sqm, n_used, furn_counts).
+
+    The medians are computed over non-fully-furnished listings (numerator basis
+    consistent with the unfurnished MoJ sale denominator). Falls back to ALL
+    listings when the consistent subset is < 3. ``furn_counts`` is a dict of the
+    raw furnished labels for transparency in notes.
+    """
+    furn_counts = {}
+    for L in cell_listings:
+        f = (L.get("furnished") or "NA")
+        furn_counts[f] = furn_counts.get(f, 0) + 1
+    base = [L for L in cell_listings
+            if (L.get("furnished") or "").strip().upper() not in _FULLY_FURNISHED]
+    used = base if len(base) >= 3 else cell_listings
+    med_rent = median([L["monthly_rent"] for L in used])
+    med_rent_sqm = median([L["rent_per_sqm"] for L in used])
+    return med_rent, med_rent_sqm, len(used), furn_counts
 
 
 def compute_net_yield(rent_per_sqm_monthly, sale_median_per_sqm,
@@ -266,7 +326,14 @@ def fetch_gis_district(lat, lon, cache=None, timeout=15, retries=2):
 # --------------------------------------------------------------------------
 
 class MojSaleIndex:
-    """Read-only access to MoJ sale medians, keyed by area token."""
+    """Read-only access to MoJ sale medians (the yield DENOMINATOR).
+
+    Sprint 2.19.2 (R7): GIS→MoJ resolution + sibling pooling now go through the
+    ENGINE path (resolve_moj_area_name + build_reference, Sprint 2.22.0a.18), so
+    the calibrated yield denominator is IDENTICAL to the valuation denominator.
+    The legacy area_token bucketing is retained only as a fallback for when the
+    engine import is unavailable (``_A18_OK`` False).
+    """
 
     def __init__(self, csv_path=MOJ_CSV):
         import csv as _csv
@@ -274,16 +341,15 @@ class MojSaleIndex:
             self.rows = list(_csv.DictReader(f))
         dates = [d for d in (mr.parse_date(r[mr.DATE_COL]) for r in self.rows) if d]
         self.max_date = max(dates)
-        # token -> set of raw MoJ area names
-        self._token_to_areas = defaultdict(set)
-        for r in self.rows:
-            raw = mr.normalize(r.get("اسم المنطقة", ""))
-            if raw:
-                self._token_to_areas[area_token(raw)].add(raw)
         self._ref_cache = {}
-
-    def areas_for_token(self, token):
-        return self._token_to_areas.get(token, set())
+        self._resolve_cache = {}
+        # Legacy fallback index — only built/used when the engine a18 path is absent.
+        self._token_to_areas = defaultdict(set)
+        if not _A18_OK:
+            for r in self.rows:
+                raw = mr.normalize(r.get("اسم المنطقة", ""))
+                if raw:
+                    self._token_to_areas[area_token(raw)].add(raw)
 
     def _reference(self, moj_area):
         if moj_area not in self._ref_cache:
@@ -292,31 +358,46 @@ class MojSaleIndex:
             )
         return self._ref_cache[moj_area]
 
-    def villa_and_land_median(self, token, bracket_label, gis_aname=None):
-        """Return (villa_per_m2, land_per_m2, villa_n, moj_area) for a token.
+    def resolve_key(self, gis_aname):
+        """GIS aname -> MoJ pooling key (a18), or None when no MoJ area matches.
 
-        When `gis_aname` carries an explicit zone number, MoJ areas with a
-        DIFFERENT explicit zone are skipped (cross-zone contamination guard);
-        zone-less MoJ areas remain eligible.
+        Cached per aname. With the engine path (``_A18_OK``) this is exactly the
+        key build_reference / the valuation filter on; the legacy fallback picks
+        the highest-villa-n raw area in the aname's token bucket.
         """
+        if gis_aname in self._resolve_cache:
+            return self._resolve_cache[gis_aname]
+        key = None
+        if _A18_OK:
+            res = _resolve_moj_area_name(self.rows, gis_aname)  # (key, count) | None
+            key = res[0] if res else None
+        else:
+            areas = self._token_to_areas.get(area_token(gis_aname))
+            if areas:
+                key = max(areas, key=lambda a: (self._reference(a)
+                          .get("categories", {}).get("villa", {}) or {}).get("n", 0))
+        self._resolve_cache[gis_aname] = key
+        return key
+
+    def medians_for_key(self, moj_key, bracket_label):
+        """Return (villa_per_m2, land_per_m2, villa_n) for a resolved MoJ key.
+
+        ``moj_key`` is an a18 pooling key (or a raw area in the legacy fallback);
+        build_reference pools its zone-siblings + applies the A1/A2 villa
+        stratification, so the medians match the valuation path. Returns
+        (None, None, 0) when the key is falsy or has no in-bracket villa sales.
+        """
+        if not moj_key:
+            return (None, None, 0)
         bkey = _moj_bracket_key(bracket_label)
-        gis_zone = _zone_num(gis_aname) if gis_aname else None
-        best = (None, None, 0, None)
-        for moj_area in self.areas_for_token(token):
-            if gis_zone is not None:
-                mz = _zone_num(moj_area)
-                if mz is not None and mz != gis_zone:
-                    continue  # different zone — skip
-            ref = self._reference(moj_area)
-            cats = ref.get("categories", {})
-            vb = cats.get("villa", {}).get("size_brackets", {}).get(bkey)
-            lb = cats.get("land", {}).get("size_brackets", {}).get(bkey)
-            v_med = vb.get("price_per_m2_median") if vb else None
-            l_med = lb.get("price_per_m2_median") if lb else None
-            v_n = vb.get("n", 0) if vb else 0
-            if v_med and v_n > best[2]:
-                best = (v_med, l_med, v_n, moj_area)
-        return best
+        ref = self._reference(moj_key)
+        cats = ref.get("categories", {})
+        vb = cats.get("villa", {}).get("size_brackets", {}).get(bkey)
+        lb = cats.get("land", {}).get("size_brackets", {}).get(bkey)
+        v_med = vb.get("price_per_m2_median") if vb else None
+        l_med = lb.get("price_per_m2_median") if lb else None
+        v_n = vb.get("n", 0) if vb else 0
+        return (v_med, l_med, v_n)
 
 
 # --------------------------------------------------------------------------
@@ -382,27 +463,45 @@ def _service_charge_for(asset_type, district_token):
     return SERVICE_CHARGE_QAR_SQM_YEAR.get(asset_type, 0)
 
 
-def collect_rentals(target_n_per_cat=400, max_pages=16, delay_sec=2.0, log=print):
-    """Fetch villa + compound rentals, GIS-resolve, return enriched listings."""
+def collect_rentals(target_n_per_cat=4000, max_pages=140, delay_sec=1.5,
+                    compound_max_pages=24, log=print):
+    """Fetch villa + compound rentals; DEDUPE by listing id; return listings.
+
+    Sprint 2.19.2 (R7): the villa feed (~3.4k nationally, ~139 pages) is crawled
+    DEEP so per-district cells reach reliable n; PropertyFinder repeats listings
+    across pages, so we dedupe by listing id (fallback: coord+rent+size tuple).
+    Compounds are a secondary, lighter pull from the broad 'all' feed.
+    """
+    seen = set()
     listings = []
-    for category in ("villas",):
-        log(f"[fetch] category={category} max_pages={max_pages}")
-        rows = pf.fetch_rentals(category=category, target_n=target_n_per_cat,
-                                max_pages=max_pages, delay_sec=delay_sec)
-        log(f"[fetch] category={category} got {len(rows)} normalized rentals")
-        listings.extend(rows)
+
+    def _add(rows, label):
+        added = 0
+        for r in rows:
+            rid = r.get("id")
+            k = rid if rid is not None else (r.get("lat"), r.get("lon"),
+                                             r.get("monthly_rent"), r.get("size_sqm"))
+            if k in seen:
+                continue
+            seen.add(k)
+            listings.append(r)
+            added += 1
+        log(f"[fetch] {label}: {len(rows)} fetched, {added} new after dedupe")
+
+    log(f"[fetch] category=villas max_pages={max_pages}")
+    _add(pf.fetch_rentals(category="villas", target_n=target_n_per_cat,
+                          max_pages=max_pages, delay_sec=delay_sec), "villas")
     # compounds appear in the broad 'all' feed under property_type 'Compound'
-    log("[fetch] category=all (compounds)")
+    log(f"[fetch] category=all (compounds) max_pages={compound_max_pages}")
     all_rows = pf.fetch_rentals(category="all", target_n=target_n_per_cat,
-                                max_pages=max_pages, delay_sec=delay_sec)
-    comp = [r for r in all_rows if r.get("asset_type") == "compound_small"]
-    log(f"[fetch] compounds found in 'all': {len(comp)}")
-    listings.extend(comp)
+                                max_pages=compound_max_pages, delay_sec=delay_sec)
+    _add([r for r in all_rows if r.get("asset_type") == "compound_small"],
+         "compounds-from-all")
     return listings
 
 
-def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
-              delay_sec=2.0, listings=None, moj_index=None, gis_cache=None,
+def calibrate(db_path=DB_PATH, target_n_per_cat=4000, max_pages=140,
+              delay_sec=1.5, listings=None, moj_index=None, gis_cache=None,
               log=print):
     """Run the full calibration and write `db_path`. Idempotent (rebuilds table).
 
@@ -413,19 +512,25 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
     gis_cache = {} if gis_cache is None else gis_cache
 
     if listings is None:
-        listings = collect_rentals(target_n_per_cat, max_pages, delay_sec, log)
+        listings = collect_rentals(target_n_per_cat, max_pages, delay_sec, log=log)
 
-    # GIS-resolve + bin by (token, asset_type, bracket)
+    # GIS-resolve + bin by (a18 MoJ pooling key, asset_type, bracket)
     cells = defaultdict(list)
-    aname_by_token = {}
-    distno_by_token = {}
+    aname_by_key = {}
+    distno_by_key = {}
     skipped_no_gis = 0
+    skipped_non_standalone = 0
     outliers_rejected = 0
     calibratable_seen = 0
     for L in listings:
         if L.get("asset_type") not in CALIBRATABLE:
             continue
         calibratable_seen += 1
+        # Sprint 2.19.2 (R7): villa-yield pool = STANDALONE villa only (parity with
+        # the A2 sale-side STANDALONE_VILLA stratification; townhouse excluded).
+        if not is_standalone_villa(L):
+            skipped_non_standalone += 1
+            continue
         # Sprint 2.19.1 (Fix #5): drop implausible rent/m² before it reaches a
         # median (and before we spend a GIS call on garbage).
         if not pf.is_plausible_listing(L):
@@ -435,15 +540,19 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
         if not aname:
             skipped_no_gis += 1
             continue
-        tok = area_token(aname)
-        aname_by_token.setdefault(tok, aname)
-        distno_by_token.setdefault(tok, dist_no)
+        # Sprint 2.19.2 (R7): bin on the a18 MoJ pooling key so the rentals and the
+        # sale denominator share ONE key (fall back to the folded aname stem when
+        # the area has no MoJ match — the cell still surfaces a rent median).
+        key = moj_index.resolve_key(aname) or mr.area_match_key(aname)
+        aname_by_key.setdefault(key, aname)
+        distno_by_key.setdefault(key, dist_no)
         bracket = size_bracket_for(L["size_sqm"])
         if not bracket:
             continue
-        cells[(tok, L["asset_type"], bracket)].append(L)
+        cells[(key, L["asset_type"], bracket)].append(L)
     rejection_rate = (outliers_rejected / calibratable_seen) if calibratable_seen else 0.0
     log(f"[bin] cells={len(cells)} skipped_no_gis={skipped_no_gis} "
+        f"skipped_non_standalone={skipped_non_standalone} "
         f"outliers_rejected={outliers_rejected}/{calibratable_seen} "
         f"({rejection_rate*100:.1f}%)")
     if rejection_rate > 0.10:
@@ -453,23 +562,26 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
             f"— possible parsing problem (Sprint 2.19.1 brief §8).")
 
     rows_out = []
-    for (tok, asset_type, bracket), cell_listings in sorted(cells.items()):
+    for (key, asset_type, bracket), cell_listings in sorted(cells.items()):
         n = len(cell_listings)
-        med_rent = median([L["monthly_rent"] for L in cell_listings])
-        med_rent_sqm = median([L["rent_per_sqm"] for L in cell_listings])
+        # Sprint 2.19.2 (R7): rent median over non-fully-furnished listings, to keep
+        # the numerator basis consistent with the unfurnished MoJ sale denominator.
+        med_rent, med_rent_sqm, n_used, furn_counts = rent_medians(cell_listings)
 
-        gis_aname = aname_by_token.get(tok, tok)
-        v_med, l_med, v_n, moj_area = moj_index.villa_and_land_median(
-            tok, bracket, gis_aname=gis_aname)
+        # Sprint 2.19.2 (R7): denominator via the SAME engine pool the valuation uses.
+        v_med, l_med, v_n = moj_index.medians_for_key(key, bracket)
+        moj_area = key
         stock_class = None
         notes = []
         if asset_type == "villa":
             stock_class = classify_villa_stock(v_med, l_med)
         sale_median = v_med  # villa/compound use villa sale median per m2
-        svc = _service_charge_for(asset_type, tok)
+        svc = _service_charge_for(asset_type, key)
 
         gross, net = compute_net_yield(med_rent_sqm, sale_median, svc,
                                        OPEX_RATIO.get(asset_type, 0.20))
+        if n_used != n:
+            notes.append(f"rent_n_used={n_used}/{n}(excl_fully_furnished)")
         if sale_median is None:
             notes.append("no_moj_sale_comparable")
             confidence = "fallback"
@@ -481,11 +593,12 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
             confidence = "fallback"
             cap_rate = net
         else:
-            # Confidence is governed by the WEAKER of the rental sample and the
-            # MoJ sale sample — a ratio is only as reliable as its weaker input.
-            confidence = confidence_for_n(min(n, v_n))
+            # Confidence is governed by the WEAKER of the rental sample (the n
+            # actually in the median) and the MoJ sale sample — a ratio is only as
+            # reliable as its weaker input.
+            confidence = confidence_for_n(min(n_used, v_n))
             cap_rate = net
-            notes.append(f"moj_area={moj_area};moj_villa_n={v_n};eff_n={min(n, v_n)}")
+            notes.append(f"moj_area={moj_area};moj_villa_n={v_n};eff_n={min(n_used, v_n)}")
             notes.append("rent=built_sqm;sale=plot_sqm")  # basis caveat
 
         # Sprint 2.19.1 (Fix #4): Rule E4 requires villa stratification before a
@@ -497,9 +610,13 @@ def calibrate(db_path=DB_PATH, target_n_per_cat=400, max_pages=16,
             confidence = "fallback"
             notes.append("stratification_unavailable:no_moj_land_median")
 
+        # furnished transparency (Sprint 2.19.2)
+        notes.append("furn=" + ",".join(f"{k}:{furn_counts[k]}"
+                                        for k in sorted(furn_counts)))
+
         rows_out.append({
-            "district_aname": aname_by_token.get(tok, tok),
-            "district_dist_no": distno_by_token.get(tok),
+            "district_aname": aname_by_key.get(key, key),
+            "district_dist_no": distno_by_key.get(key),
             "asset_type": asset_type,
             "bedrooms": None,
             "size_bracket": bracket,

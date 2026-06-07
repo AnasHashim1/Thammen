@@ -286,8 +286,18 @@ def fetch_rentals(category="apartments", target_n=200, max_pages=8,
         )
     collected = []
     for page in range(1, max_pages + 1):
-        listings, meta = fetch_listings_page(base_url, page=page,
-                                             timeout=timeout, retries=retries)
+        try:
+            listings, meta = fetch_listings_page(base_url, page=page,
+                                                 timeout=timeout, retries=retries)
+        except urllib.error.HTTPError as e:
+            # Sprint 2.19.2 (R7) deep-crawl robustness: PropertyFinder serves only
+            # the first ~40-50 pages then returns 404 (its __NEXT_DATA__
+            # page_count OVER-reports the accessible range). A single page error
+            # must not crash the whole crawl — treat it as the end of accessible
+            # results and return what we collected so far.
+            if e.code == 404:
+                break
+            raise
         collected.extend(listings)
         page_count = meta.get("page_count")
         if not listings:
