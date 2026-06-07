@@ -440,7 +440,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         <div class="fg"><label>مجلس خارجي منفصل</label><select id="externalMajlis"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد</option></select></div>
       </div>
       <div class="fr2">
-        <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option></select></div>
+        <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option><option value="teardown">آيل للسقوط / يجب هدمه</option></select></div>
         <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من تنظيم المنطقة" min="0"></div>
       </div>
       <div class="fr2">
@@ -1199,6 +1199,8 @@ function show(d){
     }
     // Sprint 2.22.0a.17: clean-bracket condition caveat — muted neutral note directly under the range.
     if(v.condition_note_ar){h+='<div class="rn" style="margin-top:10px;font-size:.8rem">'+v.condition_note_ar+'</div>';}
+    // Sprint 2.22.0b.4 (B-2a): teardown re-anchor disclosure — value = land − demolition; standing building is a liability.
+    if(v.teardown&&v.teardown.note_ar){h+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--warn);background:var(--warn-bg)">🏚️ '+v.teardown.note_ar+'</div>';}
     // Sprint 2.22.0a.21 (B-1): land-floor / HBU decomposition — muted block under the range (value-invariant).
     if(v.value_floor){
       const vf=v.value_floor;

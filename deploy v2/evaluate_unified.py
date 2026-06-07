@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b3-range-as-lead'
-SPRINT_TAG = '2.22.0b.3'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b4-teardown-down-anchor'
+SPRINT_TAG = '2.22.0b.4'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4260,6 +4260,40 @@ def evaluate_thammen(
             except Exception as _e:
                 import sys
                 print(f'[value_floor warning] {_e}', file=sys.stderr)
+            # ── Sprint 2.22.0b.4 (B-2a): teardown re-anchor (Gate-2 — MOVES the headline) ──
+            # Opt-in ONLY (condition='teardown'); villa/house only; never auto-detected
+            # (E17 — broker states, engine values). Reuses the shipped _villa_value_floor
+            # (land floor, n≥20): value = land_floor − demolition. Swallows errors so a
+            # teardown edge can never break the evaluate path.
+            try:
+                if (condition or '').strip().lower() == 'teardown' \
+                        and output.get('asset_type') in _TEARDOWN_ASSET_TYPES \
+                        and output['valuation'].get('amount'):
+                    _vf_td = _villa_value_floor(output['valuation']['amount'],
+                                                getattr(ev, 'plot_area_m2', None), moj_ref, decomp)
+                    if _vf_td and _vf_td.get('land_floor'):
+                        _lf_td = _vf_td['land_floor']
+                        _bua_td = bua or ((getattr(ev, 'plot_area_m2', 0) or 0) * TYPICAL_COVERAGE)
+                        _demo_td = round(DEMO_QAR_PER_M2 * (_bua_td or 0))
+                        _central_td = max(_lf_td - _demo_td, 0)
+                        output['valuation']['amount'] = _r100k(_central_td)
+                        output['valuation']['low'] = _r100k(max(round(_central_td * 0.88), 0))
+                        output['valuation']['high'] = _r100k(_lf_td)
+                        output['valuation']['teardown'] = {
+                            'applied': True,
+                            'land_floor': _lf_td,
+                            'demolition_cost': _demo_td,
+                            'demolition_per_m2': DEMO_QAR_PER_M2,
+                            'bua_m2': round(_bua_td or 0),
+                            'note_ar': TEARDOWN_NOTE_AR.format(land=f'{_r10k(_lf_td):,}', demo=f'{_demo_td:,}'),
+                            'note_en': TEARDOWN_NOTE_EN.format(land=f'{_r10k(_lf_td):,}', demo=f'{_demo_td:,}'),
+                        }
+                        _mu_td = output.get('material_uncertainty')
+                        if isinstance(_mu_td, dict):
+                            _mu_td['level'] = 'high'
+            except Exception as _et:
+                import sys
+                print(f'[teardown warning] {_et}', file=sys.stderr)
         except Exception as e:
             import sys
             print(f'[value decomposition warning] {e}', file=sys.stderr)
@@ -4478,6 +4512,25 @@ _CONDITION_NOTE_METHODS = (
     'comparison_widened_indicative',
     'comparison_preliminary',
 )
+
+# ── Sprint 2.22.0b.4 (B-2a) — teardown demolition down-anchor ──
+# A user-STATED «must be demolished» subject is valued on HBU = redevelopment:
+# land floor − demolition. The Qatar 10-Year Rule suppresses the building uplift
+# but NEVER subtracts toward land — so a teardown subject stays pinned at the
+# comparison median (which assumes a sound standing building) and is over-valued
+# (~+35% measured on 56/565/21). This re-anchors it down.
+# Demolition ≈ 60 QAR/m² of BUA — provisional, broker-grounded + web-cross-checked
+# (US residential demo $4-7/sqft ≈ 196-273 QAR/m²; GCC labour ~0.3× → ~60-80; and
+# demo/build ratio ~2% of a 3,000 QAR/m² build ≈ 60). The wide downward range +
+# high MUC absorb the 40-100 QAR/m² band. Single tunable constant (like D5/D6).
+DEMO_QAR_PER_M2 = 60
+_TEARDOWN_ASSET_TYPES = ('standalone_villa', 'house', 'villa')
+TEARDOWN_NOTE_AR = ('التقييم على أساس الاستخدام الأمثل = إعادة التطوير: قيمة الأرض ({land} ر.ق) '
+                    'مطروحاً منها تكلفة هدم تقديرية ({demo} ر.ق) — المبنى الحالي يُعدّ عبئاً لا '
+                    'قيمة مضافة. تقدير الهدم استرشاديّ، والنطاق واسع لعدم اليقين.')
+TEARDOWN_NOTE_EN = ('Valued on Highest-and-Best-Use = redevelopment: land value ({land} QAR) '
+                    'less an indicative demolition cost ({demo} QAR) — the standing building is '
+                    'a liability, not added value. Demolition is an estimate; the range is wide.')
 
 
 def _condition_note_applies(primary, gate, asset_type, amount) -> bool:
@@ -5270,7 +5323,7 @@ def main():
     p.add_argument('--rental', type=float)
     p.add_argument('--floors', type=int)
     p.add_argument('--condition', choices=['new', 'good', 'renovated', 'maintenance',
-                                           'excellent', 'fair', 'poor'])
+                                           'excellent', 'fair', 'poor', 'teardown'])
     p.add_argument('--annexes', type=int, default=0)
     p.add_argument('--audience', choices=['buyer', 'seller', 'investor', 'valuer'],
                    default='buyer')

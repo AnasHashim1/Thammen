@@ -47,10 +47,10 @@ check('value_floor (B-1) secondary, still rendered', 'value_floor' in HTML and '
 check('evidence panel (b2.2) still called', 'evidencePanelHtml(d,acc)' in HTML)
 check('showConfirm (b2.3) still range-led', 'cg-range' in HTML and 'الوسيط ≈' in HTML)
 
-# Engine version bump (value-invariant — string only):
-check('ENGINE_VERSION = b3 range-as-lead', 'thammen-sprint2p22p0b3-range-as-lead' in ENG)
-check('SPRINT_TAG = 2.22.0b.3', "SPRINT_TAG = '2.22.0b.3'" in ENG)
-check('SPRINT_TAG dotted-numeric prefix (R6)', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
+# Engine version present + well-formed — R6 / Lesson-2: NOT an exact pin (an exact b3
+# pin here broke when the b4 teardown sprint bumped the version; scope to FORMAT only).
+check('ENGINE_VERSION format (thammen-sprint…)', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)
+check('SPRINT_TAG dotted-numeric format', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
 
 passed = sum(1 for _, ok in results if ok)
 for name, ok in results:

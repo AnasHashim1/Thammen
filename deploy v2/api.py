@@ -372,7 +372,7 @@ class EvaluateDetailsRequest(BaseModel):
     audience: Optional[str] = 'buyer'  # Sprint 1: now wired to backend
     floors: Optional[int] = None          # ABOVE-GROUND floors: 1, 2, 3, 4 (basement is separate)
     annexes: Optional[int] = None         # 0, 1, 2, 3
-    condition: Optional[str] = None       # 'new', 'good', 'maintenance', 'renovated'
+    condition: Optional[str] = None       # 'new','good','maintenance','renovated','teardown' (B-2a: teardown → land − demolition)
     # Sprint 2.16.7 (bug A3): asking_price must be strictly positive and below 500M QAR.
     # Previously 0, -1_000_000, and 1 were all accepted silently.
     asking_price: Optional[float] = Field(default=None, gt=0, lt=_ASKING_PRICE_MAX)
