@@ -1186,10 +1186,17 @@ function show(d){
     if(_tierAr){
       h+='<div style="display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px">'+_tierAr+'</div>';
     }
-    h+='<div class="ri full" style="margin-bottom:10px"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.amount)+' ر.ق</div></div>';
-    if(v.low&&v.high){
-      h+='<div class="rg"><div class="ri"><div class="rl">الحد الأدنى</div><div class="rv">'+fmt(v.low)+' ر.ق</div></div>';
-      h+='<div class="ri"><div class="rl">الحد الأعلى</div><div class="rv">'+fmt(v.high)+' ر.ق</div></div></div>'}
+    // Sprint 2.22.0b.3 (range-as-lead, §2b authority/finality dial-down): the market RANGE
+    // is the headline; the median is a muted central-estimate marker beneath it. We surface
+    // the engine's TRUE (possibly-asymmetric) low/high — NOT a forced symmetric ± (PHASE0
+    // recon §1: on thin paths the median sits AT the high edge, so a symmetric bar would
+    // invent upside the engine explicitly refuses). Point fallback when no range present.
+    if(v.low!=null&&v.high!=null){
+      h+='<div class="ri full" style="margin-bottom:8px"><div class="rl">النطاق التقديري السوقي</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.low)+' – '+fmt(v.high)+' ر.ق</div></div>';
+      h+='<div class="rn" style="margin-bottom:10px;font-size:.84rem">الوسيط (التقدير المركزي) ≈ <strong>'+fmt(v.amount)+'</strong> ر.ق</div>';
+    }else{
+      h+='<div class="ri full" style="margin-bottom:10px"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.amount)+' ر.ق</div></div>';
+    }
     // Sprint 2.22.0a.17: clean-bracket condition caveat — muted neutral note directly under the range.
     if(v.condition_note_ar){h+='<div class="rn" style="margin-top:10px;font-size:.8rem">'+v.condition_note_ar+'</div>';}
     // Sprint 2.22.0a.21 (B-1): land-floor / HBU decomposition — muted block under the range (value-invariant).
