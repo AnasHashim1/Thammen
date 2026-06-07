@@ -3379,6 +3379,7 @@ def evaluate_thammen(
     # Sprint 2.3 — Qatar 10-Year Rule (age-aware adjustment)
     building_age_years: Optional[int] = None,
     is_luxury: Optional[bool] = None,
+    penthouse: Optional[bool] = None,
     audience: str = 'buyer',
     use_listings: bool = True,
     use_geo_v2: bool = True,
@@ -4304,21 +4305,38 @@ def evaluate_thammen(
                         and output.get('asset_type') in _TEARDOWN_ASSET_TYPES \
                         and output['valuation'].get('amount') \
                         and not output['valuation'].get('teardown'):
-                    _med_l = output['valuation']['amount']
-                    _val_l = _r100k(_med_l * (1 + LUXURY_NEW_PREMIUM))
-                    output['valuation']['amount'] = _val_l
-                    output['valuation']['low'] = _r100k(_med_l * (1 + LUXURY_NEW_PREMIUM_LOW))
-                    output['valuation']['high'] = _r100k(_med_l * (1 + LUXURY_NEW_PREMIUM_HIGH))
-                    output['valuation']['luxury_new_premium'] = {
-                        'applied': True,
-                        'comparison_median': _med_l,
-                        'premium_pct': round(LUXURY_NEW_PREMIUM * 100),
-                        'note_ar': LUXURY_NEW_NOTE_AR.format(med=f'{_r10k(_med_l):,}', val=f'{_r10k(_val_l):,}'),
-                        'note_en': LUXURY_NEW_NOTE_EN.format(med=f'{_r10k(_med_l):,}', val=f'{_r10k(_val_l):,}'),
-                    }
-                    _mu_l = output.get('material_uncertainty')
-                    if isinstance(_mu_l, dict):
-                        _mu_l['level'] = 'high'
+                    _vf_l = _villa_value_floor(output['valuation']['amount'],
+                                               getattr(ev, 'plot_area_m2', None), moj_ref, decomp)
+                    _lf_l = (_vf_l or {}).get('land_floor')
+                    _plot_l = getattr(ev, 'plot_area_m2', 0) or 0
+                    if _lf_l and _plot_l > 0:
+                        # FULL zone coverage (luxury builds to the ceiling, not b1's ×0.8); user footprint wins.
+                        _geo_l = output['valuation'].get('geometry') or {}
+                        _cov_l = (_geo_l.get('zone_max_coverage_pct') or 60) / 100.0
+                        _fp_l = footprint_m2 or (_plot_l * _cov_l)
+                        # BUA = footprint × (floors + penthouse-half). Default for a luxury new-build =
+                        # ground + first + penthouse (×2.5, the V002/V003 shape); user floors/penthouse refine.
+                        _floors_l = floors or 2
+                        _pent_l = 0.0 if penthouse is False else 0.5
+                        _bua_l = round(_fp_l * (_floors_l + _pent_l))
+                        _bld_l = round(_bua_l * LUXURY_CONSTRUCTION_QAR_PER_M2)
+                        _val_l = _lf_l + _bld_l
+                        output['valuation']['amount'] = _r100k(_val_l)
+                        output['valuation']['low'] = _r100k(_val_l * 0.85)
+                        output['valuation']['high'] = _r100k(_val_l * 1.08)
+                        output['valuation']['luxury_new_premium'] = {
+                            'applied': True,
+                            'method': 'cost_approach_drc',
+                            'land_floor': _lf_l,
+                            'building_value': _bld_l,
+                            'bua_m2': _bua_l,
+                            'construction_qar_per_m2': LUXURY_CONSTRUCTION_QAR_PER_M2,
+                            'note_ar': LUXURY_NEW_NOTE_AR.format(land=f'{_r10k(_lf_l):,}', bld=f'{_r10k(_bld_l):,}', bua=_bua_l, cost=LUXURY_CONSTRUCTION_QAR_PER_M2),
+                            'note_en': LUXURY_NEW_NOTE_EN.format(land=f'{_r10k(_lf_l):,}', bld=f'{_r10k(_bld_l):,}', bua=_bua_l, cost=LUXURY_CONSTRUCTION_QAR_PER_M2),
+                        }
+                        _mu_l = output.get('material_uncertainty')
+                        if isinstance(_mu_l, dict):
+                            _mu_l['level'] = 'high'
             except Exception as _el:
                 import sys
                 print(f'[luxury_new warning] {_el}', file=sys.stderr)
@@ -4566,23 +4584,24 @@ TEARDOWN_NOTE_EN = ('Valued on Highest-and-Best-Use = redevelopment: land value 
                     'less an indicative demolition cost ({demo} QAR) — the standing building is '
                     'a liability, not added value. Demolition is an estimate; the range is wide.')
 
-# ── Sprint 2.22.0b.4 (B-2b) — luxury-new premium (Lever-1, the UP direction of R7) ──
-# The engine is blind to finish (measured: is_luxury → no move), so a premium new-build villa
-# is severely UNDER-anchored: V002/V003 (GT-2 confirmed sales, 56/565 — new luxury villas SOLD
-# 4.0M each vs the engine's 2.4M comparison median = +67%). When the user STATES is_luxury AND
-# new, apply a RELATIVE finish/new-build premium on the comparison median (finish premium is
-# relative to each area's price level). Conservative central +60% (V002/V003 was +67%), range
-# toward the GT, high MUC + a limited-sample disclosure. Opt-in; villa/house; never auto-detected.
-# §20.27 Fork#2 PARK unlocked per Anas 2026-06-07 ("we have all the info we need").
-LUXURY_NEW_PREMIUM = 0.60
-LUXURY_NEW_PREMIUM_LOW = 0.30
-LUXURY_NEW_PREMIUM_HIGH = 0.70
-LUXURY_NEW_NOTE_AR = ('فيلا فاخرة حديثة البناء: رُفعت القيمة بعلاوة تشطيب/بناء-جديد فوق وسيط '
-                      'المقارنة ({med} ر.ق) إلى ({val} ر.ق). العلاوة مُعايَرة على صفقات بيع '
-                      'مؤكّدة محدودة في المنطقة؛ النطاق واسع وعدم اليقين مرتفع.')
-LUXURY_NEW_NOTE_EN = ('Premium new-build villa: value uplifted by a finish/new-build premium above '
-                      'the comparison median ({med} QAR) to ({val} QAR). Calibrated on limited '
-                      'confirmed sales in the area; the range is wide and uncertainty is high.')
+# ── Sprint 2.22.0b.4 (B-2b) — luxury-new premium via Cost Approach / DRC (Lever-1, R7 UP) ──
+# The engine is blind to finish (measured: is_luxury → no move), so a premium new-build villa is
+# severely UNDER-anchored: V002/V003 (GT-2 confirmed sales, 56/565 — new luxury villas SOLD 4.0M
+# each vs the engine's 2.4M median = +67%). When the user STATES is_luxury AND new, value by the
+# COST APPROACH (DRC, §20.9): value = land_floor + BUA × construction_cost. Calibrated on V002/V003:
+# building value 2.3M (4.0M − land 1.7M) / BUA ~657 m² → construction ≈ 3500 QAR/m². BUA uses FULL
+# zone coverage (a luxury villa builds to the ceiling, NOT b1's conservative ×0.8) + the penthouse
+# rule (Anas: ground + first + penthouse-half sharing the roof = footprint × 2.5). Opt-in; villa/
+# house; never auto-detected. §20.27 PARK + §20.9 DRC unlocked per Anas 2026-06-07. Tunable like
+# D5/D6; high MUC + wide range + a limited-sample disclosure.
+LUXURY_CONSTRUCTION_QAR_PER_M2 = 3500
+PENTHOUSE_BUA_MULTIPLIER = 2.5
+LUXURY_NEW_NOTE_AR = ('فيلا فاخرة حديثة البناء — قُيّمت بمنهج التكلفة: قاع الأرض ({land} ر.ق) + قيمة '
+                      'البناء ({bld} ر.ق = {bua} م² × {cost} ر.ق/م²). سعر بناء المتر مُعايَر على صفقات '
+                      'بيع مؤكّدة محدودة؛ النطاق واسع وعدم اليقين مرتفع.')
+LUXURY_NEW_NOTE_EN = ('Premium new-build villa — valued by the Cost Approach (DRC): land floor ({land} '
+                      'QAR) + building value ({bld} QAR = {bua} m² × {cost} QAR/m²). Construction cost '
+                      'calibrated on limited confirmed sales; the range is wide and uncertainty is high.')
 
 
 def _condition_note_applies(primary, gate, asset_type, amount) -> bool:

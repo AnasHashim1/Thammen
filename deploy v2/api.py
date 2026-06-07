@@ -404,6 +404,7 @@ class EvaluateDetailsRequest(BaseModel):
     # Sprint 2.3 — Qatar 10-Year Rule (age-aware adjustment)
     building_age_years: Optional[int] = None  # عمر البناء التقديري بالسنوات
     is_luxury: Optional[bool] = None          # تشطيب فاخر (للاستثناء من قاعدة الـ 10 سنوات)
+    penthouse: Optional[bool] = None          # بنتهاوس (نصف طابق علوي يتشارك السطح) — B-2b DRC BUA
 
 
 # ── Helpers ──
@@ -1044,6 +1045,7 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
                 # Sprint 2.3 — Qatar 10-Year Rule
                 building_age_years=req.building_age_years,
                 is_luxury=req.is_luxury,
+                penthouse=req.penthouse,
                 use_listings=True,
                 use_geo_v2=True,
             )

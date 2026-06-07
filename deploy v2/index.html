@@ -434,6 +434,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       <div class="fr2">
         <div class="fg"><label>عدد الطوابق فوق الأرض</label><select id="floors"><option value="">— اختر —</option><option value="1">طابق واحد (أرضي)</option><option value="2">طابقين (أرضي + أول)</option><option value="3">ثلاثة (أرضي + أول + ثاني)</option><option value="4">أربعة</option></select></div>
         <div class="fg"><label>سرداب (تحت الأرض)</label><select id="basement"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد سرداب</option></select></div>
+        <div class="fg"><label>بنتهاوس (نصف طابق علوي)</label><select id="penthouse"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد بنتهاوس</option></select></div>
       </div>
       <div class="fr2">
         <div class="fg"><label>عدد الملاحق</label><select id="annexes"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">ملحق واحد</option><option value="2">ملحقين</option><option value="3">ثلاثة</option></select></div>
@@ -851,7 +852,7 @@ async function thammenReEvalGeometry(){
   const val=function(id){const el=document.getElementById(id);return el?(el.value||'').trim():'';};
   const f=val('floors'),a=val('annexes'),c=val('condition'),
         p=val('askingPrice'),ri=val('rentalIncome'),pr=val('potentialRental'),
-        bsmt=val('basement'),fp=val('footprintM2'),em=val('externalMajlis'),
+        bsmt=val('basement'),fp=val('footprintM2'),em=val('externalMajlis'),pent=val('penthouse'),
         ba=val('buildingAge'),lx=val('isLuxury'),
         uc=val('unitCount'),apu=val('avgRentPerUnit');
   const bd=JSON.parse(JSON.stringify(window._lastSubmit.body));
@@ -863,6 +864,7 @@ async function thammenReEvalGeometry(){
   if(ri)bd.rental_income=+ri; else delete bd.rental_income;
   if(pr)bd.potential_rental=+pr; else delete bd.potential_rental;
   if(bsmt!=='')bd.basement=(bsmt==='1'); else delete bd.basement;
+  if(pent!=='')bd.penthouse=(pent==='1'); else delete bd.penthouse;
   if(fp&&+fp>0)bd.footprint_m2=+fp; else delete bd.footprint_m2;
   if(em!=='')bd.external_majlis=(em==='1'); else delete bd.external_majlis;
   if(ba)bd.building_age_years=+ba; else delete bd.building_age_years;

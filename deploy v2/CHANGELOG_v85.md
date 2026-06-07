@@ -6,8 +6,8 @@
 `index.html` (dropdown option + disclosure) · `test_sprint_2_22_0b4.py` (new, 15) · `test_sprint_2_22_0b3.py`
 (R6 fix — version pin → format) · `CHANGELOG_v85.md`
 **Class:** **METHODOLOGY — MOVES the headline value** (Gate-2). Two opt-in R7 levers, mutually exclusive:
-**DOWN** `condition='teardown'` → land − demolition; **UP** `is_luxury + new` → +60% finish premium toward
-the confirmed-sale GT. **Value-invariant on every other input** (4 anchors byte-identical). Briefs:
+**DOWN** `condition='teardown'` → land − demolition; **UP** `is_luxury + new` → Cost-Approach (DRC) value `land + BUA×construction`
+toward the confirmed-sale GT. **Value-invariant on every other input** (4 anchors byte-identical). Briefs:
 `docs/BRIEF_SprintB2a_teardown_down_anchor.md` (teardown, signed «assume and proceed») + §20.27 (luxury-new,
 PARK unlocked by Anas 2026-06-07 «we have all the info we need»). First R7-axis sprint that **SOLVES** (not just
 discloses) — **both extremes**, data-ready.
@@ -45,13 +45,19 @@ subject stays pinned at the comparison median (which assumes a sound building). 
   land − demolition; the standing building is a liability»).
 - **Opt-in ONLY**: fires solely on `condition='teardown'`; never auto-detected (E17 — broker states, engine
   values); villa/house only (raw_land/apartment/compound skip); the other condition values UNCHANGED.
-- **B-2b luxury-new premium (UP lever, §20.27 PARK unlocked).** When the user states `is_luxury` AND new
-  (`condition='new'` or `building_age_years<5`), a premium new-build villa gets a **RELATIVE finish premium**
-  on the comparison median: central **+60%**, low +30%, high +70% (toward the GT), with `material_uncertainty
-  → high` + a `luxury_new_premium{comparison_median, premium_pct, note}` block + a 💎 limited-sample disclosure.
-  Calibrated on **V002/V003** (GT-2 confirmed sales, 56/565: new luxury SOLD 4.0M vs engine 2.4M = +67% → +60%
-  applied, conservative). Mutually exclusive with teardown; opt-in; villa/house; the finish premium is RELATIVE
-  (scales with each area's median), and the high MUC + wide range disclose the limited-sample basis.
+- **B-2b luxury-new premium via Cost Approach / DRC (UP lever, §20.27 PARK + §20.9 DRC unlocked).** When the
+  user states `is_luxury` AND new (`condition='new'` or `building_age_years<5`), a premium new-build villa is
+  valued by the **Cost Approach**: `value = land_floor + BUA × construction_cost`. BUA uses **FULL zone
+  coverage** (a luxury villa builds to the ceiling, NOT b1's conservative ×0.8) + the **penthouse rule** as an EXPLICIT
+  «بنتهاوس» dropdown input: `BUA = footprint × (floors + 0.5×penthouse)`. Default for a luxury new-build is
+  ground+first+penthouse (×2.5 = V002/V003), but the user can drop the penthouse (×2.0 → 3.6M, correcting the
+  over-assumption) or add floors (fl3+PH = ×3.5 → 5.0M). A user-supplied footprint wins. `construction_cost = 3500
+  QAR/m²` **calibrated on V002/V003** (building value 2.3M / BUA ~657 m²). `material_uncertainty → high` + a
+  `luxury_new_premium{method:'cost_approach_drc', land_floor, building_value, bua_m2, construction_qar_per_m2,
+  note}` block + a 💎 disclosure. Mutually exclusive with teardown; opt-in; villa/house. The DRC **scales with
+  the actual building** (footprint × construction) — far better than a flat % — and matches the V002/V003 GT
+  (4.06M ≈ 4.0M, ~1.5%). The verification revealed b1's suggested footprint (×0.8 cap) understates a luxury
+  build, hence the FULL-coverage choice here.
 
 ## 4. Verification — empirical evidence
 
@@ -61,8 +67,9 @@ subject stays pinned at the comparison median (which assumes a sound building). 
   |---|---|---|---|
   | good / new-only / luxury-only / luxury+maintenance | 2,400,000 | 2.2–2.6M | **byte-identical** — each lever needs the exact opt-in |
   | **teardown** (no floors) | **1,600,000** | 1.4–1.7M | **DOWN −33%**: land 1,700,100 − demo (100k floor; 150k cap at 2-3 floors) |
-  | **luxury + new** | **3,800,000** | 3.1–4.1M | **UP +60%**: toward the V002/V003 confirmed GT (4.0M) |
-  | luxury + age≤4 | 4,000,000 | 3.2–4.2M | UP (new-build regime median ×1.6) |
+  | **luxury + new** (default G+1+PH) | **4,100,000** | 3.5–4.4M | **UP (DRC)**: land 1.70M + BUA 675m² (fp×2.5) × 3500 → **matches V002/V003 (4.0M)** |
+  | luxury + new, **NO penthouse** | 3,600,000 | — | the «بنتهاوس» option drops BUA to 540 (fp×2.0) — corrects the over-assumption |
+  | luxury + new, floors 3 + penthouse | 5,000,000 | — | DRC scales: BUA 945 (fp×3.5) |
 - Isolated `test_sprint_2_22_0b4.py` **15/15** (production constants + `_villa_value_floor` reuse [E14] +
   teardown math + index surfaces + version).
 - **DoD:** aggregator **392** · security **15** · surface-honesty **45** · broad **73/73** (72→73, clean, 104s).
