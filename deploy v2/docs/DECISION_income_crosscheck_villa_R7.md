@@ -55,3 +55,28 @@ Live = **Heroku v171 / b.4** (teardown ↓ + luxury-new DRC ↑ + penthouse — 
 good/very-good middle still over-anchors at the widened value). This decision defines the
 **next** R7 step; b.4 stays live and unchanged until the income cross-check is audited, briefed,
 calibrated, and signed.
+
+## 8. §5 data-feasibility audit (2026-06-07) — VERDICT
+**Dependency #1 — villa rent data (PropertyFinder): FEASIBLE ✓.** Live PF villa-rent listing counts:
+المعمورة **93** · أبو هامور **121** · الغرافة **142** · عين خالد **284**. Plentiful for a median
+(needs standalone / furnished / size stratification). Standard unfurnished villa rents cluster
+**9–16.5k/mo**; **19–20k ONLY for NEW furnished luxury** → confirms an old villa cannot justify 19k.
+
+**Dependency #2 — yield calibration: THE BOTTLENECK, currently UNRELIABLE 🔴.** Existing
+`cap_rates.sqlite` (Sprint 2.19): 109 villa cells but **only 1 reliable + 2 indicative; 106 fallback**.
+Computed gross yields span **4.1% (اللؤلؤة 600-900) → 11.5% (مريخ 0-400)** — a **3× spread**. At that
+spread villa 6's income value ranges **~1.7M–4.8M** (unusable as a point). Structure DOES exist
+(premium/large → ~4–5%; small/cheap → ~8–11%), so a stratified well-sampled calibration is viable —
+but the current one is far too thin. **المعمورة (villa 6's own area) villa yield is NOT calibrated**
+(gross=None — rent didn't match sale). Gross + net both in schema (opex ~20%).
+
+**Conclusion.** The income cross-check is data-FEASIBLE (rent [PF] + sale [MoJ] both exist per area →
+gross yield = PF-rent-median ÷ MoJ-sale-median is directly computable) but **NOT yet "strong"** — the
+**yield is the make-or-break and is currently unreliable**. **First build task = a proper stratified
+yield calibration** (extend Sprint 2.19: standalone-villa filter + size×stock strata + more PF rent
+pulls + a18 area-name reconciliation), THEN the triangulation formula. This also explains the
+point-estimate sensitivity: the value swings because the yield genuinely isn't pinned (measured 4–11%).
+
+**Villa 6 income read (honest, uncalibrated):** gross rent ~16k/mo ÷ a plausible ~5.5–6.5% gross yield
+(larger suburban villa) ≈ **~3.0–3.5M** (centre ~3.2M) — below the condition-blind comparison (3.8M),
+which is the income check doing its job; pin precisely once المعمورة 600-900 villa yield is calibrated.
