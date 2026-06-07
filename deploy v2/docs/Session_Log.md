@@ -3218,7 +3218,70 @@ the ~625px `.fr3` form band overflow; `.b2_*.py` scratch. The «التقدير �
 
 -----
 
-*Last updated: 2026-06-06 (**Sprint 2.22.0b.2.2 [evidence-quality diagnosis panel] SHIPPED** — Heroku **v168** / commit `74233e6` split `e6aa5b4` / CHANGELOG_v82 / §20.33; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal]; the binary confidence badge «🟢 شواهد كافية» → a 4-component **evidence-quality** panel [اكتمال · مقارنات · حداثة · توصيف — قوي/متوسط/محدود], each DERIVED from its engine field §2c; **«explanation≠confidence» enforced** [refine improves ONLY the user-input axes — proven live]; component 4 «غير منطبق — أرض» for raw_land; `api.py` UNTOUCHED; isolated 26/26 + DoD 392/15/45/70 + R14 real-Chromium [0 console errors, 390×844 + desktop no-overflow, bare/refine/land]; implements **DESIGN_2p2x §3 Phase 2** of the suspense-reveal arc [the first b.2.2 value-decomposition draft misapplied §3 → withdrawn; signed parent design now persisted, Rule #63 closed]; origin in sync `74233e6`. **NEXT = Phase 3 = b.2.3** [decision-framed chapters + uncertainty-early] · optional **b.2.2.1** [condition=sensitivity, brushes PARKED B-2] · **§2b dial-down FOLDED into the arc** [b.3 merged] · beta go-call [gate #6, Anas] · **B-2 PARKED** [R7, n≥20]. Prior: **Sprint 2.22.0b.2.1 [separate input screens — structural frontend WRAP] SHIPPED** — Heroku **v167** / commit `80d0b1a` split `2ce45bb` / CHANGELOG_v81 / §20.32; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal + `/details` fp600 → 2.9M/eff 540]; `formScreen`=identification → bare `/api/evaluate`, new `refineScreen` hosts the relocated optional details, results card display-only → `go('refine')`, tower CTA `goForm`→refine [Rule #39 — preserves the tower/apartment rent path]; `api.py` UNTOUCHED; isolated 26/26 + DoD 392/15/45/69 + R14 real-Chromium [9 fns, 0 console errors, 390×844 + desktop no-overflow, full live flow + tower path]; recon RESHAPED the brief [the staged-reveal Phase-1 draft depended on the unsaved `DESIGN_2p2x_suspense_reveal.md`; the §2b authority/finality dial-down stays the OPEN fork → b.3]; origin in sync `80d0b1a`. **NEXT = b.3** [§2b authority/finality dial-down — own brief + multi-AI #54] · beta go-call [gate #6, Anas] · **B-2 PARKED** [R7, n≥20]. Prior: **Sprint 2.22.0b.1 [Geometry Refinement — zoning-driven footprint + basement excluded from the comparison driver] SHIPPED** — Heroku **v165** / commit `4b39ba2` / CHANGELOG_v79 / §20.29; **value-invariant on no-building-input anchors** [live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal], **basement excluded LIVE** [fl3 ≡ fl3+basement = 2.8M], fp-cap [600→540 → 2.9M], geometry surfaced; recon reshaped the brief → 3 deltas + augment-panel; isolated 34/34 + DoD 392/15/45/67 + R14 real-Chromium + local E2E [caught/fixed a §5.2 large-plot inflation edge]; origin in sync `4b39ba2`. **NEXT = Sprint 2.22.0b.2** [guided 3-stage flow, frontend-only] = Gate-2 DRAFT awaiting signature. Prior: **Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
+## 20.34 🆕 2026-06-07 — Sprint 2.22.0b.2.3 (Confirmation Gate, Screen 2) — SHIPPED Heroku v169
+
+> Engine `thammen-sprint2p22p0b2p3-confirmation-gate` / SPRINT_TAG `2.22.0b.2.3` / api-health
+> `3.1.0-sprint2.22.0b.2.3`. **FRONTEND-ONLY — NO valuation/backend change (engine diff = the 2 version-string
+> lines); 4 anchors byte-identical.** Gate-2 **SIGNED** (Anas, 3 sub-decisions resolved); Gate-1 push on «GO».
+> Brief `docs/BRIEF_confirmation_gate_SIGNED.md` + recon `docs/PHASE0_confirmation_gate_recon.md` (Rule #63).
+> Commit `6d3ac37` → Heroku **v169** (`git subtree push`, clean `e6aa5b4..39b6f36`) → origin in sync `6d3ac37`.
+> CHANGELOG_v83. **First step of the v4 «thinnest-flow» sequence.**
+
+**Recon (Phase 0) — frontend-only CONFIRMED.** The brief's single contingency («if the preliminary-range datum
+isn't in `/api/evaluate` → Soft-Gate-3») was CLEARED by a live probe (56/565/21): `valuation.low/high/amount` +
+`asset_type`/`district`/`plot_area_m2`/`property_info.zoning`/`geometry.*` are ALL already in the response →
+Screen 2 reads only fields the client already holds → **`api.py` + `evaluate_unified.py`-logic UNTOUCHED.** The
+brief was sound (no falsified premise, unlike §20.26/§20.29/§20.32); recon flagged one mockup↔brief divergence
+(mockup shows ✏ pencils; §5.2 defers correction → read-only this sprint), folded into the signed sub-decisions.
+
+**What shipped (`index.html`).** A NEW `confirmScreen` (between `formScreen` and the result), populated by
+`showConfirm(d)` from the SAME response `run()` already fetched (no 2nd fetch): (1) a **muted** preliminary range
+`valuation.low–high` + muted median «الوسيط ≈» (signed 5.1, range-not-point); (2) a **READ-ONLY** review card
+(signed 5.2 — **no ✏ pencils, no «صحّح»**) with existing AR labels (`ASSET_AR` → «فيلا منفردة») + a **plot-area
+honesty label** «المساحة المعتمدة في التقدير» when the engine-used `plot_area_m2` differs from the raw cadastral
+(`geometric_factors.plot_area_m2_verified`), else «مساحة القسيمة»; (3) the **b.2.2 evidence panel reused verbatim**
+(`evidencePanelHtml`); (4) an explicit **«تابِع بهذه البيانات»** CTA (→ `confirmProceed()` → refine, v4 تأكيد→تحسين)
++ the permanent **«التقرير الكامل الآن»** escape (→ results, no re-fetch). `run()` gained ONE routing intercept:
+valued **non-valuer** → `showConfirm`+`go('confirm')`; **valuer + refusals → `go('results')`** (v4 two-path, Rule
+#39 — `show()` already rendered the result). Copy 5.3: the DRAFT CTA «البيانات صحيحة — تابِع» was CHANGED →
+«تابِع بهذه البيانات» (read-only honesty — don't ask the user to certify data they can't fix). 9 `cg-*` CSS classes
+(production theme vars + Tajawal). `evaluate_unified.py` = the 2 version lines only; `api.py` UNTOUCHED.
+
+**Verification.** Isolated `test_sprint_2_22_0b2p3.py` **32/32** (reads the REAL index.html + mirrors the routing
+guard [valuer/refusal/zero → results] + signed copy verbatim + rejected-CTA absent + read-only [no «صحّح»/✏] +
+evidence-panel reuse + version-format, version-agnostic R6). DoD **392/15/45/71** (broad 70→71, +1 new test, clean).
+**R14 real-Chromium** (node absent → Chromium is the JS gate; EXECUTED): all 9 fns defined (whole-file JS parses);
+**0 console errors** across the full live flow; `run()` (buyer, 56/565/21, mocked-real payload) → **confirmScreen**
+rendering «٢٬٢٠٠٬٠٠٠ – ٢٬٦٠٠٬٠٠٠ ر.ق» + median + review (فيلا منفردة · بو هامور · R1 · المساحة المعتمدة في التقدير
+٤٥٠ م²) + evidence panel + CTA, **no pencils, no rejected CTA**; CTA → **refineScreen**, full-report →
+**resultsScreen**, **valuer → resultsScreen** (gate skipped); **no horizontal overflow at 390×844, 375, 1265**.
+(The screenshot tool timed out once — a capture hiccup; all measurements via `eval`/`inspect` [rated more accurate
+than screenshots]; renderer responsive after.)
+
+**Live two-lane post-deploy smoke v169 (browser-UA curl, Rule #61):**
+
+| PIN / check | v169 live | vs v168 |
+|---|---|---|
+| 56/565/21 | 2,400,000 comparison_bracket | byte-identical |
+| 54/541/6 | 5,400,000 comparison_thin | byte-identical |
+| 55/296/13 | 2,600,000 comparison_thin | byte-identical |
+| 52/903/90 | None / insufficient_data | byte-identical |
+| /api/health | `3.1.0-sprint2.22.0b.2.3` | — |
+| served `index.html` | carries `confirmScreen` + `showConfirm` + «تابِع بهذه البيانات» + «تقدير مبدئي (نطاق)» | — |
+
+4 anchors byte-identical (only the engine_version label + the new Screen-2 frontend changed) → Rule #52 closed
+MEASURED. **Value-invariant CONFIRMED live.**
+
+**Carried forward (Rule #42).** **NEXT = (2) range-as-lead** — the §2b authority/finality dial-down (symmetric ±
+bar, NOT the rejected land-to-median) → own brief + multi-AI #54; then (3) condition-sensitivity reading (B-2
+PARKED, n≥20); then (4) decomposition in the polished result + report refinement. **Ball = Claude.ai drafts the
+range-as-lead brief.** Beta go-call = gate #6 (Anas). Deferred micro-sprint: inline correction of fetched attributes
+(esp. `asset_type` → E7/A11, value-affecting → its own scope + tests, #38). Scratch `.cg_probe.*` left untracked
+(regenerable). The «التقدير السوقي» term remains PROVISIONAL.
+
+-----
+
+*Last updated: 2026-06-07 (**Sprint 2.22.0b.2.3 [Confirmation Gate, Screen 2] SHIPPED** — Heroku **v169** / commit `6d3ac37` split `39b6f36` / CHANGELOG_v83 / §20.34; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal]; a NEW `confirmScreen` between identification and the result, rendered from the SAME `/api/evaluate` response [no 2nd fetch] — muted preliminary range [`valuation.low–high`] + READ-ONLY review of the GIS-fetched basis [no ✏ pencils/no correction CTA, existing AR labels, plot-area honesty label «المساحة المعتمدة في التقدير»] + the b.2.2 evidence panel reused + explicit «تابِع بهذه البيانات»→refine + permanent «التقرير الكامل الآن»→results; `run()` routes valued non-valuer → confirm, **valuer + refusals skip to results** [v4 two-path, Rule #39]; `api.py`+`evaluate_unified.py`-logic UNTOUCHED; isolated 32/32 + DoD 392/15/45/71 + R14 real-Chromium [9 fns, 0 console errors, no overflow 390/375/1265, full live flow buyer→confirm→refine/results + valuer-skip]; recon `docs/PHASE0_confirmation_gate_recon.md` + signed brief `docs/BRIEF_confirmation_gate_SIGNED.md`; origin in sync `6d3ac37`. **NEXT = (2) range-as-lead** [§2b authority/finality dial-down — symmetric ± bar, NOT the rejected land-to-median; own brief + multi-AI #54] · then (3) condition-sensitivity [B-2 PARKED n≥20] · then (4) decomposition in the polished result + report refinement · beta go-call [gate #6, Anas]; first step of the v4 «thinnest-flow» sequence. Prior: **Sprint 2.22.0b.2.2 [evidence-quality diagnosis panel] SHIPPED** — Heroku **v168** / commit `74233e6` split `e6aa5b4` / CHANGELOG_v82 / §20.33; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal]; the binary confidence badge «🟢 شواهد كافية» → a 4-component **evidence-quality** panel [اكتمال · مقارنات · حداثة · توصيف — قوي/متوسط/محدود], each DERIVED from its engine field §2c; **«explanation≠confidence» enforced** [refine improves ONLY the user-input axes — proven live]; component 4 «غير منطبق — أرض» for raw_land; `api.py` UNTOUCHED; isolated 26/26 + DoD 392/15/45/70 + R14 real-Chromium [0 console errors, 390×844 + desktop no-overflow, bare/refine/land]; implements **DESIGN_2p2x §3 Phase 2** of the suspense-reveal arc [the first b.2.2 value-decomposition draft misapplied §3 → withdrawn; signed parent design now persisted, Rule #63 closed]; origin in sync `74233e6`. **NEXT = Phase 3 = b.2.3** [decision-framed chapters + uncertainty-early] · optional **b.2.2.1** [condition=sensitivity, brushes PARKED B-2] · **§2b dial-down FOLDED into the arc** [b.3 merged] · beta go-call [gate #6, Anas] · **B-2 PARKED** [R7, n≥20]. Prior: **Sprint 2.22.0b.2.1 [separate input screens — structural frontend WRAP] SHIPPED** — Heroku **v167** / commit `80d0b1a` split `2ce45bb` / CHANGELOG_v81 / §20.32; **FRONTEND-ONLY, value-invariant** [engine diff = 2 version-string lines; live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal + `/details` fp600 → 2.9M/eff 540]; `formScreen`=identification → bare `/api/evaluate`, new `refineScreen` hosts the relocated optional details, results card display-only → `go('refine')`, tower CTA `goForm`→refine [Rule #39 — preserves the tower/apartment rent path]; `api.py` UNTOUCHED; isolated 26/26 + DoD 392/15/45/69 + R14 real-Chromium [9 fns, 0 console errors, 390×844 + desktop no-overflow, full live flow + tower path]; recon RESHAPED the brief [the staged-reveal Phase-1 draft depended on the unsaved `DESIGN_2p2x_suspense_reveal.md`; the §2b authority/finality dial-down stays the OPEN fork → b.3]; origin in sync `80d0b1a`. **NEXT = b.3** [§2b authority/finality dial-down — own brief + multi-AI #54] · beta go-call [gate #6, Anas] · **B-2 PARKED** [R7, n≥20]. Prior: **Sprint 2.22.0b.1 [Geometry Refinement — zoning-driven footprint + basement excluded from the comparison driver] SHIPPED** — Heroku **v165** / commit `4b39ba2` / CHANGELOG_v79 / §20.29; **value-invariant on no-building-input anchors** [live smoke 4 anchors byte-identical 2.4M/5.4M/2.6M/refusal], **basement excluded LIVE** [fl3 ≡ fl3+basement = 2.8M], fp-cap [600→540 → 2.9M], geometry surfaced; recon reshaped the brief → 3 deltas + augment-panel; isolated 34/34 + DoD 392/15/45/67 + R14 real-Chromium + local E2E [caught/fixed a §5.2 large-plot inflation edge]; origin in sync `4b39ba2`. **NEXT = Sprint 2.22.0b.2** [guided 3-stage flow, frontend-only] = Gate-2 DRAFT awaiting signature. Prior: **Sprint B-2 [built-type/condition mechanism] Gate-2 SIGNED + kickoff audit → PARKED
 for n≥20** [Fork#1=MODERATE Lever-2 re-anchor; Fork#2=WAIT-for-n≥20; Rule #54 web-check PASS — VPS 2 / VPGA 10 /
 IVS 102 confirmed, stated condition = assumption+MVU NOT Special Assumption, +IVS 104; §5 audit DECISIVE — local
 `luxury_new` stratum **n=0** in both motivating areas → Lever 1 must be corpus-calibrated not per-area MoJ →
