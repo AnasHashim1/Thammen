@@ -41,7 +41,7 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b4-teardown-down-anchor'
+ENGINE_VERSION = 'thammen-sprint2p22p0b4-condition-value-axis'
 SPRINT_TAG = '2.22.0b.4'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
@@ -4294,6 +4294,34 @@ def evaluate_thammen(
             except Exception as _et:
                 import sys
                 print(f'[teardown warning] {_et}', file=sys.stderr)
+            # ── Sprint 2.22.0b.4 (B-2b): luxury-new premium (Lever-1 — MOVES the headline UP) ──
+            # Opt-in (is_luxury + new); villa/house; MUTUALLY EXCLUSIVE with teardown. Calibrated
+            # on V002/V003 (+67% observed → +60% applied, conservative). Swallows errors.
+            try:
+                _cl = (condition or '').strip().lower()
+                _is_new_l = _cl == 'new' or (isinstance(building_age_years, int) and 0 <= building_age_years < 5)
+                if is_luxury and _is_new_l and _cl != 'teardown' \
+                        and output.get('asset_type') in _TEARDOWN_ASSET_TYPES \
+                        and output['valuation'].get('amount') \
+                        and not output['valuation'].get('teardown'):
+                    _med_l = output['valuation']['amount']
+                    _val_l = _r100k(_med_l * (1 + LUXURY_NEW_PREMIUM))
+                    output['valuation']['amount'] = _val_l
+                    output['valuation']['low'] = _r100k(_med_l * (1 + LUXURY_NEW_PREMIUM_LOW))
+                    output['valuation']['high'] = _r100k(_med_l * (1 + LUXURY_NEW_PREMIUM_HIGH))
+                    output['valuation']['luxury_new_premium'] = {
+                        'applied': True,
+                        'comparison_median': _med_l,
+                        'premium_pct': round(LUXURY_NEW_PREMIUM * 100),
+                        'note_ar': LUXURY_NEW_NOTE_AR.format(med=f'{_r10k(_med_l):,}', val=f'{_r10k(_val_l):,}'),
+                        'note_en': LUXURY_NEW_NOTE_EN.format(med=f'{_r10k(_med_l):,}', val=f'{_r10k(_val_l):,}'),
+                    }
+                    _mu_l = output.get('material_uncertainty')
+                    if isinstance(_mu_l, dict):
+                        _mu_l['level'] = 'high'
+            except Exception as _el:
+                import sys
+                print(f'[luxury_new warning] {_el}', file=sys.stderr)
         except Exception as e:
             import sys
             print(f'[value decomposition warning] {e}', file=sys.stderr)
@@ -4537,6 +4565,24 @@ TEARDOWN_NOTE_AR = ('التقييم على أساس الاستخدام الأم�
 TEARDOWN_NOTE_EN = ('Valued on Highest-and-Best-Use = redevelopment: land value ({land} QAR) '
                     'less an indicative demolition cost ({demo} QAR) — the standing building is '
                     'a liability, not added value. Demolition is an estimate; the range is wide.')
+
+# ── Sprint 2.22.0b.4 (B-2b) — luxury-new premium (Lever-1, the UP direction of R7) ──
+# The engine is blind to finish (measured: is_luxury → no move), so a premium new-build villa
+# is severely UNDER-anchored: V002/V003 (GT-2 confirmed sales, 56/565 — new luxury villas SOLD
+# 4.0M each vs the engine's 2.4M comparison median = +67%). When the user STATES is_luxury AND
+# new, apply a RELATIVE finish/new-build premium on the comparison median (finish premium is
+# relative to each area's price level). Conservative central +60% (V002/V003 was +67%), range
+# toward the GT, high MUC + a limited-sample disclosure. Opt-in; villa/house; never auto-detected.
+# §20.27 Fork#2 PARK unlocked per Anas 2026-06-07 ("we have all the info we need").
+LUXURY_NEW_PREMIUM = 0.60
+LUXURY_NEW_PREMIUM_LOW = 0.30
+LUXURY_NEW_PREMIUM_HIGH = 0.70
+LUXURY_NEW_NOTE_AR = ('فيلا فاخرة حديثة البناء: رُفعت القيمة بعلاوة تشطيب/بناء-جديد فوق وسيط '
+                      'المقارنة ({med} ر.ق) إلى ({val} ر.ق). العلاوة مُعايَرة على صفقات بيع '
+                      'مؤكّدة محدودة في المنطقة؛ النطاق واسع وعدم اليقين مرتفع.')
+LUXURY_NEW_NOTE_EN = ('Premium new-build villa: value uplifted by a finish/new-build premium above '
+                      'the comparison median ({med} QAR) to ({val} QAR). Calibrated on limited '
+                      'confirmed sales in the area; the range is wide and uncertainty is high.')
 
 
 def _condition_note_applies(primary, gate, asset_type, amount) -> bool:

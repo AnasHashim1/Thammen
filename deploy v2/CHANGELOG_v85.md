@@ -1,24 +1,27 @@
-# CHANGELOG v85 — Sprint 2.22.0b.4 (B-2a): teardown / demolition down-anchor
+# CHANGELOG v85 — Sprint 2.22.0b.4 (B-2): condition/value axis — teardown down-anchor + luxury-new premium
 
-**Engine:** `thammen-sprint2p22p0b4-teardown-down-anchor` · **SPRINT_TAG** `2.22.0b.4` ·
+**Engine:** `thammen-sprint2p22p0b4-condition-value-axis` · **SPRINT_TAG** `2.22.0b.4` ·
 **api/health** `3.1.0-sprint2.22.0b.4` · **Date:** 2026-06-07
 **Files changed:** `evaluate_unified.py` (constants + injection + CLI + version) · `api.py` (condition docstring) ·
 `index.html` (dropdown option + disclosure) · `test_sprint_2_22_0b4.py` (new, 15) · `test_sprint_2_22_0b3.py`
 (R6 fix — version pin → format) · `CHANGELOG_v85.md`
-**Class:** **METHODOLOGY — MOVES the headline value** on a teardown villa (Gate-2). Opt-in only
-(`condition='teardown'`); **value-invariant on every other condition** (4 anchors byte-identical). Brief
-`docs/BRIEF_SprintB2a_teardown_down_anchor.md` (Gate-2 signed by Anas «assume and proceed» + the due-diligence
-mandate). First R7-axis sprint that **SOLVES** (not just discloses) — the data-ready teardown extreme of B-2.
+**Class:** **METHODOLOGY — MOVES the headline value** (Gate-2). Two opt-in R7 levers, mutually exclusive:
+**DOWN** `condition='teardown'` → land − demolition; **UP** `is_luxury + new` → +60% finish premium toward
+the confirmed-sale GT. **Value-invariant on every other input** (4 anchors byte-identical). Briefs:
+`docs/BRIEF_SprintB2a_teardown_down_anchor.md` (teardown, signed «assume and proceed») + §20.27 (luxury-new,
+PARK unlocked by Anas 2026-06-07 «we have all the info we need»). First R7-axis sprint that **SOLVES** (not just
+discloses) — **both extremes**, data-ready.
 
 ---
 
 ## 1. Why this matters
 
-A live 20-combination sensitivity matrix on 56/565/21 (v170) proved the engine is **blind to condition** —
-`new = good = maintenance = renovated = 2,400,000` exactly — and **over-values the dilapidated case ~+35%**:
-`age30 + maintenance + 1 floor = 2.30M` while the land floor is ~1.70M and the building should be a demolition
-**liability**, not +0.6M of implied value. A villa the buyer intends to demolish was priced as a sound
-standing home.
+A live 20-combination sensitivity matrix on 56/565/21 (v170) proved the engine is **blind to condition AND
+finish** — `new = good = maintenance = renovated = luxury = 2,400,000` exactly — bidirectional R7. It both
+**over-values the dilapidated case ~+35%** (`age30 + maintenance + 1 floor = 2.30M` while the land floor is
+~1.70M and the building is a demolition **liability**) AND **under-values the premium new-build case ~−40%**
+(V002/V003 — new luxury villas SOLD **4.0M** on this very street, engine 2.4M). This sprint fixes **both ends**:
+a teardown DOWN-anchor + a luxury-new UP-premium.
 
 ## 2. Root cause
 
@@ -41,19 +44,25 @@ subject stays pinned at the comparison median (which assumes a sound building). 
 - `index.html`: the «آيل للسقوط / يجب هدمه» option + a muted `--warn` 🏚️ disclosure («HBU = redevelopment:
   land − demolition; the standing building is a liability»).
 - **Opt-in ONLY**: fires solely on `condition='teardown'`; never auto-detected (E17 — broker states, engine
-  values); villa/house only (raw_land/apartment/compound skip); the other 4 condition values UNCHANGED.
+  values); villa/house only (raw_land/apartment/compound skip); the other condition values UNCHANGED.
+- **B-2b luxury-new premium (UP lever, §20.27 PARK unlocked).** When the user states `is_luxury` AND new
+  (`condition='new'` or `building_age_years<5`), a premium new-build villa gets a **RELATIVE finish premium**
+  on the comparison median: central **+60%**, low +30%, high +70% (toward the GT), with `material_uncertainty
+  → high` + a `luxury_new_premium{comparison_median, premium_pct, note}` block + a 💎 limited-sample disclosure.
+  Calibrated on **V002/V003** (GT-2 confirmed sales, 56/565: new luxury SOLD 4.0M vs engine 2.4M = +67% → +60%
+  applied, conservative). Mutually exclusive with teardown; opt-in; villa/house; the finish premium is RELATIVE
+  (scales with each area's median), and the high MUC + wide range disclose the limited-sample basis.
 
 ## 4. Verification — empirical evidence
 
 - py_compile (evaluate_unified + api) OK.
-- **Local E2E on the REAL engine (live GIS) — 56/565/21 before/after (DEMO 240/m² clamped [100k,150k]):**
-  | condition | amount | range | demo | |
-  |---|---|---|---|---|
-  | good | 2,400,000 | 2.2–2.6M | — | byte-identical |
-  | maintenance | 2,400,000 | 2.2–2.6M | — | byte-identical (ordinary condition still doesn't move — by design) |
-  | **teardown** (no floors) | **1,600,000** | **1.4–1.7M** | 100,000 (BUA 248 → floor) | **−33% re-anchor** to land 1,700,100 − demo |
-  | teardown + 2 floors | 1,600,000 | 1.4–1.7M | 150,000 (BUA 749 → cap) | demolition clamped to the PO 100k-150k band |
-  | teardown + 3 floors | 1,600,000 | 1.4–1.7M | 150,000 (BUA 1093 → cap) | — |
+- **Local E2E on the REAL engine (live GIS) — 56/565/21, the full R7 axis (both levers + invariance):**
+  | input | amount | range | |
+  |---|---|---|---|
+  | good / new-only / luxury-only / luxury+maintenance | 2,400,000 | 2.2–2.6M | **byte-identical** — each lever needs the exact opt-in |
+  | **teardown** (no floors) | **1,600,000** | 1.4–1.7M | **DOWN −33%**: land 1,700,100 − demo (100k floor; 150k cap at 2-3 floors) |
+  | **luxury + new** | **3,800,000** | 3.1–4.1M | **UP +60%**: toward the V002/V003 confirmed GT (4.0M) |
+  | luxury + age≤4 | 4,000,000 | 3.2–4.2M | UP (new-build regime median ×1.6) |
 - Isolated `test_sprint_2_22_0b4.py` **15/15** (production constants + `_villa_value_floor` reuse [E14] +
   teardown math + index surfaces + version).
 - **DoD:** aggregator **392** · security **15** · surface-honesty **45** · broad **73/73** (72→73, clean, 104s).

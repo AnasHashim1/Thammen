@@ -1201,6 +1201,8 @@ function show(d){
     if(v.condition_note_ar){h+='<div class="rn" style="margin-top:10px;font-size:.8rem">'+v.condition_note_ar+'</div>';}
     // Sprint 2.22.0b.4 (B-2a): teardown re-anchor disclosure — value = land − demolition; standing building is a liability.
     if(v.teardown&&v.teardown.note_ar){h+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--warn);background:var(--warn-bg)">🏚️ '+v.teardown.note_ar+'</div>';}
+    // Sprint 2.22.0b.4 (B-2b): luxury-new premium disclosure — value uplifted toward the confirmed-sale GT.
+    if(v.luxury_new_premium&&v.luxury_new_premium.note_ar){h+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--ok);background:var(--ok-bg)">💎 '+v.luxury_new_premium.note_ar+'</div>';}
     // Sprint 2.22.0a.21 (B-1): land-floor / HBU decomposition — muted block under the range (value-invariant).
     if(v.value_floor){
       const vf=v.value_floor;
