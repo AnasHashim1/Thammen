@@ -28,11 +28,16 @@ moj = {'categories': {'land': {'price_per_m2': {'median': 3800}, 'n': 25, 'relia
 vf = E._villa_value_floor(2400000, 450, moj, None)
 check('_villa_value_floor returns land_floor', bool(vf and vf.get('land_floor')))
 lf = (vf or {}).get('land_floor') or 0
-# 5. teardown math — DOWN-anchor below the comparison median, ≥ 0
+# 5. teardown math — DOWN-anchor below the median; demolition CLAMPED to the PO band [100k,150k]
 bua = 405
-demo = round(E.DEMO_QAR_PER_M2 * bua)
+demo = min(max(round(E.DEMO_QAR_PER_M2 * bua), E.DEMO_FLOOR_QAR), E.DEMO_CAP_QAR)
 central = max(lf - demo, 0)
-check('demo = DEMO_QAR_PER_M2 × BUA', demo == E.DEMO_QAR_PER_M2 * 405)
+def _demo_of(b):
+    return min(max(round(E.DEMO_QAR_PER_M2 * b), E.DEMO_FLOOR_QAR), E.DEMO_CAP_QAR)
+check('demo clamped to PO band [100k,150k]', E.DEMO_FLOOR_QAR <= demo <= E.DEMO_CAP_QAR)
+check('small villa 250m² floors at 100k', _demo_of(250) == 100000)
+check('mid villa 500m² ≈ 120k', _demo_of(500) == 120000)
+check('large villa 1000m² caps at 150k', _demo_of(1000) == 150000)
 check('teardown re-anchors DOWN (< 2.4M median)', 0 < central < 2400000)
 check('central = land_floor − demo (≥0)', central == max(lf - demo, 0))
 # 6. condition→reno: teardown safe default (no renovation premium, no crash)

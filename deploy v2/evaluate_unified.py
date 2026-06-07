@@ -4274,7 +4274,7 @@ def evaluate_thammen(
                     if _vf_td and _vf_td.get('land_floor'):
                         _lf_td = _vf_td['land_floor']
                         _bua_td = bua or ((getattr(ev, 'plot_area_m2', 0) or 0) * TYPICAL_COVERAGE)
-                        _demo_td = round(DEMO_QAR_PER_M2 * (_bua_td or 0))
+                        _demo_td = min(max(round(DEMO_QAR_PER_M2 * (_bua_td or 0)), DEMO_FLOOR_QAR), DEMO_CAP_QAR)
                         _central_td = max(_lf_td - _demo_td, 0)
                         output['valuation']['amount'] = _r100k(_central_td)
                         output['valuation']['low'] = _r100k(max(round(_central_td * 0.88), 0))
@@ -4519,13 +4519,17 @@ _CONDITION_NOTE_METHODS = (
 # but NEVER subtracts toward land — so a teardown subject stays pinned at the
 # comparison median (which assumes a sound standing building) and is over-valued
 # (~+35% measured on 56/565/21). This re-anchors it down.
-# Demolition ≈ 200 QAR/m² of BUA — PO-calibrated (Anas, Qatar market, Rule #7): a mid-size
-# villa (~500 m² BUA) demolishes for ~100,000 QAR → ~200/m², scaling with size. The earlier
-# web-derived 60/m² (US demo $4-7/sqft ÷ GCC labour) captured LABOUR ONLY and missed debris
-# haulage + municipality fees + site clearance — the PO's real-market number wins. Single
-# tunable constant (like D5/D6); the wide downward range + high MUC absorb the spread. NOTE:
-# demolition is small vs the land floor (~6%), so the exact value barely moves the headline.
-DEMO_QAR_PER_M2 = 200
+# Demolition — PO-calibrated (Anas, Qatar market, Rule #7): roughly FLAT in a 100k-150k band,
+# NOT linear with size. The PO's three points: a SMALL villa ≈ 100k, a MID villa ≈ 120k, a
+# LARGE villa caps at ~150k. Modelled as per-m² (240/m² → ~120k for a ~500 m² mid-villa)
+# CLAMPED to [100k, 150k] — so a small villa floors at 100k and a large one caps at 150k,
+# matching all three points. (The earlier web-derived 60/m² captured LABOUR ONLY and missed
+# debris haulage + municipality fees + site clearance.) Single tunable set (like D5/D6). At
+# 100-150k, demolition is ~6-9% of the land floor — it moves the headline modestly; the core
+# fix is the median→land re-anchor (−700K).
+DEMO_QAR_PER_M2 = 240
+DEMO_FLOOR_QAR = 100_000
+DEMO_CAP_QAR = 150_000
 _TEARDOWN_ASSET_TYPES = ('standalone_villa', 'house', 'villa')
 TEARDOWN_NOTE_AR = ('التقييم على أساس الاستخدام الأمثل = إعادة التطوير: قيمة الأرض ({land} ر.ق) '
                     'مطروحاً منها تكلفة هدم تقديرية ({demo} ر.ق) — المبنى الحالي يُعدّ عبئاً لا '

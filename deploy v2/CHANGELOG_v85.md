@@ -30,11 +30,12 @@ subject stays pinned at the comparison median (which assumes a sound building). 
 
 - New `condition='teardown'` (AR label «آيل للسقوط / يجب هدمه»). When stated, on a **villa/house** with a real
   amount: `value = land_floor − demolition`, reusing the shipped `_villa_value_floor` (land floor, n≥20).
-- `DEMO_QAR_PER_M2 = 200` × BUA (fallback `plot × 0.55` when no floors input). **PO-calibrated (Anas, Qatar
-  market, Rule #7):** a mid-size villa (~500 m² BUA) demolishes for ~100,000 QAR → ~200/m², scaling with size.
-  (The first web-derived 60/m² — US demo $4-7/sqft ÷ GCC labour — captured LABOUR ONLY and missed debris
-  haulage + municipality fees + site clearance; the PO's real-market number wins.) Single tunable constant
-  (like D5/D6); demolition is ~6% of the land floor, so the exact value barely moves the headline.
+- `DEMO_QAR_PER_M2 = 240` × BUA **clamped to [100k, 150k]** (fallback `plot × 0.55` when no floors input).
+  **PO-calibrated (Anas, Qatar market, Rule #7):** demolition is roughly FLAT in a 100k-150k band, NOT linear
+  with size — a SMALL villa ≈ 100k (floor), a MID villa ≈ 120k, a LARGE villa caps at 150k. (240/m² yields the
+  120k mid-point; the clamp enforces the small/large ends.) (The first web-derived 60/m² — US demo $4-7/sqft ÷
+  GCC labour — captured LABOUR ONLY and missed debris haulage + municipality fees + site clearance.) Single
+  tunable set (like D5/D6); at 100-150k, demolition is ~6-9% of the land floor.
 - Headline = `_r100k(land_floor − demolition)`; range `[central×0.88, land_floor]` (downward); `material_
   uncertainty.level → high`; `valuation.teardown{land_floor, demolition_cost, per_m2, bua, note_ar/en}`.
 - `index.html`: the «آيل للسقوط / يجب هدمه» option + a muted `--warn` 🏚️ disclosure («HBU = redevelopment:
@@ -45,14 +46,14 @@ subject stays pinned at the comparison median (which assumes a sound building). 
 ## 4. Verification — empirical evidence
 
 - py_compile (evaluate_unified + api) OK.
-- **Local E2E on the REAL engine (live GIS) — 56/565/21 before/after (DEMO=200/m²):**
+- **Local E2E on the REAL engine (live GIS) — 56/565/21 before/after (DEMO 240/m² clamped [100k,150k]):**
   | condition | amount | range | demo | |
   |---|---|---|---|---|
   | good | 2,400,000 | 2.2–2.6M | — | byte-identical |
   | maintenance | 2,400,000 | 2.2–2.6M | — | byte-identical (ordinary condition still doesn't move — by design) |
-  | **teardown** (no floors) | **1,700,000** | **1.5–1.7M** | 49,500 (BUA 248) | **−29% re-anchor** to land 1,700,100 − demo |
-  | teardown + 2 floors | 1,600,000 | 1.4–1.7M | 149,800 (BUA 749) | demolition **scales with size** (mid-villa ≈ 100k) |
-  | teardown + 3 floors | 1,500,000 | 1.3–1.7M | 218,600 (BUA 1093) | larger villa → larger demo → lower value |
+  | **teardown** (no floors) | **1,600,000** | **1.4–1.7M** | 100,000 (BUA 248 → floor) | **−33% re-anchor** to land 1,700,100 − demo |
+  | teardown + 2 floors | 1,600,000 | 1.4–1.7M | 150,000 (BUA 749 → cap) | demolition clamped to the PO 100k-150k band |
+  | teardown + 3 floors | 1,600,000 | 1.4–1.7M | 150,000 (BUA 1093 → cap) | — |
 - Isolated `test_sprint_2_22_0b4.py` **15/15** (production constants + `_villa_value_floor` reuse [E14] +
   teardown math + index surfaces + version).
 - **DoD:** aggregator **392** · security **15** · surface-honesty **45** · broad **73/73** (72→73, clean, 104s).
@@ -91,5 +92,6 @@ curl -s -A "Mozilla/5.0 ... Chrome/120 Safari/537.36" -X POST https://thammen.qa
   do NOT move the headline (by design — they need the GT-2 corpus).
 - **No auto-detection** of teardown (user-stated only).
 - `poor`/`fair` get NO down-anchor (caveat-only; the partial re-anchor IS the calibrated band).
-- The demolition number `DEMO_QAR_PER_M2 = 200` is **PO-calibrated** (Anas, Qatar market: ~100k for a mid-size
-  villa) — a single tunable constant; adjust if the market moves.
+- The demolition model (`DEMO_QAR_PER_M2 = 240` clamped to [`DEMO_FLOOR_QAR`=100k, `DEMO_CAP_QAR`=150k]) is
+  **PO-calibrated** (Anas, Qatar market: small 100k / mid 120k / large 150k) — a tunable set; adjust if the
+  market moves.
