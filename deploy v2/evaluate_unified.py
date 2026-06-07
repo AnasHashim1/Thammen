@@ -4519,11 +4519,13 @@ _CONDITION_NOTE_METHODS = (
 # but NEVER subtracts toward land — so a teardown subject stays pinned at the
 # comparison median (which assumes a sound standing building) and is over-valued
 # (~+35% measured on 56/565/21). This re-anchors it down.
-# Demolition ≈ 60 QAR/m² of BUA — provisional, broker-grounded + web-cross-checked
-# (US residential demo $4-7/sqft ≈ 196-273 QAR/m²; GCC labour ~0.3× → ~60-80; and
-# demo/build ratio ~2% of a 3,000 QAR/m² build ≈ 60). The wide downward range +
-# high MUC absorb the 40-100 QAR/m² band. Single tunable constant (like D5/D6).
-DEMO_QAR_PER_M2 = 60
+# Demolition ≈ 200 QAR/m² of BUA — PO-calibrated (Anas, Qatar market, Rule #7): a mid-size
+# villa (~500 m² BUA) demolishes for ~100,000 QAR → ~200/m², scaling with size. The earlier
+# web-derived 60/m² (US demo $4-7/sqft ÷ GCC labour) captured LABOUR ONLY and missed debris
+# haulage + municipality fees + site clearance — the PO's real-market number wins. Single
+# tunable constant (like D5/D6); the wide downward range + high MUC absorb the spread. NOTE:
+# demolition is small vs the land floor (~6%), so the exact value barely moves the headline.
+DEMO_QAR_PER_M2 = 200
 _TEARDOWN_ASSET_TYPES = ('standalone_villa', 'house', 'villa')
 TEARDOWN_NOTE_AR = ('التقييم على أساس الاستخدام الأمثل = إعادة التطوير: قيمة الأرض ({land} ر.ق) '
                     'مطروحاً منها تكلفة هدم تقديرية ({demo} ر.ق) — المبنى الحالي يُعدّ عبئاً لا '

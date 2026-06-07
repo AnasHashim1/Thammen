@@ -30,10 +30,11 @@ subject stays pinned at the comparison median (which assumes a sound building). 
 
 - New `condition='teardown'` (AR label «آيل للسقوط / يجب هدمه»). When stated, on a **villa/house** with a real
   amount: `value = land_floor − demolition`, reusing the shipped `_villa_value_floor` (land floor, n≥20).
-- `DEMO_QAR_PER_M2 = 60` × BUA (fallback `plot × 0.55` when no floors input). **Due-diligence basis:** US
-  residential demolition $4-7/sqft ≈ 196-273 QAR/m²; GCC labour ~0.3× → ~60-80; demo/build ratio ~2% of a
-  3,000 QAR/m² build ≈ 60. Provisional, single tunable constant (like D5/D6); the wide downward range + high
-  MUC absorb the 40-100 band.
+- `DEMO_QAR_PER_M2 = 200` × BUA (fallback `plot × 0.55` when no floors input). **PO-calibrated (Anas, Qatar
+  market, Rule #7):** a mid-size villa (~500 m² BUA) demolishes for ~100,000 QAR → ~200/m², scaling with size.
+  (The first web-derived 60/m² — US demo $4-7/sqft ÷ GCC labour — captured LABOUR ONLY and missed debris
+  haulage + municipality fees + site clearance; the PO's real-market number wins.) Single tunable constant
+  (like D5/D6); demolition is ~6% of the land floor, so the exact value barely moves the headline.
 - Headline = `_r100k(land_floor − demolition)`; range `[central×0.88, land_floor]` (downward); `material_
   uncertainty.level → high`; `valuation.teardown{land_floor, demolition_cost, per_m2, bua, note_ar/en}`.
 - `index.html`: the «آيل للسقوط / يجب هدمه» option + a muted `--warn` 🏚️ disclosure («HBU = redevelopment:
@@ -44,12 +45,14 @@ subject stays pinned at the comparison median (which assumes a sound building). 
 ## 4. Verification — empirical evidence
 
 - py_compile (evaluate_unified + api) OK.
-- **Local E2E on the REAL engine (live GIS) — 56/565/21 before/after:**
-  | condition | amount | range | |
-  |---|---|---|---|
-  | good | 2,400,000 | 2.2–2.6M | byte-identical |
-  | maintenance | 2,400,000 | 2.2–2.6M | byte-identical (ordinary condition still doesn't move — by design) |
-  | **teardown** | **1,700,000** | **1.5–1.7M** | **−29% re-anchor** (land_floor 1,700,100 − demo 14,850 [60×BUA 248]) |
+- **Local E2E on the REAL engine (live GIS) — 56/565/21 before/after (DEMO=200/m²):**
+  | condition | amount | range | demo | |
+  |---|---|---|---|---|
+  | good | 2,400,000 | 2.2–2.6M | — | byte-identical |
+  | maintenance | 2,400,000 | 2.2–2.6M | — | byte-identical (ordinary condition still doesn't move — by design) |
+  | **teardown** (no floors) | **1,700,000** | **1.5–1.7M** | 49,500 (BUA 248) | **−29% re-anchor** to land 1,700,100 − demo |
+  | teardown + 2 floors | 1,600,000 | 1.4–1.7M | 149,800 (BUA 749) | demolition **scales with size** (mid-villa ≈ 100k) |
+  | teardown + 3 floors | 1,500,000 | 1.3–1.7M | 218,600 (BUA 1093) | larger villa → larger demo → lower value |
 - Isolated `test_sprint_2_22_0b4.py` **15/15** (production constants + `_villa_value_floor` reuse [E14] +
   teardown math + index surfaces + version).
 - **DoD:** aggregator **392** · security **15** · surface-honesty **45** · broad **73/73** (72→73, clean, 104s).
@@ -88,4 +91,5 @@ curl -s -A "Mozilla/5.0 ... Chrome/120 Safari/537.36" -X POST https://thammen.qa
   do NOT move the headline (by design — they need the GT-2 corpus).
 - **No auto-detection** of teardown (user-stated only).
 - `poor`/`fair` get NO down-anchor (caveat-only; the partial re-anchor IS the calibrated band).
-- The demolition number is **provisional** (Fork B) — tune `DEMO_QAR_PER_M2` if the market differs.
+- The demolition number `DEMO_QAR_PER_M2 = 200` is **PO-calibrated** (Anas, Qatar market: ~100k for a mid-size
+  villa) — a single tunable constant; adjust if the market moves.

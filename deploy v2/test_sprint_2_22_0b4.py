@@ -13,8 +13,8 @@ results = []
 def check(n, c):
     results.append((n, bool(c)))
 
-# 1. demolition constant present + within the documented 40-100 band
-check('DEMO_QAR_PER_M2 in [40,100]', 40 <= E.DEMO_QAR_PER_M2 <= 100)
+# 1. demolition constant present + PO-calibrated (~200/m² → mid-villa 500m² ≈ 100k QAR)
+check('DEMO_QAR_PER_M2 PO-calibrated [100,300]', 100 <= E.DEMO_QAR_PER_M2 <= 300)
 # 2. teardown scope = villa/house only
 check('_TEARDOWN_ASSET_TYPES = villa/house', set(E._TEARDOWN_ASSET_TYPES) >= {'standalone_villa', 'house', 'villa'})
 check('teardown excludes apartment/land', 'apartment_building' not in E._TEARDOWN_ASSET_TYPES and 'raw_land' not in E._TEARDOWN_ASSET_TYPES)
@@ -32,7 +32,7 @@ lf = (vf or {}).get('land_floor') or 0
 bua = 405
 demo = round(E.DEMO_QAR_PER_M2 * bua)
 central = max(lf - demo, 0)
-check('demo = 60 × BUA', demo == 60 * 405)
+check('demo = DEMO_QAR_PER_M2 × BUA', demo == E.DEMO_QAR_PER_M2 * 405)
 check('teardown re-anchors DOWN (< 2.4M median)', 0 < central < 2400000)
 check('central = land_floor − demo (≥0)', central == max(lf - demo, 0))
 # 6. condition→reno: teardown safe default (no renovation premium, no crash)
