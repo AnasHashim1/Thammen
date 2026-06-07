@@ -114,6 +114,16 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .loc-neu{background:var(--alt);color:var(--muted)}
 .err{background:var(--bad-bg);border:1px solid rgba(185,28,28,.2);border-radius:var(--r);padding:18px;color:var(--bad);text-align:center;animation:fu .5s}
 .disc{text-align:center;padding:20px;font-size:.76rem;color:var(--light);line-height:1.8;border-top:1px solid var(--border);margin-top:28px}
+/* Sprint 2.22.0b.2.3 — Confirmation Gate (Screen 2): muted preliminary range + read-only review. */
+.cg-est{background:var(--alt);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center;margin-bottom:14px}
+.cg-lbl{font-size:.78rem;color:var(--muted);font-weight:600}
+.cg-range{font-size:1.35rem;font-weight:700;color:var(--muted);margin:4px 0 2px;letter-spacing:.3px}
+.cg-unit{font-size:.85rem;color:var(--light);font-weight:500}
+.cg-mid{font-size:.82rem;color:var(--light)}
+.cg-mid b{color:var(--muted);font-weight:700}
+.cg-sub{font-size:.76rem;color:var(--light);margin-top:6px;line-height:1.6}
+.cg-confirm{margin-top:16px}
+.cg-link{display:block;text-align:center;font-size:.85rem;color:var(--bronze);font-weight:600;margin-top:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 /* Sprint D: Brief sections */
 .br-sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;animation:fu .5s ease}
 .br-sec h3{font-size:1rem;font-weight:800;color:var(--primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--bronze-g);display:flex;align-items:center;gap:8px}
@@ -464,6 +474,21 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   </div>
 </div>
 
+<!-- CONFIRM — Sprint 2.22.0b.2.3: confirmation gate (Screen 2, v4 owner-journey).
+     Inserted between identification (formScreen) and the result render; populated by
+     showConfirm() from the SAME /api/evaluate response (no second fetch). Read-only
+     review + explicit confirm (signed 5.2). Valuer + refusals skip to results (run()). -->
+<div class="screen" id="confirmScreen">
+  <div class="tbar">
+    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
+    <div class="tbar-st">مراجعة البيانات</div>
+  </div>
+  <div class="rwrap">
+    <button class="bbtn" onclick="go('form')">→ تقييم جديد</button>
+    <div id="cgOut"></div>
+  </div>
+</div>
+
 <!-- RESULTS -->
 <div class="screen" id="resultsScreen">
   <div class="tbar">
@@ -667,6 +692,50 @@ function evidencePanelHtml(d,acc){
   return h;
 }
 
+// Sprint 2.22.0b.2.3 — Confirmation Gate (Screen 2, v4 owner-journey). Renders, from the
+// SAME response run() already fetched (no 2nd call): a MUTED preliminary range (valuation
+// low–high, signed 5.1) + a READ-ONLY review of the GIS-fetched basis (signed 5.2 — no
+// correction affordances) + the b.2.2 evidence panel (explanation ≠ confidence) + an
+// explicit confirm (no auto-advance) and the permanent «التقرير الكامل الآن» escape.
+function showConfirm(d){
+  const o=document.getElementById('cgOut');if(!o)return;
+  const v=d.valuation||{}, acc=d.accuracy||{}, geo=v.geometry||{};
+  let h='';
+  // (1) preliminary range — muted, alongside the review (signed 5.1); range, not point.
+  h+='<div class="cg-est"><div class="cg-lbl">تقدير مبدئي (نطاق)</div>';
+  if(v.low!=null&&v.high!=null){
+    h+='<div class="cg-range">'+fmt(v.low)+' – '+fmt(v.high)+' <span class="cg-unit">ر.ق</span></div>';
+    if(v.amount!=null)h+='<div class="cg-mid">الوسيط ≈ <b>'+fmt(v.amount)+'</b> ر.ق</div>';
+  }else{
+    h+='<div class="cg-range">'+fmt(v.amount)+' <span class="cg-unit">ر.ق</span></div>';
+  }
+  h+='<div class="cg-sub">تقدير أوّليّ قابل للتغيّر بعد التأكيد والتحسين.</div></div>';
+  // (2) review card — READ-ONLY (signed 5.2: no edit pencils, no correction CTA); existing AR labels.
+  h+='<div class="rc"><div class="rh"><div class="rt">📋 راجِع بيانات العقار</div></div>';
+  h+='<div style="font-size:.8rem;color:var(--muted);margin:0 0 10px;line-height:1.6">هذه البيانات مجلوبة من نظام المعلومات الجغرافية (GIS). راجِعها قبل المتابعة.</div>';
+  h+='<div class="rg">';
+  if(d.address)h+=ri('العنوان',d.address,0,1);
+  if(d.asset_type)h+=ri('نوع العقار',(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type));
+  if(d.district)h+=ri('المنطقة',d.district);
+  var pi=d.property_info||{};
+  var zl=pi.zoning||(geo.zone_max_coverage_pct===60?'R1':(geo.zone_max_coverage_pct===50?'R2':null));
+  if(zl)h+=ri('المنطقة التنظيمية',zl);
+  if(d.plot_area_m2!=null){
+    var rawCad=(d.geometric_factors||{}).plot_area_m2_verified;
+    var differs=(rawCad!=null&&Math.round(rawCad)!==Math.round(d.plot_area_m2));
+    h+=ri(differs?'المساحة المعتمدة في التقدير':'مساحة القسيمة',fmt(d.plot_area_m2)+' م²');
+  }
+  h+='</div></div>';
+  // (3) evidence panel — reuse the b.2.2 panel verbatim (no new logic; explanation ≠ confidence).
+  h+=evidencePanelHtml(d,acc);
+  // (4) explicit confirm (no auto-advance) + permanent full-report escape.
+  h+='<div class="cg-confirm"><button class="sbtn" onclick="confirmProceed()">تابِع بهذه البيانات</button>';
+  h+='<a class="cg-link" onclick="go(\'results\')">التقرير الكامل الآن ◂</a></div>';
+  o.innerHTML=h;
+}
+// Confirm → enrichment (Screen 3, refine) per v4 (تأكيد → تحسين). No re-fetch.
+function confirmProceed(){go('refine');}
+
 async function run(){
   // Sprint 2.21.0: build request body from the active input tab (address XOR PIN).
   let bd;
@@ -706,7 +775,13 @@ async function run(){
     window._lastResult=data;
     show(data);
     fRes.innerHTML='';
-    go('results');
+    // Sprint 2.22.0b.2.3 — Confirmation Gate (Screen 2). Owner journey + a valued result
+    // pass through the explicit review/confirm step, rendered from THIS response (no 2nd
+    // fetch). Valuer → full report directly (v4 «مُقيّم → التقرير الكامل مباشرة», Rule #39);
+    // refusals (no valuation) → results (refusal card). show() already populated results.
+    const _cgv=data.valuation||{};
+    if(audience!=='valuer'&&_cgv.amount!=null&&_cgv.amount>0){showConfirm(data);go('confirm');}
+    else{go('results');}
   }catch(e){
     fRes.innerHTML='<div class="err" style="margin-top:14px">⚠️ '+(e.message||'حدث خطأ')+'<br><span style="font-size:.78rem;color:var(--muted);display:block;margin-top:8px">لو استمرت المشكلة، تأكد من الاتصال أو حاول بعد دقيقة.</span></div>';
   }finally{
