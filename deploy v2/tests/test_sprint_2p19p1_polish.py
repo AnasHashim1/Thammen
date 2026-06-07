@@ -49,7 +49,9 @@ def _listing(rps, asset="villa"):
     # rent_per_sqm drives the filter; keep monthly/size consistent for realism.
     size = 500.0
     return {"asset_type": asset, "monthly_rent": rps * size, "size_sqm": size,
-            "rent_per_sqm": rps, "lat": 25.30, "lon": 51.50}
+            "rent_per_sqm": rps, "lat": 25.30, "lon": 51.50,
+            # Sprint 2.19.2 (R7): the standalone-villa gate keys on property_type_raw.
+            "property_type_raw": "Villa"}
 
 
 def test_outlier_filter():
@@ -76,12 +78,21 @@ def test_outlier_filter():
 # ---- Fix #4 + #5: calibrate() with injected fakes (Layer 1) ----
 
 class _FakeMoj:
-    """Stand-in for MojSaleIndex returning controlled medians per area token."""
+    """Stand-in for MojSaleIndex. Sprint 2.19.2 (R7) refactored the engine pool
+    access to the a18-reconciled interface (resolve_key + medians_for_key); the
+    pre-R7 villa_and_land_median() was removed. This fake mirrors the live
+    MojSaleIndex (cap_rate_calibrator.MojSaleIndex) so calibrate() exercises the
+    real binning path (Rule #40 / E14)."""
     def __init__(self, by_token):
         self._by_token = by_token
 
-    def villa_and_land_median(self, token, bracket, gis_aname=None):
-        return self._by_token.get(token, (None, None, 0, None))
+    def resolve_key(self, gis_aname):
+        # _run_calibrate keys _by_token on cal.area_token(aname); use the same key.
+        return cal.area_token(gis_aname)
+
+    def medians_for_key(self, moj_key, bracket_label):
+        v_med, l_med, n, _ = self._by_token.get(moj_key, (None, None, 0, None))
+        return (v_med, l_med, n)
 
 
 def _run_calibrate(listings, by_token, aname):
