@@ -191,3 +191,37 @@ communities beyond PF's serving cap aren't enumerated (too few listings to form 
 (income → villa headline + an a18/override-aware `_lookup_calibrated_cap_rate`) as ONE Gate-2 step —
 the §9 disposition ("ship yield-data + §6 wiring together"). Until «go»: DB-swap + Heroku deploy HELD;
 the value-invariant code is committed origin-only as a backup (§9 precedent).
+
+## 11. SHIPPED — yield-data STANDALONE (the §9/§10 "broader-coverage" branch) — Heroku v172 (2026-06-07)
+
+**Status:** the deepened per-area yield-data is **LIVE** (Sprint 2.22.0b.5, Heroku **v172**, commit `0015600`
+split `148ef34`, CHANGELOG_v86, Session_Log §20.39). On Anas's «go», the §10 "ship together with §6" plan was
+**revised to STANDALONE** — per-area (§10) delivered exactly the **broader coverage** §9's disposition allowed
+(«ship WITH broader coverage **and/or** §6»), so §9's own «and/or-broader» branch became satisfiable without §6.
+Clean #38 split: ship the value-invariant **data** correction now; §6 (the headline-wiring) is the separate next
+Gate-2.
+
+**What's live.** `cap_rates.sqlite` swapped → **16 usable villa cells** (6 reliable + 10 indicative). The villa
+**income cross-check** now uses calibrated per-area net yields (vs the flat 4% fallback) **when income fires + a
+usable (area, bracket) cell matches**. **HEADLINE value-invariant** (income is downstream of `primary['value']`;
+`_analyze_reconciliation` is status-only) — live smoke 4 anchors byte-identical [2.4M/5.4M/2.6M/refusal].
+
+**🔴 Bracket-gated (the honest footprint, Rule #36).** Most usable cells are **400-600**; a villa sees the
+calibrated rate only if its (area, plot-bracket) hits a usable cell. Standard anchors in 600-900 (e.g. Marikh
+54/541/6) correctly STAY 4% fallback; villa-6 56/647/6 (المعمورة) shows no income block at all (no auto rent
+reference). **B confirmed LIVE** via Marikh forced to 400-600 (`override_land_area=500`) → «معدل رسملة معايَر
+5.2% (عينة n=46، reliable)» source=calibrated. This bracket-gating is precisely what **§6 overcomes** (income
+drives the headline regardless of the income-block trigger).
+
+**The §6 lookup fix is NOT a blocker for the standalone ship** (recon): `_lookup_calibrated_cap_rate` matches
+GIS↔GIS on the stored `district_aname` (= the GIS aname, not the a18 key), so override areas resolve already.
+The a18/override-aware lookup is a §6 robustness item.
+
+**Soft Gate 3.** The broad DoD walk caught a pre-existing red (`test_sprint_2p19p1_polish.py`, latent at `ba47835`
+— the R7 calibrator-interface refactor broke its stale mock; the R7 prep never ran the broad walk). Repaired the
+mock to the real `resolve_key`/`medians_for_key` interface + `property_type_raw` (test-only; restores Fix#4/Fix#5
+coverage).
+
+**NEXT = §6 income-triangulation (the ball, Claude.ai).** Income SETS the villa headline + the a18/override-aware
+lookup + MUC on divergence, as ONE Gate-2 — **needs a signed brief**. The deepened yield-data is now the
+strong-enough Dependency #2 it needs (§8/§9/§10). The «التقدير السوقي» term remains PROVISIONAL.
