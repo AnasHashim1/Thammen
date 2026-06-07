@@ -500,19 +500,76 @@ def collect_rentals(target_n_per_cat=4000, max_pages=140, delay_sec=1.5,
     return listings
 
 
+def collect_rentals_per_area(target_n_per_area=400, area_max_pages=15,
+                             map_max_pages=60, delay_sec=1.3,
+                             compound_max_pages=24, log=print):
+    """Sprint 2.19.2 (R7) per-area depth collection — supersedes the national crawl
+    for VILLA depth (Dependency #2, the §8/§9 "bottleneck").
+
+    (1) harvest the COMMUNITY map from the national villas feed (location_tree),
+    (2) deep-fetch each community by id via ``?l=`` — the area's FULL inventory
+        (each community is far below PropertyFinder's ~50-page serving cap),
+    (3) dedupe by listing id; fold in a light compound pull from the 'all' feed.
+
+    The national collect_rentals surfaces ~8 villa rentals/cell (50-page cap on a
+    ~3.4k national feed); per-area reaches each community's true n (§5 audit:
+    المعمورة 103, أبو هامور 187, عين خالد 260, اللؤلؤة 325, ...), which is what
+    lifts thin villa cells past the n>=20 reliable gate. GIS still resolves each
+    listing's district from its GPS — the community id only bounds the crawl.
+    """
+    seen, listings = set(), []
+
+    def _add(rows, label):
+        added = 0
+        for r in rows:
+            rid = r.get("id")
+            k = rid if rid is not None else (r.get("lat"), r.get("lon"),
+                                             r.get("monthly_rent"), r.get("size_sqm"))
+            if k in seen:
+                continue
+            seen.add(k)
+            listings.append(r)
+            added += 1
+        log(f"[fetch] {label}: {len(rows)} fetched, {added} new")
+
+    cmap = pf.community_map(category="villas", max_pages=map_max_pages,
+                           delay_sec=delay_sec)
+    log(f"[map] villa communities discovered={len(cmap)}")
+    for cid, m in sorted(cmap.items(), key=lambda kv: -kv[1]["seen"]):
+        rows = pf.fetch_rentals(category="villas", location_id=cid,
+                                target_n=target_n_per_area,
+                                max_pages=area_max_pages, delay_sec=delay_sec)
+        _add(rows, f"area {m['name']}({cid})")
+    # compounds: secondary, lighter pull from the broad 'all' national feed
+    log(f"[fetch] category=all (compounds) max_pages={compound_max_pages}")
+    all_rows = pf.fetch_rentals(category="all", target_n=4000,
+                                max_pages=compound_max_pages, delay_sec=delay_sec)
+    _add([r for r in all_rows if r.get("asset_type") == "compound_small"],
+         "compounds-from-all")
+    return listings
+
+
 def calibrate(db_path=DB_PATH, target_n_per_cat=4000, max_pages=140,
               delay_sec=1.5, listings=None, moj_index=None, gis_cache=None,
-              log=print):
+              log=print, per_area=False):
     """Run the full calibration and write `db_path`. Idempotent (rebuilds table).
 
     `listings`/`moj_index`/`gis_cache` are injectable for testing.
+
+    Sprint 2.19.2 (R7): ``per_area=True`` collects via the per-community ``?l=``
+    deep crawl (collect_rentals_per_area) instead of the shallow national feed —
+    this is the depth lever that lifts thin villa cells to reliable. Default
+    False keeps the national-only behaviour byte-for-byte (reversible).
     """
     now_iso = datetime.now(timezone.utc).isoformat(timespec="seconds")
     moj_index = moj_index or MojSaleIndex()
     gis_cache = {} if gis_cache is None else gis_cache
 
     if listings is None:
-        listings = collect_rentals(target_n_per_cat, max_pages, delay_sec, log=log)
+        if per_area:
+            listings = collect_rentals_per_area(delay_sec=delay_sec, log=log)
+        else:
+            listings = collect_rentals(target_n_per_cat, max_pages, delay_sec, log=log)
 
     # GIS-resolve + bin by (a18 MoJ pooling key, asset_type, bracket)
     cells = defaultdict(list)

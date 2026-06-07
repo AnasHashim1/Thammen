@@ -249,19 +249,27 @@ def _build_page_url(base_url, page):
     return f"{base_url}{sep}page={page}"
 
 
-def fetch_listings_page(base_url, page=1, timeout=20, retries=3):
-    """Fetch one page; return (normalized_listings, meta_dict).
+def _fetch_raw_listings(base_url, page=1, timeout=20, retries=3):
+    """Fetch one page; return (raw_listings, meta) BEFORE normalization.
 
-    meta_dict carries total_count / page_count / page / per_page when present.
-    On parse failure returns ([], {}) so callers can detect schema drift.
+    Raw listings carry the full PropertyFinder shape (incl. ``location_tree``),
+    which the community map needs. On parse failure returns ([], {}).
     """
     body = fetch(_build_page_url(base_url, page), timeout=timeout, retries=retries)
     nd = extract_next_data(body)
     if nd is None:
         return [], {}
     sr = _search_result(nd)
-    raw = sr.get("listings", []) or []
-    meta = sr.get("meta", {}) or {}
+    return (sr.get("listings", []) or []), (sr.get("meta", {}) or {})
+
+
+def fetch_listings_page(base_url, page=1, timeout=20, retries=3):
+    """Fetch one page; return (normalized_listings, meta_dict).
+
+    meta_dict carries total_count / page_count / page / per_page when present.
+    On parse failure returns ([], {}) so callers can detect schema drift.
+    """
+    raw, meta = _fetch_raw_listings(base_url, page=page, timeout=timeout, retries=retries)
     out = []
     for L in raw:
         norm = normalize_listing(L)
@@ -271,12 +279,21 @@ def fetch_listings_page(base_url, page=1, timeout=20, retries=3):
 
 
 def fetch_rentals(category="apartments", target_n=200, max_pages=8,
-                  delay_sec=2.0, timeout=20, retries=3):
+                  delay_sec=2.0, timeout=20, retries=3, location_id=None):
     """Crawl a rental category until target_n listings or max_pages reached.
 
     ``category`` is one of RENT_CATEGORY_URLS keys. Returns a list of
     normalized rental dicts (RENTALS ONLY — this client has no sale path).
     Polite by default: delay_sec between page fetches.
+
+    Sprint 2.19.2 (R7) per-area depth: when ``location_id`` is given, the search
+    is filtered to a single PropertyFinder COMMUNITY via the ``?l=<id>`` scalar
+    param (the ONLY honored form — §5 audit Phase C/D: bracket/array/slug-path
+    forms are ignored or 404). A community's inventory is always far below the
+    national ~50-page (~1250-listing) serving cap, so per-area pagination
+    retrieves the area's FULL set — the national feed truncates deep areas to
+    ~8/cell. GIS still decides the district from each listing's GPS; the id only
+    bounds the crawl (PropertyFinder ``location`` names are never trusted).
     """
     base_url = RENT_CATEGORY_URLS.get(category)
     if base_url is None:
@@ -284,6 +301,9 @@ def fetch_rentals(category="apartments", target_n=200, max_pages=8,
             f"unknown rental category {category!r}; "
             f"valid: {sorted(RENT_CATEGORY_URLS)}"
         )
+    if location_id is not None:
+        sep = "&" if "?" in base_url else "?"
+        base_url = f"{base_url}{sep}l={location_id}"
     collected = []
     for page in range(1, max_pages + 1):
         try:
@@ -309,3 +329,68 @@ def fetch_rentals(category="apartments", target_n=200, max_pages=8,
         if page < max_pages:
             time.sleep(delay_sec)
     return collected[:target_n]
+
+
+# --------------------------------------------------------------------------
+# Community enumeration (Sprint 2.19.2 R7) — for the per-area depth crawl
+# --------------------------------------------------------------------------
+
+def community_nodes(raw_listing):
+    """Yield (id, name, slug) for each COMMUNITY-level node of a RAW listing.
+
+    PropertyFinder embeds a ``location_tree`` per listing: level 0 = CITY,
+    level 1 = COMMUNITY, level 2 = SUBCOMMUNITY (§5 audit Phase A). We key the
+    per-area crawl on the COMMUNITY level (id matches the ``?l=`` filter and is
+    the granularity closest to a GIS district).
+    """
+    tree = ((raw_listing or {}).get("property", {}) or {}).get("location_tree", []) or []
+    for node in tree:
+        if not isinstance(node, dict):
+            continue
+        if str(node.get("level")) == "1" or str(node.get("type", "")).upper() == "COMMUNITY":
+            nid, nm = node.get("id"), node.get("name")
+            if nid and nm:
+                yield str(nid), str(nm), node.get("slug")
+
+
+def community_map(category="villas", max_pages=60, delay_sec=1.5,
+                  timeout=20, retries=3):
+    """Crawl the national category feed; return {community_id: {name, slug, seen}}.
+
+    Reads ``location_tree`` (level-1 COMMUNITY) from RAW listings — this
+    enumerates the communities that have rentals in PropertyFinder's served
+    pages. The per-area crawl then deep-fetches each by id via ``?l=``.
+
+    Honest limit (Rule #36): long-tail communities present ONLY in PF's unserved
+    deep pages (beyond the ~50-page serving cap) are not enumerated here — but
+    those areas are tiny (too few listings to ever form a reliable cell), so the
+    omission does not affect the calibration's reliable/indicative cells. Stops
+    on the per-page 404 (the serving cap) exactly like ``fetch_rentals``.
+    """
+    base_url = RENT_CATEGORY_URLS.get(category)
+    if base_url is None:
+        raise ValueError(
+            f"unknown rental category {category!r}; "
+            f"valid: {sorted(RENT_CATEGORY_URLS)}"
+        )
+    out = {}
+    for page in range(1, max_pages + 1):
+        try:
+            raw, meta = _fetch_raw_listings(base_url, page=page,
+                                            timeout=timeout, retries=retries)
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                break  # serving cap reached — same contract as fetch_rentals
+            raise
+        if not raw:
+            break
+        for L in raw:
+            for nid, nm, slug in community_nodes(L):
+                d = out.setdefault(nid, {"name": nm, "slug": slug, "seen": 0})
+                d["seen"] += 1
+        page_count = meta.get("page_count")
+        if page_count is not None and page >= page_count:
+            break
+        if page < max_pages:
+            time.sleep(delay_sec)
+    return out

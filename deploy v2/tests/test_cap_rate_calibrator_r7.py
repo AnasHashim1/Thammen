@@ -12,10 +12,12 @@ build_reference, area_match_key) — not echoes of the inputs. Structural assert
 (keys, n>0, override routing, ordering) so a MoJ refresh can't flake exact values.
 """
 
+import json
 import os
 import sqlite3
 import sys
 import tempfile
+import urllib.error
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -197,6 +199,143 @@ def test_calibrate_end_to_end():
         os.remove(db)
 
 
+# ---- per-area depth crawl (Sprint 2.19.2 R7 — connector additions) ----
+# Network is mocked; the REAL connector functions run (Rule #40 / E14).
+
+def _canned_body(listings, meta):
+    """Wrap raw listings + meta in a __NEXT_DATA__ HTML body extract_next_data reads."""
+    nd = {"props": {"pageProps": {"searchResult": {"listings": listings, "meta": meta}}}}
+    return ('<script id="__NEXT_DATA__" type="application/json">'
+            + json.dumps(nd) + '</script>').encode("utf-8")
+
+
+def _raw(pid, lat=25.245, lon=51.498, rent=15000, size=500, ptype="Villa",
+         comm=("68", "Al Maamoura", "al-maamoura"), furnished="NO"):
+    """A raw PropertyFinder listing (the shape normalize_listing + community_nodes read)."""
+    return {"property": {
+        "id": pid, "property_type": ptype,
+        "price": {"value": rent, "period": "monthly"},
+        "size": {"value": size}, "furnished": furnished,
+        "location": {"coordinates": {"lat": lat, "lon": lon}},
+        "location_tree": [
+            {"id": "9", "name": "Doha", "type": "CITY", "level": "0"},
+            {"id": comm[0], "name": comm[1], "slug": comm[2],
+             "type": "COMMUNITY", "level": "1"},
+        ],
+    }}
+
+
+def test_community_nodes():
+    raw = _raw(1, comm=("68", "Al Maamoura", "al-maamoura"))
+    # add a level-2 subcommunity to prove only level-1 is taken
+    raw["property"]["location_tree"].append(
+        {"id": "1593", "name": "Maamoura Villas", "type": "SUBCOMMUNITY", "level": "2"})
+    nodes = list(cal.pf.community_nodes(raw))
+    check("community_nodes -> exactly the level-1 COMMUNITY",
+          nodes == [("68", "Al Maamoura", "al-maamoura")])
+    check("community_nodes empty/absent tree -> []",
+          list(cal.pf.community_nodes({"property": {}})) == [])
+    # type-based fallback when 'level' is absent
+    raw2 = {"property": {"location_tree": [
+        {"id": "79", "name": "Abu Hamour", "type": "COMMUNITY"}]}}
+    check("community_nodes type-based COMMUNITY (no level field)",
+          list(cal.pf.community_nodes(raw2)) == [("79", "Abu Hamour", None)])
+
+
+def test_fetch_rentals_location_id():
+    captured = []
+
+    def fake_fetch(url, **kw):
+        captured.append(url)
+        if "page=2" in url:
+            return _canned_body([], {"page_count": 2})  # end
+        return _canned_body([_raw(1), _raw(2)], {"page_count": 2, "total_count": 2})
+
+    orig = cal.pf.fetch
+    try:
+        cal.pf.fetch = fake_fetch
+        out = cal.pf.fetch_rentals(category="villas", location_id="68",
+                                   target_n=100, max_pages=3, delay_sec=0)
+        check("location_id builds the scalar ?l=68 URL",
+              any("?l=68" in u for u in captured))
+        check("per-area pagination appends &page=2",
+              any("?l=68&page=2" in u for u in captured))
+        check("per-area returns normalized listings (2)",
+              len(out) == 2 and out[0]["id"] == 1)
+        # national path (no location_id) must NOT carry ?l=
+        captured.clear()
+        cal.pf.fetch_rentals(category="villas", target_n=1, max_pages=1, delay_sec=0)
+        check("national path has no ?l= (back-compat)",
+              captured and "?l=" not in captured[0])
+    finally:
+        cal.pf.fetch = orig
+
+
+def test_community_map():
+    def fake_fetch(url, **kw):
+        if "page=2" in url:
+            return _canned_body([_raw(3, comm=("79", "Abu Hamour", "abu-hamour"))],
+                                {"page_count": 2})
+        return _canned_body([_raw(1), _raw(2)], {"page_count": 2})
+
+    orig = cal.pf.fetch
+    try:
+        cal.pf.fetch = fake_fetch
+        cmap = cal.pf.community_map(category="villas", max_pages=5, delay_sec=0)
+        check("community_map keyed by community id", set(cmap) == {"68", "79"})
+        check("community_map carries name+slug", cmap["68"]["name"] == "Al Maamoura"
+              and cmap["68"]["slug"] == "al-maamoura")
+        check("community_map seen counts (68 x2, 79 x1)",
+              cmap["68"]["seen"] == 2 and cmap["79"]["seen"] == 1)
+    finally:
+        cal.pf.fetch = orig
+
+
+def test_community_map_404_break():
+    def fake_fetch(url, **kw):
+        if "page=2" in url:
+            raise urllib.error.HTTPError(url, 404, "not found", {}, None)
+        return _canned_body([_raw(1)], {"page_count": 140})  # PF over-reports
+
+    orig = cal.pf.fetch
+    try:
+        cal.pf.fetch = fake_fetch
+        cmap = cal.pf.community_map(category="villas", max_pages=10, delay_sec=0)
+        check("community_map stops at the 404 serving cap (got page-1 only)",
+              set(cmap) == {"68"})
+    finally:
+        cal.pf.fetch = orig
+
+
+def test_collect_rentals_per_area():
+    orig_map, orig_fr = cal.pf.community_map, cal.pf.fetch_rentals
+    try:
+        cal.pf.community_map = lambda **kw: {
+            "68": {"name": "Al Maamoura", "slug": "al-maamoura", "seen": 3},
+            "79": {"name": "Abu Hamour", "slug": "abu-hamour", "seen": 2}}
+
+        def fake_fr(category="villas", location_id=None, **kw):
+            if category == "all":  # compound pull
+                return [{"id": 99, "asset_type": "compound_small", "lat": 25.3,
+                         "lon": 51.4, "monthly_rent": 50000, "size_sqm": 2000,
+                         "rent_per_sqm": 25.0}]
+            if location_id == "68":
+                return [_L(id=1), _L(id=2)]
+            if location_id == "79":
+                return [_L(id=2), _L(id=3)]  # id 2 duplicated across areas
+            return []
+
+        cal.pf.fetch_rentals = fake_fr
+        out = cal.collect_rentals_per_area(delay_sec=0, log=lambda *a, **k: None)
+        ids = sorted(r["id"] for r in out)
+        check("per-area dedupes across areas (1,2,3 + compound 99)",
+              ids == [1, 2, 3, 99])
+        check("compound folded in from 'all' feed",
+              any(r.get("asset_type") == "compound_small" for r in out))
+    finally:
+        cal.pf.community_map, cal.pf.fetch_rentals = orig_map, orig_fr
+
+
 if __name__ == "__main__":
     print("Sprint 2.19.2 (R7) — stratified villa-yield calibration tests")
     print("=" * 70)
@@ -206,6 +345,11 @@ if __name__ == "__main__":
     test_a18_medians_for_key()
     test_collect_rentals_dedupe()
     test_calibrate_end_to_end()
+    test_community_nodes()
+    test_fetch_rentals_location_id()
+    test_community_map()
+    test_community_map_404_break()
+    test_collect_rentals_per_area()
     print("=" * 70)
     print(f"Sprint 2.19.2 (R7) tests: {_passed} passed, {_failed} failed")
     sys.exit(0 if _failed == 0 else 1)

@@ -154,3 +154,40 @@ the a18 key) as `district_aname`, so GIS↔GIS matching holds incl. override are
    affected areas (المعمورة 7.37%→6.04%, عين خالد new indicative, الغرافة demoted). This is the
    yield-data correction; the **headline-triangulation wiring** (income setting the villa headline) is a
    LATER, separate Gate-2 step (§6) and is NOT in this build.
+
+## 10. Per-area depth (the §9 "NEXT unit") — BUILT + measured (2026-06-07) — HELD at Gate-1/Gate-2
+
+**Status:** the §9 NEXT unit ("per-area PF depth, locationId search, own §5 audit") is **done**.
+§5 audit COMPLETE + CLEAN, connector BUILT + tested, the deepened DB measured. **Engine UNCHANGED
+(b4/v171); live `cap_rates.sqlite` UNTOUCHED** (git-confirmed); the rebuilt DB is the gitignored
+`cap_rates.new.sqlite`. Both gates **HELD** pending an explicit «go». Full audit:
+`docs/PHASE0_R7_perarea_connector.md`.
+
+**§5 audit (Phases A–D, 4 read-only probes):** PropertyFinder filters a villa-rent search to one
+COMMUNITY via the scalar **`villas-for-rent.html?l=<community_id>`** (the ONLY honored form —
+bracket/array/slug-path forms are ignored or 404). Community ids are harvested from each listing's
+`location_tree` (level-1) — **no new endpoint**. `?l=68` verified = Al Maamoura (27/27 tree + GPS).
+Per-area depths: اللؤلؤة 325 · عين خالد 260 · الوعب 259 · الخيسة 248 · أبو هامور 187 · المعمورة 103
+· الغرافة 89 — vs ~8/cell nationally; pagination retrieves the full area (المعمورة 103/103).
+
+**Build (value-invariant; national path byte-for-byte preserved):** `propertyfinder_client.py`
+(+`location_id` param on `fetch_rentals` → `?l=`; +`community_map`/`community_nodes`;
++`_fetch_raw_listings`) · `cap_rate_calibrator.py` (+`collect_rentals_per_area`; +`per_area` switch
+on `calibrate`, default False = national unchanged) · `tests/test_cap_rate_calibrator_r7.py` (+13 →
+**42/42**; base suite **59/59**). These are build-time tools — NOT imported by `api.py`/runtime.
+
+**Measured coverage gain (per_area=True → cap_rates.new.sqlite):** usable villa cells **3 → 16**
+(reliable **2 → 6**, indicative **1 → 10**); 3458 calibratable listings (vs ~1214); 60 communities;
+0.8% outlier rejection. Reliable now incl. **المعمورة 56 400-600 (6.04%/4.83%)** and **امريخ الجنوبي
+400-600 (6.44%)** (the Marikh over-anchor area). Villa-6 المعمورة 600-900 stays fallback — but now
+sale-side-limited (MoJ villa n=7), not rent-side; 400-600 reliable + 600-900 rent-consistent ⟹
+income band ~5.3–6% ⟹ ~3.2–3.6M (converges with §8/§9, below the 3.8M condition-blind comparison).
+
+**Honest residual:** the remaining tail is per-bracket **MoJ sale** depth (a different source), not
+PF rent depth — Dependency #2 (yield) is now strong enough for the §6 triangulation. Long-tail tiny
+communities beyond PF's serving cap aren't enumerated (too few listings to form a reliable cell).
+
+**NEXT (still gated):** ship the deepened yield-data **with** the §6 income-triangulation wiring
+(income → villa headline + an a18/override-aware `_lookup_calibrated_cap_rate`) as ONE Gate-2 step —
+the §9 disposition ("ship yield-data + §6 wiring together"). Until «go»: DB-swap + Heroku deploy HELD;
+the value-invariant code is committed origin-only as a backup (§9 precedent).
