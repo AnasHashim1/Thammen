@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b5-villa-yield-calibration'
-SPRINT_TAG = '2.22.0b.5'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b6-income-triangulation'
+SPRINT_TAG = '2.22.0b.6'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4340,6 +4340,65 @@ def evaluate_thammen(
             except Exception as _el:
                 import sys
                 print(f'[luxury_new warning] {_el}', file=sys.stderr)
+            # ── Sprint §6 (R7): income-triangulation (Gate-2 — income LEADS / honest-widen) ──
+            # Mutually exclusive with the b4 teardown + luxury-new overrides (explicit
+            # statements win). Reuses _villa_value_floor (land floor = clamp / widen target)
+            # + _stage1_dispersion_gate (defer dispersed pools to a10/a14). Swallows errors.
+            try:
+                if (output['valuation'].get('amount')
+                        and not output['valuation'].get('teardown')
+                        and not output['valuation'].get('luxury_new_premium')):
+                    _lf_tri = (_villa_value_floor(output['valuation']['amount'],
+                                                  getattr(ev, 'plot_area_m2', None),
+                                                  moj_ref, decomp) or {}).get('land_floor')
+                    _g_tri = _stage1_dispersion_gate(primary, geo_v2_result)
+                    _tri = _income_triangulation(
+                        primary, income, cost, _lf_tri, output.get('asset_type'),
+                        dispersion_gated=bool(_g_tri and _g_tri.get('gated')))
+                    if _tri and _tri['mode'] == 'income_led':
+                        _capp = (round(_tri['cap_rate'] * 100, 1) if _tri['cap_rate'] else '—')
+                        _xs = f"{_r10k(_tri['amount']):,}"
+                        _cs = f"{_r10k(_tri['comparison_value']):,}"
+                        output['valuation']['amount'] = _r100k(_tri['amount'])
+                        output['valuation']['low'] = _r100k(_tri['low'])
+                        output['valuation']['high'] = _r100k(_tri['high'])
+                        # income LEADS → the income band is the range; clear any dispersion
+                        # range-flag (a10/a14) so its built-type disclosure doesn't linger.
+                        output['valuation'].pop('range_is_headline', None)
+                        output['valuation']['income_triangulation'] = {
+                            'mode': 'income_led',
+                            'income_value': _tri['amount'],
+                            'comparison_value': _tri['comparison_value'],
+                            'spread_pct': _tri['spread_pct'],
+                            'cap_rate': _tri['cap_rate'],
+                            'net_yield_pct': _tri['net_yield_pct'],
+                            'sample_size': _tri['sample_size'],
+                            'confidence': _tri['confidence'],
+                            'note_ar': INCOME_LED_NOTE_AR.format(
+                                cap=_capp, n=_tri['sample_size'], conf=_tri['confidence'],
+                                x=_xs, comp=_cs),
+                            'note_en': INCOME_LED_NOTE_EN.format(
+                                cap=_capp, n=_tri['sample_size'], conf=_tri['confidence'],
+                                x=_xs, comp=_cs),
+                        }
+                        _mu_tri = output.get('material_uncertainty')
+                        if isinstance(_mu_tri, dict):
+                            _mu_tri['level'] = _tri['muc_level']
+                    elif _tri and _tri['mode'] == 'widen_down':
+                        output['valuation']['low'] = _r100k(_tri['low'])
+                        output['valuation']['high'] = _r100k(_tri['high'])
+                        output['valuation']['range_is_headline'] = True
+                        output['valuation']['central_estimate'] = output['valuation']['amount']
+                        output['valuation']['condition_widen_note_ar'] = CONDITION_WIDEN_NOTE_AR.format(
+                            floor=f"{_r10k(_tri['land_floor']):,}")
+                        output['valuation']['condition_widen_note_en'] = CONDITION_WIDEN_NOTE_EN.format(
+                            floor=f"{_r10k(_tri['land_floor']):,}")
+                        _mu_w = output.get('material_uncertainty')
+                        if isinstance(_mu_w, dict):
+                            _mu_w['level'] = 'high'
+            except Exception as _etri:
+                import sys
+                print(f'[income_triangulation warning] {_etri}', file=sys.stderr)
         except Exception as e:
             import sys
             print(f'[value decomposition warning] {e}', file=sys.stderr)
@@ -4625,6 +4684,107 @@ def _condition_note_applies(primary, gate, asset_type, amount) -> bool:
     if gate and gate.get('gated'):
         return False  # dispersed bracket (a14) / widened (a10) → honest-range already discloses condition
     return True        # clean bracket / thin / non-dispersed widened / preliminary → include
+
+
+# ════════════════════════════════════════════════════════════════════
+# Sprint §6 (R7) — income-triangulation: income SETS the villa headline
+# ════════════════════════════════════════════════════════════════════
+# PO decision (أ, 2026-06-07): stop pinning condition-blind comparison GUESSES
+# (e.g. Marikh 54/541/6 = 5.4M, defensible ~3.0-3.4M) as confident headlines.
+# Two modes, villa/house only (DECISION_income_crosscheck_villa_R7.md §6 + brief):
+#   • income_led ((i)/أ) — a GROUNDED subject rent (user-provided) + a calibrated
+#     reliable/indicative cap-rate cell → income LEADS: the headline = the income
+#     value (rent reflects age/condition → catches the comparison's over/under-anchor),
+#     clamped to [land_floor, cost_ceiling]; the comparison is demoted to a disclosed
+#     sibling. CIRCULARITY GUARD (recon): only a SUBJECT-specific rent (actual_provided)
+#     can lead — the area-median rent ÷ area-yield reconstructs the comparison.
+#   • widen_down ((iii)) — a no-rent condition-blind THIN/uncertain villa (NOT a clean
+#     reliable bracket — that good case must NOT be over-widened; NOT a dispersion-gated
+#     pool — a10/a14 already own those) → widen the range DOWN to the land floor + MUC
+#     high, so the high comparison guess is no longer pinned as a confident value.
+# Pure: returns a decision dict or None; never mutates. Opt-in for income_led (fires only
+# on a user rent → the 4 standard no-rent anchors are byte-identical on that mode).
+_INCOME_LED_METHODS = ('comparison_bracket', 'comparison_thin', 'comparison_widened',
+                       'comparison_widened_indicative', 'comparison_preliminary')
+_WIDEN_DOWN_METHODS = ('comparison_thin', 'comparison_widened',
+                       'comparison_widened_indicative', 'comparison_preliminary')
+
+def _income_triangulation(primary, income, cost, land_floor, asset_type,
+                          dispersion_gated=False):
+    if asset_type not in ('standalone_villa', 'house', 'villa'):
+        return None
+    if not primary or not primary.get('value'):
+        return None
+    comp = primary['value']
+    method = primary.get('method')
+    ceil = (cost or {}).get('value') if isinstance(cost, dict) else None
+
+    # ── (i)/(أ): income LEADS when grounded (subject rent) + reliable + within the rails ──
+    if (method in _INCOME_LED_METHODS and income and income.get('value')):
+        prov = income.get('cap_rate_provenance') or {}
+        grounded = (income.get('rent_source') == 'actual_provided')           # SUBJECT-specific rent
+        calibrated = (prov.get('source') == 'calibrated'
+                      and prov.get('confidence') in ('reliable', 'indicative'))
+        inc_val = income['value']
+        # within the RICS rails: land_floor ≤ income ≤ cost_ceiling (×1.05 tol). Outside →
+        # the rent/yield is implausible → do NOT lead (the clamp would be a hard pull).
+        within = ((land_floor is None or inc_val >= land_floor)
+                  and (ceil is None or inc_val <= ceil * 1.05))
+        if grounded and calibrated and within:
+            central = inc_val
+            if land_floor:
+                central = max(central, land_floor)
+            if ceil:
+                central = min(central, round(ceil * 1.05))
+            spread = abs(comp - central) / central if central else 0.0
+            return {
+                'mode': 'income_led',
+                'amount': central,
+                'low': round(central * 0.85),
+                'high': round(central * 1.12),
+                'muc_level': 'high' if spread >= 0.30 else 'moderate',
+                'comparison_value': comp,
+                'spread_pct': round(spread * 100, 1),
+                'cap_rate': income.get('cap_rate'),
+                'net_yield_pct': prov.get('net_yield_pct'),
+                'sample_size': prov.get('sample_size'),
+                'confidence': prov.get('confidence'),
+                'annual_rent': income.get('annual_rent'),
+            }
+
+    # ── (iii): honest-widen DOWN for a no-rent condition-blind THIN/uncertain villa ──
+    # EXCLUDES clean reliable comparison_bracket (good case) AND dispersion-gated pools
+    # (a10/a14 own those). Only widens DOWN (land_floor below the median).
+    if (method in _WIDEN_DOWN_METHODS and not dispersion_gated
+            and land_floor and land_floor < comp):
+        return {
+            'mode': 'widen_down',
+            'amount': comp,                          # central unchanged (muted via range_is_headline)
+            'low': land_floor,
+            'high': primary.get('high') or comp,
+            'muc_level': 'high',
+            'land_floor': land_floor,
+            'comparison_value': comp,
+        }
+    return None
+
+
+# Sprint §6 (R7) — income-triangulation user-facing notes (AR + EN).
+INCOME_LED_NOTE_AR = ('قُيّمت بمنهج الدخل: إيجار العقار الفعلي ÷ معدل رسملة معايَر '
+                      '({cap}% ، عينة n={n} {conf}). القيمة المركزية {x} ر.ق. وسيط المقارنة '
+                      'المنطقي ({comp} ر.ق) لا يُعتمد كأساس لأنه لا يأخذ نوع البناء والحالة، '
+                      'بينما الإيجار يعكسهما.')
+INCOME_LED_NOTE_EN = ('Valued by the Income approach: the property’s actual rent ÷ a calibrated '
+                      'cap rate ({cap}%, n={n} {conf}). Central value {x} QAR. The area comparison '
+                      'median ({comp} QAR) is not used as the basis because it ignores built type '
+                      'and condition, which the rent reflects.')
+CONDITION_WIDEN_NOTE_AR = ('نوع بناء العقار وحالته غير مؤكَّدين، ووسيط المقارنة لا يأخذهما — لذلك '
+                           'النطاق يمتدّ من قيمة الأرض ({floor} ر.ق) حتى وسيط المقارنة. أدخِل '
+                           'الإيجار الفعلي للعقار لتثبيت القيمة على أساس مؤسَّس.')
+CONDITION_WIDEN_NOTE_EN = ('The property’s built type and condition are unconfirmed, and the '
+                           'comparison median ignores them — so the range spans from the land value '
+                           '({floor} QAR) up to the comparison median. Enter the property’s actual '
+                           'rent to ground the value.')
 
 
 def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,

@@ -1,8 +1,13 @@
 # Brief — Sprint §6 Income-Triangulation (R7 villa headline)
 
-**Date:** 2026-06-07 · **Status:** **DRAFT — awaiting Anas Gate-2 sign-off.** Authored by CC under
-«افعل الأصوب» (PO delegated the no-rent shape) + the live PO decision **(أ)** = income MOVES the
-villa headline down toward grounded reality. **Grounded in:** `PHASE0_income_triangulation_recon.md`
+**Date:** 2026-06-07 · **Status:** **SIGNED + SHIPPED (Heroku v173, b6).** PO «go» signed B1–B3 (B1
+income LEADS · B2 opex 0.20 [deferred v2] · B3 v1 = i+iii) + «افعل الأصوب» → built + verified + pushed.
+Authored by CC under «افعل الأصوب» (PO delegated the no-rent shape) + the live PO decision **(أ)** =
+income MOVES the villa headline down toward grounded reality. **Build outcome:** isolated 23/23 · DoD
+392/15/45/broad 75 · E2E 5/5 (56/565/21 unchanged · 54/541/6 widen_down to land floor · 54/541/6@400-600
++rent income_led 2.7M · 55/296/13 correctly no-widen [land-anchored] · 52/903/90 refusal). CHANGELOG_v87,
+Session_Log §20.40. **(أ) sub-decisions resolved:** widen_down keeps the data median muted (NO invented
+midpoint — RICS cites the comparison, not a made-up center); income_led reach is bracket-gated (400-600). **Grounded in:** `PHASE0_income_triangulation_recon.md`
 (the measured wiring map) + `DECISION_income_crosscheck_villa_R7.md` (§1–§11). **Gates:** 🔴 Gate-2
 (this brief — it changes the villa headline value) → then build as its own unit → 🔴 Gate-1 «go»
 before any `git subtree push heroku`. Multi-AI #54 = **OPTIONAL** (standard RICS VPS 3/IVS 103
