@@ -314,10 +314,27 @@ residential plots:
 
 | Setback | Minimum |
 |---|---|
-| Residential villa — all sides | **3.0 m** |
+| Residential villa (R1) — **front / street** | **5.0 m** |
+| Residential villa (R1) — **side** | **3.0 m** (1.5 m for a façade with no/non-habitable windows) |
+| Residential villa (R1) — **rear** | **3.0 m** |
 | Basement | 1.0 m |
 | Commercial — front | 8.0 m |
 | Commercial — back | 3.0 m |
+
+> **🆕 2026-06-08 correction (verified from the authoritative source).** The earlier "all sides 3.0 m"
+> row was imprecise: per the **MME Qatar National Master Plan — R1 Zone Development Control & Design
+> Regulations**, the R1 **front/street setback is 5.0 m**, side and rear are **3.0 m** (side reducible
+> to 1.5 m for a blank/non-habitable-window façade; 0 m for ≤50% of one side for ancillary/courtyard).
+> The architectural Ministerial Decision **7/1989** can require a **larger** front on wider/primary
+> roads (so an actual 7 m front — e.g. 54/541/6 — is the road-scaled legal value, not owner choice).
+> Companion R1 controls: **building coverage max 60%** (40% compounds), **G+1+P 13 m**, lot min 600 m²
+> (one side ≥20 m), private open space ≥15%, landscape ≥20%, front wall ≤2.6 m. **June 2026 amendments**
+> (Ministerial Decision amending 7/1989): first floor may **project 2 m into the front setback**, reduced
+> side/rear under privacy controls, ground floor may extend to the neighbour boundary under controls,
+> max villa height **16 m** (incl. الورشة), boundary wall **3.40 m**, internal mezzanine now allowed.
+> Sources: MME QNMP R1 PDF; The Peninsula / Qatar Tribune (07-06-2026). **The multi-villa 6 m
+> wall-to-wall logic below is unaffected — it derives from the SIDE setback (3 m × 2), which is
+> unchanged.** This also sharpens the b1 footprint calc + the §20.9 cost-triangulation (front 5 m, not 3 m).
 
 **Implication for multi-villa detection.** Two separate villas built on a shared
 cadastral plot at code-minimum setbacks have **walls ≥ 6 m apart** (3 m × 2
