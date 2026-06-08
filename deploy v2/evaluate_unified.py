@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b7-income-bracket-borrow'
-SPRINT_TAG = '2.22.0b.7'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b8-income-opex-align'
+SPRINT_TAG = '2.22.0b.8'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -358,6 +358,17 @@ MIN_N_BOUND_ONLY = 5   # bounds only
 
 # Operating expense ratio (Qatar typical for residential)
 OPEX_RATIO_RESIDENTIAL = 0.23   # maintenance + vacancy + management
+
+# Sprint 2.22.0b.8 (§6 v2): OPEX ratios that MIRROR cap_rate_calibrator.OPEX_RATIO,
+# so a CALIBRATED cap rate (built on these) is paired with a matching NOI. The villa
+# yield is calibrated net of opex 0.20 (calibrator OPEX_RATIO['villa']=0.20 + villa
+# service_charge=0 → exactly 0.20); pairing it with the flat NOI opex 0.23 under-stated
+# every villa-calibrated income by 0.77/0.80 = -3.75%. Compound is 0.23 on both sides
+# (already consistent). MUST stay in sync with cap_rate_calibrator.OPEX_RATIO.
+_CALIB_OPEX_BY_ASSET = {
+    'villa': 0.20, 'standalone_villa': 0.20, 'house': 0.20,
+    'compound_small': 0.23, 'compound_large': 0.23,
+}
 
 
 # ============================================================
@@ -1625,7 +1636,15 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
     else:
         return None
 
-    noi = annual_rent * (1 - OPEX_RATIO_RESIDENTIAL)
+    # Sprint 2.22.0b.8 (§6 v2): pair the NOI opex with the opex the cap rate was
+    # calibrated on — ONLY when the rate is calibrated (a hardcoded/fallback rate's
+    # implied opex is unknown → keep 0.23, byte-identical). Fixes the villa-calibrated
+    # -3.75% under-statement (income_led headline + the displayed income cross-check).
+    opex_ratio = OPEX_RATIO_RESIDENTIAL
+    if cap_provenance.get('source') == 'calibrated':
+        opex_ratio = _CALIB_OPEX_BY_ASSET.get((asset_type or '').lower(),
+                                              OPEX_RATIO_RESIDENTIAL)
+    noi = annual_rent * (1 - opex_ratio)
     income_value = noi / cap_rate
 
     # Yields (descriptive)
@@ -1645,7 +1664,7 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
         'monthly_rent': round(annual_rent / 12),
         'rent_source': rent_source,
         'rent_source_ar': rent_source_ar,
-        'opex_ratio': OPEX_RATIO_RESIDENTIAL,
+        'opex_ratio': opex_ratio,
         'noi': round(noi),
         'cap_rate': cap_rate,
         'cap_rate_label_ar': (
