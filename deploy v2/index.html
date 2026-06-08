@@ -698,6 +698,18 @@ function evidencePanelHtml(d,acc){
 // low–high, signed 5.1) + a READ-ONLY review of the GIS-fetched basis (signed 5.2 — no
 // correction affordances) + the b.2.2 evidence panel (explanation ≠ confidence) + an
 // explicit confirm (no auto-advance) and the permanent «التقرير الكامل الآن» escape.
+// Sprint 2.22.0b.9 — property-basis rows (PIN / رقم الكهرباء / water / building-age
+// FLOOR) from the QARS data we already fetch. Inspired by the Al Manara bank report
+// (TD 93317), which prints الرقم المساحي + رقم الكهرباء + عمر البناء. Display-only.
+function pbRows(pb){
+  pb=pb||{};var h='';
+  if(pb.pin!=null)h+=ri('الرقم المساحي',pb.pin);
+  if(pb.electricity_no!=null)h+=ri('رقم الكهرباء',pb.electricity_no);
+  if(pb.water_no!=null)h+=ri('رقم الماء',pb.water_no);
+  var b=pb.building_age_estimate;
+  if(b&&b.age_floor_years!=null)h+=ri('عمر البناء التقديري','أكثر من '+b.age_floor_years+' سنة');
+  return h;
+}
 function showConfirm(d){
   const o=document.getElementById('cgOut');if(!o)return;
   const v=d.valuation||{}, acc=d.accuracy||{}, geo=v.geometry||{};
@@ -726,6 +738,7 @@ function showConfirm(d){
     var differs=(rawCad!=null&&Math.round(rawCad)!==Math.round(d.plot_area_m2));
     h+=ri(differs?'المساحة المعتمدة في التقدير':'مساحة القسيمة',fmt(d.plot_area_m2)+' م²');
   }
+  h+=pbRows(d.property_basis);  // Sprint 2.22.0b.9 — PIN/electricity/water/age-floor
   h+='</div></div>';
   // (3) evidence panel — reuse the b.2.2 panel verbatim (no new logic; explanation ≠ confidence).
   h+=evidencePanelHtml(d,acc);
@@ -1161,6 +1174,7 @@ function show(d){
     const pi=d.property_info||{};
     if(pi.zoning)h+=ri('التصنيف',pi.zoning);
     if(pi.permitted_height)h+=ri('الارتفاع المسموح',pi.permitted_height);
+    h+=pbRows(d.property_basis);  // Sprint 2.22.0b.9 — PIN/electricity/water/age-floor
     h+='</div>';
     // ── Map picker (single button — opens app chooser like WhatsApp) ──
     if(d.gps&&d.gps.lat&&d.gps.lon){

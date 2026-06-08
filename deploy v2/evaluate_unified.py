@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b8-income-opex-align'
-SPRINT_TAG = '2.22.0b.8'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b9-qars-basis-panel'
+SPRINT_TAG = '2.22.0b.9'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -2130,6 +2130,67 @@ def _attach_scope(response: dict) -> dict:
     return response
 
 
+def _building_age_estimate(surveyed_date):
+    """Sprint 2.22.0b.9 — DISPLAY-ONLY building-age FLOOR from QARS SURVEYED_DATE.
+
+    QARS_Point survey dates are epoch milliseconds (UTC). The QARS address
+    point is surveyed at/after construction completion (Operational Rule #10),
+    so the survey year is a reliable LOWER BOUND on building age — NOT the exact
+    construction year (honest '>=' framing). Validated against the Al Manara
+    bank report (TD 93317): 56/647/6 surveyed 2009 → >=17y ≈ the report's
+    "18 سنة". Returns None when the date is missing / unparseable. Never raises.
+    """
+    if not surveyed_date or not isinstance(surveyed_date, (int, float)):
+        return None
+    try:
+        from datetime import datetime, timezone
+        yr = datetime.fromtimestamp(surveyed_date / 1000.0, tz=timezone.utc).year
+        cur = datetime.now(tz=timezone.utc).year
+        floor = cur - yr
+        if floor < 0:
+            return None
+        return {
+            'surveyed_year': yr,
+            'age_floor_years': floor,
+            'basis': 'qars_survey',
+            'note_ar': f'عمر تقديري (حدّ أدنى من تاريخ مسح GIS سنة {yr}): ≥ {floor} سنة',
+            'note_en': f'Indicative age (floor, from GIS survey {yr}): >= {floor} years',
+        }
+    except Exception:
+        return None
+
+
+def _build_property_basis(pin=None, electricity_no=None, water_no=None,
+                          surveyed_date=None):
+    """Sprint 2.22.0b.9 — property-basis traceability block (display-only).
+
+    Surfaces the QARS_Point identifiers ALREADY fetched by find_property
+    (`outFields='*'`): PIN / electricity / water, plus a building-age FLOOR
+    derived from SURVEYED_DATE. Inspired by the Al Manara bank valuation
+    (TD 93317), which prints الرقم المساحي + رقم الكهرباء + عمر البناء.
+
+    🔴 VALUE-INVARIANT: DISPLAY-ONLY. The age lives under `building_age_estimate`
+    and is NEVER written into `user_inputs.building_age_years` (the user-supplied
+    input that drives the b4 condition/age levers + age-rent). Feeding that key
+    would be a Gate-2 valuation change; this block deliberately is not.
+
+    Returns None when nothing is available (e.g. the PIN/land path has no QARS).
+    Never raises.
+    """
+    try:
+        age = _building_age_estimate(surveyed_date)
+        if pin is None and electricity_no is None and water_no is None and age is None:
+            return None
+        return {
+            'pin': pin,
+            'electricity_no': electricity_no,
+            'water_no': water_no,
+            'building_age_estimate': age,
+        }
+    except Exception:
+        return None
+
+
 def _enrich_fast_context(loc, plot):
     """Return cheap GIS context for fast-path response builders.
 
@@ -2167,7 +2228,13 @@ def _enrich_fast_context(loc, plot):
             'pd_no': pd_display,
         }
 
-    return {'district': district_ar, 'geometric_factors': gf}
+    # Sprint 2.22.0b.9 — property-basis (PIN/electricity/water/age-floor) for the
+    # fast-path builders; built from the loc QARS attributes already in hand.
+    _basis = _build_property_basis(
+        getattr(loc, 'pin', None), getattr(loc, 'electricity_no', None),
+        getattr(loc, 'water_no', None), getattr(loc, 'surveyed_date', None),
+    ) if loc else None
+    return {'district': district_ar, 'geometric_factors': gf, 'property_basis': _basis}
 
 
 def _enrich_material_uncertainty(mu: dict) -> dict:
@@ -2293,7 +2360,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         },
         'trend': None,
         'location_features': None,
-        'geometric_factors': _ctx['geometric_factors'],
+        'geometric_factors': _ctx['geometric_factors'], 'property_basis': _ctx.get('property_basis'),
         'material_uncertainty': _enrich_material_uncertainty({
             'level': 'critical',
             'banner_ar': 'تحفظ مادي حرج: لا توجد بيانات بيع مقارنة لهذه الفئة',
@@ -2717,7 +2784,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
         },
         'trend': None,
         'location_features': None,
-        'geometric_factors': _ctx['geometric_factors'],
+        'geometric_factors': _ctx['geometric_factors'], 'property_basis': _ctx.get('property_basis'),
         'material_uncertainty': _enrich_material_uncertainty({
             'level': 'high',
             'banner_ar': 'لا يوجد تقييم حقيقي — فقط فحص ضمني للسعر المطلوب',
@@ -2958,7 +3025,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         },
         'trend': None,
         'location_features': None,
-        'geometric_factors': _ctx['geometric_factors'],
+        'geometric_factors': _ctx['geometric_factors'], 'property_basis': _ctx.get('property_basis'),
         'material_uncertainty': _enrich_material_uncertainty({
             'level': 'high',
             'banner_ar': (
@@ -3054,7 +3121,7 @@ def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, 
             'message_ar': 'فئة العقار خارج نطاق الإصدار الحالي',
         },
         'accuracy': {'score': 0, 'label': '— خارج النطاق'},
-        'trend': None, 'location_features': None, 'geometric_factors': _ctx['geometric_factors'],
+        'trend': None, 'location_features': None, 'geometric_factors': _ctx['geometric_factors'], 'property_basis': _ctx.get('property_basis'),
         'material_uncertainty': _enrich_material_uncertainty({
             'level': 'critical',
             'banner_ar': 'لا يمكن إنتاج تقييم موثوق لهذه الفئة في الإصدار الحالي',
@@ -3202,6 +3269,7 @@ def _build_reality_stop_response(loc, plot, audience, reality):
         'accuracy': {'score': 0, 'label': '— خارج النطاق'},
         'trend': None, 'location_features': None,
         'geometric_factors': _ctx.get('geometric_factors'),
+        'property_basis': _ctx.get('property_basis'),
         'material_uncertainty': _enrich_material_uncertainty({
             'level': 'critical',
             'banner_ar': _title,
@@ -4922,6 +4990,13 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
         if gps and isinstance(gps, (list, tuple)) and len(gps) >= 2:
             # GPS stored as [lon, lat] per qatar_gis convention
             output['gps'] = {'lon': gps[0], 'lat': gps[1]}
+        # Sprint 2.22.0b.9 — property-basis traceability (PIN / رقم الكهرباء /
+        # water / building-age FLOOR) from the QARS attributes already carried in
+        # raw_property_report. DISPLAY-ONLY / value-invariant: the age estimate is
+        # NEVER written into user_inputs.building_age_years (that would be Gate-2).
+        output['property_basis'] = _build_property_basis(
+            rpr.get('pin'), rpr.get('electricity_no'),
+            rpr.get('water_no'), rpr.get('surveyed_date'))
 
     # ── Primary valuation (from comparison approach only) ──
     if primary:

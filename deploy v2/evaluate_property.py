@@ -1807,6 +1807,11 @@ def evaluate_property(zone: int, street: int, building: int,
             'extent_total_m2': extent_total,
             'pin': report.location.pin if report.location else None,
             'gps': [report.location.lon, report.location.lat] if report.location else None,
+            # Sprint 2.22.0b.9 — QARS property-basis identifiers (already fetched by
+            # find_property via outFields='*'; surfaced for the traceability panel).
+            'electricity_no': report.location.electricity_no if report.location else None,
+            'water_no': report.location.water_no if report.location else None,
+            'surveyed_date': getattr(report.location, 'surveyed_date', None) if report.location else None,
             'classification_reasons': report.classification.reasons,
             'classification_flags': report.classification.flags,
         }

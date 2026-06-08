@@ -173,6 +173,10 @@ class PropertyLocation:
     water_no: Optional[int]
     qtel_id: Optional[int]
     building_subtype: Optional[int]
+    # Sprint 2.22.0b.9: SURVEYED_DATE (epoch ms) from QARS_Point — a building-age
+    # FLOOR (the QARS address point is surveyed at/after construction completion,
+    # Op. Rule #10). Default None so PIN-path/legacy constructions are unaffected.
+    surveyed_date: Optional[int] = None
 
 
 @dataclass
@@ -1366,6 +1370,7 @@ class QatarGIS:
             water_no=a.get('WATER_NO'),
             qtel_id=a.get('QTEL_ID'),
             building_subtype=a.get('BUILDING_NO_SUBTYPE'),
+            surveyed_date=a.get('SURVEYED_DATE'),  # Sprint 2.22.0b.9 — building-age floor
         )
 
     def get_plot(self, pin) -> Optional[PlotInfo]:
