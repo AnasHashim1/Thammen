@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b6-income-triangulation'
-SPRINT_TAG = '2.22.0b.6'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b7-income-bracket-borrow'
+SPRINT_TAG = '2.22.0b.7'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -417,26 +417,38 @@ def _lookup_calibrated_cap_rate(asset_type, area_name, plot_area_m2, stock_class
             return None, None
         conn = sqlite3.connect(f"file:{_CAP_RATES_DB}?mode=ro", uri=True)
         try:
+            # Sprint §6 v2: pull ALL usable cells for this asset (any bracket) and
+            # filter to the subject's AREA in Python, so a subject whose exact plot
+            # bracket has no usable cell can BORROW the area's best usable cell from
+            # an adjacent bracket. Recon (PHASE0_R7_income_v2_600-900_recon): 600-900
+            # villa yield cells are not data-feasible (0/187 usable), yet net yields
+            # are bracket-stable WITHIN an area (≪ the cross-area spread), so the
+            # area's usable cell is a defensible yield with disclosure + MUC-high.
             rows = conn.execute(
                 "SELECT district_aname, stock_class, sample_size, cap_rate, "
-                "net_yield, gross_yield, confidence, last_updated "
-                "FROM cap_rates WHERE asset_type=? AND size_bracket=? "
+                "net_yield, gross_yield, confidence, last_updated, size_bracket "
+                "FROM cap_rates WHERE asset_type=? "
                 "AND cap_rate IS NOT NULL "
                 "AND confidence IN ('reliable','indicative')",
-                (at, bracket),
+                (at,),
             ).fetchall()
         finally:
             conn.close()
     except Exception:
         return None, None
 
-    cands = [r for r in rows if _cap_area_token(r[0]) == token]
-    if not cands:
+    area_cells = [r for r in rows if _cap_area_token(r[0]) == token]
+    if not area_cells:
         return None, None
+    # Prefer the subject's EXACT plot bracket (byte-identical to the pre-v2 path);
+    # only borrow when the exact bracket has no usable cell in this area.
+    exact_bracket = [r for r in area_cells if r[8] == bracket]
+    borrowed = not exact_bracket
+    cands = exact_bracket if exact_bracket else area_cells
     if stock_class:
-        exact = [r for r in cands if r[1] == stock_class]
-        if exact:
-            cands = exact
+        sc = [r for r in cands if r[1] == stock_class]
+        if sc:
+            cands = sc
     cands.sort(key=lambda r: r[2], reverse=True)  # highest sample_size wins
     r = cands[0]
     cap_rate = r[3]
@@ -449,11 +461,19 @@ def _lookup_calibrated_cap_rate(asset_type, area_name, plot_area_m2, stock_class
         'last_updated': r[7],
         'district_aname': r[0],
         'stock_class': r[1],
+        'size_bracket': r[8],
         'net_yield_pct': round(r[4] * 100, 2) if r[4] is not None else None,
         'gross_yield_pct': round(r[5] * 100, 2) if r[5] is not None else None,
         'method_ar': ('معدل رسملة معايَر من إيجارات السوق ÷ وسيط بيع وزارة العدل '
                       '(Sprint 2.19)'),
     }
+    if borrowed:
+        prov['bracket_borrowed'] = True
+        prov['subject_bracket'] = bracket
+        prov['borrowed_from_bracket'] = r[8]
+        prov['method_ar'] += (f' — معدل مُستعار من شريحة {r[8]} م² للمنطقة نفسها '
+                              f'(شريحة العقار {bracket} م² بلا عيّنة كافية؛ '
+                              f'العائد الصافي مستقر عبر شرائح المنطقة الواحدة).')
     return cap_rate, prov
 
 
@@ -4365,6 +4385,18 @@ def evaluate_thammen(
                         # income LEADS → the income band is the range; clear any dispersion
                         # range-flag (a10/a14) so its built-type disclosure doesn't linger.
                         output['valuation'].pop('range_is_headline', None)
+                        _note_ar = INCOME_LED_NOTE_AR.format(
+                            cap=_capp, n=_tri['sample_size'], conf=_tri['confidence'],
+                            x=_xs, comp=_cs)
+                        _note_en = INCOME_LED_NOTE_EN.format(
+                            cap=_capp, n=_tri['sample_size'], conf=_tri['confidence'],
+                            x=_xs, comp=_cs)
+                        if _tri.get('bracket_borrowed'):
+                            _bb = _tri.get('borrowed_from_bracket')
+                            _note_ar += (f' (معدل العائد مُستعار من شريحة {_bb} م² للمنطقة '
+                                         f'نفسها — العائد الصافي مستقر عبر شرائح المنطقة الواحدة.)')
+                            _note_en += (f' (Yield borrowed from the area’s {_bb} m² bracket — '
+                                         f'net yields are stable across brackets within an area.)')
                         output['valuation']['income_triangulation'] = {
                             'mode': 'income_led',
                             'income_value': _tri['amount'],
@@ -4374,12 +4406,10 @@ def evaluate_thammen(
                             'net_yield_pct': _tri['net_yield_pct'],
                             'sample_size': _tri['sample_size'],
                             'confidence': _tri['confidence'],
-                            'note_ar': INCOME_LED_NOTE_AR.format(
-                                cap=_capp, n=_tri['sample_size'], conf=_tri['confidence'],
-                                x=_xs, comp=_cs),
-                            'note_en': INCOME_LED_NOTE_EN.format(
-                                cap=_capp, n=_tri['sample_size'], conf=_tri['confidence'],
-                                x=_xs, comp=_cs),
+                            'bracket_borrowed': bool(_tri.get('bracket_borrowed')),
+                            'borrowed_from_bracket': _tri.get('borrowed_from_bracket'),
+                            'note_ar': _note_ar,
+                            'note_en': _note_en,
                         }
                         _mu_tri = output.get('material_uncertainty')
                         if isinstance(_mu_tri, dict):
@@ -4737,12 +4767,15 @@ def _income_triangulation(primary, income, cost, land_floor, asset_type,
             if ceil:
                 central = min(central, round(ceil * 1.05))
             spread = abs(comp - central) / central if central else 0.0
+            # A yield borrowed from an adjacent bracket (§6 v2) adds uncertainty →
+            # force MUC high even when the income↔comparison spread is small.
+            _borrowed = bool(prov.get('bracket_borrowed'))
             return {
                 'mode': 'income_led',
                 'amount': central,
                 'low': round(central * 0.85),
                 'high': round(central * 1.12),
-                'muc_level': 'high' if spread >= 0.30 else 'moderate',
+                'muc_level': 'high' if (spread >= 0.30 or _borrowed) else 'moderate',
                 'comparison_value': comp,
                 'spread_pct': round(spread * 100, 1),
                 'cap_rate': income.get('cap_rate'),
@@ -4750,6 +4783,8 @@ def _income_triangulation(primary, income, cost, land_floor, asset_type,
                 'sample_size': prov.get('sample_size'),
                 'confidence': prov.get('confidence'),
                 'annual_rent': income.get('annual_rent'),
+                'bracket_borrowed': _borrowed,
+                'borrowed_from_bracket': prov.get('borrowed_from_bracket'),
             }
 
     # ── (iii): honest-widen DOWN for a no-rent condition-blind THIN/uncertain villa ──
