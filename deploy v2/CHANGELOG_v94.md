@@ -1,7 +1,8 @@
 # CHANGELOG v94 — Sprint 2.22.0b.11 (§20.9 Cost-Approach DRC down-re-anchor, SHIP-NOW slice)
 
 **Engine:** `thammen-sprint2p22p0b11-cost-drc-reanchor` · **SPRINT_TAG:** `2.22.0b.11` · **api/health:** `3.1.0-sprint2.22.0b.11`
-**Date:** 2026-06-09 · **Heroku:** v180 · **Files:** `evaluate_unified.py` (+~150) · `test_sprint_2_22_0b11.py` (new, 52) · this CHANGELOG.
+**Date:** 2026-06-09 · **Heroku:** **v180** (released; commit `6e93d16` → subtree split `f7c3990`, `90a4efb..f7c3990`; origin in sync `743742d..6e93d16`) · **Files:** `evaluate_unified.py` (+218/−2) · `test_sprint_2_22_0b11.py` (new, 52) · this CHANGELOG.
+**Deploy note:** the first two `git subtree push` attempts failed on Heroku git auth (CC-side heroku CLI unauthenticated this session → `could not read Username`; then a username+password dialog → Heroku rejected it [token-only]). Fixed by Anas `heroku login` (browser/token) + the push from his terminal → Released v180.
 **Gate-2:** SIGNED (Anas «وقّع وانشر الآن», 2026-06-09) · **Gate-1:** «go» same message. **`api.py` + `index.html` UNTOUCHED** (backend-only; R14 node/mobile N/A by construction).
 **Brief:** `docs/BRIEF_cost_triangulation_R7.md` (SIGNED) · **Methodology:** `docs/METHODOLOGY_DRC_qatar_v1.md` §11 Gate-2 SPLIT · **Review:** `docs/RESPONSE_cost_triangulation_claudeai.md`.
 
@@ -42,6 +43,8 @@ b9 surfaces the SYSTEM (CGIS) age — typically LOWER than the actual (re-regist
   | V001 56/647/6 | widened 3.8M [2.5M…3.8M] | **byte-identical** (cost +22%<30% → no fire) | none |
   | Abu Hamour 56/565/21 | bracket 2.4M [2.2M…2.6M] | **byte-identical** | none |
   | Apartment 52/903/90 | refusal | **byte-identical** | none |
+
+- **Live post-deploy smoke v180 (browser-UA curl, Rule #61) = byte-identical to the local E2E:** `/api/health` engine b11 / 3.1.0-sprint2.22.0b.11 / reliable 6 / qars healthy; Marikh `cost_reanchor_down` low **2,400,000** (cost 2,378,094, undercut 128%, bua 479); V001 widened 3.8M [2.5M…3.8M] no-fire; Abu Hamour bracket 2.4M; Apartment refusal. Rule #52 closed MEASURED (live == local).
 
 ## 6. Deployment
 
