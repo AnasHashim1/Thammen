@@ -104,7 +104,7 @@ Anas (PO, builds/brokers) stated the Qatar villa construction-cost ladder — **
 - **V001 56/647/6** (luxury ~25y renovated): land 2.46M + [BUA ~500 × (3,500 × ~0.72 dep ≈ 2,520 ≈ the bank's ~2,380) ≈ 1.26M] ≈ **3.7M ≈ market 3.8M** → **CONVERGENT** → confirms §4: old-premium DRC over-states (economic obsolescence) → needs the Market/DRC segment ratio (or B-2 land-floor band).
 
 **Still open for the brief (the remaining physical + reconciliation params):**
-1. **Depreciation curve** — building value vs *effective* age (market-derived; NOT a flat Age>10⇒0). The bank's V001 ≈ 32% at ~25y is one anchor point.
+1. **Depreciation curve** — building value vs *effective* age (market-derived; NOT a flat Age>10⇒0). ⚠️ **CORRECTION (Claude.ai review, must-fix A): the earlier "~32% @ ~25y" here was inconsistent with the `METHODOLOGY_DRC_qatar_v1.md` §9-locked straight-line/50 (retention ~54% = depreciation ~46% at effective age ~22–24); the §9 valuer-calibration SUPERSEDES all pre-valuer §8 hand-proof figures. The valuer also used the SYSTEM age (~18), NOT actual (~25) → DRC depreciation must run on ACTUAL/input age (b9 system age = a floor); see METHODOLOGY §7 + §11.**
 2. **Default finish tier** for the no-input default flow (ordinary ~2,200? or the shell 1,200 as a conservative floor?).
 3. **Divergence trigger + re-anchor target + the Market/DRC segment ratio** for old-premium.
 

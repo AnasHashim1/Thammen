@@ -91,7 +91,7 @@ effective_age = chronological_age + condition_penalty
 | **DRC total (fair MV)** | **3,636,000** | **3,600,145** | **+1.0%** ✓ |
 | forced-sale (×0.90) | 3,272,000 | 3,240,145 | +1.0% |
 
-⟹ the **Anas ladder (luxury 3,500) + straight-line/50y/0.27 + excellent-condition (penalty 0)** independently reproduces a **licensed valuer's inspected DRC**. The methodology is calibrated. (The valuer's single composite rate 1,900/m² = `3,500 × 0.543` — RCN × retention, depreciation embedded.)
+⟹ **CONSISTENCY CHECK, not validation (downgraded per the Claude.ai review, §11):** the model matches the valuer ONLY at an effective age ~22–24 — but **b9 in PRODUCTION reads the SYSTEM age (CGIS ~18), while the actual is ~25** (the valuer also used the system 18). The match was **bought by age-fitting on under-defined parameters** (1,900 is equally hit by RCN 3,800, or life 55, or an excellent penalty −2). At the production system age (18) → rate 2,240 → DRC **~3,805 (+5.7% total)**, not 3,600. ⟹ it **confirms plausibility + reproduces a licensed valuer's net figure, but does NOT validate the depreciation curve** (one point) and is **not reproduced by the production line as-is**. **Fix (§11): run DRC depreciation on ACTUAL/input age (b9 system age = a floor); defining the curve needs the dilapidated anchor + n≥20 at actual ages.** (The valuer's composite 1,900/m² = 3,500 × 0.543 — RCN × retention; implied effective age ~23.)
 
 **Footprint→BUA caveat:** the valuer's BUA = **602 m²** (G+1, footprint ~301). Our b10 surfaces the **max-buildable** footprint (V001 → cov-cap 391, a legal CEILING) — **actual BUA < max-buildable**. So the DRC must use **actual/confirmed BUA** (user-entered in the §6-v2 staged flow, or a typical built-ratio), NOT the b10 legal max, or it over-states the building. (This is the one real gap between b10 and a usable cost BUA — flag for the build.)
 
@@ -110,3 +110,21 @@ Land ~1.85M + [BUA ~475 (footprint ~238 × G+1) × ordinary 2,200 × retention(e
 - Sabkha foundations (salt-aggressive, soil stabilization/replacement): scholarsmine.mst.edu (Foundations Over Salt-Encrusted Flats) · geplus.co.uk (Building on unstable sabkha soils, 2025) · bardawil-qatar.com/services/geotechnical-works
 - RICS DRC method (cost approach, last-resort, modern-equivalent, 3 depreciations, not-where-comparables): rics.org — *Depreciated replacement cost method of valuation for financial reporting* · isurv.com/downloads/2219 · valuations.crecos.gr/en/method-drc.php
 - Economic life (RC residential 40–47y; GCC climate reduction; MEP 20y): linkedin.com (DRC and the Economic Life of Buildings in the UAE, N. Witty MRICS) · solomonappraisal.com/remaining-economic-life · pwc viewpoint (IFRS real-estate depreciation)
+
+---
+
+## 11. Claude.ai multi-AI review v1 — INCORPORATED (2026-06-09; full text: `RESPONSE_cost_triangulation_claudeai.md`)
+
+The analyst lane (GPT-5 + Gemini + Claude) reviewed the 4 questions. #54-refinement: the GT-1 valuer rules FOR us on Q1 (straight-line/effective-age) + Q4 (ship the forced-sale, isolated, + RICS descriptor), and is silent on the re-anchor mechanism / curve shape / lift. **Verdicts: Q1 ✓ (but excellent penalty −2 at the actual age, not 0); Q2 ✓ (down-re-anchor gated on comp reliability; lift = range-with-cost-ceiling + MUC, bounded by the Market/DRC ratio); Q3 ✓ (no double-count, Simsima=0, sabkha v2); Q4 ✓ (ship, + RICS descriptor).**
+
+**🔴 Decisive catch — the system-vs-actual AGE bias (§7):** the valuer used system age ~18, not actual ~25 → the "1%" is downgraded to a consistency-check; the DRC must run depreciation on **ACTUAL/input age, b9 system = a floor**.
+
+**§9 parameter updates (incorporated):** ECONOMIC_LIFE 50 ✓ · RESIDUAL_FLOOR 0.27 (ordinary ≈ PO 600; **PO TO PROVIDE the dilapidated-luxury floor ~1,000–1,200 ⇒ ~0.31, or finish-dependent**) · condition ladder **excellent/renovated 0 → −2/−3** + (+5/+8/+15/+25) · default ordinary+average ✓ (ordinary↓ and system-age↑ partly cancel → conservative) · **AGE = actual/confirmed, system = floor** (first-order, like BUA) · soil/zone v2 · economic obsolescence n≥20.
+
+**Three must-do-before-build (portable):** **(A)** the recon §8 "~32% @ 25y" ↔ §9 ~54% contradiction → **FIXED** (recon §8 corrected). **(B)** gate the DOWN-re-anchor on age (OLD stock only) — closes the free new-luxury mis-launch. **(C)** declare + calibrate the **built-ratio ~0.77** (V001 602/782); verify a ±20% error doesn't flip the 30% threshold (realistic/slightly-higher = safer).
+
+**🎯 Gate-2 SPLIT (the key architectural recommendation):**
+- **🟢 SHIP-NOW = the down-re-anchor (Marikh)** — **immune to the age bias** (system-age only RAISES the cost floor → conservative; dampens lighter cases, never over-drops) → the headline payoff is sound. Ship with the **downgraded calibration claim (honesty, must-do)** + (A) + disclosed-indicative + MUC high (b4 precedent).
+- **🟡 GATE-TO-NEXT = convergent-confirm + the up-lift** — here system-age cost OVER-states (V001 "confirms" 3.8M vs the valuer's 3.6M, and fails to trim down) → gate on **age-handling (actual-not-system) + a measure-recon of the CGIS-vs-actual age gap** (this case 18 vs 25 = 7y; likely systematic — re-registration zeros the date).
+
+**Binding Gate-2 signature = Anas** (reserved). Recommendation: sign the SHIP-NOW slice once the claim-downgrade + (A) land; gate the convergent/lift slice on the age-recon + age-handling.
