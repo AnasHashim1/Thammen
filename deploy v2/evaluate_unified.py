@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b10p1-geometry-basis-row'
-SPRINT_TAG = '2.22.0b.10.1'         # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b10p2-multiqars-footprint'
+SPRINT_TAG = '2.22.0b.10.2'         # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -768,14 +768,30 @@ SETBACK_REAR_R1 = 3.0
 
 def _geometry_footprint(polygon_2932, pdarea: Optional[float],
                         is_rectangular: bool,
-                        zone_coverage: float = 0.60) -> Optional[dict]:
+                        zone_coverage: float = 0.60,
+                        shared_effective_area: Optional[float] = None) -> Optional[dict]:
     """Max-buildable ground footprint from plot geometry (Sprint 2.22.0b.10).
 
     DISPLAY/CONFIRM ONLY — never feeds valuation.amount (brief §6, recon D1).
-    Returns {plot_dims_m, max_buildable_footprint_m2, method} or None.
+    Returns {plot_dims_m, max_buildable_footprint_m2, method, n_share?} or None.
+
+    Sprint 2.22.0b.10.2 — multi-QARS shared plot: when `shared_effective_area` is
+    given (the per-villa share of a 2+-villa parcel, `effective_per_villa`), ONE
+    villa sits on that share, NOT the whole cadastral polygon. The polygon is the
+    COMBINED parcel, so the per-villa shape is unknown → use the orientation-free
+    coverage cap on the share (no full-plot setback envelope, which would ~double
+    a single villa's footprint).
     """
     if not pdarea or pdarea <= 0:
         return None
+    if (shared_effective_area and shared_effective_area > 0
+            and shared_effective_area < pdarea):
+        return {
+            'plot_dims_m': None,
+            'max_buildable_footprint_m2': int(round(zone_coverage * shared_effective_area)),
+            'method': 'coverage_cap_shared',
+            'effective_share_m2': int(round(shared_effective_area)),
+        }
     cov_cap = zone_coverage * pdarea
     ring = polygon_2932 or []
     # ESRI returns the closing point == first; strip it
@@ -4288,14 +4304,24 @@ def evaluate_thammen(
         try:
             _poly = getattr(_plot, 'polygon_2932', None) if _plot is not None else None
             _shape = getattr(_plot, 'shape', None) if _plot is not None else None
+            # Sprint 2.22.0b.10.2 — multi-QARS shared plot: ONE villa sits on the
+            # per-villa share (effective_per_villa), NOT the whole cadastral parcel.
+            # Pass the share so the footprint is computed on it (the value side
+            # already brackets on it; the footprint must too — else a 2-villa 900m²
+            # plot shows ~528m² when one villa is ~270m²).
+            _mq = getattr(ev, 'multi_qars', None) if ev is not None else None
+            _villa_share = (_mq.get('effective_per_villa')
+                            if (_mq and (_mq.get('n_qars') or 0) >= 2) else None)
             if _poly and _shape is not None:
                 _geom_fp = _geometry_footprint(
                     _poly, _plot_area_for_bua,
                     bool(getattr(_shape, 'is_rectangular', False)),
                     _zone_ceiling,
+                    shared_effective_area=_villa_share,
                 )
         except Exception:
             _geom_fp = None
+            _mq = None
         output['valuation']['geometry'] = {
             'zoning_code': _zoning_code,
             'zone_max_coverage_pct': round(_zone_ceiling * 100),
@@ -4312,17 +4338,30 @@ def evaluate_thammen(
             'plot_dims_m': (_geom_fp or {}).get('plot_dims_m'),
             'max_buildable_footprint_m2': (_geom_fp or {}).get('max_buildable_footprint_m2'),
             'footprint_method': (_geom_fp or {}).get('method'),
+            # Sprint 2.22.0b.10.2 — multi-QARS shared plot: surface the per-villa
+            # share the footprint was computed on + the unit count, for disclosure.
+            'effective_share_m2': (_geom_fp or {}).get('effective_share_m2'),
+            'n_share': ((_mq.get('n_qars') if _mq else None)
+                        if (_geom_fp or {}).get('method') == 'coverage_cap_shared' else None),
             'note_ar': (
-                'المساحة المعروضة هي الحدّ الأقصى المسموح للبناء، محسوبة من أبعاد '
-                'قطعتك مطروحاً منها الارتدادات النظامية — عدّلها لواقع مبناك '
-                '(البناء الفعلي عادةً أصغر).'
+                ('هذه القطعة مشتركة بين عدّة وحدات؛ مساحة البناء الأرضي محسوبة على '
+                 'الحصة الفعلية للوحدة (≈ '
+                 + str((_geom_fp or {}).get('effective_share_m2') or '') +
+                 ' م²) كحدّ أقصى — عدّلها لواقع مبناك.')
                 if (not _fp_confirmed and _geom_fp
-                    and _geom_fp.get('method') == 'setback_envelope')
+                    and _geom_fp.get('method') == 'coverage_cap_shared')
                 else (
-                    'مساحة البناء الأرضية المعروضة تقديرية، مبنية على حدّ التغطية '
-                    'النظامي للمنطقة — عدّلها إن كنت تعرف المساحة الفعلية لتدقيق التقدير.'
-                    if not _fp_confirmed else
-                    'تم اعتماد مساحة البناء الأرضية التي أدخلتها.'
+                    'المساحة المعروضة هي الحدّ الأقصى المسموح للبناء، محسوبة من أبعاد '
+                    'قطعتك مطروحاً منها الارتدادات النظامية — عدّلها لواقع مبناك '
+                    '(البناء الفعلي عادةً أصغر).'
+                    if (not _fp_confirmed and _geom_fp
+                        and _geom_fp.get('method') == 'setback_envelope')
+                    else (
+                        'مساحة البناء الأرضية المعروضة تقديرية، مبنية على حدّ التغطية '
+                        'النظامي للمنطقة — عدّلها إن كنت تعرف المساحة الفعلية لتدقيق التقدير.'
+                        if not _fp_confirmed else
+                        'تم اعتماد مساحة البناء الأرضية التي أدخلتها.'
+                    )
                 )
             ),
         }

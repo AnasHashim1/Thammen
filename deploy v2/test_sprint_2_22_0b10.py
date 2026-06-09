@@ -88,5 +88,25 @@ for (W, D, area, cov) in [(36, 18, 648, 0.60), (30, 30, 900, 0.60), (40, 20, 800
     check(r['max_buildable_footprint_m2'] <= round(cov * area) + 0,
           f'{W}x{D} fp must be ≤ coverage cap {round(cov*area)} (got {r["max_buildable_footprint_m2"]})')
 
+# ── 11. multi-QARS shared plot (2.22.0b.10.2): footprint on the per-villa share ──
+# 30×30 = 900 m² parcel shared by 2 villas (effective 450) → coverage cap on 450,
+# NOT the full-plot setback envelope (which would be ~528 = both villas).
+r = _geometry_footprint(rect_ring(30, 30, 0.0), 900, True, 0.60, shared_effective_area=450)
+check(r and r['method'] == 'coverage_cap_shared', 'shared method=coverage_cap_shared')
+check(r and r['max_buildable_footprint_m2'] == round(0.60 * 450),
+      f'shared fp=cov_cap(450)=270 (got {r and r.get("max_buildable_footprint_m2")})')
+check(r and r['plot_dims_m'] is None, 'shared dims None (per-villa shape unknown)')
+check(r and r.get('effective_share_m2') == 450, 'shared surfaces effective_share_m2=450')
+# the shared footprint is ROUGHLY HALF the full-plot footprint (the bug it fixes)
+full = _geometry_footprint(rect_ring(30, 30, 0.0), 900, True, 0.60)
+check(r['max_buildable_footprint_m2'] < full['max_buildable_footprint_m2'],
+      f'shared {r["max_buildable_footprint_m2"]} < full-plot {full["max_buildable_footprint_m2"]}')
+# guard: share >= pdarea (degenerate) → ignored, normal single-plot path
+r2 = _geometry_footprint(rect_ring(30, 30, 0.0), 900, True, 0.60, shared_effective_area=900)
+check(r2 and r2['method'] == 'setback_envelope', 'share>=pdarea → normal path (not shared)')
+# guard: share None → normal path
+r3 = _geometry_footprint(rect_ring(30, 30, 0.0), 900, True, 0.60, shared_effective_area=None)
+check(r3 and r3['method'] == 'setback_envelope', 'share None → normal path')
+
 print(f'\n2.22.0b.10 isolated: {_pass} passed, {_fail} failed')
 sys.exit(1 if _fail else 0)

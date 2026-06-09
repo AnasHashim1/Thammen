@@ -745,7 +745,9 @@ function showConfirm(d){
   // — the user corrects DOWN in the refine step. Display-only / value-invariant.
   if(geo.max_buildable_footprint_m2&&_b2IsBuilding(d.asset_type)){
     var _mbDims=(geo.footprint_method==='setback_envelope'&&geo.plot_dims_m&&geo.plot_dims_m.length===2)
-      ? (' (من أبعاد القطعة <span dir="ltr">'+geo.plot_dims_m[0]+'×'+geo.plot_dims_m[1]+'</span> م)') : '';
+      ? (' (من أبعاد القطعة <span dir="ltr">'+geo.plot_dims_m[0]+'×'+geo.plot_dims_m[1]+'</span> م)')
+      : (geo.footprint_method==='coverage_cap_shared'
+          ? (' (حصة الوحدة في قطعة مشتركة'+(geo.n_share?' بين '+geo.n_share+' وحدات':'')+')') : '');
     h+=ri('مساحة البناء الأرضي (تقدير أقصى)','≈ '+fmt(geo.max_buildable_footprint_m2)+' م²'+_mbDims+' — عدّله لواقع مبناك في خطوة التحسين');
   }
   h+='</div></div>';
@@ -990,8 +992,10 @@ function show(d){
       const _g=v.geometry||{}, _mb=_g.max_buildable_footprint_m2;
       if(_mb&&_g.footprint_basis!=='confirmed'){
         const _dims=_g.plot_dims_m;
-        _fph.innerHTML='💡 الحدّ الأقصى المُقدَّر '+
-          (_dims&&_dims.length===2?('من أبعاد قطعتك (<span dir="ltr">'+_dims[0]+' × '+_dims[1]+'</span> م) ≈ '):'≈ ')+
+        var _ctx=(_g.footprint_method==='coverage_cap_shared')
+          ? ('(حصة الوحدة في قطعة مشتركة'+(_g.n_share?' بين '+_g.n_share+' وحدات':'')+') ≈ ')
+          : (_dims&&_dims.length===2?('من أبعاد قطعتك (<span dir="ltr">'+_dims[0]+' × '+_dims[1]+'</span> م) ≈ '):'≈ ');
+        _fph.innerHTML='💡 الحدّ الأقصى المُقدَّر '+_ctx+
           '<strong>'+fmt(_mb)+' م²</strong> — عدّله لواقع مبناك (الفعلي عادةً أصغر).';
       }else{_fph.textContent='';}
     }
@@ -1394,6 +1398,8 @@ function show(d){
       const mb=g.max_buildable_footprint_m2, dims=g.plot_dims_m, meth=g.footprint_method;
       if(mb&&meth==='setback_envelope'&&dims&&dims.length===2){
         h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">قطعتك ≈ <strong dir="ltr">'+dims[0]+' × '+dims[1]+'</strong> م، والحدّ الأقصى المسموح للبناء ≈ <strong>'+fmt(mb)+' م²</strong> (طابق أرضي'+(g.zoning_code?('، '+g.zoning_code+' '+g.zone_max_coverage_pct+'%'):'')+'). البناء الفعلي عادةً أصغر — أدخِل تفاصيله لتدقيق التقدير:</div>';
+      }else if(mb&&meth==='coverage_cap_shared'){
+        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">هذه القطعة مشتركة بين <strong>'+(g.n_share||'عدّة')+'</strong> وحدات؛ الحدّ الأقصى للبناء الأرضي <strong>لوحدتك</strong> ≈ <strong>'+fmt(mb)+' م²</strong> (على الحصة الفعلية'+(g.effective_share_m2?(' ≈ '+fmt(g.effective_share_m2)+' م²'):'')+'). البناء الفعلي عادةً أصغر — أدخِل تفاصيله لتدقيق التقدير:</div>';
       }else if(mb){
         h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">الحدّ الأقصى المسموح للبناء ≈ <strong>'+fmt(mb)+' م²</strong> (من حدّ التغطية النظامي'+(g.zoning_code?(' '+g.zoning_code+' '+g.zone_max_coverage_pct+'%'):'')+'). أدخِل تفاصيل البناء الفعليّة لتدقيقه:</div>';
       }else{
