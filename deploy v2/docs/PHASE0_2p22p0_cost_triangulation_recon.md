@@ -82,3 +82,54 @@ A pure `_cost_triangulation(primary, cost, land_floor, asset_type, ...)`, mirror
 - **Ball = Claude.ai drafts the §20.9 cost-triangulation brief** (resolves design-doc §8 #2/#3 + the Market/DRC segment ratio; multi-AI #54 on the depreciation-curve framing). Then CC builds (bounded — mirror `_income_triangulation`), 🔴 Gate-2 sign-off + Gate-1 push.
 - **Live payoff is NOT beta-gated** (unlike income work) — cost is subject-intrinsic (b9 age + b10 footprint), needs no user rent → the default no-rent Marikh/villa-6 over-anchors get fixed live. **This is the §20.9 advantage over §6.**
 - B-2 (condition axis) composes with this for the old-premium V001 case (land-floor finish band). Still PARKED n≥20 as a *coefficient* fit; the cost track ships disclosed-indicative on the b4 precedent.
+
+---
+
+## 8. PO PARAMETER UPDATE (2026-06-09) — construction-cost ladder (resolves §8 #3 rate + source)
+
+Anas (PO, builds/brokers) stated the Qatar villa construction-cost ladder — **a PHYSICAL RCN estimate, independent of the MoJ median → SATISFIES §3.1** (the documented source the methodology doc §8 #3 required; the stale market-residual `construction_costs.json` is now superseded):
+
+| finish tier | RCN new (QAR/m²) |
+|---|---:|
+| **عظم (structural shell, unfinished)** | **~1,200** (baseline) |
+| ordinary turnkey | ~2,200 |
+| good | ~2,500 |
+| high | ~3,000 |
+| **luxury** | **~3,500** |
+
+(CC reading: figures are **turnkey totals** by finish quality, shell = the low end; pending PO confirm of the shell-vs-total framing.) **Reconciles with the shipped b4 `LUXURY_CONSTRUCTION_QAR_PER_M2 = 3500`** ✓ and the design-doc ordinary 2,000–2,500 / luxury 3,500–4,000.
+
+**Illustrative hand-proof (depreciation % = CC assumption, the remaining unknown):**
+- **Marikh 54/541/6** (ordinary ~20y): land 1.85M + [BUA ~450 × (2,200 × ~0.65 dep) ≈ 644k] ≈ **~2.5M** vs market **5.4M** → cost-triangulation **decisive** (in the 2.5–3.0M defensible band).
+- **V001 56/647/6** (luxury ~25y renovated): land 2.46M + [BUA ~500 × (3,500 × ~0.72 dep ≈ 2,520 ≈ the bank's ~2,380) ≈ 1.26M] ≈ **3.7M ≈ market 3.8M** → **CONVERGENT** → confirms §4: old-premium DRC over-states (economic obsolescence) → needs the Market/DRC segment ratio (or B-2 land-floor band).
+
+**Still open for the brief (the remaining physical + reconciliation params):**
+1. **Depreciation curve** — building value vs *effective* age (market-derived; NOT a flat Age>10⇒0). The bank's V001 ≈ 32% at ~25y is one anchor point.
+2. **Default finish tier** for the no-input default flow (ordinary ~2,200? or the shell 1,200 as a conservative floor?).
+3. **Divergence trigger + re-anchor target + the Market/DRC segment ratio** for old-premium.
+
+---
+
+## 9. BANK-REPORT CALIBRATION (TD 93317, AUTHORITATIVE — read 2026-06-09, the `.td_pages/` scan)
+
+Read the actual **Al Manara valuation** (شهادة تثمين 93317, client = **Qatar International Islamic Bank**, dated 2026-06-07) for **56/647/6 = V001**. The Cost-Approach table (p02–p03; p04 deed = bought 2002 → ~24y; p08–p13 = photos confirming excellent/luxury):
+
+| component | bank figure |
+|---|---|
+| plot | 652 m² (7,018 ft²) |
+| land rate | 350 ر.ق/ft² = **3,767/m²** (= engine land floor **3,768** ✓ EXACT) |
+| land value | 2,456,345 |
+| **BUA (estimated)** | **602 m²** (G+1 = دورين; conf. my ~587 inference) |
+| **building rate** | **1,900 ر.ق/m²** — a SINGLE composite rate; depreciation+condition **embedded** (no separate dep line) |
+| building value | 1,143,800 |
+| **total FAIR** | **3,600,145** · **forced-sale (90%): 3,240,145** |
+| age / condition | «حوالي 18 سنة» / **«ممتاز»** (excellent), regular maintenance |
+
+**Depreciation anchor (authoritative):** an **~18–24y EXCELLENT-condition LUXURY** villa → building **1,900/m²** ≈ **54% of luxury-new 3,500**. The bank uses a **condition-and-age-adjusted building rate directly** (NOT RCN×depreciation%). PO: a متهالك villa (cracks/settlement/irregular maintenance) → **"much lower"** (~1,000–1,200, a 2nd anchor the brief still needs).
+
+**🔴 SHARPENS §4 — V001 is CONVERGENT, NOT a down-fix (this CORRECTS the §8 illustrative hand-proof + my earlier recon framing):**
+- Cost (bank) **3.60M fair** ≈ market (engine) **3.8M** → **CONVERGENT**. The DRC does **not** undercut the market → **cost-triangulation CONFIRMS V001 (~3.6–3.8M, high confidence); it does NOT drop it.**
+- The analyst clearing **2.63–3.2M** (+ the bank's own forced-sale 3.24M) = a **LIQUIDITY discount** (old premium · thin buyer pool · slow market · unsold 5–6y at a sticky 4.8→3.8M ask) — **NOT a valuation error.** Fair MV ≈ 3.6–3.8M; achievable ≈ 3.0–3.24M → disclose as a **10–15% liquidity/marketing caveat**, distinct from the cost reconciliation.
+- **The genuine §20.9 DOWN-fix is (a) the THIN-POOL WILD over-anchor (Marikh 5.4M, where cost ~2.7–3.0M decisively undercuts) + (b) the DILAPIDATED villa (low building rate).** The bank report **saved the design from wrongly dropping V001** — an excellent old villa whose cost confirms its value.
+
+→ **Brief refinement:** `_cost_triangulation` = (a) DOWN-re-anchor ONLY when cost **materially undercuts** market (thin-pool artifact / dilapidated); (b) **CONFIRM + tighten** when convergent (V001); (c) a separate **liquidity/marketing caveat** for old-premium thin-pool stock. Depreciation model = a **condition×age building-rate** anchored on the bank's **1,900** (old-excellent-luxury) + new-luxury **3,500** + a dilapidated floor **~1,000–1,200**; default no-input flow → conservative average, user condition/finish refines.
