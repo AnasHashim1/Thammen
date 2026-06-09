@@ -1,6 +1,6 @@
 # BRIEF — §20.9 Cost-Triangulation (the durable R7 fix) — DRAFT for PO sign-off
 
-**Date:** 2026-06-09 · **Lane:** Claude Code (drafted from the live recon + the bank report) · **Status:** 🔴 **Gate-2 DRAFT — awaiting Anas sign-off** (MOVES the headline on thin-pool over-anchors) · **Gate-1:** push awaits a separate explicit «go» · **Recon:** `docs/PHASE0_2p22p0_cost_triangulation_recon.md` (§1–§9) · **Design:** `docs/METHODOLOGY_cost_triangulation_v1.md` (multi-AI validated 2026-05-31).
+**Date:** 2026-06-09 · **Lane:** Claude Code (drafted from the live recon + the bank report) · **Status:** ✅ **SHIP-NOW slice SIGNED + SHIPPED** — Gate-2 «وقّع وانشر الآن» (Anas, 2026-06-09) → Sprint **2.22.0b.11**, Heroku **v180** (CHANGELOG_v94, Session_Log §20.45). The down-re-anchor (Marikh) landed; the **convergent-confirm + UP-lift are GATED-to-next** (age-handling + the CGIS age-gap recon, §11 / METHODOLOGY_DRC_qatar_v1). · **Recon:** `docs/PHASE0_2p22p0_cost_triangulation_recon.md` (§1–§9) · **Design:** `docs/METHODOLOGY_cost_triangulation_v1.md` (multi-AI validated 2026-05-31).
 
 > **One line.** Add an INDEPENDENT Cost-Approach value (land + depreciated building) as a SECONDARY method that triangulates the market headline: **confirm** it when convergent, **re-anchor it DOWN** only when the market is a thin-pool / dilapidated over-anchor. It is **subject-intrinsic (b9 age + b10 footprint) → fixes the live default no-rent over-anchor (Marikh) WITHOUT a user rent** — the decisive advantage over §6 income.
 

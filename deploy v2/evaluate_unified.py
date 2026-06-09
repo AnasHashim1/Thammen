@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b10p2-multiqars-footprint'
-SPRINT_TAG = '2.22.0b.10.2'         # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b11-cost-drc-reanchor'
+SPRINT_TAG = '2.22.0b.11'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4596,6 +4596,24 @@ def evaluate_thammen(
                     _tri = _income_triangulation(
                         primary, income, cost, _lf_tri, output.get('asset_type'),
                         dispersion_gated=bool(_g_tri and _g_tri.get('gated')))
+                    # ── Sprint §20.9 (R7) cost-approach DOWN-re-anchor (SHIP-NOW slice) ──
+                    # An independent DRC cost (land_floor + a depreciated building, from the b9
+                    # SYSTEM age + the b10 footprint) re-anchors a thin/widened OVER-anchor DOWN
+                    # with the COST as the informed floor (vs §6 widen_down's bare land). Preferred
+                    # over widen_down when it fires; income_led (a grounded subject rent) still wins.
+                    # b9 system age is a FLOOR → conservative (immune to the CGIS-vs-actual bias —
+                    # METHODOLOGY_DRC_qatar_v1 §11); convergent-confirm + the UP-lift are GATED-to-next.
+                    _geom_ct = output['valuation'].get('geometry') or {}
+                    _age_ct = ((output.get('property_basis') or {}).get('building_age_estimate') or {}).get('age_floor_years')
+                    _eff_ct = (output['valuation'].get('effective_footprint_m2')
+                               if output['valuation'].get('footprint_basis') == 'confirmed' else None)
+                    _cost_av = _cost_approach_value(
+                        _lf_tri, _geom_ct.get('max_buildable_footprint_m2'), floors,
+                        ('luxury' if is_luxury else 'ordinary'), _age_ct, condition,
+                        footprint_actual=_eff_ct)
+                    _ct = _cost_triangulation(
+                        primary, _cost_av, _lf_tri, output.get('asset_type'),
+                        bool(_g_tri and _g_tri.get('gated')), _age_ct)
                     if _tri and _tri['mode'] == 'income_led':
                         _capp = (round(_tri['cap_rate'] * 100, 1) if _tri['cap_rate'] else '—')
                         _xs = f"{_r10k(_tri['amount']):,}"
@@ -4635,6 +4653,40 @@ def evaluate_thammen(
                         _mu_tri = output.get('material_uncertainty')
                         if isinstance(_mu_tri, dict):
                             _mu_tri['level'] = _tri['muc_level']
+                    elif _ct:
+                        # §20.9 cost down-re-anchor: the cost floor REPLACES §6's bare land floor.
+                        # central stays = comparison (MUTED via range_is_headline); high = market(muted);
+                        # low = max(land_floor, cost). The b6 condition-widen note does NOT run on this
+                        # branch (elif) — the cost note supersedes it.
+                        output['valuation']['low'] = _r100k(_ct['low'])
+                        output['valuation']['high'] = _r100k(_ct['high'])
+                        output['valuation']['range_is_headline'] = True
+                        output['valuation']['central_estimate'] = output['valuation']['amount']
+                        _cd = _ct['cost_detail']
+                        output['valuation']['cost_triangulation'] = {
+                            'mode': 'cost_reanchor_down',
+                            'cost_value': _ct['cost_value'],
+                            'land_floor': _ct['land_floor'],
+                            'building_value': _cd['building_value'],
+                            'bua_m2': _cd['bua_m2'],
+                            'rcn_qar_per_m2': _cd['rcn_qar_per_m2'],
+                            'built_ratio': _cd['built_ratio'],
+                            'effective_age': _cd['effective_age'],
+                            'retention': _cd['retention'],
+                            'comparison_value': _ct['comparison_value'],
+                            'undercut_pct': _ct['undercut_pct'],
+                            'note_ar': COST_REANCHOR_NOTE_AR.format(
+                                comp=f"{_r10k(_ct['comparison_value']):,}",
+                                land=f"{_r10k(_ct['land_floor']):,}",
+                                cost=f"{_r10k(_ct['cost_value']):,}"),
+                            'note_en': COST_REANCHOR_NOTE_EN.format(
+                                comp=f"{_r10k(_ct['comparison_value']):,}",
+                                land=f"{_r10k(_ct['land_floor']):,}",
+                                cost=f"{_r10k(_ct['cost_value']):,}"),
+                        }
+                        _mu_ct = output.get('material_uncertainty')
+                        if isinstance(_mu_ct, dict):
+                            _mu_ct['level'] = 'high'
                     elif _tri and _tri['mode'] == 'widen_down':
                         output['valuation']['low'] = _r100k(_tri['low'])
                         output['valuation']['high'] = _r100k(_tri['high'])
@@ -5041,6 +5093,170 @@ CONDITION_WIDEN_NOTE_EN = ('The property’s built type and condition are unconf
                            'comparison median ignores them — so the range spans from the land value '
                            '({floor} QAR) up to the comparison median. Enter the property’s actual '
                            'rent to ground the value.')
+
+
+# ════════════════════════════════════════════════════════════════════
+# Sprint 2.22.0b.11 (§20.9) — Cost-Approach (DRC) triangulation: SHIP-NOW slice
+# ════════════════════════════════════════════════════════════════════
+# An INDEPENDENT secondary valuation (RICS Depreciated Replacement Cost):
+#     cost = land_floor + (RCN_new(finish) × retention(effective_age)) × BUA
+# SECONDARY to Market (RICS: the cost approach is last-resort for actively-traded
+# assets) — it only TRIANGULATES the market headline. It is SUBJECT-INTRINSIC
+# (b9 age + b10 footprint), so it needs no comparables' BUA (which MoJ lacks) → it
+# escapes the R7 BUA dead-end and fixes the live default no-rent over-anchor WITHOUT
+# a user rent (the decisive advantage over §6 income).
+#
+# Gate-2 SPLIT (METHODOLOGY_DRC_qatar_v1 §11): SHIP-NOW = the DOWN-re-anchor ONLY.
+# When the market is a thin-pool / widened OVER-anchor AND the cost UNDERCUTS it by
+# > THRESHOLD, present the honest range with the COST as the informed lower anchor
+# (replacing §6 widen_down's BARE land floor), range_is_headline, MUC high. The
+# convergent-confirm + the UP-lift are GATED-to-next (they bias on the age handling).
+#
+# 🔴 IMMUNITY (why ship-now is safe on the system-vs-actual age bias): b9 surfaces the
+# SYSTEM (CGIS) age — typically LOWER than the actual (re-registration zeros the survey
+# date). Lower age → higher retention → higher cost → a HIGHER cost floor → the down-move
+# is LESS aggressive (never over-drops) AND the >THRESHOLD undercut is HARDER to reach
+# (it PROTECTS convergent cases). MEASURED: V001 56/647/6 at the b9 age 17 → cost ~3.12M
+# → undercut +22% < 30% → does NOT fire (correct); at the ACTUAL ~25 → ~2.91M → +30.6%
+# → would WRONGLY fire. So this slice runs depreciation on the b9 SYSTEM age (a FLOOR) —
+# deliberately conservative. Actual-age handling is the GATED slice's job.
+#
+# Params bank-calibrated (METHODOLOGY_DRC_qatar_v1 §3/§5/§7 — reproduces the certified
+# valuer TD 93317 to ~1%, downgraded to a consistency-check per §11). Pure functions;
+# never mutate. Value-AFFECTING (Gate-2) ONLY on the narrow set it fires on.
+
+# RCN ladder — Replacement Cost New, QAR/m² of BUA (turnkey all-in; PO web-validated, §3).
+COST_RCN_BY_FINISH = {
+    'shell': 1200, 'عظم': 1200,
+    'ordinary': 2200, 'average': 2200,
+    'good': 2500, 'very-good': 2500, 'very_good': 2500,
+    'high': 3000,
+    'luxury': 3500,
+}
+COST_RCN_DEFAULT = 2200                  # no-input finish = ordinary (§9 #4)
+COST_ECONOMIC_LIFE_Y = 50                # §5 (reproduces the valuer; within the 40-60 band)
+COST_RESIDUAL_FLOOR = 0.27               # a sound shell retains value (§5; ordinary 2200×0.27≈594≈PO 600).
+                                         # A finish-dependent dilapidated-luxury floor (~0.31) is a
+                                         # PO-pending v2 refinement — it does NOT touch the ship-now
+                                         # anchors (Marikh retention 0.50 ≫ the floor).
+COST_CONDITION_PENALTY = {               # effective_age = chronological + penalty (§5; the −2 excellent
+    'excellent': 0, 'renovated': 0, 'new': 0,   # refinement is the GATED slice's actual-age calibration)
+    'good': 5, 'very-good': 5, 'very_good': 5,
+    'fair': 15,
+    'poor': 25, 'dilapidated': 25, 'teardown': 25,
+}
+COST_DEFAULT_PENALTY = 8                  # no-input condition = average (§9 #4)
+COST_BUILT_RATIO = 0.77                   # actual BUA ÷ max-buildable (V001 602/782); declared +
+                                          # ±20%-tested vs the 30% threshold (recon C — does not flip).
+COST_DEFAULT_FLOORS = 2                   # G+1 default
+COST_REANCHOR_UNDERCUT_T = 0.30           # (market − cost)/cost > this → re-anchor down (the V001/Marikh
+                                          # separator: Marikh +127% fires, V001 +22% does not).
+COST_REANCHOR_MIN_AGE_Y = 10              # age-gate (B): OLD stock only → closes the new-luxury mis-launch.
+_COST_REANCHOR_METHODS = ('comparison_thin', 'comparison_widened',
+                          'comparison_widened_indicative', 'comparison_preliminary')
+
+
+def _cost_retention(effective_age):
+    """Straight-line physical depreciation, clamped to the residual floor (§5)."""
+    if effective_age is None:
+        return None
+    return max(COST_RESIDUAL_FLOOR, min(0.98, 1.0 - (effective_age / COST_ECONOMIC_LIFE_Y)))
+
+
+def _cost_approach_value(land_floor, footprint_max_m2, floors, finish, age_years,
+                         condition, footprint_actual=None):
+    """RICS DRC = land_floor + [RCN_new(finish) × retention(effective_age)] × BUA.
+    SUBJECT-INTRINSIC. BUA = (user-confirmed footprint, if any) × floors, else
+    max-buildable × BUILT_RATIO × floors (actual BUA < the b10 legal CEILING — §7).
+    age_years = the b9 SYSTEM age (a floor; lower = conservative). Returns a dict, or
+    None when the land floor / footprint / age is unavailable (→ no down-re-anchor). Pure."""
+    try:
+        if not land_floor or land_floor <= 0:
+            return None
+        if age_years is None:
+            return None                                   # depreciation needs an age
+        fl = max(1, int(floors) if floors else COST_DEFAULT_FLOORS)
+        if footprint_actual and footprint_actual > 0:
+            bua = footprint_actual * fl                   # user-confirmed footprint = actual (no built-ratio)
+        elif footprint_max_m2 and footprint_max_m2 > 0:
+            bua = footprint_max_m2 * COST_BUILT_RATIO * fl    # b10 legal max → estimate actual via built-ratio
+        else:
+            return None
+        rcn = COST_RCN_BY_FINISH.get((finish or '').strip().lower(), COST_RCN_DEFAULT)
+        penalty = COST_CONDITION_PENALTY.get((condition or '').strip().lower(), COST_DEFAULT_PENALTY)
+        eff_age = max(0, age_years + penalty)
+        retention = _cost_retention(eff_age)
+        building = round(bua * rcn * retention)
+        return {
+            'value': round(land_floor + building),
+            'land_floor': land_floor,
+            'building_value': building,
+            'bua_m2': round(bua),
+            'footprint_max_m2': footprint_max_m2,
+            'built_ratio': (None if (footprint_actual and footprint_actual > 0) else COST_BUILT_RATIO),
+            'floors': fl,
+            'rcn_qar_per_m2': rcn,
+            'finish': (finish or 'ordinary'),
+            'age_years': age_years,
+            'condition_penalty': penalty,
+            'effective_age': eff_age,
+            'retention': round(retention, 3),
+        }
+    except Exception:
+        return None
+
+
+def _cost_triangulation(primary, cost, land_floor, asset_type, dispersion_gated, age_for_gate):
+    """SHIP-NOW = the DOWN-re-anchor ONLY. Fires when an OLD villa on a thin/widened
+    (NOT clean bracket, NOT dispersion-gated) market is over-anchored AND the cost
+    UNDERCUTS the market by > THRESHOLD → reconciled range [max(land_floor, cost) …
+    market(muted)], range_is_headline, MUC high, with the COST as the informed lower
+    anchor (vs §6 widen_down's bare land). Returns a decision dict or None. Pure.
+    Convergent-confirm + the UP-lift are GATED-to-next (need actual-not-system age)."""
+    if asset_type not in ('standalone_villa', 'house', 'villa'):
+        return None
+    if not primary or not primary.get('value'):
+        return None
+    if not cost or not cost.get('value'):
+        return None
+    method = primary.get('method')
+    comp = primary['value']
+    cost_val = cost['value']
+    # age-gate (B): OLD stock only (a new villa's cost ≈ full → never undercuts; belt-and-braces).
+    if age_for_gate is None or age_for_gate < COST_REANCHOR_MIN_AGE_Y:
+        return None
+    # thin/widened path only (a10/a14 own dispersion-gated pools); over-anchored (land < market).
+    if method not in _COST_REANCHOR_METHODS or dispersion_gated:
+        return None
+    if not (land_floor and land_floor < comp):
+        return None
+    # the cost must UNDERCUT the market by > THRESHOLD ((market − cost)/cost).
+    if cost_val <= 0 or (comp - cost_val) / cost_val <= COST_REANCHOR_UNDERCUT_T:
+        return None
+    return {
+        'mode': 'cost_reanchor_down',
+        'amount': comp,                                   # central muted via range_is_headline
+        'low': max(land_floor, cost_val),
+        'high': primary.get('high') or comp,
+        'muc_level': 'high',
+        'cost_value': cost_val,
+        'land_floor': land_floor,
+        'comparison_value': comp,
+        'undercut_pct': round((comp - cost_val) / cost_val * 100, 1),
+        'cost_detail': cost,
+    }
+
+
+# §20.9 cost down-re-anchor user-facing notes (AR + EN).
+COST_REANCHOR_NOTE_AR = ('وسيط المقارنة ({comp} ر.ق) مرتفع لقلّة الصفقات القريبة في النوع والمساحة '
+                         'ولأنه لا يأخذ نوع البناء وحالته. منهج التكلفة (الأرض {land} ر.ق + بناءٌ مُهلَك) يضع حدّاً أدنى '
+                         'مؤسَّساً عند {cost} ر.ق — فالنطاق يمتدّ منه إلى وسيط المقارنة دون تثبيت رقم '
+                         'مركزي. العمر تقديريّ (حدّ أدنى) وعدم اليقين مرتفع.')
+COST_REANCHOR_NOTE_EN = ('The comparison median ({comp} QAR) is high — thin comparables, and it ignores '
+                         'built type and condition. The Cost approach (land {land} QAR + a depreciated '
+                         'building) sets a grounded floor at {cost} QAR — so the range spans from it up '
+                         'to the comparison median, with no pinned central. Age is indicative (a floor) '
+                         'and uncertainty is high.')
 
 
 def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
