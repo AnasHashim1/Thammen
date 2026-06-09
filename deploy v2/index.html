@@ -442,7 +442,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       </div>
       <div class="fr2">
         <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option><option value="teardown">آيل للسقوط / يجب هدمه</option></select></div>
-        <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من تنظيم المنطقة" min="0"></div>
+        <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من أبعاد القطعة" min="0"><div id="fpHint" class="rn" style="font-size:.75rem;color:#8b6e44;margin-top:5px;line-height:1.5"></div></div>
       </div>
       <div class="fr2">
         <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" min="0" max="100"></div>
@@ -972,6 +972,22 @@ function show(d){
   const acc=d.accuracy||{};
   const hasValuation=v.amount!=null&&v.amount>0;
 
+  // Sprint 2.22.0b.10 — surface the geometry MAX-buildable footprint as an
+  // editable hint on the refine screen (DISPLAY/CONFIRM only; the user corrects
+  // DOWN). Set-or-clear every render so it never goes stale across evaluations.
+  try{
+    const _fph=document.getElementById('fpHint');
+    if(_fph){
+      const _g=v.geometry||{}, _mb=_g.max_buildable_footprint_m2;
+      if(_mb&&_g.footprint_basis!=='confirmed'){
+        const _dims=_g.plot_dims_m;
+        _fph.innerHTML='💡 الحدّ الأقصى المُقدَّر '+
+          (_dims&&_dims.length===2?('من أبعاد قطعتك (<span dir="ltr">'+_dims[0]+' × '+_dims[1]+'</span> م) ≈ '):'≈ ')+
+          '<strong>'+fmt(_mb)+' م²</strong> — عدّله لواقع مبناك (الفعلي عادةً أصغر).';
+      }else{_fph.textContent='';}
+    }
+  }catch(e){}
+
   let h='';
 
   // ── Copy button (top, floats right) ──
@@ -1363,9 +1379,19 @@ function show(d){
       h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">اعتُمدت مساحة البناء الأرضية: <strong>'+fmt(eff)+' م²</strong></div>';
       if(capFired) h+='<div class="rn" style="font-size:.8rem;color:#8b6e44;margin-top:6px">حُدِّدت مساحة البناء إلى '+fmt(eff)+'م² — أقصى تغطية أرضية مسموحة للقسيمة وفق اشتراطات المنطقة'+(g.zoning_code?(' ('+g.zoning_code+' '+g.zone_max_coverage_pct+'%)'):'')+'.</div>';
     }else{
-      h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">هذا تقدير مبدئي يفترض بناءً نموذجياً (المقترح <strong>'+fmt(g.suggested_footprint_m2)+' م²</strong>';
-      if(g.zone_max_coverage_pct) h+=' · حدّ التغطية النظامي '+(g.zoning_code?('('+g.zoning_code+') '):'')+g.zone_max_coverage_pct+'%';
-      h+='). أدخل تفاصيل البناء الفعليّة لتدقيقه:</div>';
+      // Sprint 2.22.0b.10 — show the MAX-buildable footprint from the plot's own
+      // dimensions − legal setbacks (a CEILING; the user corrects DOWN). Falls back
+      // to the coverage-cap wording for non-rectangular plots, then the b1 default.
+      const mb=g.max_buildable_footprint_m2, dims=g.plot_dims_m, meth=g.footprint_method;
+      if(mb&&meth==='setback_envelope'&&dims&&dims.length===2){
+        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">قطعتك ≈ <strong dir="ltr">'+dims[0]+' × '+dims[1]+'</strong> م، والحدّ الأقصى المسموح للبناء ≈ <strong>'+fmt(mb)+' م²</strong> (طابق أرضي'+(g.zoning_code?('، '+g.zoning_code+' '+g.zone_max_coverage_pct+'%'):'')+'). البناء الفعلي عادةً أصغر — أدخِل تفاصيله لتدقيق التقدير:</div>';
+      }else if(mb){
+        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">الحدّ الأقصى المسموح للبناء ≈ <strong>'+fmt(mb)+' م²</strong> (من حدّ التغطية النظامي'+(g.zoning_code?(' '+g.zoning_code+' '+g.zone_max_coverage_pct+'%'):'')+'). أدخِل تفاصيل البناء الفعليّة لتدقيقه:</div>';
+      }else{
+        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">هذا تقدير مبدئي يفترض بناءً نموذجياً (المقترح <strong>'+fmt(g.suggested_footprint_m2)+' م²</strong>';
+        if(g.zone_max_coverage_pct) h+=' · حدّ التغطية النظامي '+(g.zoning_code?('('+g.zoning_code+') '):'')+g.zone_max_coverage_pct+'%';
+        h+='). أدخِل تفاصيل البناء الفعليّة لتدقيقه:</div>';
+      }
     }
     h+='<button onclick="go(\'refine\')" style="margin-top:10px;width:100%;padding:10px;background:var(--bronze);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:.9rem;cursor:pointer">'+(confirmed?'عدّل التفاصيل':'حسّن التقدير (المرحلة 2)')+'</button>';
     h+='<div class="rn" style="font-size:.78rem;color:#999;margin-top:8px">السرداب (إن وُجد) يُعرض ويُلتقَط لكنه لا يُحرّك تقدير المقارنة.</div>';

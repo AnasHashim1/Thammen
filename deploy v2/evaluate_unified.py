@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b9-qars-basis-panel'
-SPRINT_TAG = '2.22.0b.9'            # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b10-geometric-footprint'
+SPRINT_TAG = '2.22.0b.10'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -744,6 +744,73 @@ def _suggested_footprint(plot_area_m2: Optional[float],
         zoned = int(round(plot_area_m2 * SUGGESTED_COVERAGE_FRACTION * ZONE_MAX_COVERAGE[key]))
         return min(zoned, legacy)
     return legacy
+
+
+# ============================================================
+# Sprint 2.22.0b.10 — Geometric footprint (DISPLAY/CONFIRM ONLY)  [Gate-2 SIGNED]
+# ============================================================
+# The MAX-buildable ground footprint computed FROM the plot's actual dimensions
+# minus the legal R1 setbacks (Empirical E15, corrected: front 5 / side 3 /
+# rear 3), bounded by the zone coverage ceiling. Surfaced for the floors-first
+# confirm flow as a CEILING the user corrects DOWN to the actual building
+# (brief §4 — the legal max ≠ the built area). Recon `PHASE0_2p22p0b10`:
+#   - edge-PAIRING on the 4-vertex ring is exact (shoelace == pdarea); the
+#     axis-aligned bbox is WRONG (Qatar rectangles are rotated vs the 2932 grid).
+#   - gate on `is_rectangular`; non-rectangular → coverage-cap fallback (graceful).
+#   - orientation-free OUTCOME: take the LARGER legal envelope across the two
+#     orientations (a ceiling), bounded by the coverage cap → no street detection.
+# 🔴 VALUE-INVARIANT (recon D1): the return feeds ONLY the geometry DISPLAY surface;
+# it NEVER touches `_suggested_fp` / `_eff_fp` / substantiality / valuation.amount.
+SETBACK_FRONT_R1 = 5.0
+SETBACK_SIDE_R1 = 3.0
+SETBACK_REAR_R1 = 3.0
+
+
+def _geometry_footprint(polygon_2932, pdarea: Optional[float],
+                        is_rectangular: bool,
+                        zone_coverage: float = 0.60) -> Optional[dict]:
+    """Max-buildable ground footprint from plot geometry (Sprint 2.22.0b.10).
+
+    DISPLAY/CONFIRM ONLY — never feeds valuation.amount (brief §6, recon D1).
+    Returns {plot_dims_m, max_buildable_footprint_m2, method} or None.
+    """
+    if not pdarea or pdarea <= 0:
+        return None
+    cov_cap = zone_coverage * pdarea
+    ring = polygon_2932 or []
+    # ESRI returns the closing point == first; strip it
+    pts = ring[:-1] if (len(ring) > 1 and ring[0] == ring[-1]) else list(ring)
+    if is_rectangular and len(pts) == 4:
+        # consecutive-vertex edge lengths (rotation-safe; bbox is NOT)
+        es = []
+        for i in range(4):
+            a = pts[i]
+            b = pts[(i + 1) % 4]
+            es.append(((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2) ** 0.5)
+        s1 = (es[0] + es[2]) / 2.0   # paired opposite edges
+        s2 = (es[1] + es[3]) / 2.0
+        depth_loss = SETBACK_FRONT_R1 + SETBACK_REAR_R1   # 8 (front + rear)
+        width_loss = SETBACK_SIDE_R1 + SETBACK_SIDE_R1    # 6 (side + side)
+        # larger legal envelope across the two orientations (a CEILING the user
+        # corrects DOWN → take max; no need to know which edge faces the street)
+        env = 0.0
+        for depth, width in ((s1, s2), (s2, s1)):
+            fd = depth - depth_loss
+            fw = width - width_loss
+            if fd > 0 and fw > 0:
+                env = max(env, fd * fw)
+        fp = min(cov_cap, env) if env > 0 else cov_cap
+        return {
+            'plot_dims_m': [round(s1, 1), round(s2, 1)],
+            'max_buildable_footprint_m2': int(round(fp)),
+            'method': 'setback_envelope',
+        }
+    # non-rectangular (5+ verts / irregular) → orientation-free coverage cap
+    return {
+        'plot_dims_m': None,
+        'max_buildable_footprint_m2': int(round(cov_cap)),
+        'method': 'coverage_cap',
+    }
 
 
 def _extract_zoning_code(ev) -> Optional[str]:
@@ -4213,6 +4280,22 @@ def evaluate_thammen(
     # disclose the assumed-vs-confirmed basis (§4/§5.2) + that the basement is
     # NOT a comparison driver (§5.5). Does NOT change valuation.amount.
     if _plot_area_for_bua and _suggested_fp and output.get('valuation'):
+        # Sprint 2.22.0b.10 — max-buildable footprint from plot dims − legal R1
+        # setbacks (DISPLAY/CONFIRM ONLY; recon D1 — NEVER touches _suggested_fp /
+        # _eff_fp / substantiality / valuation.amount). Reuses the already-fetched
+        # plot polygon → zero new GIS.
+        _geom_fp = None
+        try:
+            _poly = getattr(_plot, 'polygon_2932', None) if _plot is not None else None
+            _shape = getattr(_plot, 'shape', None) if _plot is not None else None
+            if _poly and _shape is not None:
+                _geom_fp = _geometry_footprint(
+                    _poly, _plot_area_for_bua,
+                    bool(getattr(_shape, 'is_rectangular', False)),
+                    _zone_ceiling,
+                )
+        except Exception:
+            _geom_fp = None
         output['valuation']['geometry'] = {
             'zoning_code': _zoning_code,
             'zone_max_coverage_pct': round(_zone_ceiling * 100),
@@ -4224,11 +4307,23 @@ def evaluate_thammen(
             'effective_footprint_m2': (round(_eff_fp) if _eff_fp is not None else None),
             'footprint_basis': 'confirmed' if _fp_confirmed else 'assumed',
             'basement_in_comparison': False,
+            # Sprint 2.22.0b.10 — geometry-derived MAX-buildable footprint (DISPLAY):
+            # the legal ceiling from plot dims − setbacks; the user corrects DOWN.
+            'plot_dims_m': (_geom_fp or {}).get('plot_dims_m'),
+            'max_buildable_footprint_m2': (_geom_fp or {}).get('max_buildable_footprint_m2'),
+            'footprint_method': (_geom_fp or {}).get('method'),
             'note_ar': (
-                'مساحة البناء الأرضية المعروضة تقديرية، مبنية على حدّ التغطية '
-                'النظامي للمنطقة — عدّلها إن كنت تعرف المساحة الفعلية لتدقيق التقدير.'
-                if not _fp_confirmed else
-                'تم اعتماد مساحة البناء الأرضية التي أدخلتها.'
+                'المساحة المعروضة هي الحدّ الأقصى المسموح للبناء، محسوبة من أبعاد '
+                'قطعتك مطروحاً منها الارتدادات النظامية — عدّلها لواقع مبناك '
+                '(البناء الفعلي عادةً أصغر).'
+                if (not _fp_confirmed and _geom_fp
+                    and _geom_fp.get('method') == 'setback_envelope')
+                else (
+                    'مساحة البناء الأرضية المعروضة تقديرية، مبنية على حدّ التغطية '
+                    'النظامي للمنطقة — عدّلها إن كنت تعرف المساحة الفعلية لتدقيق التقدير.'
+                    if not _fp_confirmed else
+                    'تم اعتماد مساحة البناء الأرضية التي أدخلتها.'
+                )
             ),
         }
 
