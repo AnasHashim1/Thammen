@@ -48,6 +48,8 @@ Compute cost value, compare to the market comparison (`primary['value']`):
 
 This is the **first default-flow headline fix that needs no user rent** (cost is subject-intrinsic). Live payoff is **NOT beta-gated** (vs all of §6).
 
+> **⚠️ REFINEMENT — V001 / old-premium treatment (Anas, 2026-06-09; PENDING Gate-2 steer; see recon §9):** the certified-valuer report + the VERIFIED convergence (the project's prior market read ~3.2M ≈ the valuer's **forced-sale** 3.24M) show V001's **achievable** value ≈ **3.0–3.2M**, **below** BOTH the engine 3.8M AND the cost-fair 3.6M (old-premium economic obsolescence, §3.1 Market/DRC < 1 / H-A). So **cost = a SANITY BRACKET** (new-premium FLOOR / old-premium CEILING / thin-pool DETECTOR), and for OLD-PREMIUM the **headline targets the achievable** (land+finish band, composing with **B-2 / H-A, n≥20**) — NOT a cost-confirmed 3.6–3.8M. The §3/§4 «convergent → confirm V001 high» rows are SUPERSEDED by this; the **Marikh thin-pool down-fix + the V002/V003 up-fix stand unchanged.**
+
 ## 5. RICS framing + §3.1 discipline (locked, from the design doc + multi-AI)
 Market **PRIMARY**, Cost **SECONDARY-INDEPENDENT**, **reconcile NOT blend**. RCN = PHYSICAL (PO domain figures, the documented source §8 #3 needed) — independent of the MoJ median (§3.1). Disclosed-INDICATIVE (assumptions unverified, VPS 2/IVS 102), MUC high (VPGA 10), **Stage-5 sign-off** (VPS 5/IVS 105). Ships on the **b4 precedent** (a cost value on n=2 with wide-MUC + limited-sample disclosure) → does not strictly require n≥20.
 

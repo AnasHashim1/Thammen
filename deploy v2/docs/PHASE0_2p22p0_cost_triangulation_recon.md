@@ -110,9 +110,11 @@ Anas (PO, builds/brokers) stated the Qatar villa construction-cost ladder — **
 
 ---
 
-## 9. BANK-REPORT CALIBRATION (TD 93317, AUTHORITATIVE — read 2026-06-09, the `.td_pages/` scan)
+## 9. CERTIFIED-VALUER REPORT CALIBRATION (TD 93317, AUTHORITATIVE — read 2026-06-09)
 
-Read the actual **Al Manara valuation** (شهادة تثمين 93317, client = **Qatar International Islamic Bank**, dated 2026-06-07) for **56/647/6 = V001**. The Cost-Approach table (p02–p03; p04 deed = bought 2002 → ~24y; p08–p13 = photos confirming excellent/luxury):
+> **Framing correction (Anas, 2026-06-09):** this is **NOT "the bank's" number** — it is a report by a **certified valuer (مثمن معتمد), Al Manara Real Estate W.L.L, accredited to Qatar International Islamic Bank**. ⟹ it is a **GT-1 (valuer-signed, Stage-5) authority** — the project's FIRST GT-1 datapoint (was logged GT-3 asking; this UPGRADES it).
+
+Read the certified-valuer report (شهادة تثمين 93317, commissioned by QIIB, 2026-06-07) for **56/647/6 = V001**. The Cost-Approach table (p02–p03; p04 deed = bought 2002 → ~24y; p08–p13 = photos confirming excellent/luxury):
 
 | component | bank figure |
 |---|---|
@@ -127,9 +129,10 @@ Read the actual **Al Manara valuation** (شهادة تثمين 93317, client = *
 
 **Depreciation anchor (authoritative):** an **~18–24y EXCELLENT-condition LUXURY** villa → building **1,900/m²** ≈ **54% of luxury-new 3,500**. The bank uses a **condition-and-age-adjusted building rate directly** (NOT RCN×depreciation%). PO: a متهالك villa (cracks/settlement/irregular maintenance) → **"much lower"** (~1,000–1,200, a 2nd anchor the brief still needs).
 
-**🔴 SHARPENS §4 — V001 is CONVERGENT, NOT a down-fix (this CORRECTS the §8 illustrative hand-proof + my earlier recon framing):**
-- Cost (bank) **3.60M fair** ≈ market (engine) **3.8M** → **CONVERGENT**. The DRC does **not** undercut the market → **cost-triangulation CONFIRMS V001 (~3.6–3.8M, high confidence); it does NOT drop it.**
-- The analyst clearing **2.63–3.2M** (+ the bank's own forced-sale 3.24M) = a **LIQUIDITY discount** (old premium · thin buyer pool · slow market · unsold 5–6y at a sticky 4.8→3.8M ask) — **NOT a valuation error.** Fair MV ≈ 3.6–3.8M; achievable ≈ 3.0–3.24M → disclose as a **10–15% liquidity/marketing caveat**, distinct from the cost reconciliation.
-- **The genuine §20.9 DOWN-fix is (a) the THIN-POOL WILD over-anchor (Marikh 5.4M, where cost ~2.7–3.0M decisively undercuts) + (b) the DILAPIDATED villa (low building rate).** The bank report **saved the design from wrongly dropping V001** — an excellent old villa whose cost confirms its value.
+**🔴 RE-EXAMINED — the fair-MV vs forced-sale + the verified convergence (Anas, 2026-06-09; CORRECTS my over-rotation, Rule #36):**
+The valuer gives TWO bases — **fair MV 3.60M** (replacement cost, willing-buyer-at-reasonable-price) and **forced-sale (جبري) 3,240,145 ≈ 3.2M**. The project's OWN prior market-evidence read for V001 = **clearing band ~3.0–3.2M** (`LEARNING_2026-05-28` «between land 2.63M and ask 3.8M, buyer-pull toward land»; `VALIDATION_LOG` 2026-06-03 «~3.0–3.2M, **NOT** the 3.8M ask»; corpus `analyst_clearing_high` 3,200,000). ⟹ **the project's prior ~3.2M ≈ the valuer's FORCED-SALE 3.24M — VERIFIED CONVERGENCE.**
+- **The ACHIEVABLE value of V001 ≈ 3.0–3.2M — BELOW both the engine (3.8M) AND the cost-fair (3.6M).** Both OVER-state: the engine via the condition-blind / sticky-ask median; the cost via **replacement cost WITHOUT economic obsolescence** (exactly the §3.1 «Market/DRC ratio < 1 for old stock in a sluggish market» + the learning doc's **H-A** — old buildings clear toward land + a finish premium, NOT replacement cost; 5–6y unsold at 3.8→4.8M is the market PROVING it).
+- **So V001 IS a DOWN-fix (3.8M → ~3.2M)** — but the target is the **ACHIEVABLE** (land floor + finish/ready premium ≈ 3.0–3.2M, the B-2 Lever-2 / H-C), **NOT** the replacement-cost 3.6M. **My prior-message «confirm V001 at 3.6–3.8M» over-weighted the valuer's optimistic fair-MV over the project's own documented clearing read — corrected here.**
+- **The cost-approach's real role = a SANITY BRACKET, not the old-premium headline:** FLOOR for new-build replacement (V002/V003 cost ≈ confirmed 4.0M → UP-fix ✓), CEILING for old replacement (V001 3.6M — confirms it is NOT a teardown, the building has real cost), and the THIN-POOL detector (Marikh cost ~2.4M ≪ 5.4M artifact → DOWN). The **old-premium replacement→achievable gap (~12–16% economic obsolescence) = H-A, n≥20 to calibrate** → composes with B-2.
 
-→ **Brief refinement:** `_cost_triangulation` = (a) DOWN-re-anchor ONLY when cost **materially undercuts** market (thin-pool artifact / dilapidated); (b) **CONFIRM + tighten** when convergent (V001); (c) a separate **liquidity/marketing caveat** for old-premium thin-pool stock. Depreciation model = a **condition×age building-rate** anchored on the bank's **1,900** (old-excellent-luxury) + new-luxury **3,500** + a dilapidated floor **~1,000–1,200**; default no-input flow → conservative average, user condition/finish refines.
+→ **Brief refinement (PENDING Anas's Gate-2 steer):** `_cost_triangulation` = (a) DOWN-re-anchor the THIN-POOL artifact (Marikh) to a `[cost-floor … plain-comp]` band; (b) UP the new-premium under-anchor (V002/V003) toward cost; (c) for OLD-PREMIUM, the headline targets the **ACHIEVABLE** (land+finish band / forced-sale proxy ≈ 3.2M) with cost 3.6M as the disclosed CEILING — the precise old-premium discount = **B-2 / H-A (n≥20)**, so v1 presents the reconciled `[land … achievable … cost-ceiling]` range honestly without an invented coefficient. Depreciation model (physical) unchanged = condition×age building-rate anchored on the valuer's **1,900** + new-luxury **3,500** + dilapidated floor **~1,000–1,200**.
