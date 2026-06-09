@@ -739,6 +739,15 @@ function showConfirm(d){
     h+=ri(differs?'المساحة المعتمدة في التقدير':'مساحة القسيمة',fmt(d.plot_area_m2)+' م²');
   }
   h+=pbRows(d.property_basis);  // Sprint 2.22.0b.9 — PIN/electricity/water/age-floor
+  // Sprint 2.22.0b.10.1 — surface the AUTO building footprint in the basis review
+  // too (b10 had it on the results card + refine hint only, not on Screen 2). It is
+  // an ESTIMATED CEILING (max-buildable from plot dims − setbacks), labelled as such
+  // — the user corrects DOWN in the refine step. Display-only / value-invariant.
+  if(geo.max_buildable_footprint_m2&&_b2IsBuilding(d.asset_type)){
+    var _mbDims=(geo.footprint_method==='setback_envelope'&&geo.plot_dims_m&&geo.plot_dims_m.length===2)
+      ? (' (من أبعاد القطعة <span dir="ltr">'+geo.plot_dims_m[0]+'×'+geo.plot_dims_m[1]+'</span> م)') : '';
+    h+=ri('مساحة البناء الأرضي (تقدير أقصى)','≈ '+fmt(geo.max_buildable_footprint_m2)+' م²'+_mbDims+' — عدّله لواقع مبناك في خطوة التحسين');
+  }
   h+='</div></div>';
   // (3) evidence panel — reuse the b.2.2 panel verbatim (no new logic; explanation ≠ confidence).
   h+=evidencePanelHtml(d,acc);
