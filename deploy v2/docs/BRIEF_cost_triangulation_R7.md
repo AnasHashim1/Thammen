@@ -65,6 +65,8 @@ RCN ladder (§2) · ECONOMIC_LIFE 50 · RESIDUAL_FLOOR 0.27 · the building-rate
 6. **multi-AI #54** — route the depreciation-curve framing (straight-line/50y/residual + effective-age) to GPT/Gemini before build? *(Recommend: yes — it is a methodology-framing call; Claude.ai lane.)*
 
 ## 8. Implementation + validation (post sign-off)
+
+> **Grounded by `docs/METHODOLOGY_DRC_qatar_v1.md`** (web research + RICS + the valuer-calibration proof: the model reproduces TD 93317 to ~1%). Two requirements folded in: **(i)** the report displays BOTH **القيمة السوقية (MV)** and **القيمة الجبرية = MV × 0.90** at the end (labelled a CONVENTION, not a signal — Anas 2026-06-09); **(ii)** the DRC BUA = the **actual/confirmed** built-up area (user-entered, or a typical built-ratio), **NOT** the b10 max-buildable footprint (a legal CEILING that over-states the building — the §7 caveat). Soil/geotech (sabkha/karst foundation premium) = a v2 GIS factor; default = Simsima-rock baseline (the land value already prices most of the soil effect).
 - New pure `_cost_triangulation(primary, cost_value, land_floor, asset_type, dispersion_gated, market_path)` mirroring `_income_triangulation`; new `_cost_approach_value(...)` building the cost from b9 age + b10 footprint + the §2 model; wired in the b4 region (mutually exclusive with teardown/luxury/income_led). `api.py`/`index.html` notes only.
 - **Validation (E14, real engine):** V001 → confirmed ~3.6–3.8M; Marikh → range-headline [~2.4M…5.4M↓]; 56/565/21 → 2.4M unchanged; 52/903/90 refusal. Isolated tests (the §2 model + the §3 trigger + the V001-convergent guard) + DoD + R14 + live two-lane smoke (#61).
 - **Gates:** 🔴 Gate-2 = this brief signed; 🔴 Gate-1 = explicit «go» before the `git subtree push`.
