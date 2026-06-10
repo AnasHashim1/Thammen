@@ -123,6 +123,8 @@ The analyst lane (GPT-5 + Gemini + Claude) reviewed the 4 questions. #54-refinem
 
 **Three must-do-before-build (portable):** **(A)** the recon §8 "~32% @ 25y" ↔ §9 ~54% contradiction → **FIXED** (recon §8 corrected). **(B)** gate the DOWN-re-anchor on age (OLD stock only) — closes the free new-luxury mis-launch. **(C)** declare + calibrate the **built-ratio ~0.77** (V001 602/782); verify a ±20% error doesn't flip the 30% threshold (realistic/slightly-higher = safer).
 
+> **superseded-by → §20.47 / E25 (2026-06-10):** b13 SHIPPED the **convergent-TRIM** (Lever-1, user-age-gated — V001+25y→3.6M; D-1 0.31 lux floor ✅). The **UP-lift was DROPPED**, not shipped: V002/V003 (new-premium) sold ABOVE replacement cost → a **market premium, not cost-reachable** (Rule **E25**) → the under-anchor is **B-2** (`luxury_new` stratum, PARKED n≥20). The «GATE-TO-NEXT = … the up-lift» framing in the SPLIT below is the **pre-b13** design — the trim shipped; the lift is retired.
+
 **🎯 Gate-2 SPLIT (the key architectural recommendation):**
 - **🟢 SHIP-NOW = the down-re-anchor (Marikh)** — **immune to the age bias** (system-age only RAISES the cost floor → conservative; dampens lighter cases, never over-drops) → the headline payoff is sound. Ship with the **downgraded calibration claim (honesty, must-do)** + (A) + disclosed-indicative + MUC high (b4 precedent).
 - **🟡 GATE-TO-NEXT = convergent-confirm + the up-lift** — here system-age cost OVER-states (V001 "confirms" 3.8M vs the valuer's 3.6M, and fails to trim down) → gate on **age-handling (actual-not-system) + a measure-recon of the CGIS-vs-actual age gap** (this case 18 vs 25 = 7y; likely systematic — re-registration zeros the date).
