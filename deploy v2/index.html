@@ -1257,6 +1257,8 @@ function show(d){
       else if(vf.implied_building_note_ar){h+='<div style="margin-top:6px">'+vf.implied_building_note_ar+'</div>';}
       h+='</div>';
     }
+    // Sprint 2.22.0b.12 (Bug A15): HBU not evaluated (zoning layer unavailable) — explicit muted disclosure near the value_floor block.
+    if(v.hbu_note_ar){h+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.hbu_note_ar+'</div>';}
     // Clearer MoJ wording + explanation
     if(d.moj_sample_size){
       h+='<div class="ri" style="margin-bottom:10px"><div class="rl">صفقات البيع المسجلة لعقارات مشابهة</div><div class="rv">'+d.moj_sample_size+' صفقة</div></div>';

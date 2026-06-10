@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b11-cost-drc-reanchor'
-SPRINT_TAG = '2.22.0b.11'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b12-hbu-disclosure'
+SPRINT_TAG = '2.22.0b.12'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4502,6 +4502,20 @@ def evaluate_thammen(
             except Exception as _e:
                 import sys
                 print(f'[value_floor warning] {_e}', file=sys.stderr)
+            # ── Sprint 2.22.0b.12 (Bug A15): HBU not-evaluated disclosure (value-invariant) ──
+            # Co-located with the B-1 value_floor; fires ONLY when the zoning layer was
+            # unavailable (HBU silently skipped). Never raises into the evaluate path.
+            try:
+                if _hbu_note_applies(primary,
+                                     _stage1_dispersion_gate(primary, geo_v2_result),
+                                     output.get('asset_type'),
+                                     output['valuation'].get('amount'),
+                                     _extract_zoning_code(ev)):
+                    output['valuation']['hbu_note_ar'] = _HBU_NOTE_AR
+                    output['valuation']['hbu_note_en'] = _HBU_NOTE_EN
+            except Exception as _e:
+                import sys
+                print(f'[hbu_note warning] {_e}', file=sys.stderr)
             # ── Sprint 2.22.0b.4 (B-2a): teardown re-anchor (Gate-2 — MOVES the headline) ──
             # Opt-in ONLY (condition='teardown'); villa/house only; never auto-detected
             # (E17 — broker states, engine values). Reuses the shipped _villa_value_floor
@@ -4987,6 +5001,29 @@ def _condition_note_applies(primary, gate, asset_type, amount) -> bool:
     if gate and gate.get('gated'):
         return False  # dispersed bracket (a14) / widened (a10) → honest-range already discloses condition
     return True        # clean bracket / thin / non-dispersed widened / preliminary → include
+
+
+# ── Sprint 2.22.0b.12 (Bug A15): HBU not-evaluated → explicit disclosure ──
+# geometric_factors gates the HBU (Highest-and-Best-Use) block on the zoning hint
+# (current_zoning_code, geometric_factors.py:638); when the zoning layer is unavailable
+# the hint is None → `result['hbu']` is never set → the consumer's `hbu_analysis` is
+# silently dropped, conflating "no HBU upside" with "HBU NOT evaluated" — two materially
+# different RICS (VPS 2 / IVS 102) disclosures. DISCLOSURE-ONLY / value-invariant: surfaces
+# an explicit note; never touches the valuation amount/range/method.
+_HBU_NOTE_AR = 'لم يتسنَّ تحديد فرضية الاستخدام الأفضل لهذه القطعة (طبقة التنظيم غير متاحة)'
+_HBU_NOTE_EN = 'Highest-and-best-use could not be assessed for this plot (zoning layer unavailable).'
+
+
+def _hbu_note_applies(primary, gate, asset_type, amount, zoning_code) -> bool:
+    """True when a villa/house comparison surface had its HBU silently dropped because the
+    zoning hint was absent. zoning_code is None ⟺ the zoning factor was not resolved (then
+    geometric_factors skips HBU) — distinct from 'HBU evaluated, no upside' (zoning present →
+    False here). Reuses _condition_note_applies for the villa/house surface scope + its
+    None/malformed-gate fail-safe-to-disclosure (a malformed gate + absent zoning still
+    discloses). land / apartment / tower / commercial / refusal → False via that helper."""
+    if zoning_code is not None:
+        return False  # zoning present → HBU WAS evaluated (upside or not) → no note
+    return _condition_note_applies(primary, gate, asset_type, amount)
 
 
 # ════════════════════════════════════════════════════════════════════
