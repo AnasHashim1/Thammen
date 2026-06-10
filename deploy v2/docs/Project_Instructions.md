@@ -384,7 +384,7 @@ CLAUDE.md #65a.**
 |**5**|**2.22.0b — 5-stage UX + Stage-2 elicitation**|Consumer value prop (staged Q&A; built-type/condition input). Gated on B.|B (#4)|
 |**6**|**Cost-triangulation (independent DRC)**|Own from-scratch DRC as a **secondary** method (§20.9 + `METHODOLOGY_cost_triangulation_v1.md`) — **NOT** the barred Mthamen API/formula (§20.8). **POST-2.22.0b**; BLOCKED on Open Decision #4 (a curated ground-truth sample).|Open Decision #4 + post-2.22.0b|
 
-**Open mediums (backlog):** A5 (`asset_type unknown`) · A15 (silent-HBU-drop under QARS degradation, §20.5) ·
+**Open mediums (backlog):** A5 (`asset_type unknown`) · ~~A15~~ (silent-HBU-drop ✅ CLOSED Sprint 2.22.0b.12 / v181, §20.46) ·
 **A16** (bracket area-name under-match — the only Marikh lever, R9; own sprint after a LIVE Marikh trace).
 
 **Older detail table below — all verified UNSHIPPED (2026-06-01), kept, ordering SUPERSEDED:** behind-beta =
@@ -553,7 +553,7 @@ for compound_small remains queued as Sprint 2.18.2 candidate.
 |---|---|---|
 |A5|`asset_type: unknown` بدون شرح|backlog|
 |A7|`rics_compliant` دائماً false|backlog|
-|A15|HBU silently dropped when the zoning hint is absent (reachable under QARS degradation) — `geometric_factors.py:611` + consumer `evaluate_unified.py:4428`; graceful-disclosure fix = Gate 2 (Session_Log §20.5)|backlog|
+|A15|HBU silently dropped when the zoning hint is absent (reachable under QARS degradation) — `geometric_factors.py:638` + the consumer. **✅ CLOSED 2026-06-10 (Sprint 2.22.0b.12, Heroku v181, §20.46 / CHANGELOG_v95)** — `hbu_note_ar/en` discloses «HBU not evaluated» when the zoning layer is unavailable (value-invariant, villa/house, muted `.rn` near the value_floor).|CLOSED|
 |A16|MoJ-bracket matcher under-matches: `apply_moj_strategy` n=1 vs geo_v2 n=42 for the SAME area+bracket (54/541/6) — مريخ ↔ امريخ الجنوبي alias/NBSP normalization gap (separate from Sprint 2.22.0a.10)|backlog|
 
 ### 🟢 Deferred
