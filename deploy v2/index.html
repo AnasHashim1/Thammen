@@ -235,6 +235,22 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .sanity-warn li{padding:8px 0;border-bottom:1px dashed #F4D88A;font-size:.9rem;color:#5C3A00;line-height:1.7}
 .sanity-warn li:last-child{border-bottom:none}
 .sanity-warn li::before{content:'•';color:#F4B400;font-weight:800;margin-left:8px}
+/* Sprint 2.22.0b.15 — screen-4 progressive disclosure (TIER-2 accordions + TIER-1 evidence row + TIER-3 actions) */
+.t2acc{background:#fff;border:1px solid var(--border,#e5e5e5);border-radius:8px;margin-bottom:10px;overflow:hidden}
+.t2acc>summary{cursor:pointer;list-style:none;padding:13px 16px;font-weight:600;font-size:.92rem;color:var(--primary);display:flex;align-items:center;justify-content:space-between;gap:8px;user-select:none}
+.t2acc>summary::-webkit-details-marker{display:none}
+.t2acc>summary::after{content:'▾';color:var(--muted);font-size:.85rem;transition:transform .2s}
+.t2acc[open]>summary::after{transform:rotate(180deg)}
+.t2acc>summary:hover{background:var(--alt)}
+.t2body{padding:0 14px 14px;border-top:1px solid var(--border,#eee)}
+.t2body>.rc{border:none;box-shadow:none;padding:12px 0 0;margin-bottom:0;background:transparent}
+.ev1row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding:10px 12px;background:var(--alt);border-radius:8px}
+.ev1lbl{font-size:.8rem;color:var(--muted);font-weight:600}
+.ev1item{font-size:.74rem;color:#555;display:inline-flex;align-items:center;gap:4px}
+.t3block{margin:16px 0 6px}
+.t3block .t3btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-weight:700;font-size:.95rem;font-family:'Tajawal';cursor:pointer;margin-bottom:10px}
+.t3block .t3-primary{background:var(--bronze);color:#fff}
+.t3block .t3-secondary{background:#fff;color:var(--primary);border:1.5px solid var(--bronze)}
 @media(max-width:600px){.hlogo img{max-width:260px}.fr3,.fr2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}.fcard{padding:18px}.aud-row{grid-template-columns:1fr 1fr}}
 
 /* Sprint 2.4d: Print / Save-as-PDF styles */
@@ -693,6 +709,28 @@ function evidencePanelHtml(d,acc){
   return h;
 }
 
+// ── Sprint 2.22.0b.15 — Screen-4 polished result (progressive disclosure / DESIGN v4) ──
+// TIER-2 accordion wrapper: native <details>/<summary> (the proven a8 pattern — zero new JS
+// libraries, keyboard/touch accessible). Returns '' on empty inner so no empty accordion ships.
+function _acc(title,inner,open){
+  if(!inner)return '';
+  return '<details class="t2acc"'+(open?' open':'')+'><summary>'+title+'</summary><div class="t2body">'+inner+'</div></details>';
+}
+// TIER-1 evidence summary: the b2.2 four-axis verdict as ONE compact row (the full panel moves to
+// a TIER-2 accordion). Reuses _evidenceRatings/_evPill verbatim (derive-don't-author §2c).
+function _evOneRow(d){
+  var rows=_evidenceRatings(d);
+  var h='<div class="ev1row"><span class="ev1lbl">جودة الأدلّة:</span>';
+  rows.forEach(function(r){
+    var nm=r[0].replace('بيانات العقار','العقار').replace('بيانات السوق','السوق').replace('جودة ','');
+    h+='<span class="ev1item">'+nm+' '+_evPill(r[1])+'</span>';
+  });
+  return h+'</div>';
+}
+// MUC level → Arabic chip word (TIER-1 chip). Only the level word; the full RICS clause stays
+// always-visible below TIER-1 (compliance — never collapsed).
+const MUC_LEVEL_AR={'low':'منخفض','medium':'متوسط','moderate':'متوسط','high':'مرتفع','critical':'حرج'};
+
 // Sprint 2.22.0b.2.3 — Confirmation Gate (Screen 2, v4 owner-journey). Renders, from the
 // SAME response run() already fetched (no 2nd call): a MUTED preliminary range (valuation
 // low–high, signed 5.1) + a READ-ONLY review of the GIS-fetched basis (signed 5.2 — no
@@ -969,14 +1007,20 @@ function copyResult(){
 }
 
 // Sprint 2.4d: Print/Save-as-PDF support
+// Sprint 2.22.0b.15 (F1 — print parity): the TIER-2 accordions are collapsed by default; a
+// closed <details> does NOT print its content. Force every results accordion OPEN before print
+// so the printed report keeps the full stack, then restore the on-screen collapsed state after.
 function printReport(){
-  // Add a class to body so @media print can hide non-report elements
   document.body.classList.add('printing');
-  // Use setTimeout to give the browser a chance to apply the class first
+  const _accs=Array.from(document.querySelectorAll('#rOut details.t2acc'));
+  const _wasOpen=_accs.map(a=>a.open);
+  _accs.forEach(a=>{a.open=true;});
   setTimeout(()=>{
     window.print();
-    // Remove the class after print dialog closes
-    setTimeout(()=>document.body.classList.remove('printing'),500);
+    setTimeout(()=>{
+      document.body.classList.remove('printing');
+      _accs.forEach((a,i)=>{a.open=_wasOpen[i];});
+    },500);
   },50);
 }
 
@@ -1004,12 +1048,26 @@ function show(d){
     }
   }catch(e){}
 
+  // ── Sprint 2.22.0b.15 (screen-4 progressive disclosure): tier buffers. Compliance + alerts
+  // (qualifiers) render ABOVE the number; the figure is TIER-1; detail collapses into TIER-2
+  // accordions; CTAs are TIER-3; freshness/disclaimer stay always-visible at the foot. NO panel
+  // is deleted (brief §2.2) — accordion-wrapped panels stay fully reachable. `h` = scratch buffer
+  // the detail blocks reuse (sliced into an accordion later), then reused for the final assembly.
   let h='';
+  let head='';   // utility (copy / print)
+  let alerts='';  // qualifiers shown ABOVE the number (A11 / reality / multi-QARS / scope / sanity)
+  let muc='';     // full MVU clause card — ALWAYS-VISIBLE (compliance); placed right after TIER-1
+  let a8acc='';   // a8 RICS/IVS methodology note (already a collapsed surface)
+  let t1='';      // TIER-1 — the figure + tier badge + MUC chip + not-certified line + evidence one-row
+  let t2='';      // TIER-2 — collapsed accordions (valued path)
+  let t3='';      // TIER-3 — refine + report CTAs
+  let flat='';    // refusal path: shared panels rendered FLAT (byte-equivalent to pre-b15)
+  let foot='';    // ALWAYS-VISIBLE compliance foot (freshness / disclaimer / verification)
 
   // ── Copy button (top, floats right) ──
-  h+='<button id="copyBtn" class="copy-btn" onclick="copyResult()">📋 نسخ النتيجة</button>';
-  h+='<button class="copy-btn print-btn" onclick="printReport()" style="margin-right:8px">🖨️ طباعة / حفظ PDF</button>';
-  h+='<div style="clear:both"></div>';
+  head+='<button id="copyBtn" class="copy-btn" onclick="copyResult()">📋 نسخ النتيجة</button>';
+  head+='<button class="copy-btn print-btn" onclick="printReport()" style="margin-right:8px">🖨️ طباعة / حفظ PDF</button>';
+  head+='<div style="clear:both"></div>';
 
   // ── Sprint 2.14.0 + 2.16.9 + 2.22.0a/9+/12: Material Valuation Uncertainty (MVU) Clause ──
   // (FIRST, most prominent). Sprint 2.22.0a/12 Phase 1.5b — citation updated to
@@ -1038,13 +1096,13 @@ function show(d){
     }
   }
   if(muc_ar){
-    h+='<div style="background:var(--bad-bg);border:2px solid var(--bad);border-radius:8px;padding:16px;margin-bottom:14px">';
+    muc+='<div style="background:var(--bad-bg);border:2px solid var(--bad);border-radius:8px;padding:16px;margin-bottom:14px">';
     // Sprint 2.22.0a.2 Pattern A: LRM-wrap Latin tokens to prevent bidi reversal (Operational_Rules #25).
-    h+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem">⚠️ تحفظ مادي وفق ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ و ‎VPS 6‎ — و ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎</div>';
-    h+='<div style="white-space:pre-line;line-height:1.7;font-size:.92rem">'+muc_ar.replace(/^⚠️[^\n]*\n+/,'')+'</div>';
-    if(muc_basis)h+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--bad);font-size:.85rem;color:var(--muted)"><strong>الأساس:</strong> '+muc_basis+'</div>';
-    if(muc_review)h+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+muc_review+'</div>';
-    h+='</div>';
+    muc+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem">⚠️ تحفظ مادي وفق ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ و ‎VPS 6‎ — و ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎</div>';
+    muc+='<div style="white-space:pre-line;line-height:1.7;font-size:.92rem">'+muc_ar.replace(/^⚠️[^\n]*\n+/,'')+'</div>';
+    if(muc_basis)muc+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--bad);font-size:.85rem;color:var(--muted)"><strong>الأساس:</strong> '+muc_basis+'</div>';
+    if(muc_review)muc+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+muc_review+'</div>';
+    muc+='</div>';
   }
 
   // ── Sprint 2.22.0a.8: secondary RICS/IVS methodology + models-standard note ──
@@ -1053,10 +1111,10 @@ function show(d){
   // supplementary tool, not a standalone compliant valuation. LRM marks arrive embedded
   // in the backend string (Operational_Rules #25); Latin in the summary uses &lrm;.
   if(d.rics_methodology_note_ar){
-    h+='<details style="margin-bottom:14px;border:1px solid var(--light);border-radius:8px;padding:10px 12px;background:var(--alt)">';
-    h+='<summary style="cursor:pointer;font-weight:600;font-size:.9rem;color:var(--primary)">ℹ️ المنهجية ومعايير &lrm;RICS / IVS&lrm;</summary>';
-    h+='<div style="margin-top:8px;line-height:1.7;font-size:.88rem;color:var(--muted)">'+d.rics_methodology_note_ar+'</div>';
-    h+='</details>';
+    a8acc+='<details style="margin-bottom:14px;border:1px solid var(--light);border-radius:8px;padding:10px 12px;background:var(--alt)">';
+    a8acc+='<summary style="cursor:pointer;font-weight:600;font-size:.9rem;color:var(--primary)">ℹ️ المنهجية ومعايير &lrm;RICS / IVS&lrm;</summary>';
+    a8acc+='<div style="margin-top:8px;line-height:1.7;font-size:.88rem;color:var(--muted)">'+d.rics_methodology_note_ar+'</div>';
+    a8acc+='</details>';
   }
 
   // ── Sprint 2.16.14: Bug A11 — Zoning/Subtype contradiction warning ──
@@ -1069,16 +1127,16 @@ function show(d){
   // confirm the actual use before relying on the residential classification.
   const szm=d.subtype_zoning_mismatch;
   if(szm&&szm.message_ar){
-    h+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
-    h+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem">⚠️ تناقض في تصنيف العقار</div>';
-    h+='<div style="line-height:1.7;font-size:.92rem">'+szm.message_ar+'</div>';
+    alerts+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
+    alerts+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem">⚠️ تناقض في تصنيف العقار</div>';
+    alerts+='<div style="line-height:1.7;font-size:.92rem">'+szm.message_ar+'</div>';
     if(szm.data_age_note_ar){
-      h+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--warn);font-size:.85rem;color:var(--muted)"><strong>ملاحظة:</strong> '+szm.data_age_note_ar+'</div>';
+      alerts+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--warn);font-size:.85rem;color:var(--muted)"><strong>ملاحظة:</strong> '+szm.data_age_note_ar+'</div>';
     }
     if(szm.recommendation_ar){
-      h+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+szm.recommendation_ar+'</div>';
+      alerts+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+szm.recommendation_ar+'</div>';
     }
-    h+='</div>';
+    alerts+='</div>';
   }
 
   // ── Sprint 2.21.0.7: Asset Type Reality Check panel (PIN/land path) ──
@@ -1092,10 +1150,10 @@ function show(d){
     const bdr=isWarn?'var(--warn)':'var(--bad)';
     const bg=isWarn?'var(--warn-bg)':'var(--bad-bg)';
     const ttl=isWarn?'⚠️ تنبيه على تصنيف الأرض':(atr.reason==='building_present'?'⚠️ القطعة عليها مبنى':'❌ خارج نطاق التقييم');
-    h+='<div style="background:'+bg+';border:2px solid '+bdr+';border-radius:8px;padding:16px;margin-bottom:14px">';
-    h+='<div style="font-weight:700;color:'+bdr+';margin-bottom:8px;font-size:1.02rem">'+ttl+'</div>';
-    h+='<div style="line-height:1.8;font-size:.92rem;white-space:pre-line">'+atr.message_ar+'</div>';
-    h+='</div>';
+    alerts+='<div style="background:'+bg+';border:2px solid '+bdr+';border-radius:8px;padding:16px;margin-bottom:14px">';
+    alerts+='<div style="font-weight:700;color:'+bdr+';margin-bottom:8px;font-size:1.02rem">'+ttl+'</div>';
+    alerts+='<div style="line-height:1.8;font-size:.92rem;white-space:pre-line">'+atr.message_ar+'</div>';
+    alerts+='</div>';
   }
 
   // ── Sprint 2.21.0.9 (Stage 1): Multi-QARS unified flag ──
@@ -1111,25 +1169,25 @@ function show(d){
     const cad=mqr.cadastral_area;
     const eff=mqr.effective_per_villa;
     const coh=(mqr.cohabiting_buildings||[]).filter(x=>x!=null);
-    h+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
-    h+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem">⚠️ قطعة مشتركة ('+ n +' فلل على نفس القطعة)</div>';
-    h+='<div style="line-height:1.7;font-size:.92rem">تقييم مبدئي بقسمة الأرض بالتساوي ('+ (cad!=null?cad:'?') +' ÷ '+ n +' = '+ eff +' م²). لو حصة الأرض الفعلية مختلفة، عدّل المساحة يدوياً.</div>';
+    alerts+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
+    alerts+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem">⚠️ قطعة مشتركة ('+ n +' فلل على نفس القطعة)</div>';
+    alerts+='<div style="line-height:1.7;font-size:.92rem">تقييم مبدئي بقسمة الأرض بالتساوي ('+ (cad!=null?cad:'?') +' ÷ '+ n +' = '+ eff +' م²). لو حصة الأرض الفعلية مختلفة، عدّل المساحة يدوياً.</div>';
     if(coh.length){
-      h+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted)">الفيلات الأخرى على نفس الـ PIN: '+ coh.join(', ') +'</div>';
+      alerts+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted)">الفيلات الأخرى على نفس الـ PIN: '+ coh.join(', ') +'</div>';
     }
     if(mqr.user_override_applied){
-      h+='<div style="margin-top:10px;padding:8px 12px;background:var(--ok-bg);color:var(--ok);border-radius:6px;font-size:.88rem">✓ تم استخدام المساحة التي حدّدتها يدوياً ('+ eff +' م²)</div>';
+      alerts+='<div style="margin-top:10px;padding:8px 12px;background:var(--ok-bg);color:var(--ok);border-radius:6px;font-size:.88rem">✓ تم استخدام المساحة التي حدّدتها يدوياً ('+ eff +' م²)</div>';
     }
     // Stage-1 transparency: surface stage + confidence so the broker
     // understands this is the first-pass estimate, not the final word.
-    h+='<div style="margin-top:8px;font-size:.78rem;color:var(--muted)">المرحلة '+ (mqr.stage||1) +' — ثقة ~'+ (mqr.confidence_pct||70) +'% (تقدير سريع، قابل للتصحيح)</div>';
+    alerts+='<div style="margin-top:8px;font-size:.78rem;color:var(--muted)">المرحلة '+ (mqr.stage||1) +' — ثقة ~'+ (mqr.confidence_pct||70) +'% (تقدير سريع، قابل للتصحيح)</div>';
     // Manual override row — the only action in Stage 1 (no toggle).
-    h+='<div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--warn);display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
-    h+='<label style="font-size:.88rem;color:var(--text);font-weight:600">عدّل المساحة (م²):</label>';
-    h+='<input id="mqOverrideInput" type="number" min="1" max="10000" step="1" placeholder="'+ eff +'" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;width:120px">';
-    h+='<button class="copy-btn" onclick="thammenReEvalOverrideFromInput()">إعادة التقييم</button>';
-    h+='</div>';
-    h+='</div>';
+    alerts+='<div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--warn);display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
+    alerts+='<label style="font-size:.88rem;color:var(--text);font-weight:600">عدّل المساحة (م²):</label>';
+    alerts+='<input id="mqOverrideInput" type="number" min="1" max="10000" step="1" placeholder="'+ eff +'" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;width:120px">';
+    alerts+='<button class="copy-btn" onclick="thammenReEvalOverrideFromInput()">إعادة التقييم</button>';
+    alerts+='</div>';
+    alerts+='</div>';
   }
 
   // ── Sprint 2.14.0: Service Scope tier badge ──
@@ -1139,47 +1197,47 @@ function show(d){
     if(ss.tier==='supported'){scopeBg='var(--ok-bg)';scopeColor='var(--ok)';scopeIcon='✅';scopeLabel='تحليل آلي';}
     else if(ss.tier==='limited'){scopeBg='var(--warn-bg)';scopeColor='var(--warn)';scopeIcon='⚠️';scopeLabel='تقييم مشروط';}
     else{scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='❌';scopeLabel='خارج النطاق';}
-    h+='<div style="background:'+scopeBg+';border-right:4px solid '+scopeColor+';padding:12px 14px;margin-bottom:14px;border-radius:0 6px 6px 0">';
-    h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
-    h+='<div><strong style="color:'+scopeColor+'">'+scopeIcon+' '+scopeLabel+'</strong> — '+ss.label_ar+'</div>';
-    h+='<div style="font-size:.82rem;color:var(--muted)">'+ss.methodology_ar+'</div>';
-    h+='</div>';
-    if(ss.requires_user_input_ar)h+='<div style="margin-top:8px;font-size:.88rem;color:var(--warn)"><strong>يتطلب:</strong> '+ss.requires_user_input_ar+'</div>';
-    h+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted);line-height:1.6">'+ss.disclaimer_ar+'</div>';
-    h+='</div>';
+    alerts+='<div style="background:'+scopeBg+';border-right:4px solid '+scopeColor+';padding:12px 14px;margin-bottom:14px;border-radius:0 6px 6px 0">';
+    alerts+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
+    alerts+='<div><strong style="color:'+scopeColor+'">'+scopeIcon+' '+scopeLabel+'</strong> — '+ss.label_ar+'</div>';
+    alerts+='<div style="font-size:.82rem;color:var(--muted)">'+ss.methodology_ar+'</div>';
+    alerts+='</div>';
+    if(ss.requires_user_input_ar)alerts+='<div style="margin-top:8px;font-size:.88rem;color:var(--warn)"><strong>يتطلب:</strong> '+ss.requires_user_input_ar+'</div>';
+    alerts+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted);line-height:1.6">'+ss.disclaimer_ar+'</div>';
+    alerts+='</div>';
   }
 
-  // ── Sprint A.3: Sanity warnings — prominent yellow card ──
+  // ── Sprint A.3: Sanity warnings — prominent yellow card (qualifier, ABOVE the number) ──
   const sw=d.sanity_warnings||[];
   if(sw.length>0){
-    h+='<div class="sanity-warn"><h3>تنبيهات مهمة قبل قراءة النتيجة</h3><ul>';
-    sw.forEach(w=>{h+='<li>'+w+'</li>'});
-    h+='</ul></div>';
+    alerts+='<div class="sanity-warn"><h3>تنبيهات مهمة قبل قراءة النتيجة</h3><ul>';
+    sw.forEach(w=>{alerts+='<li>'+w+'</li>'});
+    alerts+='</ul></div>';
   }
 
-  // ── INSUFFICIENT DATA: prominent card with CTA ──
+  // ── INSUFFICIENT DATA: prominent card with CTA (refusal path → flat buffer) ──
   if(!hasValuation){
     const reason=v.reason_ar||'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً.';
     const assetAr=(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type||'هذا العقار');
-    h+='<div class="insuf">';
-    h+='<div class="insuf-icon">ⓘ</div>';
-    h+='<h2>التقييم يحتاج بيانات إضافية</h2>';
-    h+='<p>'+reason+'</p>';
+    flat+='<div class="insuf">';
+    flat+='<div class="insuf-icon">ⓘ</div>';
+    flat+='<h2>التقييم يحتاج بيانات إضافية</h2>';
+    flat+='<p>'+reason+'</p>';
     // Show classification facts (what we DO know)
     if(d.address||d.plot_area_m2){
-      h+='<div style="background:#fff;border-radius:8px;padding:14px;margin-bottom:16px;text-align:right;font-size:.88rem">';
-      if(d.address)h+='<div style="margin-bottom:6px"><strong>العنوان:</strong> '+d.address+'</div>';
-      if(d.district)h+='<div style="margin-bottom:6px"><strong>المنطقة:</strong> '+d.district+'</div>'; // Sprint 2.11
-      if(d.asset_type)h+='<div style="margin-bottom:6px"><strong>نوع العقار:</strong> '+assetAr+'</div>';
-      if(d.plot_area_m2)h+='<div style="margin-bottom:6px"><strong>مساحة الأرض:</strong> '+fmt(d.plot_area_m2)+' م²</div>';
+      flat+='<div style="background:#fff;border-radius:8px;padding:14px;margin-bottom:16px;text-align:right;font-size:.88rem">';
+      if(d.address)flat+='<div style="margin-bottom:6px"><strong>العنوان:</strong> '+d.address+'</div>';
+      if(d.district)flat+='<div style="margin-bottom:6px"><strong>المنطقة:</strong> '+d.district+'</div>'; // Sprint 2.11
+      if(d.asset_type)flat+='<div style="margin-bottom:6px"><strong>نوع العقار:</strong> '+assetAr+'</div>';
+      if(d.plot_area_m2)flat+='<div style="margin-bottom:6px"><strong>مساحة الأرض:</strong> '+fmt(d.plot_area_m2)+' م²</div>';
       // Map button inside insufficient card
       if(d.gps&&d.gps.lat&&d.gps.lon){
         const lat=d.gps.lat,lon=d.gps.lon;
-        h+='<div class="map-links" style="margin-top:10px;padding-top:10px">';
-        h+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')">📍 افتح موقع العقار في الخريطة</button>';
-        h+='</div>';
+        flat+='<div class="map-links" style="margin-top:10px;padding-top:10px">';
+        flat+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')">📍 افتح موقع العقار في الخريطة</button>';
+        flat+='</div>';
       }
-      h+='</div>';
+      flat+='</div>';
     }
     // Sprint 2.16.8 — dynamic CTA: surface service_scope.requires_user_input_ar
     // when present (towers say "الإيجار السنوي الإجمالي للبرج") so the user
@@ -1187,98 +1245,96 @@ function show(d){
     var ssReq=(d.service_scope&&d.service_scope.requires_user_input_ar)||null;
     var ctaText=ssReq?('→ أدخل: '+ssReq):'→ أضف الإيجار أو سعر الإعلان';
     var focusTarget=(d.asset_type==='tower'||d.asset_type==='compound_large'||(ssReq&&ssReq.indexOf('إيجار')>=0))?'rentalIncome':'askingPrice';
-    h+='<button class="insuf-cta" onclick="goForm(\''+focusTarget+'\')">'+ctaText+'</button>';
-    h+='</div>';
-    // For unknown/no district, that's where we stop. Don't render the rest.
-    if(d.asset_type==='unknown'||!d.asset_type){o.innerHTML=h;return}
+    flat+='<button class="insuf-cta" onclick="goForm(\''+focusTarget+'\')">'+ctaText+'</button>';
+    flat+='</div>';
+    // For unknown/no district, that's where we stop. Don't render the rest. Compliance buffers still shown.
+    if(d.asset_type==='unknown'||!d.asset_type){o.innerHTML=head+muc+a8acc+alerts+flat;return}
   }
 
-  // ── Main info card (only if we have a real valuation) ──
+  // ── Sprint 2.22.0b.15 — TIER-1 (the figure) + the basic-info / evidence detail → TIER-2 accordions ──
   if(hasValuation){
-    // Sprint 2.22.0b.2.2 — binary confidence badge removed (DESIGN §3); the
-    // 4-component evidence-quality panel (in the valuation card below) is the
-    // confidence surface. acc.explanation_ar moves into the panel (neutral footer).
-    h+='<div class="rc"><div class="rh"><div class="rt">نتيجة التقدير السوقي</div></div><div class="rg">';
-    if(d.address)h+=ri('العنوان',d.address,0,1);
-    if(d.district)h+=ri('المنطقة',d.district);
-    if(d.plot_area_m2)h+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
-    if(d.asset_type)h+=ri('نوع العقار',(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type));
+    // Basic property data → TIER-2 accordion (b15: removed from BEFORE the number; the title now
+    // lives on the accordion summary, so the inner card drops its own header). Inner HTML verbatim.
+    let _info='<div class="rc"><div class="rg">';
+    if(d.address)_info+=ri('العنوان',d.address,0,1);
+    if(d.district)_info+=ri('المنطقة',d.district);
+    if(d.plot_area_m2)_info+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
+    if(d.asset_type)_info+=ri('نوع العقار',(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type));
     const pi=d.property_info||{};
-    if(pi.zoning)h+=ri('التصنيف',pi.zoning);
-    if(pi.permitted_height)h+=ri('الارتفاع المسموح',pi.permitted_height);
-    h+=pbRows(d.property_basis);  // Sprint 2.22.0b.9 — PIN/electricity/water/age-floor
-    h+='</div>';
-    // ── Map picker (single button — opens app chooser like WhatsApp) ──
+    if(pi.zoning)_info+=ri('التصنيف',pi.zoning);
+    if(pi.permitted_height)_info+=ri('الارتفاع المسموح',pi.permitted_height);
+    _info+=pbRows(d.property_basis);  // Sprint 2.22.0b.9 — PIN/electricity/water/age-floor
+    _info+='</div>';
     if(d.gps&&d.gps.lat&&d.gps.lon){
       const lat=d.gps.lat,lon=d.gps.lon;
-      h+='<div class="map-links">';
-      h+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')">📍 افتح موقع العقار في الخريطة</button>';
-      h+='</div>';
+      _info+='<div class="map-links">';
+      _info+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')">📍 افتح موقع العقار في الخريطة</button>';
+      _info+='</div>';
     }
-    h+='</div>';
+    _info+='</div>';
 
-    // ── Methodology disclosure ──
-    if(d.methodology_ar){
-      h+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin-bottom:14px;font-size:.78rem;color:#666;line-height:1.5">'+d.methodology_ar+'</div>';
-    }
-
-    // ── Valuation card ──
-    // Sprint 2.22.0a/8 — calc-block modifier applies calculator-style M1 visual:
-    // light-grey bg, dashed border, no box-shadow, line-height 1.6 (whole card);
-    // monospace + tabular-nums (scoped to .rv numeric values via CSS).
-    h+='<div class="rc calc-block"><div class="rt" style="margin-bottom:14px">التقدير السوقي</div>';
-    // Sprint 2.22.0a/2 — tier_label TYPE badge (defensive read; empty if absent or unknown).
-    // For 2.22.0a, non-refusal responses emit 'analytical_range' → 'نطاق تحليلي' display.
-    // Refusal responses emit None → no badge (refusal_reason in /5 will carry the surface).
+    // ── TIER-1: the figure (range-as-lead b3) — calc-block visual preserved ──
+    t1+='<div class="rc calc-block"><div class="rt" style="margin-bottom:14px">التقدير السوقي</div>';
+    // tier_label TYPE badge (defensive read; empty if absent/unknown).
     const _tierAr=TIER_LABEL_AR[d.tier_label]||'';
     if(_tierAr){
-      h+='<div style="display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px">'+_tierAr+'</div>';
+      t1+='<div style="display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px;margin-left:6px">'+_tierAr+'</div>';
     }
-    // Sprint 2.22.0b.3 (range-as-lead, §2b authority/finality dial-down): the market RANGE
-    // is the headline; the median is a muted central-estimate marker beneath it. We surface
-    // the engine's TRUE (possibly-asymmetric) low/high — NOT a forced symmetric ± (PHASE0
-    // recon §1: on thin paths the median sits AT the high edge, so a symmetric bar would
-    // invent upside the engine explicitly refuses). Point fallback when no range present.
+    // Sprint 2.22.0b.15 — MUC level CHIP in TIER-1 (first-glance compliance signpost). The FULL RICS
+    // clause (`muc` buffer) stays always-visible immediately below TIER-1 — never collapsed.
+    if(muc_ar&&MUC_LEVEL_AR[(mu||{}).level]){
+      t1+='<div style="display:inline-block;padding:3px 10px;background:var(--bad-bg);color:var(--bad);border-radius:12px;font-size:.74rem;margin-bottom:10px">⚠️ تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';
+    }
+    // Sprint 2.22.0b.3 (range-as-lead, §2b authority/finality dial-down): TRUE (possibly-asymmetric)
+    // low/high headline; median = muted central-estimate marker. Point fallback when no range present.
     if(v.low!=null&&v.high!=null){
-      h+='<div class="ri full" style="margin-bottom:8px"><div class="rl">النطاق التقديري السوقي</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.low)+' – '+fmt(v.high)+' ر.ق</div></div>';
-      h+='<div class="rn" style="margin-bottom:10px;font-size:.84rem">الوسيط (التقدير المركزي) ≈ <strong>'+fmt(v.amount)+'</strong> ر.ق</div>';
+      t1+='<div class="ri full" style="margin-bottom:8px"><div class="rl">النطاق التقديري السوقي</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.low)+' – '+fmt(v.high)+' ر.ق</div></div>';
+      t1+='<div class="rn" style="margin-bottom:10px;font-size:.84rem">الوسيط (التقدير المركزي) ≈ <strong>'+fmt(v.amount)+'</strong> ر.ق</div>';
     }else{
-      h+='<div class="ri full" style="margin-bottom:10px"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.amount)+' ر.ق</div></div>';
+      t1+='<div class="ri full" style="margin-bottom:10px"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.amount)+' ر.ق</div></div>';
     }
-    // Sprint 2.22.0a.17: clean-bracket condition caveat — muted neutral note directly under the range.
-    if(v.condition_note_ar){h+='<div class="rn" style="margin-top:10px;font-size:.8rem">'+v.condition_note_ar+'</div>';}
-    // Sprint 2.22.0b.4 (B-2a): teardown re-anchor disclosure — value = land − demolition; standing building is a liability.
-    if(v.teardown&&v.teardown.note_ar){h+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--warn);background:var(--warn-bg)">🏚️ '+v.teardown.note_ar+'</div>';}
-    // Sprint 2.22.0b.4 (B-2b): luxury-new premium disclosure — value uplifted toward the confirmed-sale GT.
-    if(v.luxury_new_premium&&v.luxury_new_premium.note_ar){h+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--ok);background:var(--ok-bg)">💎 '+v.luxury_new_premium.note_ar+'</div>';}
-    // Sprint 2.22.0a.21 (B-1): land-floor / HBU decomposition — muted block under the range (value-invariant).
+    // Headline honesty notes (a17/a19 condition · b4 teardown/luxury · B-1 value_floor · b12 hbu) — STAY on TIER-1.
+    if(v.condition_note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.8rem">'+v.condition_note_ar+'</div>';}
+    if(v.teardown&&v.teardown.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--warn);background:var(--warn-bg)">🏚️ '+v.teardown.note_ar+'</div>';}
+    if(v.luxury_new_premium&&v.luxury_new_premium.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--ok);background:var(--ok-bg)">💎 '+v.luxury_new_premium.note_ar+'</div>';}
     if(v.value_floor){
       const vf=v.value_floor;
-      h+='<div class="rn" style="margin-top:10px;font-size:.8rem">';
-      if(vf.land_floor_note_ar)h+='<div>'+vf.land_floor_note_ar+'</div>';
-      if(vf.land_anchored){if(vf.land_anchored_note_ar)h+='<div style="margin-top:6px">'+vf.land_anchored_note_ar+'</div>';}
-      else if(vf.implied_building_note_ar){h+='<div style="margin-top:6px">'+vf.implied_building_note_ar+'</div>';}
-      h+='</div>';
+      t1+='<div class="rn" style="margin-top:10px;font-size:.8rem">';
+      if(vf.land_floor_note_ar)t1+='<div>'+vf.land_floor_note_ar+'</div>';
+      if(vf.land_anchored){if(vf.land_anchored_note_ar)t1+='<div style="margin-top:6px">'+vf.land_anchored_note_ar+'</div>';}
+      else if(vf.implied_building_note_ar){t1+='<div style="margin-top:6px">'+vf.implied_building_note_ar+'</div>';}
+      t1+='</div>';
     }
-    // Sprint 2.22.0b.12 (Bug A15): HBU not evaluated (zoning layer unavailable) — explicit muted disclosure near the value_floor block.
-    if(v.hbu_note_ar){h+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.hbu_note_ar+'</div>';}
-    // Clearer MoJ wording + explanation
+    if(v.hbu_note_ar){t1+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.hbu_note_ar+'</div>';}
+    // MoJ sample size (cite-n discipline) — STAYS on TIER-1.
     if(d.moj_sample_size){
-      h+='<div class="ri" style="margin-bottom:10px"><div class="rl">صفقات البيع المسجلة لعقارات مشابهة</div><div class="rv">'+d.moj_sample_size+' صفقة</div></div>';
+      t1+='<div class="ri" style="margin-bottom:10px"><div class="rl">صفقات البيع المسجلة لعقارات مشابهة</div><div class="rv">'+d.moj_sample_size+' صفقة</div></div>';
     }
-    // ── Sprint 2.22.0b.2.2 — evidence-quality diagnosis panel (DESIGN §3 / §2b):
-    // replaces the binary badge + the tier-coloured "ما معنى ذلك؟" block. The
-    // comparables explanation is kept as a neutral footer inside the panel
-    // (evidence-count-forward), no longer tier-coloured.
-    h+='</div>';
-    h+=evidencePanelHtml(d,acc);
+    // Sprint 2.22.0b.15 — «ليس تقييماً معتمداً» line (compliance — TIER-1, always visible). a20 status appended when present.
+    var _statusAr=(d.material_uncertainty||{}).rics_compliant_status_ar;
+    t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;color:#8a6d3b;background:#fcf8e3;border-radius:6px;padding:7px 10px">📌 تقدير سوقيّ آليّ — ليس تقييماً معتمداً'+(_statusAr?(' ('+_statusAr+')'):'')+'.</div>';
+    // Evidence one-row summary (drama on evidence, not the figure §2c). The FULL b2.2 panel → TIER-2 accordion.
+    t1+=_evOneRow(d);
+    // Methodology bare line (a4 honesty surface) — kept visible directly under TIER-1.
+    if(d.methodology_ar){
+      t1+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin:12px 0 0;font-size:.78rem;color:#666;line-height:1.5">'+d.methodology_ar+'</div>';
+    }
+    t1+='</div>';
+
+    // TIER-2 accordions: basic info + full evidence panel (no information lost — both fully reachable).
+    t2+=_acc('🏠 بيانات العقار الأساسية',_info);
+    t2+=_acc('📊 جودة الأدلّة (تفصيل)',evidencePanelHtml(d,acc));
   }
 
-  // ── BRIEF SECTIONS (Sprint D — was missing entirely) ──
+  // ── BRIEF SECTIONS (Sprint D — was missing entirely) ── valued→TIER-2 accordion; refusal→flat (verbatim) ──
   const br=d.brief;
   if(br&&br.sections&&br.sections.length>0){
-    h+='<div class="rc" style="background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px"><div class="rt" style="font-size:1.15rem;margin-bottom:0">'+(br.title_ar||'التقرير')+'</div></div>';
-    br.sections.forEach(sec=>{h+=renderSection(sec)});
+    let _secs=''; br.sections.forEach(sec=>{_secs+=renderSection(sec)});
+    if(hasValuation){ t2+=_acc('📄 '+(br.title_ar||'تفاصيل التقرير'),_secs); }
+    else {
+      flat+='<div class="rc" style="background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px"><div class="rt" style="font-size:1.15rem;margin-bottom:0">'+(br.title_ar||'التقرير')+'</div></div>';
+      flat+=_secs;
+    }
   }
 
   // ── Value Decomposition: Land vs Building (Sprint 2.6) ──
@@ -1623,28 +1679,43 @@ function show(d){
     h+='</div></div>';
   }
 
-  // ── Sprint 2.7: Data freshness caveat (under valuation, before disclaimer) ──
+  // ── Sprint 2.22.0b.15 — the detail blocks above accumulated into the scratch `h`. Valued path:
+  // collapse them into ONE TIER-2 «التفاصيل الكاملة» accordion (the a8 RICS/IVS note nested at top);
+  // refusal: keep them FLAT (byte-equivalent to pre-b15). No panel is lost — all stay reachable. ──
+  if(hasValuation){ t2+=_acc('🔎 التفاصيل الكاملة (التحليل والمقارنات)', a8acc+h); }
+  else { flat+=h; }
+  h='';  // scratch consumed → reused for the final assembly below
+
+  // ── TIER-3 actions (valued path): refine (b13 age nudge) + full report (b17 rewires to screen 5) ──
+  if(hasValuation){
+    t3+='<div class="t3block">';
+    t3+='<button class="t3btn t3-primary" onclick="go(\'refine\')">✏️ حسّن التقدير — أضف تفاصيل مبناك</button>';
+    t3+='<button class="t3btn t3-secondary" onclick="printReport()">📄 التقرير الكامل / حفظ PDF</button>';
+    t3+='</div>';
+  }
+
+  // ── ALWAYS-VISIBLE compliance foot: data-freshness caveat (Sprint 2.7) + disclaimer + verification ──
   if(d.data_freshness && d.data_freshness.caveat_ar){
     const sev=d.data_freshness.severity||'info';
-    h+='<div class="dfc s-'+sev+'">'+d.data_freshness.caveat_ar+'</div>';
+    foot+='<div class="dfc s-'+sev+'">'+d.data_freshness.caveat_ar+'</div>';
   }
-
-  // ── Disclaimer ──
   if(d.disclaimer){
-    h+='<div class="rc" style="border-color:var(--warn-bg)"><div class="rn" style="font-size:.8rem">'+d.disclaimer+'</div></div>';
+    foot+='<div class="rc" style="border-color:var(--warn-bg)"><div class="rn" style="font-size:.8rem">'+d.disclaimer+'</div></div>';
   }
-
-  // ── Sprint 2.22.0a/7: verification_url footer ──
-  // Universal audit-trail link, present on every response (value-producing
-  // AND refusal — orthogonal to tier_label/refusal_reason gating per §5.2).
-  // Hidden when verification_url is null (Q4 (a) — falsy address/date).
-  // The /verify endpoint returns 404 in 2.22.0a; UI deferred to 2.22.0.1.
+  // Universal audit-trail link (Sprint 2.22.0a/7), hidden when verification_url is null.
   if(d.verification_url){
-    h+='<div class="verification-footer">';
-    h+='<a href="'+d.verification_url+'" target="_blank" rel="noopener">تحقّق من التقدير ←</a>';
-    h+='</div>';
+    foot+='<div class="verification-footer">';
+    foot+='<a href="'+d.verification_url+'" target="_blank" rel="noopener">تحقّق من التقدير ←</a>';
+    foot+='</div>';
   }
 
+  // ── Assemble in tier order. Valued: alerts (qualifiers) → TIER-1 figure → full MVU clause →
+  // TIER-2 accordions → TIER-3 actions → compliance foot. Refusal: pre-b15 flat order preserved. ──
+  if(hasValuation){
+    h=head+alerts+t1+muc+t2+t3+foot;
+  }else{
+    h=head+muc+a8acc+alerts+flat+foot;
+  }
   o.innerHTML=h;
 }
 
