@@ -559,6 +559,22 @@ sales).
 Phase-1b) + **R8**; Rule **#52** / **E22** (verify the default flow). Recall: **"تذكر E23"** /
 **"تذكر dispersion not thinness"**.
 
+### 🆕 Rule E24 — QARS `SURVEYED_DATE` → system building-age is a strict FLOOR (survey-vintage cliff + transaction re-survey), never a fixable offset
+
+✓ **Measured 2026-06-10** (`docs/PHASE0_age_gap_recon.md`; live khazna `QARS_Point` probe, **n=737** villa parcels zones 52-56 + the GT set V001/V002/V003). Anchors the §20.9 cost-triangulation GATED slice (Sprint 2.22.0b.13).
+
+**The finding.** `SURVEYED_DATE` is the **GIS survey vintage, NOT the construction date.** System age (now − `SURVEYED_DATE`) is a **guaranteed LOWER BOUND on actual building age** — a survey cannot predate construction. The gap is **NOT a constant offset and NOT proportional**; two discrete mechanisms drive it:
+
+1. **Survey-vintage CLIFF (~2009-2012):** a mass QARS survey campaign. **Measured: hard max system age 17.0y; 65% surveyed 2009-2010; 62% at ≥16y.** Pre-2009 stock is floored at ≤17y — actual age **unbounded above**, unrecoverable from `SURVEYED_DATE` (V001 56/647/6: system 16.8 vs actual ~25).
+2. **Transaction re-survey:** a sale re-stamps `SURVEYED_DATE` to ~now → system age ≈ 0 even on a 2-4y building (V002/V003: system 0.2 vs actual ~2-4).
+
+**The rule (per slice direction).**
+- A **cost FLOOR / DOWN-re-anchor is SAFE on system age** — a too-low age → higher retention → higher cost → a higher floor → more conservative (b11's measured immunity; §20.45).
+- A **convergent-TRIM or any actual-age-dependent UP-move REQUIRES a user-supplied `building_age_years`** — above the 2009 cliff the system age is uninformative, so a system-age cost **under-trims**. Use `effective_age = max(user_actual, system)` (system stays a floor; a user input *younger* than system must never raise retention).
+- **Cliff-flag (disclosure, value-invariant):** `sys_age ≥ 15 AND survey-year ∈ {2009..2012}` (or `sys_age < 2` on resale subtype-1) → "the registered age is a floor — enter the actual age for higher precision." **62%** of villas qualify.
+
+**Pairs with:** RISK_REGISTER **R7** (condition/age blindness); §20.9 / `METHODOLOGY_DRC_qatar_v1.md` §11; Rule **#52** / **E22** (verify the default flow — the trim is dormant on no-age traffic). Recall: **"تذكر E24"** / **"تذكر system age = a floor"**.
+
 ### 🆕 Testing-discipline lessons (A14, 2026-05-30)
 
 **Lesson 1 — HBU-positive + E7 coverage in determinism tests.**
