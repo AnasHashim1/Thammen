@@ -21,8 +21,8 @@
 
 | # | Item | Type | Owner | Status | Note |
 |---|---|---|---|---|---|
-| 1 | **Decision-support framing in UI** | content | Anas + Claude.ai drafts | not started | A clear "what this is / isn't" + the not-certified line on the result surface. |
-| 2 | **Basic ToS + disclaimer + privacy/consent notice** | legal-light | Anas + **counsel** (Claude.ai drafts a starting point) | not started | Limitation of liability + PDPPL consent for the cohort. **Draft + get review — not lawyer-authoritative from me.** Proportionate to a small consented cohort. |
+| 1 | **Decision-support framing in UI** | content | Anas + Claude.ai drafts | **✅ SHIPPED (a24/v163)** | The consent gate + «ليس تقييماً معتمداً» + the "what this is / isn't" + not-certified line are live on the result surface (a24: COMPLIANCE_SELF_CLEARANCE_beta_v1 + DPIA + consent/log-scrub). |
+| 2 | **Basic ToS + disclaimer + privacy/consent notice** | legal-light | Anas + **counsel** (Claude.ai drafts a starting point) | **✅ SHIPPED for beta (a24/v163)** | Terms modal (verbatim) + consent gate + DPIA + COMPLIANCE_SELF_CLEARANCE_beta_v1 live (a24 consent/log-scrub). **Formal counsel pass at PAID/PUBLIC** — not lawyer-authoritative from me. |
 | 3 | **A7 fix** (`rics_compliant` always false) | sprint (S) | CC | open bug | Shouldn't ship even to a beta cohort that might check. Small. |
 | 4 | **Beta instrumentation — prediction log + feedback** | sprint (S) | CC | **shipped-dormant (a15 / Heroku v154), pending activation** | SHIPPED 2026-06-01 (CHANGELOG_v67 / §20.15): NET-NEW durable capture + `POST /api/feedback`, backend-only, **flag-off + no-op without `DATABASE_URL`** → zero data footprint. Two-lane post-deploy smoke BYTE-IDENTICAL; isolated 27/27, DoD 392/15/45/58. **ACTIVATION** (provision Postgres → `DATABASE_URL` + `EVAL_CAPTURE_ENABLED=true`) gated on **§8.1 PDPPL + §8.2 cross-border** (counsel, R11) **+ the a15 capture-surface security pass** (#7 below / LAUNCH_READINESS gate 11). This is what closes gate 4 over time. |
 | 5 | **Scope + banner confirm** | audit | CC / Claude.ai | mostly done | Villas/land only; apt-refusal copy beta-appropriate; stale-data banner prominent. |
