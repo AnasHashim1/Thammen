@@ -575,6 +575,16 @@ Phase-1b) + **R8**; Rule **#52** / **E22** (verify the default flow). Recall: **
 
 **Pairs with:** RISK_REGISTER **R7** (condition/age blindness); §20.9 / `METHODOLOGY_DRC_qatar_v1.md` §11; Rule **#52** / **E22** (verify the default flow — the trim is dormant on no-age traffic). Recall: **"تذكر E24"** / **"تذكر system age = a floor"**.
 
+### 🆕 Rule E25 — A new-premium villa's market premium EXCEEDS its replacement cost → the under-anchor is NOT cost-reachable
+
+✓ **Measured 2026-06-10** (Sprint 2.22.0b.13 Phase-0 recon, `docs/PHASE0_2p22p0b13_gated_slice.md`; the project's GT-2 confirmed sales V002/V003 = 56/565/10+12).
+
+**The finding.** V002/V003 (NEW premium villas) **SOLD 4.0M** each; the engine comparison under-anchors them at 2.4–2.5M (**−37/−40%**). The §20.9 DRC **cost approach gives ~2.26M (ordinary) / ~2.6M (luxury)** — i.e. the depreciated replacement cost is **BELOW both the market AND the sale**. ⇒ **the under-anchor on new-premium stock is NOT reachable by the cost approach**: the 4.0M is a **market premium** (premium-new scarcity / location) that exceeds bricks-and-mortar replacement cost. This **falsified** the §20.9 GATED-slice "Lever 2 (UP-lift toward the cost)" — the cost cannot lift them (it doesn't even exceed the market by >30%; +4% at luxury) → Lever 2 was DROPPED (§20.47).
+
+**The rule.** When a confirmed sale **exceeds the depreciated replacement cost**, the gap is a **market premium**, and the ONLY durable fix for the comparison under-anchor is a **calibrated `luxury_new` comparable stratum** (B-2 Lever 1, corpus-calibrated from GT-2 sales — the `luxury_new` E4 stratum is **n=0** locally, §20.27, PARKED on n≥20). Do NOT reach for the cost approach to lift an under-anchored premium villa — its DRC is the **floor**, never the market-premium **ceiling**. (Symmetric to E24 / §20.45's DOWN-half: the cost is a sound *floor*, immune via the system-age FLOOR; it is never a premium ceiling.)
+
+**Pairs with:** RISK_REGISTER **R7** (the under-anchor half) + **R19** (GT scarcity); §20.27 (B-2, `luxury_new` n=0); §20.47 (the GATED-slice reshape — Lever 2 dropped). Recall: **"تذكر E25"** / **"تذكر العلاوة فوق التكلفة"**.
+
 ### 🆕 Testing-discipline lessons (A14, 2026-05-30)
 
 **Lesson 1 — HBU-positive + E7 coverage in determinism tests.**

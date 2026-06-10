@@ -1,7 +1,7 @@
 # RISK_SUMMARY — Thammen (الطبقة الحيّة)
 
 > **The living risk layer.** Updated at **every sprint close-out** + every `#57` handshake (KRI check). Full depth lives in `RISK_REGISTER_v2.md` (point-in-time snapshot 2026-06-09 — reference, not line-maintained) and the canonical `RISK_REGISTER.md` (R1–R22 ledger). If this page and the snapshot disagree, **this page + live `/api/health` win** (Rule #58).
-> **Last updated:** 2026-06-09 (post-errata: R9 closed-at-a18; gate #6 per ISS-G03). **Owner:** Anas.
+> **Last updated:** 2026-06-10 (b13/v182 — §20.9 Lever-1 convergent-TRIM shipped [user-age-gated]; D-1 0.31 ✅; Lever-2 UP-lift falsified → B-2). **Owner:** Anas.
 
 ## 1 — Heatmap (residual, current risks)
 
@@ -18,7 +18,7 @@
 
 | # | الخطر | السطر الواحد | العلاج | محجوز على |
 |---|---|---|---|---|
-| 1 | **R7** | المحرّك أعمى عن النوع/الحالة → ±37–40% في طرفَي السوق؛ نصف **التبخيس** بلا أيّ علاج | §20.9 GATED slice ثم B-2 | **D-1** |
+| 1 | **R7** | نصف **المبالغة** مُعالَج (b11 floor + b13 trim, user-age-gated)؛ نصف **التبخيس** → B-2 PARKED n≥20 (Lever-2 falsified: V002/V003 بِيعا فوق تكلفة الإحلال — العلاوة سوقيّة لا تكلفة؛ يحتاج luxury_new GT) | b11+b13 ✓ ثم B-2 | **D-3 (GT)** |
 | 2 | **R20** | لا مقياس خطأ ميدانيّ — capture خامل | تفعيل القياس (gate #11) | **D-2** |
 | 3 | **R19** | كوربوس GT < 20 → لا معايرة ولا ادّعاء دقّة | مسار جمع GT (يدويّ + عضويّ) | **D-3** |
 | 4 | **R21** | MoJ مصدر وحيد مجمَّد 160 يوماً | مقبول بنيويّاً + بوّابة التبنّي | — (EXT) |
@@ -28,9 +28,9 @@
 
 | قرار | يفتح | الحالة |
 |---|---|---|
-| **D-1 · معامل ~0.31** (الفاخر المتهالك) | §20.9 UP-lift — نصف التبخيس غير المُعالَج (أكبر رافعة) | ⏳ معلَّق |
+| ~~D-1~~ · معامل 0.31 (الفاخر المتهالك) | ✅ شُحن b13 — أرضية التشطيب الفاخر في التكلفة (تخدم trim الهبوط؛ الرفع المُسقَط → B-2) | ✅ |
 | **D-2 · §8.1 + §8.2** (حقول/إقامة البيانات) | تفعيل capture → قياس الخطأ (R20+R11) | ⏳ معلَّق |
-| **D-3 · بدء جمع GT** (لا بوّابة كوهورت — ISS-G03) | نموّ الكوربوس (R19) | ⏳ معلَّق |
+| **D-3 · بدء جمع GT** (لا بوّابة كوهورت — ISS-G03) — **القرار المُلزِم الآن** | تفعيل trim (b13) + فكّ B-2 + بناء شريحة luxury_new (R19 + نصف R7-التبخيس) | ⏳ معلَّق — الأعلى أثراً |
 | **D-5 · توقيت استعلام Aqarat** | المسار التنظيمي قبل أيّ تسييل (RF-06/09) | محجوز قبل $ |
 | **D-6 · توقيع بريف التماسُك** | الشاشتان 4–5 (عرض، لا دقّة) | ⏳ الأدنى أثراً |
 | ~~D-4~~ | سقط — R9 أُغلق في a18 | ✅ |
@@ -39,7 +39,7 @@
 
 | المؤشّر | المصدر | 🟢 | 🟡 | 🔴 | اليوم |
 |---|---|---|---|---|---|
-| قِدم MoJ | `moj_freshness.days_old` | <90 | 90–365 | >365 | **160 🟡** |
+| قِدم MoJ | `moj_freshness.days_old` | <90 | 90–365 | >365 | **161 🟡** |
 | حصّة fallback | `calibration_freshness` | <50% | 50–90% | >90% | **92% 🔴** |
 | خلايا reliable | `by_confidence.reliable` | >50 | 5–50 | <5 | **6 🟡** |
 | QARS | `qars_endpoint.status` | healthy | degraded | down | **🟢** |
