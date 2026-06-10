@@ -161,10 +161,21 @@ def build_cap_rate_provenance_section(provenance):
     source = provenance.get('source')
     confidence = provenance.get('confidence')
     if source == 'calibrated':
+        # Sprint 2.22.0b.14 (ISS-A07 leak #2): when the rate is BORROWED from a
+        # neighbouring plot bracket (b7), the bare «لنفس المنطقة والشريحة» claim is
+        # false — disclose the borrow, matching the authoritative
+        # cap_rate_provenance.method_ar. Same-bracket → unchanged (byte-identical).
+        if provenance.get('bracket_borrowed'):
+            _scope_ar = (
+                f"لنفس المنطقة، بمعدّل مُستعار من الشريحة {provenance.get('borrowed_from_bracket')} "
+                f"(شريحة العقار {provenance.get('subject_bracket')} بلا عيّنة كافية)"
+            )
+        else:
+            _scope_ar = "لنفس المنطقة والشريحة"
         body_ar = (
             f"معدل الرسملة المستخدم ({provenance.get('cap_rate_pct')}%) "
             f"معايَر تجريبياً من إيجارات السوق الحالية (PropertyFinder) منسوبةً إلى "
-            f"وسيط بيع وزارة العدل لنفس المنطقة والشريحة — "
+            f"وسيط بيع وزارة العدل {_scope_ar} — "
             f"عيّنة n={provenance.get('sample_size')}، "
             f"مستوى الثقة: {provenance.get('confidence')}، "
             f"آخر تحديث: {provenance.get('last_updated')}."

@@ -1787,7 +1787,7 @@ function renderSection(sec){
       const hr=Array.isArray(c.red_flags)?c.red_flags:[];
       const hg=Array.isArray(c.green_flags)?c.green_flags:[];
       if(!hr.length&&!hg.length){
-        body+='<div class="br-note">لم يُكتشف أي علم أحمر أو أخضر في وصف الإعلان (لم يُقدَّم وصف).</div>';
+        body+='<div class="br-note">لا يوجد إعلان مرتبط بهذا التقييم — التحليل على العنوان مباشرةً.</div>';
       }else{
         if(hr.length){
           body+='<div style="margin-bottom:8px;font-weight:600;color:var(--bad)">العلامات الحمراء:</div>';

@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b13-cost-trim-convergent'
-SPRINT_TAG = '2.22.0b.13'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b14-decomposition-coherence'
+SPRINT_TAG = '2.22.0b.14'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1484,6 +1484,79 @@ def _decompose_value(
             'هذا الفصل يكشف للمستخدم نسبة مساهمة كل عنصر — حسب RICS Red Book.'
         ),
     }
+
+
+def _reconcile_decomposition_narrative(output):
+    """Sprint 2.22.0b.14 (ISS-A07) — report-voice reconciliation. VALUE-INVARIANT:
+    rewrites ONLY the implied-building narrative TEXT (never amount/range/method/floor/
+    %/strata-numbers) so the value-decomposition AGREES with the 10-Year / stratum panel.
+
+    The implied-building residual (central − land) INHERITS any R7 over-anchor; on an OLD
+    villa in a premium-dominated pool with NO user luxury/new/renovated signal the high
+    building share is a POOL artifact, not real building value — say so (Case A) and
+    cross-reference the 10-Year panel. Selection per BRIEF §2 (A / B / C).
+
+    Post-pass: runs AFTER stock_strata (:5593) + property_basis (:5510) are attached —
+    they are NOT available inside _decompose_value (called earlier at :4493). Wrapped in
+    try/except: must NEVER break the response.
+    """
+    try:
+        vd = (output.get('valuation') or {}).get('value_decomposition')
+        if not vd:
+            return
+        bi = vd.get('building_implied') or {}
+        if bi.get('status') != 'building_dominant':
+            return  # only the building-dominant (>=35%) branch can over-state
+        asset = (output.get('asset_type') or '').lower()
+        if asset not in ('standalone_villa', 'house', 'villa'):
+            return  # villa/house only (strata / raw_land out of scope)
+
+        pct = bi.get('as_pct_of_total')
+        dom = ((output.get('stock_strata') or {}).get('dominant_stratum') or {})
+        dom_name = dom.get('name')
+        dom_label = dom.get('label_ar') or 'الفئة الغالبة'
+        dom_share = dom.get('share_pct')
+        age_est = ((output.get('property_basis') or {}).get('building_age_estimate') or {})
+        age_floor = age_est.get('age_floor_years')
+        vintage_capped = (age_est.get('age_basis') == 'vintage_capped')
+        ui = ((output.get('valuation') or {}).get('user_inputs') or {})
+        cond = (ui.get('condition') or '').lower()
+        user_premium = bool(ui.get('is_luxury')) or cond in ('new', 'renovated', 'luxury', 'excellent')
+
+        old = (age_floor is not None and age_floor > 10) or vintage_capped
+        genuinely_new = (age_floor is not None and age_floor < 5 and not vintage_capped)
+        premium_pool = dom_name in ('luxury_new', 'modern_stock')
+
+        if user_premium or genuinely_new:
+            bi['narrative_case'] = 'B'
+            return  # Case B — genuinely new/luxury → keep the existing «بناء جديد أو فاخر» line
+
+        if old and premium_pool:
+            # Case A — old subject, premium-dominated pool: the residual is the pool's
+            # over-anchor, not real building value; agree with the 10-Year panel.
+            share_txt = (f'{dom_share}% من العيّنة' if dom_share is not None else 'الفئة الغالبة')
+            bi['interpretation_ar'] = (
+                f'النسبة المرتفعة للبناء الضمني ({pct}%) تعكس وسيط منطقةٍ تهيمن عليه '
+                f'فئة «{dom_label}» ({share_txt}) — لا قيمةَ بناءٍ فعليّة لعقارٍ بهذا العمر؛ '
+                f'يتّسق هذا مع قاعدة الـ10 سنوات أدناه. إن كان عقارك بتشطيب فاخر فعليّ، '
+                f'اختر «بناء فاخر» وأعد التقدير.'
+            )
+            bi['narrative_case'] = 'A'
+            # reverse cross-line: ride the dominant-stratum note (the 10-Year panel surface)
+            _base = dom.get('note_ar') or ''
+            _xref = ('— وهذا ما يرفع نسبة «البناء الضمني» في تفصيل القيمة أعلاه: '
+                     'سمة سوقٍ لهذه الفئة، لا قيمة بناءٍ فعليّة لعقارٍ قديم.')
+            if _xref not in _base:
+                dom['note_ar'] = (_base + ' ' + _xref).strip()
+        else:
+            # Case C — neutral/middle: honest upper-bound framing.
+            bi['interpretation_ar'] = (
+                'البناء الضمني محسوب كفرقٍ عن قيمة الأرض — وهو حدّ أعلى استدلاليّ '
+                'لا قياس مباشر لقيمة البناء.'
+            )
+            bi['narrative_case'] = 'C'
+    except Exception:
+        return  # never break the response
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -4498,6 +4571,12 @@ def evaluate_thammen(
             )
             if decomp:
                 output['valuation']['value_decomposition'] = decomp
+                # ── Sprint 2.22.0b.14 (ISS-A07): decomposition ↔ 10-Year/stratum coherence ──
+                # VALUE-INVARIANT post-pass — `output` already carries stock_strata +
+                # property_basis (from _build_unified_output above); this rewrites ONLY the
+                # implied-building narrative TEXT so the decomposition agrees with the
+                # 10-Year/stratum panel (BRIEF §2). Never raises (helper is try/except-wrapped).
+                _reconcile_decomposition_narrative(output)
             # ── Sprint 2.22.0a.21 (B-1): land-floor / HBU decomposition surface ──
             # PRESENTATION ONLY — value-invariant. Rides the a17/a19 condition gate
             # (_condition_note_applies) so the floor + the live condition_note are ONE

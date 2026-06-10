@@ -301,6 +301,7 @@ def assess_uncertainty(
     land-specific unknowns. Non-land assets are unaffected (regression-safe).
     """
     _is_land = (asset_type or '').lower() in ('raw_land', 'land')
+    _is_villa = (asset_type or '').lower() in ('standalone_villa', 'house', 'villa')
     factors = []
     unknowns = []
     recommendations = []
@@ -369,7 +370,14 @@ def assess_uncertainty(
 
         # ── Service charges ──
         if service_charge_confidence == 'estimated':
-            factors.append('رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى')
+            # Sprint 2.22.0b.14 (ISS-A07 leak #1): a standalone villa/house has no
+            # strata service charges — «رسوم الخدمات … لهذا المبنى» is a category error
+            # there. Soften to the income-check opex framing (TEXT only — score
+            # unchanged → MUC level stays value-invariant).
+            if _is_villa:
+                factors.append('مصاريف تشغيل تقديريّة ضمن الفحص الدخليّ')
+            else:
+                factors.append('رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى')
             scores.append(1)
         elif service_charge_confidence == 'reported':
             factors.append('رسوم الخدمات مُبلَّغة (ليست مُتحقَّقة من مصدر أصلي)')
