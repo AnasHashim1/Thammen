@@ -96,8 +96,9 @@ check('no mutation of v.amount/v.low/v.high in show()', not re.search(r'\bv\.(am
 # ── Engine version (format only — R6 / Lesson-2: no exact pin) ──
 check('ENGINE_VERSION format (thammen-sprint…)', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)
 check('SPRINT_TAG dotted-numeric format', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
-# api.py UNTOUCHED by b15 (frontend + version-string only) — sanity that no API wiring leaked in.
-check('b15 is screen-4 tag', "thammen-sprint2p22p0b15" in ENG)
+# R6 / Lesson-2: NO exact version pin (it broke on the b16 bump) — assert only that the engine
+# has moved AT/BEYOND b15 (the pre-b15 tag never returns; format already checked above).
+check('engine at/beyond b15 (b14 tag gone)', "thammen-sprint2p22p0b14" not in ENG)
 
 passed = sum(1 for _, ok in results if ok)
 for name, ok in results:

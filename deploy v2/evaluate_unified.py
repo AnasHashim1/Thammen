@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b15-screen4-polished-result'
-SPRINT_TAG = '2.22.0b.15'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b16-b2-early-oldstock-reanchor'
+SPRINT_TAG = '2.22.0b.16'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4734,6 +4734,27 @@ def evaluate_thammen(
                         _ct_trim = _cost_trim(
                             primary, _cost_av_act, _lf_tri, output.get('asset_type'),
                             bool(_g_tri and _g_tri.get('gated')), _eff_trim)
+                    # ── Sprint 2.22.0b.16 (B-2 EARLY slice): old-stock central re-anchor ──
+                    # output already carries stock_strata + property_basis (attached inside
+                    # _build_unified_output, called at 4223 — verified, PHASE0_b16_bakeoff §5);
+                    # moj_ref carries subject_geo_full (threaded in evaluate_property Step 2).
+                    _osr = None
+                    try:
+                        _ss_osr = output.get('stock_strata') or {}
+                        _dom_osr = _ss_osr.get('dominant_stratum') or {}
+                        _aging_osr = (_ss_osr.get('strata') or {}).get('aging_stock') or {}
+                        _ab_osr = ((output.get('property_basis') or {})
+                                   .get('building_age_estimate') or {}).get('age_basis')
+                        _osr = _old_stock_reanchor(
+                            primary, (moj_ref or {}).get('subject_geo_full'), _aging_osr,
+                            _cost_av, _lf_tri, output.get('asset_type'),
+                            bool(_g_tri and _g_tri.get('gated')), _age_ct, _ab_osr,
+                            _dom_osr.get('name'), _dom_osr.get('share_pct'),
+                            getattr(ev, 'plot_area_m2', None),
+                            user_premium=bool(is_luxury or (condition or '').strip().lower()
+                                              in ('new', 'renovated')))
+                    except Exception:
+                        _osr = None
                     if _tri and _tri['mode'] == 'income_led':
                         _capp = (round(_tri['cap_rate'] * 100, 1) if _tri['cap_rate'] else '—')
                         _xs = f"{_r10k(_tri['amount']):,}"
@@ -4773,11 +4794,14 @@ def evaluate_thammen(
                         _mu_tri = output.get('material_uncertainty')
                         if isinstance(_mu_tri, dict):
                             _mu_tri['level'] = _tri['muc_level']
-                    elif _ct:
+                    elif _ct and not _osr:
                         # §20.9 cost down-re-anchor: the cost floor REPLACES §6's bare land floor.
                         # central stays = comparison (MUTED via range_is_headline); high = market(muted);
                         # low = max(land_floor, cost). The b6 condition-widen note does NOT run on this
                         # branch (elif) — the cost note supersedes it.
+                        # Sprint 2.22.0b.16: `and not _osr` — on the stratum-mismatch subset the B-2
+                        # early slice UPGRADES this zone's un-led central (it inherits the same cost
+                        # floor as its range-low); everywhere else b11's floor-only treatment holds.
                         output['valuation']['low'] = _r100k(_ct['low'])
                         output['valuation']['high'] = _r100k(_ct['high'])
                         output['valuation']['range_is_headline'] = True
@@ -4841,6 +4865,61 @@ def evaluate_thammen(
                         _mu_tr = output.get('material_uncertainty')
                         if isinstance(_mu_tr, dict):
                             _mu_tr['level'] = 'high'
+                    elif _osr:
+                        # ── Sprint 2.22.0b.16 (B-2 EARLY slice): the re-anchored central LEADS ──
+                        # range = [max(land_floor, cost) … thin median (muted)]; range_is_headline;
+                        # MUC high + the verbatim signed label; the b14 Case-A narrative stays (the
+                        # reconcile post-pass re-runs below on the recomputed decomposition).
+                        output['valuation']['amount'] = _r100k(_osr['amount'])
+                        output['valuation']['low'] = _r100k(_osr['low'])
+                        output['valuation']['high'] = _r100k(_osr['high'])
+                        output['valuation']['range_is_headline'] = True
+                        output['valuation']['central_estimate'] = _r100k(_osr['amount'])
+                        _bos = _osr['basis']
+                        output['valuation']['old_stock_reanchor'] = {
+                            'status': 'old_stock_reanchor_indicative',
+                            'reanchored_central': _osr['amount'],
+                            'thin_median': _osr['comparison_value'],
+                            'basis_kind': _bos['kind'],
+                            'basis_ppm2': _bos['ppm2'],
+                            'basis_n': _bos['n'],
+                            'cost_floor': _osr['cost_value'],
+                            'land_floor': _osr['land_floor'],
+                            'margin_pct': _osr['margin_pct'],
+                            'dominant_stratum': _osr['dominant_stratum'],
+                            'dominant_share_pct': _osr['dominant_share_pct'],
+                            'label_ar': OSR_LABEL_AR,
+                            'label_en': OSR_LABEL_EN,
+                            'note_ar': OSR_NOTE_AR.format(
+                                comp=f"{_r10k(_osr['comparison_value']):,}",
+                                share=_osr['dominant_share_pct'], n=_bos['n']),
+                            'note_en': OSR_NOTE_EN.format(
+                                comp=f"{_r10k(_osr['comparison_value']):,}",
+                                share=_osr['dominant_share_pct'], n=_bos['n']),
+                        }
+                        _mu_os = output.get('material_uncertainty')
+                        if isinstance(_mu_os, dict):
+                            _mu_os['level'] = 'high'
+                        # ISS-A07 coherence: the decomposition + B-1 floor were computed on the
+                        # PRE-reanchor median above — recompute on the re-anchored central and
+                        # re-run the b14 narrative post-pass so the report speaks with one voice.
+                        try:
+                            _decomp_osr = _decompose_value(
+                                valuation_amount=output['valuation']['amount'],
+                                plot_area_m2=ev.plot_area_m2, bua_m2=bua,
+                                moj_ref_dict=moj_ref)
+                            if _decomp_osr:
+                                output['valuation']['value_decomposition'] = _decomp_osr
+                                _reconcile_decomposition_narrative(output)
+                            _vf_osr = _villa_value_floor(
+                                output['valuation']['amount'],
+                                getattr(ev, 'plot_area_m2', None), moj_ref,
+                                _decomp_osr)
+                            if _vf_osr:
+                                output['valuation']['value_floor'] = _vf_osr
+                                _inject_value_floor_into_brief(output.get('brief'), _vf_osr)
+                        except Exception:
+                            pass
                     elif _tri and _tri['mode'] == 'widen_down':
                         output['valuation']['low'] = _r100k(_tri['low'])
                         output['valuation']['high'] = _r100k(_tri['high'])
@@ -5499,6 +5578,105 @@ COST_TRIM_NOTE_AR = ('استناداً إلى العمر الفعلي المُد
 COST_TRIM_NOTE_EN = ('Using the entered actual age ({age}y), the Cost approach (land {land} QAR + a depreciated '
                      'building) sets the closer value at {cost} QAR; the comparison median ({comp} QAR) — high '
                      'for thin like-type/condition comparables — is the upper bound of the range. Uncertainty is high.')
+
+
+# ── Sprint 2.22.0b.16 (B-2 EARLY slice) — V001-anchored OLD-STOCK central re-anchor (n=1, DISCLOSED) ──
+# 🔴 Gate-2 VALUE-AFFECTING on the Marikh class ONLY: an OLD villa on a thin/widened (NOT clean-bracket,
+# NOT dispersion-gated, NOT land-anchored) market whose comparable pool is DOMINATED by a premium stratum
+# (luxury_new / modern_stock, share ≥ 40%) with NO user luxury/new/renovated input, where the thin median
+# exceeds the re-anchor candidate by a MATERIAL margin. The candidate (bake-off PHASE0_b16_bakeoff.md,
+# HALT band PASS) = M4 ≡ min(max(M3 system-age DRC cost, M1c/M2 basis), thin median):
+#   M2 (precedence — the supersession ladder's first rung): the MATCHING stratum (aging_stock) median
+#      ppm² × the effective plot, when that stratum has n ≥ 10;
+#   M1c (else): the subject geo-bracket [plot×0.8, plot×1.2] FULL-window ppm² median × the effective plot
+#      (the §20.10.1 'defensible' estimator; n ≥ 5 enforced in subject_geo_full_ppm2 — else ABSTAIN).
+# Materiality T = 20% — anchored on the project's own clean-stock asking-premium ceiling (8–20%,
+# Empirical_Findings §3): within 20% = normal market noise → CONVERGED, no correction (V001 measured
+# +15.2% → abstains, stays 3.8M in its band); beyond = the Marikh-class distortion (Marikh +58.2% → fires).
+# SUPERSESSION LADDER (documented): GT intakes log engine_estimate_at_intake (GT_INTAKE_KIT_v1 §3, manual
+# channel) → at matching-stratum n≥10 M2 takes precedence over M1c automatically (wired here) → at n≥20
+# the 'indicative' label upgrades (a FUTURE signed-copy step — Gate-2 wording; not invented here).
+# Precedence for the central: income_led > b13 cost_trim > THIS > b11 cost_reanchor (floor-only) >
+# widen_down — b11's reanchor leaves the central UN-led BY DESIGN (§20.45 'no invented central'); this
+# slice UPGRADES that un-led central on the stratum-mismatch subset and INHERITS the b11 cost floor as
+# its range-low (PHASE0_b16_bakeoff §3 premise resolution — the signed §4 HALT band requires it).
+OSR_MARGIN_T = 0.20
+OSR_DOM_SHARE_T = 40
+OSR_DOM_STRATA = ('luxury_new', 'modern_stock')
+OSR_M2_MIN_N = 10
+_OSR_METHODS = ('comparison_thin', 'comparison_widened', 'comparison_widened_indicative')
+# Verbatim signed label (brief §4) + the muted raw-median wording.
+OSR_LABEL_AR = ('إعادة إرساء استرشاديّة لمخزونٍ قديم — معايَرة على تقييم معتمد واحد (V001) + '
+                'النافذة الكاملة لوزارة العدل؛ تتحسّن تلقائيّاً مع كلّ صفقة موثَّقة جديدة')
+OSR_LABEL_EN = ('Indicative old-stock re-anchor — calibrated on ONE certified appraisal (V001) + the '
+                'full Ministry-of-Justice window; improves automatically with every documented transaction')
+OSR_NOTE_AR = (OSR_LABEL_AR + '. وسيط العيّنة الخام {comp} ر.ق — مدفوع بطبقة فاخرة مسيطرة ({share}%)؛ '
+               'أساس الإرساء: وسيط سعر المتر للنافذة الكاملة ضمن شريحة مساحة العقار (n={n})، '
+               'وأرضيّة النطاق منهج التكلفة/الأرض.')
+OSR_NOTE_EN = (OSR_LABEL_EN + '. The raw sample median {comp} QAR is driven by a dominant premium '
+               'stratum ({share}%); the re-anchor basis is the FULL-window per-m² median within the '
+               'subject size bracket (n={n}), with the cost/land floor as the range low.')
+
+
+def _old_stock_reanchor(primary, sgf, aging_cell, cost, land_floor, asset_type,
+                        dispersion_gated, age, age_basis, dom_name, dom_share,
+                        plot_area_m2, user_premium):
+    """B-2 EARLY slice decision (pure; never mutates). Returns a dict or None (= ABSTAIN).
+    Fires iff villa/house · thin/widened/widened_indicative · NOT dispersion-gated · OLD
+    (sys/effective age ≥ 10 OR vintage_capped, E24) · dominant stratum ∈ OSR_DOM_STRATA with
+    share ≥ 40 · NO user luxury/new/renovated · over-anchored (land < market) · a basis exists
+    (M2 stratum n≥10, else M1c geo-full n≥5) · margin (market − candidate)/candidate > 20%."""
+    if asset_type not in ('standalone_villa', 'house', 'villa'):
+        return None
+    if not primary or not primary.get('value'):
+        return None
+    if primary.get('method') not in _OSR_METHODS or dispersion_gated:
+        return None
+    old = ((age is not None and age >= COST_REANCHOR_MIN_AGE_Y)
+           or (age_basis == 'vintage_capped'))
+    if not old:
+        return None
+    if user_premium:
+        return None
+    if dom_name not in OSR_DOM_STRATA or not dom_share or dom_share < OSR_DOM_SHARE_T:
+        return None
+    comp = primary['value']
+    if not (land_floor and land_floor < comp):
+        return None                                   # land-anchored → not over-anchored
+    basis = None
+    if (aging_cell and (aging_cell.get('n') or 0) >= OSR_M2_MIN_N
+            and aging_cell.get('median_per_m2') and plot_area_m2):
+        basis = {'kind': 'matching_stratum', 'ppm2': aging_cell['median_per_m2'],
+                 'n': aging_cell['n'],
+                 'value': round(aging_cell['median_per_m2'] * plot_area_m2)}
+    elif sgf and sgf.get('value_full'):
+        basis = {'kind': 'geo_full', 'ppm2': sgf.get('ppm2_median_full'),
+                 'n': sgf.get('n_full'), 'value': sgf['value_full']}
+    if not basis or not basis['value'] or basis['value'] <= 0:
+        return None                                   # no defensible basis → abstain cleanly
+    cost_val = (cost or {}).get('value')
+    cand = max(cost_val, basis['value']) if cost_val else basis['value']   # M4: M3 floor
+    cand = min(cand, comp)                            # bounded above by the thin median
+    if cand <= 0:
+        return None
+    margin = (comp - cand) / cand
+    if margin <= OSR_MARGIN_T:
+        return None                                   # converged (≤ normal asking noise) → abstain
+    low = max(land_floor, cost_val) if cost_val else land_floor
+    return {
+        'mode': 'old_stock_reanchor_indicative',
+        'amount': cand,
+        'low': low,
+        'high': comp,                                 # the raw thin median stays visible (muted high)
+        'muc_level': 'high',
+        'basis': basis,
+        'cost_value': cost_val,
+        'land_floor': land_floor,
+        'comparison_value': comp,
+        'margin_pct': round(margin * 100, 1),
+        'dominant_stratum': dom_name,
+        'dominant_share_pct': dom_share,
+    }
 
 
 def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,

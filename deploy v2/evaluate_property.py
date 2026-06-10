@@ -58,9 +58,16 @@ except ImportError:
 # moj_reference is a sibling script. We need its build_reference function.
 try:
     from moj_reference import build_reference, parse_date, MIN_N, compute_trend, area_match_key
+    # Sprint 2.22.0b.16 (B-2 EARLY slice): the subject geo-bracket FULL-window ppm² estimator
+    # (the bake-off's M1c) — optional import so older moj_reference copies stay compatible.
+    try:
+        from moj_reference import subject_geo_full_ppm2
+    except ImportError:
+        subject_geo_full_ppm2 = None
     _MOJ_AVAILABLE = True
 except ImportError:
     _MOJ_AVAILABLE = False
+    subject_geo_full_ppm2 = None
     import re as _re_r9_fallback
     def area_match_key(s):   # Sprint 2.22.0a.18 (R9) fallback if moj_reference missing
         base = _re_r9_fallback.sub(r'\s+', ' ', s or '').strip().replace('أ', 'ا').replace('إ', 'ا').replace('آ', 'ا')
@@ -1567,6 +1574,20 @@ def evaluate_property(zone: int, street: int, building: int,
                 )
 
             moj_ref_dict = build_reference(rows, area_name_in_moj, max_d)
+
+            # ── Sprint 2.22.0b.16 (B-2 EARLY slice): thread the subject geo-bracket
+            # FULL-window ppm² (the §20.10.1 estimator / bake-off M1c) additively on the
+            # SAME dict that reaches evaluate_unified's b4-region via ev.moj_reference
+            # (a13/a14 additive-threading precedent). plot_area here is the EFFECTIVE
+            # area the bracket strategy uses (multi-QARS share). Never raises.
+            try:
+                if (subject_geo_full_ppm2 and plot_area
+                        and asset_type in ('standalone_villa', 'house', 'villa')):
+                    _sgf = subject_geo_full_ppm2(rows, area_name_in_moj, plot_area)
+                    if _sgf:
+                        moj_ref_dict['subject_geo_full'] = _sgf
+            except Exception:
+                pass
 
             # === Step 2b: Compute price trend ===
             moj_category_for_trend = ASSET_TYPE_TO_MOJ_CATEGORY.get(asset_type, 'all')

@@ -79,6 +79,42 @@ def quartile_stats(values):
             'p25': round(p(0.25)), 'median': round(p(0.50)),
             'p75': round(p(0.75)), 'max': round(values[-1])}
 
+def subject_geo_full_ppm2(rows, area, plot_area_m2):
+    """Sprint 2.22.0b.16 (B-2 EARLY slice) — the §20.10.1 'defensible' estimator (the bake-off's M1c):
+    the FULL-window ppm² median over the subject's GEO bracket [plot×0.8, plot×1.2], with the SAME
+    villa-pool filters as build_reference (a18 sibling key + A2 built-type + A1 residential usage).
+    Pure + additive (threaded as moj_ref_dict['subject_geo_full']); returns None below the n≥5
+    methodology floor (cite-n) or on any failure — the re-anchor then ABSTAINS."""
+    try:
+        if not plot_area_m2 or plot_area_m2 <= 0:
+            return None
+        key = area_match_key(area)
+        lo, hi = plot_area_m2 * 0.8, plot_area_m2 * 1.2
+        vals = []
+        for r in rows:
+            if area_match_key(r.get('اسم المنطقة', '')) != key:
+                continue
+            if not _bt_matches(r, 'villa'):
+                continue
+            if not _is_residential_usage(r):
+                continue
+            a = to_float(r.get('المساحة بالمتر المربع'))
+            if not a or not (lo <= a < hi):
+                continue
+            p = to_float(r.get('سعر المتر المربع'))
+            if p and p > 0:
+                vals.append(p)
+        if len(vals) < 5:
+            return None
+        vals.sort()
+        med = vals[int(0.5 * (len(vals) - 1))]
+        return {'ppm2_median_full': round(med), 'n_full': len(vals),
+                'value_full': round(med * plot_area_m2),
+                'bracket': [round(lo), round(hi)]}
+    except Exception:
+        return None
+
+
 def build_reference(rows, area, max_d, return_transactions=False):
     """Build a single area's reference. Auto-fallback to 36m if sample too small."""
     area_norm = area_match_key(area)   # Sprint 2.22.0a.18 (R9): pool district + zone-number siblings (hamza-folded)

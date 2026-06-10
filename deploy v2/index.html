@@ -1306,6 +1306,10 @@ function show(d){
       t1+='</div>';
     }
     if(v.hbu_note_ar){t1+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.hbu_note_ar+'</div>';}
+    // Sprint 2.22.0b.16 — old-stock re-anchor disclosure (§4: the raw thin median stays VISIBLE muted)
+    // + the b11/b13 cost-triangulation notes (previously JSON-only; same honest surface, signed copy).
+    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';}
+    if(v.cost_triangulation&&v.cost_triangulation.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem">'+v.cost_triangulation.note_ar+'</div>';}
     // MoJ sample size (cite-n discipline) — STAYS on TIER-1.
     if(d.moj_sample_size){
       t1+='<div class="ri" style="margin-bottom:10px"><div class="rl">صفقات البيع المسجلة لعقارات مشابهة</div><div class="rv">'+d.moj_sample_size+' صفقة</div></div>';
