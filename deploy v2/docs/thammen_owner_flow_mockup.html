@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ثمّن — تصوّر رحلة المالك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3EEE6; --bg2:#ECE4D7;
+    --ink:#1E2A2C; --ink2:#46514F; --muted:#8C857A;
+    --paper:#FFFFFF; --line:rgba(30,42,44,.10);
+    --bronze:#A8763F; --bronze-deep:#7E5527; --bronze-soft:#F2E6D5;
+    --teal:#27514C; --teal-soft:#E2EDEA;
+    --ok:#2E7D5B; --ok-bg:#E4F1EA;
+    --warn:#BC842A; --warn-bg:#F8EED8;
+    --bad:#B6533C; --bad-bg:#F6E5DF;
+    --shadow:0 18px 50px -20px rgba(30,42,44,.35);
+    --shadow-sm:0 6px 18px -8px rgba(30,42,44,.25);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, var(--bg2), transparent 60%),
+      radial-gradient(900px 500px at 0% 110%, #E8DECB, transparent 55%),
+      var(--bg);
+    color:var(--ink); min-height:100vh; line-height:1.6;
+    -webkit-font-smoothing:antialiased; padding:28px 16px 60px;
+  }
+  .wrap{max-width:520px;margin:0 auto}
+  /* header */
+  .head{text-align:center;margin-bottom:18px}
+  .brand{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:22px;letter-spacing:.5px;color:var(--bronze-deep)}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:var(--bronze);box-shadow:0 0 0 4px var(--bronze-soft)}
+  .sub{color:var(--ink2);font-size:13.5px;margin-top:5px;font-weight:400}
+  .pill-edu{display:inline-block;margin-top:9px;font-size:11px;color:var(--bronze-deep);background:var(--bronze-soft);border:1px solid rgba(168,118,63,.25);padding:3px 11px;border-radius:20px;font-weight:500}
+  /* steps */
+  .steps{display:flex;gap:6px;margin:20px 4px 14px;direction:rtl}
+  .step{flex:1;cursor:pointer;text-align:center;padding:9px 4px 8px;border-radius:13px;background:transparent;border:1px solid transparent;transition:.25s;position:relative}
+  .step .n{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:50%;background:#E0D7C7;color:var(--ink2);font-weight:700;font-size:12.5px;margin-bottom:4px;transition:.25s}
+  .step .t{font-size:11px;color:var(--muted);font-weight:500;display:block;transition:.25s}
+  .step:hover{background:rgba(255,255,255,.5)}
+  .step.on{background:var(--paper);border-color:var(--line);box-shadow:var(--shadow-sm)}
+  .step.on .n{background:var(--bronze);color:#fff}
+  .step.on .t{color:var(--ink)}
+  /* phone */
+  .stage{display:flex;justify-content:center;margin:8px 0 6px}
+  .phone{width:340px;background:#0E1717;border-radius:42px;padding:11px;box-shadow:var(--shadow);position:relative}
+  .notch{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:118px;height:7px;border-radius:6px;background:#243030;z-index:5}
+  .glass{background:var(--paper);border-radius:32px;height:620px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+  /* app bar */
+  .bar{padding:16px 16px 11px;background:linear-gradient(180deg,#fff, #fff);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .bar .b-brand{display:flex;align-items:center;gap:7px;font-weight:700;color:var(--bronze-deep);font-size:16px}
+  .bar .b-brand .dot{width:8px;height:8px;border-radius:50%;background:var(--bronze)}
+  .bar .b-frame{font-size:9.5px;color:var(--bronze-deep);background:var(--bronze-soft);padding:3px 8px;border-radius:14px;font-weight:600;border:1px solid rgba(168,118,63,.2)}
+  /* scroll body */
+  .body{padding:15px 15px 18px;overflow-y:auto;flex:1}
+  .screen{display:none;animation:fade .4s ease}
+  .screen.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .lead{display:flex;flex-direction:column;gap:7px;margin-bottom:4px}
+  .reveal{opacity:0;transform:translateY(7px);animation:rise .5s forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  /* generic ui */
+  h2.sc{font-size:16.5px;font-weight:700;margin:2px 0 3px}
+  .hint{font-size:11.5px;color:var(--muted);margin-bottom:12px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .chip{font-size:11.5px;padding:6px 11px;border-radius:18px;border:1px solid var(--line);color:var(--ink2);background:#fafafa;font-weight:500}
+  .chip.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .tabs{display:flex;gap:6px;margin-bottom:12px}
+  .tab{flex:1;text-align:center;font-size:12px;padding:8px;border-radius:10px;border:1px solid var(--line);color:var(--ink2);font-weight:600;background:#fafafa}
+  .tab.on{background:var(--bronze-soft);border-color:rgba(168,118,63,.35);color:var(--bronze-deep)}
+  .field{margin-bottom:10px}
+  .field label{font-size:11px;color:var(--ink2);font-weight:600;display:block;margin-bottom:4px}
+  .inp{background:#F7F4EE;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:13px;color:var(--ink);font-family:inherit}
+  .inp.full{display:block;width:100%}
+  .inp.ghost{color:var(--muted)}
+  .row2{display:flex;gap:8px}.row2>*{flex:1}
+  .btn{display:block;width:100%;text-align:center;border:0;border-radius:12px;padding:13px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:6px}
+  .btn.pri{background:var(--bronze);color:#fff;box-shadow:0 8px 18px -8px rgba(168,118,63,.7)}
+  .btn.tealb{background:var(--teal);color:#fff}
+  .btn.out{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+  .link{display:block;text-align:center;font-size:12px;color:var(--bronze-deep);font-weight:600;margin-top:11px;text-decoration:underline;text-underline-offset:3px}
+  /* estimate */
+  .est{background:linear-gradient(160deg,#fff,#FBF7F0);border:1px solid var(--line);border-radius:16px;padding:15px;text-align:center;box-shadow:var(--shadow-sm);margin-bottom:13px}
+  .est .lbl{font-size:11px;color:var(--muted);font-weight:600}
+  .est .range{font-size:27px;font-weight:700;color:var(--bronze-deep);margin:3px 0 1px;letter-spacing:.3px}
+  .est .unit{font-size:13px;color:var(--ink2);font-weight:500}
+  .est .pt{font-size:11px;color:var(--muted);margin-top:5px}
+  .est .pt b{color:var(--ink2);font-weight:600}
+  .est.sharp{background:linear-gradient(160deg,#fff,var(--teal-soft))}
+  .est.sharp .range{color:var(--teal)}
+  .est .up{display:inline-block;margin-top:7px;font-size:10.5px;background:var(--ok-bg);color:var(--ok);padding:3px 9px;border-radius:12px;font-weight:600}
+  /* data card */
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:13px}
+  .card .ct{font-size:12.5px;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+  .drow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+  .drow:last-child{border-bottom:0}
+  .drow .k{color:var(--ink2)}
+  .drow .v{font-weight:600;display:flex;align-items:center;gap:6px}
+  .pen{font-size:10px;color:var(--bronze-deep);opacity:.8}
+  /* evidence panel */
+  .ev{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:13px}
+  .ev .et{font-size:12.5px;font-weight:700;margin-bottom:4px}
+  .ev .ed{font-size:10.5px;color:var(--muted);margin-bottom:10px}
+  .erow{margin-bottom:9px}
+  .erow:last-child{margin-bottom:0}
+  .erow .eh{display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px}
+  .erow .eh .name{color:var(--ink2);font-weight:500}
+  .erow .eh .tag{font-weight:700;font-size:10.5px;padding:1px 8px;border-radius:10px}
+  .t-ok{background:var(--ok-bg);color:var(--ok)} .t-warn{background:var(--warn-bg);color:var(--warn)} .t-bad{background:var(--bad-bg);color:var(--bad)}
+  .meter{height:6px;border-radius:6px;background:#EEE9E0;overflow:hidden}
+  .meter i{display:block;height:100%;border-radius:6px}
+  .m-ok{background:var(--ok)} .m-warn{background:var(--warn)} .m-bad{background:var(--bad)}
+  /* confirm */
+  .confirm{background:var(--bronze-soft);border:1px solid rgba(168,118,63,.25);border-radius:14px;padding:13px;text-align:center}
+  .confirm .q{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--bronze-deep)}
+  .confirm .row2{margin-top:0}
+  /* refine sections */
+  .sec{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:11px;background:#fff}
+  .sec.real{border-right:4px solid var(--ok)}
+  .sec.sens{border-right:4px solid var(--warn)}
+  .sec.enrich{border-right:4px solid var(--muted)}
+  .sec .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .sec .sh .stt{font-size:12.5px;font-weight:700}
+  .sec .sh .badge{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:11px}
+  .badge.real{background:var(--ok-bg);color:var(--ok)}
+  .badge.sens{background:var(--warn-bg);color:var(--warn)}
+  .badge.enrich{background:#EEE9E0;color:var(--ink2)}
+  .seg{display:flex;gap:5px;flex-wrap:wrap}
+  .seg span{font-size:11px;padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:#fafafa;color:var(--ink2);font-weight:500}
+  .seg span.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+  /* decomposition / report */
+  .note{font-size:10.5px;color:var(--muted);font-style:normal;margin-top:7px;line-height:1.5}
+  .sens-box{background:var(--warn-bg);border:1px solid rgba(188,132,42,.25);border-radius:12px;padding:11px;font-size:11.5px;color:#7a5212;margin-bottom:13px;line-height:1.55}
+  .sens-box b{color:#5e3e0c}
+  .decomp{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:13px}
+  .rics{background:var(--teal-soft);border:1px solid rgba(39,81,76,.2);border-radius:12px;padding:12px;font-size:11.5px;color:#1c3d39;line-height:1.6;margin-bottom:11px}
+  .disc{background:#FBF1ED;border:1px solid rgba(182,83,60,.25);border-radius:12px;padding:12px;font-size:11px;color:#7e3a28;line-height:1.6}
+  .disc b{color:#5e2a1c}
+  .repsec{padding:8px 0;border-bottom:1px solid var(--line);font-size:12px}
+  .repsec:last-child{border-bottom:0}
+  .repsec .rk{color:var(--muted);font-size:10.5px;font-weight:600;display:block;margin-bottom:2px}
+  .repsec .rv{color:var(--ink);font-weight:500}
+  .muc{font-size:11px;color:var(--bronze-deep);font-weight:600;text-align:center;background:var(--bronze-soft);border-radius:10px;padding:9px;margin-top:11px}
+  /* nav + caption */
+  .nav{display:flex;gap:10px;margin-top:18px}
+  .nav button{flex:1;border:0;border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;font-family:inherit;cursor:pointer;transition:.2s}
+  .nav .prev{background:#fff;color:var(--ink2);border:1.5px solid var(--line)}
+  .nav .next{background:var(--ink);color:#fff}
+  .nav button:disabled{opacity:.4;cursor:not-allowed}
+  .caption{margin-top:16px;background:rgba(255,255,255,.7);border:1px solid var(--line);border-radius:14px;padding:14px 15px;font-size:12.5px;color:var(--ink2);line-height:1.7;box-shadow:var(--shadow-sm)}
+  .caption .ck{display:inline-block;font-size:10.5px;font-weight:700;color:var(--bronze-deep);background:var(--bronze-soft);padding:2px 9px;border-radius:11px;margin-bottom:7px}
+  .caption b{color:var(--ink)}
+  .legend{display:flex;gap:14px;justify-content:center;margin-top:14px;flex-wrap:wrap;font-size:11px;color:var(--ink2)}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="brand"><span class="dot"></span>ثمّن</div>
+    <div class="sub">تصوّر رحلة المالك — التدفّق الأنحف المقترَح</div>
+    <span class="pill-edu">mockup للتصميم · ليس الموقع الحيّ</span>
+  </div>
+
+  <div class="steps" id="steps">
+    <div class="step on" data-i="0"><span class="n">١</span><span class="t">تعريف</span></div>
+    <div class="step" data-i="1"><span class="n">٢</span><span class="t">تأكيد</span></div>
+    <div class="step" data-i="2"><span class="n">٣</span><span class="t">تحسين</span></div>
+    <div class="step" data-i="3"><span class="n">٤</span><span class="t">مصقول</span></div>
+    <div class="step" data-i="4"><span class="n">٥</span><span class="t">تقرير</span></div>
+  </div>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="glass">
+        <div class="bar">
+          <div class="b-brand"><span class="dot"></span>ثمّن</div>
+          <div class="b-frame">تقدير إرشادي غير رسمي</div>
+        </div>
+        <div class="body" id="body">
+
+          <!-- 1 IDENTIFY -->
+          <div class="screen on" data-s="0">
+            <h2 class="sc">ثمّن عقارك</h2>
+            <div class="hint">أدخل العنوان فقط — يتكفّل النظام بجلب الباقي.</div>
+            <div style="font-size:11px;color:var(--ink2);font-weight:600;margin-bottom:6px">من أنت؟ (يحدّد طريقة العرض)</div>
+            <div class="chips">
+              <span class="chip on">مالك</span><span class="chip">مشترٍ</span><span class="chip">بائع</span><span class="chip">مستثمر</span><span class="chip">مُقيّم</span>
+            </div>
+            <div class="tabs"><div class="tab on">العنوان</div><div class="tab">PIN</div></div>
+            <div class="field"><label>المنطقة</label><div class="inp full">أبو هامور</div></div>
+            <div class="row2">
+              <div class="field"><label>الشارع</label><div class="inp full">٥٦٥</div></div>
+              <div class="field"><label>المبنى</label><div class="inp full">٢١</div></div>
+            </div>
+            <button class="btn pri">ثمّن</button>
+          </div>
+
+          <!-- 2 CONFIRM -->
+          <div class="screen" data-s="1">
+            <div class="est">
+              <div class="lbl">تقدير مبدئي</div>
+              <div class="range">٢٫١ – ٢٫٧</div>
+              <div class="unit">مليون ريال قطري</div>
+              <div class="pt">الوسيط ≈ <b>٢٫٤ م</b> · غير رسمي · قابل للتحسين</div>
+            </div>
+            <div class="card">
+              <div class="ct">📋 ما عرفناه عن عقارك — راجِعه</div>
+              <div class="drow"><span class="k">نوع العقار</span><span class="v">فيلا <span class="pen">✏ تصحيح</span></span></div>
+              <div class="drow"><span class="k">المنطقة</span><span class="v">أبو هامور <span class="pen">✏</span></span></div>
+              <div class="drow"><span class="k">مساحة القسيمة</span><span class="v">٥٦٥ م² <span class="pen">✏</span></span></div>
+              <div class="drow"><span class="k">المنطقة التنظيمية</span><span class="v">سكني · R2 <span class="pen">✏</span></span></div>
+            </div>
+            <div class="ev">
+              <div class="et">جودة الأدلّة</div>
+              <div class="ed">يُظهر أين البيانات قويّة وأين ضعيفة — والشرح لا يرفع الثقة.</div>
+              <div class="erow"><div class="eh"><span class="name">اكتمال بيانات العقار</span><span class="tag t-warn">متوسط</span></div><div class="meter"><i class="m-warn" style="width:55%"></i></div></div>
+              <div class="erow"><div class="eh"><span class="name">جودة المقارنات</span><span class="tag t-ok">قوي · n=٣٧</span></div><div class="meter"><i class="m-ok" style="width:88%"></i></div></div>
+              <div class="erow"><div class="eh"><span class="name">حداثة بيانات السوق</span><span class="tag t-bad">محدود · ١٥٧ يوماً</span></div><div class="meter"><i class="m-bad" style="width:28%"></i></div></div>
+              <div class="erow"><div class="eh"><span class="name">جودة توصيف المبنى</span><span class="tag t-bad">محدود</span></div><div class="meter"><i class="m-bad" style="width:30%"></i></div></div>
+            </div>
+            <div class="confirm">
+              <div class="q">هل البيانات أعلاه صحيحة؟</div>
+              <div class="row2"><button class="btn pri" style="margin:0">✓ نعم، تابع</button><button class="btn out" style="margin:0">✎ صحّح</button></div>
+            </div>
+            <a class="link">عرض التقرير الكامل الآن ◂</a>
+          </div>
+
+          <!-- 3 REFINE -->
+          <div class="screen" data-s="2">
+            <h2 class="sc">حسّن التقدير</h2>
+            <div class="hint">أضف تفاصيل — كلّها اختيارية. لاحظ الفرق بين ما يُحسّن الرقم وما يُظهر حساسيّته.</div>
+            <div class="sec real">
+              <div class="sh"><span class="stt">🏗️ الهندسة</span><span class="badge real">↑ تُحسّن الرقم فعلاً</span></div>
+              <div class="field"><label>عدد الطوابق</label><div class="inp full">٢</div></div>
+              <div class="field"><label>مساحة البناء (م²)</label><div class="inp full ghost">مُقدَّرة — أدخل المقيس</div></div>
+              <div class="seg" style="margin-top:2px"><span>سرداب؟</span><span>نعم</span><span class="on">لا</span></div>
+            </div>
+            <div class="sec sens">
+              <div class="sh"><span class="stt">🔧 الحالة والجودة</span><span class="badge sens">حساسية فقط — لا تُعدّل القيمة</span></div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:8px">بانتظار B-2 (تحتاج ٢٠+ صفقة مؤكَّدة) — تُعرَض كـ«ماذا لو».</div>
+              <div class="field"><label>الحالة</label><div class="seg"><span class="on">جيدة</span><span>متوسطة</span><span>تحتاج صيانة</span></div></div>
+              <div class="row2" style="margin-top:8px"><div class="field" style="margin:0"><label>العمر التقريبي</label><div class="inp full ghost">سنوات</div></div><div class="field" style="margin:0"><label>التشطيب</label><div class="inp full ghost">عادي / فاخر</div></div></div>
+            </div>
+            <div class="sec enrich">
+              <div class="sh"><span class="stt">💰 المالي</span><span class="badge enrich">اختياري · إثراء</span></div>
+              <div class="row2"><div class="field" style="margin:0"><label>السعر المطلوب</label><div class="inp full ghost">—</div></div><div class="field" style="margin:0"><label>الإيجار الشهري</label><div class="inp full ghost">—</div></div></div>
+            </div>
+            <button class="btn tealb">حدّث التقدير</button>
+          </div>
+
+          <!-- 4 REFINED -->
+          <div class="screen" data-s="3">
+            <div class="est sharp">
+              <div class="lbl">تقدير مصقول</div>
+              <div class="range">٢٫٣ – ٢٫٦</div>
+              <div class="unit">مليون ريال قطري</div>
+              <span class="up">↑ نطاق أضيق بعد إدخال الطوابق</span>
+            </div>
+            <div class="ev" style="margin-bottom:11px">
+              <div class="et" style="margin-bottom:8px">تحدّثت جودة الأدلّة</div>
+              <div class="erow"><div class="eh"><span class="name">جودة توصيف المبنى</span><span class="tag t-warn">متوسط ↑</span></div><div class="meter"><i class="m-warn" style="width:58%"></i></div></div>
+              <div class="note">ارتفع لأنّ <b>الهندسة</b> مُدخَل حقيقي يقلّل عدم اليقين. باقي المكوّنات كما هي.</div>
+            </div>
+            <div class="sens-box">
+              <b>حساسية الحالة:</b> لو كانت «تحتاج صيانة» → النطاق يميل للنزول ٥–١٢٪.
+              <br>هذا «ماذا لو» — <b>لا يُعدّل القيمة الحالية</b> ولا يرفع الثقة.
+            </div>
+            <div class="decomp">
+              <div class="ct" style="font-size:12.5px;font-weight:700;margin-bottom:9px">مكوّنات النطاق</div>
+              <div class="drow"><span class="k">أرضية القيمة (الأرض)</span><span class="v">≈ ١٫٨ م</span></div>
+              <div class="drow"><span class="k">مساهمة البناء</span><span class="v">≈ ٠٫٦ م</span></div>
+              <div class="note">تفكيك <b>تفسيري · تحليلي غير متحقّق</b> — يُثري الفهم ولا يرفع الثقة.</div>
+            </div>
+            <button class="btn pri">التقرير الكامل ◂</button>
+          </div>
+
+          <!-- 5 REPORT -->
+          <div class="screen" data-s="4">
+            <h2 class="sc">التقرير الكامل</h2>
+            <div class="hint">هنا يتركّز العمق كلّه — بدل فصول مفروضة.</div>
+            <div class="est sharp" style="padding:12px;margin-bottom:12px"><div class="lbl">القيمة</div><div class="range" style="font-size:23px">٢٫٣ – ٢٫٦ م</div><div class="unit">نطاق · ريال قطري</div></div>
+            <div class="card" style="margin-bottom:11px">
+              <div class="repsec"><span class="rk">المقارنات</span><span class="rv">٣٧ صفقة · نافذة ٢٤ شهراً · أبو هامور</span></div>
+              <div class="repsec"><span class="rk">الطريقة</span><span class="rv">مقارنة المبيعات (وزارة العدل)</span></div>
+              <div class="repsec"><span class="rk">التصنيف</span><span class="rv">مخزون متقادم (aging stock)</span></div>
+              <div class="repsec"><span class="rk">GIS</span><span class="rv">القسيمة محدّدة · المنطقة التنظيمية R2</span></div>
+              <div class="repsec"><span class="rk">الاتجاه</span><span class="rv">مستقرّ — ١٢ شهراً</span></div>
+              <div class="repsec"><span class="rk">العائد الصافي التقديري</span><span class="rv">≈ ٥٪</span></div>
+              <div class="repsec"><span class="rk">مكوّنات القيمة</span><span class="rv">أرض ١٫٨ م + بناء (تحليلي) ٠٫٦ م</span></div>
+            </div>
+            <div class="rics">📐 <b>إطار RICS Red Book / IVS</b> — VPGA 10 · VPS 1/2/3 · IVS 102/103/105/106. تقدير إرشادي مبدئي ضمن الإطار، لا تقرير موقَّع.</div>
+            <div class="disc"><b>ليس تثميناً رسمياً.</b> للاستخدام الاسترشادي فقط. للقيمة التي تتجاوز ٥ ملايين نوصي بمُقيّم مُرخّص (المرحلة ٥) قبل أيّ قرار.</div>
+            <div class="muc">⏳ بانتظار مراجعة مُقيّم مُرخّص</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--ok)"></i> هندسة = تحسين حقيقي</span>
+    <span><i style="background:var(--warn)"></i> حالة = حساسية فقط</span>
+    <span><i style="background:var(--bronze)"></i> تأكيد / إطار صادق</span>
+  </div>
+
+  <div class="nav">
+    <button class="prev" id="prev" disabled>‹ السابق</button>
+    <button class="next" id="next">التالي ›</button>
+  </div>
+
+  <div class="caption" id="cap"></div>
+</div>
+
+<script>
+  var caps = [
+    "<span class='ck'>شاشة ١ · مشحونة (b.2.1)</span><b>التعريف فقط.</b> المستخدم يُدخل العنوان (أو PIN) + الجمهور — <b>حقل واحد فعلياً</b>. لا يُسأل عن نوع العقار أو المنطقة؛ النظام يجلبها.",
+    "<span class='ck'>شاشة ٢ · النواة مشحونة (b.2.2) + بوّابة التأكيد جديدة</span>النظام يعرض ما جلبه + <b>تقدير مبدئي كنطاق</b> (مبكّراً — توصيتي) + <b>لوحة جودة الأدلّة</b> بأربعة مكوّنات. المستخدم <b>يؤكّد البيانات</b> قبل المتابعة. «التقرير الكامل الآن» مكافئ دائم.",
+    "<span class='ck'>شاشة ٣ · البنية مشحونة (refine) · الحساسية b.2.2.1</span>الفصل الجوهري: <b>الهندسة</b> (طوابق/مساحة) يستخدمها المحرّك = تحسين حقيقي يرفع «توصيف المبنى». <b>الحالة = حساسية «ماذا لو»</b> لا تُعدّل القيمة (B-2 مركونة). كله اختياري.",
+    "<span class='ck'>شاشة ٤ · 🔜 b.2.3</span>بعد الطوابق: النطاق يضيق و«توصيف المبنى» يرتفع (لأنّ الهندسة مُدخَل حقيقي). <b>حساسية الحالة</b> تُعرَض كـ«ماذا لو». تفكيك الأرض/البناء «تحليلي غير متحقّق» — يُثري الفهم ولا يرفع الثقة.",
+    "<span class='ck'>شاشة ٥ · 🔜 b.2.3</span><b>التقرير الكامل</b> = كل العمق (مقارنات · تصنيف · GIS · اتجاه · عائد · تفكيك) + إطار RICS + «ليس تثميناً رسمياً» + توصية المُقيّم. <b>العمق يتركّز هنا</b> بدل خمسة فصول مفروضة."
+  ];
+  var cur = 0, total = 5;
+  var steps = document.querySelectorAll('.step');
+  var screens = document.querySelectorAll('.screen');
+  var prev = document.getElementById('prev'), next = document.getElementById('next');
+  var cap = document.getElementById('cap'), body = document.getElementById('body');
+  function show(i){
+    cur = i;
+    steps.forEach(function(s,k){ s.classList.toggle('on', k===i); });
+    screens.forEach(function(s,k){ s.classList.toggle('on', k===i); });
+    cap.innerHTML = caps[i];
+    prev.disabled = (i===0); next.disabled = (i===total-1);
+    body.scrollTop = 0;
+    // stagger reveal of key blocks
+    var on = screens[i];
+    var blocks = on.querySelectorAll('.est,.card,.ev,.confirm,.sec,.sens-box,.decomp,.rics,.disc');
+    blocks.forEach(function(b,n){ b.classList.remove('reveal'); void b.offsetWidth; b.style.animationDelay=(n*0.06)+'s'; b.classList.add('reveal'); });
+  }
+  steps.forEach(function(s){ s.addEventListener('click', function(){ show(+s.dataset.i); }); });
+  prev.addEventListener('click', function(){ if(cur>0) show(cur-1); });
+  next.addEventListener('click', function(){ if(cur<total-1) show(cur+1); });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowLeft' && cur<total-1) show(cur+1);   // RTL: left = forward
+    if(e.key==='ArrowRight' && cur>0) show(cur-1);
+  });
+  show(0);
+</script>
+</body>
+</html>
