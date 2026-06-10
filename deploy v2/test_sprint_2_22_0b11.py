@@ -74,8 +74,8 @@ check(cv['bua_m2'] == round(391 * 0.77 * 2), f'V001 BUA = 391×0.77×2 = 602 (ma
 check(round(391 * 2 * COST_BUILT_RATIO) == 602, 'built-ratio 0.77 reproduces V001 actual BUA 602 from max 782')
 # luxury input → higher RCN → higher cost (toward the valuer 3.6M)
 cvl = cost_default(V001, finish='luxury', condition='excellent')
-check(cvl['rcn_qar_per_m2'] == 3500 and cvl['effective_age'] == 17 and cvl['value'] > cv['value'],
-      'V001 luxury+excellent → RCN 3500 / no penalty / cost > default-ordinary')
+check(cvl['rcn_qar_per_m2'] == 3500 and cvl['effective_age'] == 15 and cvl['value'] > cv['value'],
+      'V001 luxury+excellent → RCN 3500 / b13 ladder excellent −2 (eff 15) / cost > default-ordinary')
 
 # ══════════════════════════════════════════════════════════════════
 # 4. §3 DOWN-re-anchor — Marikh FIRES, V001 does NOT (the >30% separator)

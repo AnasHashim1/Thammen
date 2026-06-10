@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b12-hbu-disclosure'
-SPRINT_TAG = '2.22.0b.12'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b13-cost-trim-convergent'
+SPRINT_TAG = '2.22.0b.13'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -2232,13 +2232,25 @@ def _building_age_estimate(surveyed_date):
         floor = cur - yr
         if floor < 0:
             return None
-        return {
+        # Sprint 2.22.0b.13 (cliff-flag R3, value-invariant disclosure): SURVEYED_DATE is the survey
+        # VINTAGE, not construction — the 2009-2012 mass survey caps old stock at a floor (E24), and a
+        # very recent re-survey (a sale) zeroes a several-year-old building. Either way the registered
+        # age is a LOWER BOUND → nudge the owner to enter the actual age in «حسّن التقدير».
+        _vintage = (floor >= 15 and 2009 <= yr <= 2012) or (floor < 2)
+        _est = {
             'surveyed_year': yr,
             'age_floor_years': floor,
             'basis': 'qars_survey',
+            'age_basis': ('vintage_capped' if _vintage else 'survey'),
             'note_ar': f'عمر تقديري (حدّ أدنى من تاريخ مسح GIS سنة {yr}): ≥ {floor} سنة',
             'note_en': f'Indicative age (floor, from GIS survey {yr}): >= {floor} years',
         }
+        if _vintage:
+            _est['vintage_note_ar'] = ('العمر المسجَّل في النظام حدٌّ أدنى — العمر الفعلي قد يكون أكبر؛ '
+                                       'أدخِل العمر الفعلي في «حسّن التقدير» لدقّة أعلى.')
+            _est['vintage_note_en'] = ('The registered age is a floor — the actual age may be older; '
+                                       'enter the actual age under “Refine” for higher precision.')
+        return _est
     except Exception:
         return None
 
@@ -4628,6 +4640,21 @@ def evaluate_thammen(
                     _ct = _cost_triangulation(
                         primary, _cost_av, _lf_tri, output.get('asset_type'),
                         bool(_g_tri and _g_tri.get('gated')), _age_ct)
+                    # ── Sprint 2.22.0b.13 (Lever 1): convergent-TRIM (actual-age cost LEADS) ──
+                    # USER-supplied actual age ONLY (recon R1): age_source=='user'; effective age =
+                    # max(user, system) so a user age younger than the system floor can't raise retention.
+                    # DISJOINT from the reanchor above (≤30% actual vs >30% system). Lever 2 (lift) DROPPED
+                    # by the Phase-0 recon (DRC cost < the V002/V003 sale → that under-anchor is B-2, not cost).
+                    _ct_trim = None
+                    if age_source == 'user' and building_age_years is not None:
+                        _eff_trim = max(int(building_age_years), _age_ct or 0)
+                        _cost_av_act = _cost_approach_value(
+                            _lf_tri, _geom_ct.get('max_buildable_footprint_m2'), floors,
+                            ('luxury' if is_luxury else 'ordinary'), _eff_trim, condition,
+                            footprint_actual=_eff_ct)
+                        _ct_trim = _cost_trim(
+                            primary, _cost_av_act, _lf_tri, output.get('asset_type'),
+                            bool(_g_tri and _g_tri.get('gated')), _eff_trim)
                     if _tri and _tri['mode'] == 'income_led':
                         _capp = (round(_tri['cap_rate'] * 100, 1) if _tri['cap_rate'] else '—')
                         _xs = f"{_r10k(_tri['amount']):,}"
@@ -4701,6 +4728,40 @@ def evaluate_thammen(
                         _mu_ct = output.get('material_uncertainty')
                         if isinstance(_mu_ct, dict):
                             _mu_ct['level'] = 'high'
+                    elif _ct_trim:
+                        # §20.9 GATED Lever 1: the ACTUAL-age cost LEADS; market muted as the upper bound.
+                        # range [max(land,cost) … market], range_is_headline; central = the cost.
+                        output['valuation']['amount'] = _r100k(_ct_trim['amount'])
+                        output['valuation']['low'] = _r100k(_ct_trim['low'])
+                        output['valuation']['high'] = _r100k(_ct_trim['high'])
+                        output['valuation']['range_is_headline'] = True
+                        output['valuation']['central_estimate'] = _r100k(_ct_trim['amount'])
+                        _cdt = _ct_trim['cost_detail']
+                        output['valuation']['cost_triangulation'] = {
+                            'mode': 'cost_trim_convergent',
+                            'cost_value': _ct_trim['cost_value'],
+                            'land_floor': _ct_trim['land_floor'],
+                            'building_value': _cdt['building_value'],
+                            'bua_m2': _cdt['bua_m2'],
+                            'rcn_qar_per_m2': _cdt['rcn_qar_per_m2'],
+                            'effective_age': _cdt['effective_age'],
+                            'retention': _cdt['retention'],
+                            'comparison_value': _ct_trim['comparison_value'],
+                            'undercut_pct': _ct_trim['undercut_pct'],
+                            'note_ar': COST_TRIM_NOTE_AR.format(
+                                age=_ct_trim['effective_age'],
+                                land=f"{_r10k(_ct_trim['land_floor']):,}",
+                                cost=f"{_r10k(_ct_trim['cost_value']):,}",
+                                comp=f"{_r10k(_ct_trim['comparison_value']):,}"),
+                            'note_en': COST_TRIM_NOTE_EN.format(
+                                age=_ct_trim['effective_age'],
+                                land=f"{_r10k(_ct_trim['land_floor']):,}",
+                                cost=f"{_r10k(_ct_trim['cost_value']):,}",
+                                comp=f"{_r10k(_ct_trim['comparison_value']):,}"),
+                        }
+                        _mu_tr = output.get('material_uncertainty')
+                        if isinstance(_mu_tr, dict):
+                            _mu_tr['level'] = 'high'
                     elif _tri and _tri['mode'] == 'widen_down':
                         output['valuation']['low'] = _r100k(_tri['low'])
                         output['valuation']['high'] = _r100k(_tri['high'])
@@ -5173,12 +5234,13 @@ COST_RCN_BY_FINISH = {
 COST_RCN_DEFAULT = 2200                  # no-input finish = ordinary (§9 #4)
 COST_ECONOMIC_LIFE_Y = 50                # §5 (reproduces the valuer; within the 40-60 band)
 COST_RESIDUAL_FLOOR = 0.27               # a sound shell retains value (§5; ordinary 2200×0.27≈594≈PO 600).
-                                         # A finish-dependent dilapidated-luxury floor (~0.31) is a
-                                         # PO-pending v2 refinement — it does NOT touch the ship-now
-                                         # anchors (Marikh retention 0.50 ≫ the floor).
-COST_CONDITION_PENALTY = {               # effective_age = chronological + penalty (§5; the −2 excellent
-    'excellent': 0, 'renovated': 0, 'new': 0,   # refinement is the GATED slice's actual-age calibration)
-    'good': 5, 'very-good': 5, 'very_good': 5,
+COST_RESIDUAL_FLOOR_LUX = 0.31           # Sprint 2.22.0b.13 (D-1): high/luxury stock retains MORE residual
+                                         # value when dilapidated (premium structure). Finish-keyed in
+                                         # _cost_retention; bites only on the trim of old premium stock
+                                         # (eff_age > ~34). Default finish → 0.27 → byte-identical to b11/b12.
+COST_CONDITION_PENALTY = {               # effective_age = chronological + penalty (§5; b13 §4.2 ladder, §11 Q1)
+    'excellent': -2, 'renovated': -3, 'new': 0,   # b13: excellent −2 / renovated −3 (were 0) — the GATED-slice
+    'good': 5, 'very-good': 5, 'very_good': 5,     # actual-age calibration; default condition = average (8) unchanged
     'fair': 15,
     'poor': 25, 'dilapidated': 25, 'teardown': 25,
 }
@@ -5193,11 +5255,15 @@ _COST_REANCHOR_METHODS = ('comparison_thin', 'comparison_widened',
                           'comparison_widened_indicative', 'comparison_preliminary')
 
 
-def _cost_retention(effective_age):
-    """Straight-line physical depreciation, clamped to the residual floor (§5)."""
+def _cost_retention(effective_age, finish=None):
+    """Straight-line physical depreciation, clamped to the residual floor (§5).
+    Sprint 2.22.0b.13 (D-1): the floor is FINISH-KEYED — high/luxury stock retains more
+    residual value when dilapidated (0.31 vs the ordinary 0.27). `finish` None/ordinary/good
+    → 0.27 → byte-identical to b11/b12 (the b11 down-half passes ordinary on default)."""
     if effective_age is None:
         return None
-    return max(COST_RESIDUAL_FLOOR, min(0.98, 1.0 - (effective_age / COST_ECONOMIC_LIFE_Y)))
+    floor = COST_RESIDUAL_FLOOR_LUX if (finish or '').strip().lower() in ('high', 'luxury') else COST_RESIDUAL_FLOOR
+    return max(floor, min(0.98, 1.0 - (effective_age / COST_ECONOMIC_LIFE_Y)))
 
 
 def _cost_approach_value(land_floor, footprint_max_m2, floors, finish, age_years,
@@ -5222,7 +5288,7 @@ def _cost_approach_value(land_floor, footprint_max_m2, floors, finish, age_years
         rcn = COST_RCN_BY_FINISH.get((finish or '').strip().lower(), COST_RCN_DEFAULT)
         penalty = COST_CONDITION_PENALTY.get((condition or '').strip().lower(), COST_DEFAULT_PENALTY)
         eff_age = max(0, age_years + penalty)
-        retention = _cost_retention(eff_age)
+        retention = _cost_retention(eff_age, finish)
         building = round(bua * rcn * retention)
         return {
             'value': round(land_floor + building),
@@ -5294,6 +5360,66 @@ COST_REANCHOR_NOTE_EN = ('The comparison median ({comp} QAR) is high — thin co
                          'building) sets a grounded floor at {cost} QAR — so the range spans from it up '
                          'to the comparison median, with no pinned central. Age is indicative (a floor) '
                          'and uncertainty is high.')
+
+
+# §20.9 GATED slice (Sprint 2.22.0b.13) — Lever 1: convergent-TRIM (down, USER-ACTUAL-AGE-GATED).
+# When an OLD over-anchored thin/widened villa has a USER-supplied actual age AND the ACTUAL-age DRC
+# cost sits BELOW the market by ≤ 30% (the convergent zone b11's >30% down-re-anchor leaves untouched),
+# the actual-age cost becomes the LEADING reconciled figure and the market is muted inside
+# [max(land_floor, cost) … market]. recon R1/R2 (PHASE0_2p22p0b13): gates on age_source=='user' +
+# effective_age = max(user, system) (system stays a floor; a younger user age can't raise retention).
+# DISJOINT from cost_reanchor_down at 30% (reanchor >0.30 on system cost; trim ≤0.30 on actual cost).
+# Lever 2 (UP-lift) DROPPED — recon overturned it (DRC cost < the V002/V003 sale; that under-anchor is
+# B-2 GT-corpus calibration, not a cost lift). Pure; never mutates.
+COST_TRIM_UNDERCUT_T = 0.30
+_COST_TRIM_METHODS = _COST_REANCHOR_METHODS   # thin / widened / widened_indicative / preliminary
+
+
+def _cost_trim(primary, cost_act, land_floor, asset_type, dispersion_gated, eff_age):
+    """Lever 1: the ACTUAL-age cost LEADS an OLD over-anchored thin/widened villa down, the market
+    muted as the upper bound. Caller passes the actual-age cost (built on max(user, system) age) and
+    ONLY when age_source=='user'. Returns a decision dict or None. Pure. Excludes clean bracket /
+    dispersion-gated / land-anchored. DISJOINT from cost_reanchor_down (that owns undercut > 30%)."""
+    if asset_type not in ('standalone_villa', 'house', 'villa'):
+        return None
+    if not primary or not primary.get('value'):
+        return None
+    if not cost_act or not cost_act.get('value'):
+        return None
+    if eff_age is None or eff_age < COST_REANCHOR_MIN_AGE_Y:        # OLD stock only (the b11 age-gate)
+        return None
+    if primary.get('method') not in _COST_TRIM_METHODS or dispersion_gated:   # thin/widened only (a10/a14 own gated)
+        return None
+    comp = primary['value']
+    cost_val = cost_act['value']
+    if not (land_floor and land_floor < comp):                     # over-anchored (NOT land-anchored)
+        return None
+    if cost_val <= 0 or cost_val >= comp:                          # cost must be strictly BELOW the market
+        return None
+    undercut = (comp - cost_val) / cost_val
+    if undercut > COST_TRIM_UNDERCUT_T:                            # > 30% is b11's cost_reanchor_down, not the trim
+        return None
+    return {
+        'mode': 'cost_trim_convergent',
+        'amount': cost_val,                                        # the actual-age cost LEADS
+        'low': max(land_floor, cost_val),
+        'high': comp,                                              # market muted as the upper bound
+        'muc_level': 'high',
+        'cost_value': cost_val,
+        'land_floor': land_floor,
+        'comparison_value': comp,
+        'undercut_pct': round(undercut * 100, 1),
+        'effective_age': eff_age,
+        'cost_detail': cost_act,
+    }
+
+
+COST_TRIM_NOTE_AR = ('استناداً إلى العمر الفعلي المُدخَل ({age} سنة)، يضع منهج التكلفة (الأرض {land} ر.ق + '
+                     'بناءٌ مُهلَك) القيمةَ الأقربَ عند {cost} ر.ق؛ ووسيط المقارنة ({comp} ر.ق) — المرتفع لقلّة '
+                     'الصفقات القريبة في النوع والحالة — يُمثّل الحدّ الأعلى للنطاق. عدم اليقين مرتفع.')
+COST_TRIM_NOTE_EN = ('Using the entered actual age ({age}y), the Cost approach (land {land} QAR + a depreciated '
+                     'building) sets the closer value at {cost} QAR; the comparison median ({comp} QAR) — high '
+                     'for thin like-type/condition comparables — is the upper bound of the range. Uncertainty is high.')
 
 
 def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,

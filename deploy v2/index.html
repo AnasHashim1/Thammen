@@ -445,7 +445,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من أبعاد القطعة" min="0"><div id="fpHint" class="rn" style="font-size:.75rem;color:#8b6e44;margin-top:5px;line-height:1.5"></div></div>
       </div>
       <div class="fr2">
-        <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" min="0" max="100"></div>
+        <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" min="0" max="100"><div style="font-size:.72rem;color:var(--muted);margin-top:3px">العمر المسجَّل في النظام حدٌّ أدنى (مسح GIS) — إدخال العمر الفعلي يرفع الدقّة.</div></div>
         <div class="fg"><label>تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="">— اختر —</option><option value="0">لا</option><option value="1">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
       </div>
       <div class="trow" style="margin-top:6px;padding-top:10px"><span style="font-size:.82rem;color:var(--muted);font-weight:600">معلومات مالية (اختياري)</span></div>
@@ -708,6 +708,9 @@ function pbRows(pb){
   if(pb.water_no!=null)h+=ri('رقم الماء',pb.water_no);
   var b=pb.building_age_estimate;
   if(b&&b.age_floor_years!=null)h+=ri('عمر البناء التقديري','أكثر من '+b.age_floor_years+' سنة');
+  // Sprint 2.22.0b.13 — cliff-flag R3 (value-invariant): the registered age is a survey-vintage FLOOR
+  // (2009-2012 mass survey / a recent re-survey) → nudge the owner to enter the actual age in «حسّن التقدير».
+  if(b&&b.vintage_note_ar)h+='<div class="rn" style="margin-top:6px;font-size:.78rem">'+b.vintage_note_ar+'</div>';
   return h;
 }
 function showConfirm(d){
