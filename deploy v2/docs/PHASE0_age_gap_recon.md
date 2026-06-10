@@ -1,5 +1,15 @@
 # PHASE-0 RECON — CGIS-vs-actual building-age gap (§11 ج, the §20.9 GATED-slice prerequisite)
 
+> **🔴 ERRATA (2026-06-10, Sprint 2.22.0b.18 / TD-93317 sheet verification — Anas-verified from the bank
+> PDF):** the **V001 "actual ~25 (bank TD 93317)" attribution below is WRONG.** The bank report states
+> «بحالة ممتازة نحو 18 سنة … إسترشاداً بموقع CGIS» — i.e. **the certified valuer USED THE SYSTEM AGE
+> (18)**, and the 2002 deed says «أرض فضاء» (vacant land) → an age of 25 in 2026 was **impossible** (≤24
+> max). The V001 row's "gap ~8y" is therefore NOT a measured V001 gap; V001 is NOT evidence of the cliff
+> magnitude (the cliff itself stays measured✓ on the n=737 cohort). The b13 "exact 3.6M match at 25y +
+> luxury" was **compensating parameters** (3,500×0.50 ≈ 3,000×0.64 — PHASE0_b18 §2); the sheet reproduces
+> at **RAW system age 18 + finish=high (RCN 3,000 × 0.64) → +0.35%**. Forward rule (b18 §A1, E26): the
+> LEAD basis = the system-documented age; a user-claimed age renders as disclosed sensitivity only.
+
 > **READ-ONLY recon. No engine change, no deploy.** Engine stays **b11 / Heroku v180** (byte-identical).
 > **Goal:** define the *actual-age handling rule* the §20.9 **GATED** slice (convergent-confirm + UP-lift)
 > needs — because the b11 SHIP-NOW immunity **inverts** on convergent cases (system age **over-states** the
@@ -59,7 +69,7 @@ that already existed in 2009 is **floored at ~17y regardless of true age** (a 40
 
 | parcel | PIN | subtype | surveyed | **sys age** | **actual** | gap | mechanism |
 |---|---|---|---|---|---|---|---|
-| **V001** Maamoura 56/647/6 | 56101583 | 1 | 2009-08-09 | **16.8** | ~25 (bank TD 93317) | **~8y** | survey-vintage cliff (2009) |
+| **V001** Maamoura 56/647/6 | 56101583 | 1 | 2009-08-09 | **16.8** | ~~25 (bank TD 93317)~~ **ERRATA b18: the bank USED system age 18; deed 2002 = أرض فضاء → 25 impossible** | ~~8y~~ **n/a (see errata)** | survey-vintage cliff (2009) |
 | **V002** Abu Hamour 56/565/10 | 56099695 | 1 | **2026-03-26** | **0.2** | ~2-4 NEW (sold 4.0M) | ~2-4y | **transaction re-survey** (zeroed at sale) |
 | **V003** Abu Hamour 56/565/12 | 56099696 | 1 | **2026-03-26** | **0.2** | ~2-4 NEW (sold 4.0M) | ~2-4y | **transaction re-survey** |
 | anchor Abu Hamour 56/565/21 | 56090294 | 1 | 2011-04-25 | 15.1 | established G+1 (govt lease) | ≥0 | early survey |

@@ -565,7 +565,7 @@ Phase-1b) + **R8**; Rule **#52** / **E22** (verify the default flow). Recall: **
 
 **The finding.** `SURVEYED_DATE` is the **GIS survey vintage, NOT the construction date.** System age (now − `SURVEYED_DATE`) is a **guaranteed LOWER BOUND on actual building age** — a survey cannot predate construction. The gap is **NOT a constant offset and NOT proportional**; two discrete mechanisms drive it:
 
-1. **Survey-vintage CLIFF (~2009-2012):** a mass QARS survey campaign. **Measured: hard max system age 17.0y; 65% surveyed 2009-2010; 62% at ≥16y.** Pre-2009 stock is floored at ≤17y — actual age **unbounded above**, unrecoverable from `SURVEYED_DATE` (V001 56/647/6: system 16.8 vs actual ~25).
+1. **Survey-vintage CLIFF (~2009-2012):** a mass QARS survey campaign. **Measured: hard max system age 17.0y; 65% surveyed 2009-2010; 62% at ≥16y.** Pre-2009 stock is floored at ≤17y — actual age **unbounded above**, unrecoverable from `SURVEYED_DATE`. *(ERRATA b18 2026-06-10: the original V001 example here — «system 16.8 vs actual ~25» — was WRONG; the TD-93317 bank valuer USED the system age («نحو 18 سنة … إسترشاداً بموقع CGIS») and the 2002 deed «أرض فضاء» makes 25 impossible. The cliff stays measured✓ on the n=737 cohort; V001 is not its evidence. See the PHASE0_age_gap_recon errata + E26.)*
 2. **Transaction re-survey:** a sale re-stamps `SURVEYED_DATE` to ~now → system age ≈ 0 even on a 2-4y building (V002/V003: system 0.2 vs actual ~2-4).
 
 **The rule (per slice direction).**
@@ -584,6 +584,16 @@ Phase-1b) + **R8**; Rule **#52** / **E22** (verify the default flow). Recall: **
 **The rule.** When a confirmed sale **exceeds the depreciated replacement cost**, the gap is a **market premium**, and the ONLY durable fix for the comparison under-anchor is a **calibrated `luxury_new` comparable stratum** (B-2 Lever 1, corpus-calibrated from GT-2 sales — the `luxury_new` E4 stratum is **n=0** locally, §20.27, PARKED on n≥20). Do NOT reach for the cost approach to lift an under-anchored premium villa — its DRC is the **floor**, never the market-premium **ceiling**. (Symmetric to E24 / §20.45's DOWN-half: the cost is a sound *floor*, immune via the system-age FLOOR; it is never a premium ceiling.)
 
 **Pairs with:** RISK_REGISTER **R7** (the under-anchor half) + **R19** (GT scarcity); §20.27 (B-2, `luxury_new` n=0); §20.47 (the GATED-slice reshape — Lever 2 dropped). Recall: **"تذكر E25"** / **"تذكر العلاوة فوق التكلفة"**.
+
+### 🆕 Rule E26 — الأساس العمري للقيادة = الموثَّق في النظام (CGIS)؛ والمُدَّعى حساسيّة مُفصَحة — VALUER-VALIDATED (TD-93317)
+
+✓ **Measured + valuer-validated 2026-06-10** (Sprint 2.22.0b.18, `docs/PHASE0_b18.md`; the TD-93317 bank-report sheet, Anas-verified from the PDF).
+
+**The finding.** The certified valuer's own sheet leads on the **SYSTEM (CGIS-documented) age** — «بحالة ممتازة نحو 18 سنة … إسترشاداً بموقع CGIS» — and his net building rate reconciles EXACTLY on the raw curve: 1,900 ≈ RCN_high 3,000 × retention(18) = 0.64 (our DRC reproduces his 3,600,145 to **+0.35%** at raw system age 18 + finish=high; his land 2,456,345 ≈ our MoJ floor 2,456,736, +0.016%). A user-CLAIMED actual age is an unverifiable assertion, not documentation.
+
+**The rule (b18 §A1, signed).** Every **LEADING** cost/retention computation uses the **system age**; a user-supplied actual age **never moves a headline** — it renders as a disclosed **SENSITIVITY** line only («حساسية العمر: لو كان العمر الفعلي {N} سنة ≈ {value}»). This spans the whole engine: the b13 trim (demoted lead→sensitivity), the a9 widened age-elasticity (the `building_age` slice excluded on `age_source=='user'`; system/gis_imagery sources keep it), b16's M3 (already system). The b11 floor stays system-age (its immunity, E24) and the E24 cliff-flag disclosure stays mandatory (system age = a documented lower bound). Finish is priced **through the replacement coefficient** (the b18 finish-delta), never by pool-switching.
+
+**Pairs with:** **E24** (system age = a floor) + **E22** (default-flow verification); RISK_REGISTER **R7**; `PHASE0_b18.md` §2 (the sheet reproduction) + the PHASE0_age_gap_recon **errata** (the V001 "actual ~25" attribution was wrong — compensating parameters). Recall: **"تذكر E26"** / **"تذكر العمر الموثَّق يقود"**.
 
 ### 🆕 Testing-discipline lessons (A14, 2026-05-30)
 
