@@ -1,5 +1,7 @@
 # BETA_LAUNCH_PLAN — Thammen (v1 draft)
 
+> **⚠️ SUPERSEDED IN PART (2026-06-10) — the cohort-gated framing below is OUT OF DATE.** Per **ISS-G03**, the beta is **NOT** a release gate and there is **NO cohort gate** («gate #6» DELETED): it is a **parallel, non-blocking GT-collection track** (collect ground truth manually + organically). The binding decision is **D-3 (start GT collection)** in `RISK_SUMMARY.md` §3 — *not* a cohort pick. The conservative **R13 cover** (FREE / invite-only / «ليس تقييماً معتمداً» / no paid access) stays as a *cover*, not a beta ritual. Also stale below: §1 row 3 «A7 fix … open bug» (A7 ✅ CLOSED a20/v159); the «cohort … gating beta-live» language in §0/§1 #6/§3/§4. Forward state = `RISK_SUMMARY.md` + Session_Log §20.45–§20.47; this doc is kept for its gate-by-gate beta detail.
+
 > **Tier:** BETA — locked by Anas. This is the beta instantiation of `LAUNCH_READINESS_GATES_v1.md` (which gate applies, in beta terms).
 > **Status:** Claude.ai-formulated · awaiting Anas confirm (§4) · CC commits + executes the engineering items on sign.
 > **Core posture:** a controlled, known-imperfect, honest-by-design tool. The beta's *job* is to gather the real-world accuracy data (gate 4) and surface PDPPL in practice (gate 3) — the two things you cannot close from a desk.
