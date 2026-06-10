@@ -45,7 +45,10 @@ ck("A: dominant label «فاخر / حديث البناء»", 'فاخر / حدي�
 ck("A: share 51.7% من العيّنة", '51.7% من العيّنة' in interp)
 ck("A: «لا قيمةَ بناءٍ فعليّة لعقارٍ بهذا العمر»", 'لا قيمةَ بناءٍ فعليّة لعقارٍ بهذا العمر' in interp)
 ck("A: cross-refs «قاعدة الـ10 سنوات»", 'قاعدة الـ10 سنوات' in interp)
-ck("A: CTA «اختر «بناء فاخر» وأعد التقدير»", 'اختر «بناء فاخر» وأعد التقدير' in interp)
+# Sprint 2.22.0b.18 (§C): the CTA re-worded — it now promises the FINISH-DELTA pricing
+# (through the replacement coefficient), NOT the pre-b18 pool-jump behavior.
+ck("A: CTA «اختر «بناء فاخر»» + the delta-pricing promise (b18 reword)",
+   'اختر «بناء فاخر»' in interp and 'فرق كلفة الإحلال' in interp)
 ck("A: line CHANGED from default", interp != bi0['interpretation_ar'])
 ck("A: reverse cross-line on dom note_ar", 'يرفع نسبة «البناء الضمني»' in o['stock_strata']['dominant_stratum']['note_ar'])
 # §4 value-invariance — numeric fields byte-identical

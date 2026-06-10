@@ -1325,6 +1325,8 @@ function showReport(d){
     if(v.condition_note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.condition_note_ar+'</div>';
     if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';
     if(v.cost_triangulation&&v.cost_triangulation.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.cost_triangulation.note_ar+'</div>';
+    // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — the claimed age never moves the headline.
+    if(v.age_sensitivity&&v.age_sensitivity.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">🕰️ '+v.age_sensitivity.note_ar+'</div>';
     if(v.value_floor){
       const vfR=v.value_floor;
       h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+(vfR.land_floor_note_ar||'');
@@ -1667,6 +1669,8 @@ function show(d){
     // + the b11/b13 cost-triangulation notes (previously JSON-only; same honest surface, signed copy).
     if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';}
     if(v.cost_triangulation&&v.cost_triangulation.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem">'+v.cost_triangulation.note_ar+'</div>';}
+    // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — TIER-1 (the claimed age never moves the headline).
+    if(v.age_sensitivity&&v.age_sensitivity.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem">🕰️ '+v.age_sensitivity.note_ar+'</div>';}
     // MoJ sample size (cite-n discipline) — STAYS on TIER-1.
     if(d.moj_sample_size){
       t1+='<div class="ri" style="margin-bottom:10px"><div class="rl">صفقات البيع المسجلة لعقارات مشابهة</div><div class="rv">'+d.moj_sample_size+' صفقة</div></div>';

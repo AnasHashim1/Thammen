@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b17-screen5-full-report-def12'
-SPRINT_TAG = '2.22.0b.17'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b18-age-basis-finish-delta'
+SPRINT_TAG = '2.22.0b.18'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1060,8 +1060,9 @@ def _ten_year_rule_disclosure_ar(age_years: int, n: Optional[int]) -> str:
         'لأن المشترين يفضّلون الهدم وإعادة البناء على ترميم التصاميم القديمة '
         'وأنظمة الكهرباء والسباكة والتكييف. التقييم أعلاه يعكس هذا السلوك '
         f'السوقي ولا يضيف علاوة لكثافة البناء{n_part} '
-        'إذا كان العقار يحتوي على تشطيب فاخر فعلي، اختر "بناء فاخر" '
-        'وأعد التقييم.'
+        'إذا كان العقار يحتوي على تشطيب فاخر فعلي، اختر "بناء فاخر" وأعد التقييم — '
+        'يُسعَّر التشطيب عندها عبر فرق كلفة الإحلال (مُعامل البناء)، '
+        'لا بتبديل وسيط المقارنة.'
     )
 
 
@@ -1157,19 +1158,26 @@ def _run_geo_v2(ev, moj_csv_path: str, pin=None):
 _AGE_QUALITY_FACTOR_CODES = frozenset({'building_age', 'plot_shape'})
 
 
-def _age_quality_adj(valuation) -> float:
+def _age_quality_adj(valuation, exclude_user_age=False) -> float:
     """Age/quality-only slice of the property-factor adjustment (Sprint
     2.22.0a.9 facet a). Summed from valuation.factors_detail (a list of dicts
     keyed 'code'/'weight'), clamped to ±MAX_ADJUSTMENT. Returns 0.0 when no
     factor detail is available (factors did not run) so the caller no-ops and
-    the widened headline stays byte-identical to the pre-sprint output."""
+    the widened headline stays byte-identical to the pre-sprint output.
+    Sprint 2.22.0b.18 (§A1 — AGE BASIS): when the building age came from the USER
+    (age_source=='user'), the 'building_age' slice is EXCLUDED — a user-claimed age
+    never moves a headline (it renders as the age-sensitivity disclosure instead);
+    system-documented ages (gis_imagery) keep the a9 elasticity. VALUER-VALIDATED
+    basis: TD-93317 leads on the CGIS-documented age (PHASE0_b18 §2)."""
     detail = getattr(valuation, 'factors_detail', None) if valuation else None
     if not detail:
         return 0.0
+    _codes = (_AGE_QUALITY_FACTOR_CODES - {'building_age'}) if exclude_user_age \
+        else _AGE_QUALITY_FACTOR_CODES
     raw = sum(
         (f.get('weight') or 0.0)
         for f in detail
-        if f.get('code') in _AGE_QUALITY_FACTOR_CODES
+        if f.get('code') in _codes
     )
     try:
         from property_factors import MAX_ADJUSTMENT as _CAP
@@ -1182,7 +1190,7 @@ def _age_quality_adj(valuation) -> float:
 # Primary value selection (Sales Comparison Approach)
 # ============================================================
 
-def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
+def _select_primary_comparison(ev, geo_v2, user_age=False) -> Optional[dict]:
     """
     Choose the primary comparison value following RICS VPS 3.
 
@@ -1208,7 +1216,7 @@ def _select_primary_comparison(ev, geo_v2) -> Optional[dict]:
     geo_low = geo_v2.get('range_low') if geo_v2 else None
     geo_high = geo_v2.get('range_high') if geo_v2 else None
     if geo_value:
-        _aq = _age_quality_adj(ev.valuation)
+        _aq = _age_quality_adj(ev.valuation, exclude_user_age=user_age)
         if _aq:
             geo_value = round(geo_value * (1 + _aq), -3)
             geo_low = round(geo_low * (1 + _aq), -3) if geo_low else geo_low
@@ -1539,7 +1547,8 @@ def _reconcile_decomposition_narrative(output):
                 f'النسبة المرتفعة للبناء الضمني ({pct}%) تعكس وسيط منطقةٍ تهيمن عليه '
                 f'فئة «{dom_label}» ({share_txt}) — لا قيمةَ بناءٍ فعليّة لعقارٍ بهذا العمر؛ '
                 f'يتّسق هذا مع قاعدة الـ10 سنوات أدناه. إن كان عقارك بتشطيب فاخر فعليّ، '
-                f'اختر «بناء فاخر» وأعد التقدير.'
+                f'اختر «بناء فاخر» — يُسعَّر التشطيب عبر فرق كلفة الإحلال، '
+                f'لا بتبديل وسيط المقارنة.'
             )
             bi['narrative_case'] = 'A'
             # reverse cross-line: ride the dominant-stratum note (the 10-Year panel surface)
@@ -4142,7 +4151,10 @@ def evaluate_thammen(
             listings_result = None
 
     # ── Step 3: Select PRIMARY comparison value ──
-    primary = _select_primary_comparison(ev, geo_v2_result)
+    # b18 (§A1): a USER-claimed age is excluded from the a9 widened elasticity —
+    # it renders as the age-sensitivity line instead of moving the headline.
+    primary = _select_primary_comparison(ev, geo_v2_result,
+                                         user_age=(age_source == 'user'))
 
     # ── Step 3.5 (Sprint 2.16.0): Stock Stratification ──
     # EMPIRICAL_FINDINGS Rule E4 — classify villa transactions by
@@ -4745,14 +4757,19 @@ def evaluate_thammen(
                         _aging_osr = (_ss_osr.get('strata') or {}).get('aging_stock') or {}
                         _ab_osr = ((output.get('property_basis') or {})
                                    .get('building_age_estimate') or {}).get('age_basis')
+                        # b18 (§A2): is_luxury no longer abstains — it rides the FINISH-DELTA
+                        # (new/renovated still abstain; out of the signed b18 scope, logged #42).
                         _osr = _old_stock_reanchor(
                             primary, (moj_ref or {}).get('subject_geo_full'), _aging_osr,
                             _cost_av, _lf_tri, output.get('asset_type'),
                             bool(_g_tri and _g_tri.get('gated')), _age_ct, _ab_osr,
                             _dom_osr.get('name'), _dom_osr.get('share_pct'),
                             getattr(ev, 'plot_area_m2', None),
-                            user_premium=bool(is_luxury or (condition or '').strip().lower()
-                                              in ('new', 'renovated')))
+                            user_premium=bool((condition or '').strip().lower()
+                                              in ('new', 'renovated')),
+                            finish=('luxury' if is_luxury else None),
+                            finish_age=_age_ct,
+                            finish_bua=((_cost_av or {}).get('bua_m2')))
                     except Exception:
                         _osr = None
                     if _tri and _tri['mode'] == 'income_led':
@@ -4831,40 +4848,6 @@ def evaluate_thammen(
                         _mu_ct = output.get('material_uncertainty')
                         if isinstance(_mu_ct, dict):
                             _mu_ct['level'] = 'high'
-                    elif _ct_trim:
-                        # §20.9 GATED Lever 1: the ACTUAL-age cost LEADS; market muted as the upper bound.
-                        # range [max(land,cost) … market], range_is_headline; central = the cost.
-                        output['valuation']['amount'] = _r100k(_ct_trim['amount'])
-                        output['valuation']['low'] = _r100k(_ct_trim['low'])
-                        output['valuation']['high'] = _r100k(_ct_trim['high'])
-                        output['valuation']['range_is_headline'] = True
-                        output['valuation']['central_estimate'] = _r100k(_ct_trim['amount'])
-                        _cdt = _ct_trim['cost_detail']
-                        output['valuation']['cost_triangulation'] = {
-                            'mode': 'cost_trim_convergent',
-                            'cost_value': _ct_trim['cost_value'],
-                            'land_floor': _ct_trim['land_floor'],
-                            'building_value': _cdt['building_value'],
-                            'bua_m2': _cdt['bua_m2'],
-                            'rcn_qar_per_m2': _cdt['rcn_qar_per_m2'],
-                            'effective_age': _cdt['effective_age'],
-                            'retention': _cdt['retention'],
-                            'comparison_value': _ct_trim['comparison_value'],
-                            'undercut_pct': _ct_trim['undercut_pct'],
-                            'note_ar': COST_TRIM_NOTE_AR.format(
-                                age=_ct_trim['effective_age'],
-                                land=f"{_r10k(_ct_trim['land_floor']):,}",
-                                cost=f"{_r10k(_ct_trim['cost_value']):,}",
-                                comp=f"{_r10k(_ct_trim['comparison_value']):,}"),
-                            'note_en': COST_TRIM_NOTE_EN.format(
-                                age=_ct_trim['effective_age'],
-                                land=f"{_r10k(_ct_trim['land_floor']):,}",
-                                cost=f"{_r10k(_ct_trim['cost_value']):,}",
-                                comp=f"{_r10k(_ct_trim['comparison_value']):,}"),
-                        }
-                        _mu_tr = output.get('material_uncertainty')
-                        if isinstance(_mu_tr, dict):
-                            _mu_tr['level'] = 'high'
                     elif _osr:
                         # ── Sprint 2.22.0b.16 (B-2 EARLY slice): the re-anchored central LEADS ──
                         # range = [max(land_floor, cost) … thin median (muted)]; range_is_headline;
@@ -4897,6 +4880,18 @@ def evaluate_thammen(
                                 comp=f"{_r10k(_osr['comparison_value']):,}",
                                 share=_osr['dominant_share_pct'], n=_bos['n']),
                         }
+                        # b18 (§A2): disclose the finish-delta pricing when it fired.
+                        if _osr.get('finish_delta'):
+                            _fd = f"{_r10k(_osr['finish_delta']):,}"
+                            output['valuation']['old_stock_reanchor']['finish'] = _osr.get('finish')
+                            output['valuation']['old_stock_reanchor']['finish_delta'] = _osr['finish_delta']
+                            output['valuation']['old_stock_reanchor']['note_ar'] += (
+                                f' سُعِّر التشطيب الفاخر عبر فرق كلفة الإحلال (+{_fd} ر.ق على أساس '
+                                f'المخزون القديم)، لا بتبديل وسيط المقارنة.')
+                            output['valuation']['old_stock_reanchor']['note_en'] += (
+                                f' The luxury finish is priced through the replacement-cost '
+                                f'differential (+{_fd} QAR on the old-stock base), not by '
+                                f'switching back to the raw median.')
                         _mu_os = output.get('material_uncertainty')
                         if isinstance(_mu_os, dict):
                             _mu_os['level'] = 'high'
@@ -4932,6 +4927,24 @@ def evaluate_thammen(
                         _mu_w = output.get('material_uncertainty')
                         if isinstance(_mu_w, dict):
                             _mu_w['level'] = 'high'
+                    # ── Sprint 2.22.0b.18 (§A1 — AGE BASIS, signed directive) ──
+                    # Every LEADING cost/retention computation uses the SYSTEM (CGIS-documented)
+                    # age — TD-93317: the certified valuer led on the system age («نحو 18 سنة …
+                    # إسترشاداً بموقع CGIS»). A user-supplied actual age NEVER moves the headline:
+                    # the b13 trim DEMOTES from lead to this SENSITIVITY line (the would-be value
+                    # renders as disclosure only; headline/range/MUC untouched). The b11 system-age
+                    # floor + the E24 cliff-flag stay as-is. Runs AFTER the chain — whichever branch
+                    # led, the sensitivity is the same honest what-if.
+                    if _ct_trim and building_age_years is not None:
+                        _as_x = _r100k(_ct_trim['amount'])
+                        output['valuation']['age_sensitivity'] = {
+                            'claimed_age_years': int(building_age_years),
+                            'value': _as_x,
+                            'note_ar': AGE_SENSITIVITY_NOTE_AR.format(
+                                n=int(building_age_years), x=f"{_as_x:,}"),
+                            'note_en': AGE_SENSITIVITY_NOTE_EN.format(
+                                n=int(building_age_years), x=f"{_as_x:,}"),
+                        }
             except Exception as _etri:
                 import sys
                 print(f'[income_triangulation warning] {_etri}', file=sys.stderr)
@@ -5349,6 +5362,14 @@ CONDITION_WIDEN_NOTE_EN = ('The property’s built type and condition are unconf
                            'comparison median ignores them — so the range spans from the land value '
                            '({floor} QAR) up to the comparison median. Enter the property’s actual '
                            'rent to ground the value.')
+# Sprint 2.22.0b.18 (§A1) — the user-age SENSITIVITY line (verbatim core per the signed directive).
+# Lead basis = the SYSTEM (CGIS-documented) age; a user-claimed age renders as disclosed sensitivity
+# (VALUER-VALIDATED: TD-93317 led on the system age — E26 candidate).
+AGE_SENSITIVITY_NOTE_AR = ('حساسية العمر: لو كان العمر الفعلي {n} سنة ≈ {x} ر.ق. '
+                           '(أساس القيادة = العمر الموثَّق في النظام؛ والعمر المُدخَل يُعرَض حساسيةً مُفصَحة.)')
+AGE_SENSITIVITY_NOTE_EN = ('Age sensitivity: if the actual age is {n} years ≈ {x} QAR. '
+                           '(The lead basis is the system-documented age; a user-entered age '
+                           'renders as disclosed sensitivity.)')
 
 
 # ════════════════════════════════════════════════════════════════════
@@ -5620,12 +5641,17 @@ OSR_NOTE_EN = (OSR_LABEL_EN + '. The raw sample median {comp} QAR is driven by a
 
 def _old_stock_reanchor(primary, sgf, aging_cell, cost, land_floor, asset_type,
                         dispersion_gated, age, age_basis, dom_name, dom_share,
-                        plot_area_m2, user_premium):
+                        plot_area_m2, user_premium, finish=None, finish_age=None,
+                        finish_bua=None):
     """B-2 EARLY slice decision (pure; never mutates). Returns a dict or None (= ABSTAIN).
     Fires iff villa/house · thin/widened/widened_indicative · NOT dispersion-gated · OLD
     (sys/effective age ≥ 10 OR vintage_capped, E24) · dominant stratum ∈ OSR_DOM_STRATA with
-    share ≥ 40 · NO user luxury/new/renovated · over-anchored (land < market) · a basis exists
-    (M2 stratum n≥10, else M1c geo-full n≥5) · margin (market − candidate)/candidate > 20%."""
+    share ≥ 40 · NO user new/renovated input · over-anchored (land < market) · a basis exists
+    (M2 stratum n≥10, else M1c geo-full n≥5) · margin (market − candidate)/candidate > 20%.
+    Sprint 2.22.0b.18 (§A2 LUXURY-EXIT fix): a user luxury/high finish no longer ABSTAINS
+    (the Phase-0-verified 3.4M→5.4M raw-median revert) — it prices THROUGH the replacement
+    coefficient as a FINISH-DELTA on the plain re-anchor base (finish/finish_age/finish_bua);
+    delta incomputable (no sys-age/BUA) → conservative abstain (the pre-b18 behavior)."""
     if asset_type not in ('standalone_villa', 'house', 'villa'):
         return None
     if not primary or not primary.get('value'):
@@ -5638,6 +5664,9 @@ def _old_stock_reanchor(primary, sgf, aging_cell, cost, land_floor, asset_type,
         return None
     if user_premium:
         return None
+    _fin = (finish or '').strip().lower()
+    if _fin in ('high', 'luxury') and (finish_age is None or not finish_bua):
+        return None                                   # b18: finish lead needs a computable delta
     if dom_name not in OSR_DOM_STRATA or not dom_share or dom_share < OSR_DOM_SHARE_T:
         return None
     comp = primary['value']
@@ -5662,10 +5691,26 @@ def _old_stock_reanchor(primary, sgf, aging_cell, cost, land_floor, asset_type,
     margin = (comp - cand) / cand
     if margin <= OSR_MARGIN_T:
         return None                                   # converged (≤ normal asking noise) → abstain
+    # ── Sprint 2.22.0b.18 (§A2 / §C(ii)): FINISH-DELTA on the plain base ──
+    # delta = (RCN_finish − RCN_ordinary) × retention(RAW system age) × BUA. The retention is
+    # RAW (no condition penalty): TD-93317 reproduces the certified valuer ONLY on the raw
+    # documented age (PHASE0_b18 §2 — net 1,900 = RCN_high 3,000 × 0.64 = 1−18/50). The firing
+    # decision (margin gate above) stays on the PLAIN candidate; the delta is pricing on top.
+    # HARD MONOTONICITY RAIL: plain lead ≤ finish lead ≤ the raw thin median.
+    finish_delta = 0
+    if _fin in ('high', 'luxury'):
+        _ret_raw = _cost_retention(finish_age, _fin)
+        if _ret_raw:
+            _d = round((COST_RCN_BY_FINISH[_fin] - COST_RCN_DEFAULT) * _ret_raw * finish_bua)
+            _lead = max(cand, min(cand + _d, comp))
+            finish_delta = _lead - cand
+            cand = _lead
     low = max(land_floor, cost_val) if cost_val else land_floor
     return {
         'mode': 'old_stock_reanchor_indicative',
         'amount': cand,
+        'finish': (_fin if finish_delta else None),
+        'finish_delta': finish_delta,
         'low': low,
         'high': comp,                                 # the raw thin median stays visible (muted high)
         'muc_level': 'high',
