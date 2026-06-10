@@ -42,8 +42,12 @@ check('refusal assembly head+muc+a8acc+alerts+flat+foot', 'h=head+muc+a8acc+aler
 check('MUC chip in TIER-1 (t1+=… تحفظ مادي: +MUC_LEVEL_AR)',
       "t1+='<div style=\"display:inline-block;padding:3px 10px;background:var(--bad-bg);color:var(--bad);border-radius:12px;font-size:.74rem;margin-bottom:10px\">⚠️ تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';" in HTML)
 # 8. the FULL MVU clause routes to the always-visible `muc` buffer (NOT an accordion).
-check('full MVU clause → muc buffer (always-visible)', "muc+='<div style=\"background:var(--bad-bg);border:2px solid var(--bad)" in HTML)
-check('full MVU clause is NOT wrapped in _acc', "_acc('" not in HTML.split("muc+='<div style=\"background:var(--bad-bg)")[1][:200])
+# (b17 refactored the inline build into the shared _mucCardHtml builder — same clause, same buffer.)
+check('full MVU clause → muc buffer (always-visible)',
+      'muc+=_mucCardHtml(muc_ar,muc_basis,muc_review);' in HTML
+      and 'background:var(--bad-bg);border:2px solid var(--bad)' in HTML)
+check('full MVU clause is NOT wrapped in _acc (assembly keeps t1+muc+t2)',
+      'h=head+alerts+t1+muc+t2+t3+foot;' in HTML and '_acc(muc' not in HTML)
 # 9. «ليس تقييماً معتمداً» line is in TIER-1 (always visible), a20 status appended when present.
 check('not-certified line in TIER-1', "t1+='<div class=\"rn\" style=\"margin-top:10px;font-size:.82rem;color:#8a6d3b;background:#fcf8e3" in HTML and 'ليس تقييماً معتمداً' in HTML)
 check('a20 rics_compliant_status appended to not-certified line', 'rics_compliant_status_ar' in HTML and '_statusAr' in HTML)
@@ -73,7 +77,8 @@ check('brief sections → flat (refusal verbatim)', "flat+='<div class=\"rc\" st
 # ── TIER-3 actions ──
 # 16. TIER-3 refine + report CTAs (valued path).
 check('TIER-3 refine CTA → go(refine)', "t3+='<button class=\"t3btn t3-primary\" onclick=\"go(\\'refine\\')\">✏️ حسّن التقدير" in HTML)
-check('TIER-3 report CTA → printReport (b17 rewires)', "t3+='<button class=\"t3btn t3-secondary\" onclick=\"printReport()\">📄 التقرير الكامل" in HTML)
+# b17 landed: the report CTA now opens screen 5 (openReport) — exactly the rewire b15 anticipated.
+check('TIER-3 report CTA → openReport (b17 rewired as planned)', "t3+='<button class=\"t3btn t3-secondary\" onclick=\"openReport()\">📄 التقرير الكامل" in HTML)
 
 # ── Print parity (F1) ──
 # 17. printReport force-opens the accordions before print + restores after.

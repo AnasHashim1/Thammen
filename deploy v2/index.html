@@ -251,10 +251,27 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .t3block .t3btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-weight:700;font-size:.95rem;font-family:'Tajawal';cursor:pointer;margin-bottom:10px}
 .t3block .t3-primary{background:var(--bronze);color:#fff}
 .t3block .t3-secondary{background:#fff;color:var(--primary);border:1.5px solid var(--bronze)}
+/* Sprint 2.22.0b.17 — screen-5 report (cover, DEF-12 two-values, footer) */
+.rep-cover{border-right:4px solid var(--bronze)}
+.rep-brand{font-weight:800;color:var(--primary);font-size:1.25rem}
+.rep-brand span{font-weight:600;color:var(--bronze);font-size:.9rem}
+.rep-addr{font-size:1rem;font-weight:700;margin-top:6px}
+.rep-meta{display:flex;flex-wrap:wrap;gap:10px;font-size:.78rem;color:var(--muted);margin-top:8px}
+.rep-def12{margin-top:12px;padding:10px 12px;background:var(--alt);border-radius:8px}
+.rep-def12-row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;font-size:.9rem}
+.rep-foot{font-size:.78rem;color:var(--muted);text-align:center;padding:14px 10px;border-top:1px dashed var(--light);margin-top:8px}
+.rep-gt{margin-top:10px;padding:8px 10px;background:var(--alt);border-radius:8px;color:var(--text)}
 @media(max-width:600px){.hlogo img{max-width:260px}.fr3,.fr2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}.fcard{padding:18px}.aud-row{grid-template-columns:1fr 1fr}}
 
 /* Sprint 2.4d: Print / Save-as-PDF styles */
 @media print {
+  /* Sprint 2.22.0b.17 — A4 sizing for the share path (fixes the Marikh-PDF card-split class). */
+  @page { size: A4; margin: 12mm; }
+  /* The dedicated report print path: when printing FROM the report screen, show it alone. */
+  body.printing-report .screen { display: none !important; }
+  body.printing-report #reportScreen { display: block !important; }
+  body.printing-report .tbar, body.printing-report .no-print { display: none !important; }
+  .rep-def12, .rep-cover, .rep-foot { page-break-inside: avoid; }
   /* Hide everything not part of the report */
   .hero, .fcard, .sbtn, .bbtn, .copy-btn, .map-btn-main, .map-popup, .aud-row,
   #loading, #error, .skiph, .hbtn,
@@ -527,6 +544,19 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         <span class="en">Source data: real-estate transaction bulletins, Ministry of Justice (State of Qatar), via Qatar Open Data (data.gov.qa), licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Figures are processed and aggregated by Thammen; estimates are derived and are not official Ministry of Justice valuations.</span>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- REPORT — Sprint 2.22.0b.17: screen 5 (v4 owner journey) — the full shareable report + DEF-12.
+     Rendered from the SAME response (no re-fetch, the b2.3 pattern); browser print = the share path. -->
+<div class="screen" id="reportScreen">
+  <div class="tbar">
+    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
+    <div class="tbar-st">التقرير الكامل</div>
+  </div>
+  <div class="rwrap">
+    <button class="bbtn no-print" onclick="go('results')">→ رجوع للنتيجة</button>
+    <div id="repOut"></div>
   </div>
 </div>
 
@@ -1006,6 +1036,229 @@ function copyResult(){
   });
 }
 
+// ── Sprint 2.22.0b.17 — shared section builders (EXTRACTED VERBATIM from show()) ──
+// The report (screen 5) and the results card (screen 4) render these sections from the SAME
+// builders so the two surfaces speak with ONE voice (b14 coherence; the Case-A narrative +
+// cross-lines ride along automatically). Pure string builders — no DOM access, no state.
+function _mucFields(d){
+  let muc_ar=null, muc_basis=null, muc_review=null;
+  const mu=d.material_uncertainty;
+  if(mu&&mu.muc_clause_ar){
+    muc_ar=mu.muc_clause_ar;
+    muc_basis=mu.muc_basis_ar;
+    muc_review=mu.muc_review_recommendation_ar;
+  }
+  if(!muc_ar&&d.brief&&Array.isArray(d.brief.sections)){
+    const muSec=d.brief.sections.find(s=>s.id==='material_uncertainty');
+    if(muSec&&muSec.content){
+      muc_ar=muSec.content.muc_clause_ar;
+      muc_basis=muSec.content.muc_basis_ar;
+      muc_review=muSec.content.muc_review_recommendation_ar;
+    }
+  }
+  return [muc_ar,muc_basis,muc_review];
+}
+function _mucCardHtml(muc_ar,muc_basis,muc_review){
+  if(!muc_ar)return '';
+  let out='<div style="background:var(--bad-bg);border:2px solid var(--bad);border-radius:8px;padding:16px;margin-bottom:14px">';
+  // Sprint 2.22.0a.2 Pattern A: LRM-wrap Latin tokens to prevent bidi reversal (Operational_Rules #25).
+  out+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem">⚠️ تحفظ مادي وفق ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ و ‎VPS 6‎ — و ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎</div>';
+  out+='<div style="white-space:pre-line;line-height:1.7;font-size:.92rem">'+muc_ar.replace(/^⚠️[^\n]*\n+/,'')+'</div>';
+  if(muc_basis)out+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--bad);font-size:.85rem;color:var(--muted)"><strong>الأساس:</strong> '+muc_basis+'</div>';
+  if(muc_review)out+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+muc_review+'</div>';
+  out+='</div>';
+  return out;
+}
+function _decompHtml(d,v,hasValuation){
+  let out='';
+  if(hasValuation && v.value_decomposition){
+    const vd=v.value_decomposition;
+    const ld=vd.land||{};
+    const bd=vd.building_implied||{};
+    const total=v.amount||1;
+    const landPct=Math.round((ld.estimated_qar||0)/total*100);
+    const bldPct=bd.as_pct_of_total||0;
+    // Status-based color
+    const statusBg={
+      'land_dominant':'#fff4e6',
+      'land_exceeds_value':'#fdebec',
+      'building_modest':'#fdf6e3',
+      'normal':'#e6f7ed',
+      'building_dominant':'#e8f0ff'
+    }[bd.status]||'#f5f5f5';
+    const statusFg={
+      'land_dominant':'#a05a00',
+      'land_exceeds_value':'#9b1c1c',
+      'building_modest':'#806600',
+      'normal':'#0c7d41',
+      'building_dominant':'#1f4d8a'
+    }[bd.status]||'#444';
+    out+='<div class="rc"><div class="rt" style="margin-bottom:10px">💎 تفكيك القيمة (أرض + بناء)</div>';
+    // Bar visualization
+    out+='<div style="display:flex;height:36px;border-radius:8px;overflow:hidden;margin-bottom:14px;border:1px solid #ddd">';
+    out+='<div style="flex:'+landPct+';background:linear-gradient(135deg,#a68252,#8b6e44);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700">🏞️ أرض '+landPct+'%</div>';
+    if(bldPct>0){
+      out+='<div style="flex:'+bldPct+';background:linear-gradient(135deg,#5a7a52,#456040);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700">🏠 بناء '+bldPct+'%</div>';
+    }
+    out+='</div>';
+    // Rows
+    out+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
+    out+='<div style="padding:10px;background:#faf7f1;border-radius:6px"><div style="font-size:.78rem;color:#666;margin-bottom:4px">🏞️ قيمة الأرض</div><div style="font-size:1.05rem;font-weight:700;color:#8b6e44">'+fmt(ld.estimated_qar)+' ر.ق</div><div style="font-size:.72rem;color:#888;margin-top:3px">'+fmt(ld.per_m2_qar)+' ر.ق/م² × '+ld.plot_area_m2+' م²</div><div style="font-size:.7rem;color:#999;margin-top:2px">n='+ld.n_transactions+' · '+ld.confidence_ar+'</div></div>';
+    if(bd.qar!=null){
+      out+='<div style="padding:10px;background:#f5f8f3;border-radius:6px"><div style="font-size:.78rem;color:#666;margin-bottom:4px">🏠 قيمة البناء الضمنية</div><div style="font-size:1.05rem;font-weight:700;color:#456040">'+(bd.qar<0?'−':'')+fmt(Math.abs(bd.qar))+' ر.ق</div>';
+      if(bd.qar_per_m2_bua)out+='<div style="font-size:.72rem;color:#888;margin-top:3px">'+fmt(bd.qar_per_m2_bua)+' ر.ق/م² BUA × '+bd.bua_m2+' م²</div>';
+      out+='<div style="font-size:.7rem;color:#999;margin-top:2px">'+bd.as_pct_of_total+'% من القيمة الكلية</div></div>';
+    }
+    out+='</div>';
+    // Interpretation banner
+    if(bd.interpretation_ar){
+      out+='<div style="padding:10px;background:'+statusBg+';color:'+statusFg+';border-radius:6px;font-size:.85rem;line-height:1.6">'+bd.interpretation_ar+'</div>';
+    }
+    out+='<div style="font-size:.72rem;color:#999;margin-top:8px;font-style:italic">'+(vd.methodology_note_ar||'')+'</div>';
+    out+='</div>';
+  }
+  return out;
+}
+function _substHtml(d,v,hasValuation){
+  let out='';
+  if(hasValuation&&v.building_substantiality){
+    const bs=v.building_substantiality;
+    const adj=bs.adjustment_pct||0;
+    const rawAdj=bs.raw_adjustment_pct||0;
+    const regime=bs.age_regime||'unknown_age';
+    const age=bs.building_age_years;
+
+    // Determine card color/icon by regime
+    let bgCol='#e6f7ed', textCol='#0c7d41', icon='🏗️', titleTxt='';
+    if(regime==='qatar_10_year_rule'){
+      bgCol='#fff4e6'; textCol='#a05a00'; icon='⏳';
+      titleTxt='قاعدة الـ 10 سنوات (السوق القطري)';
+    } else if(regime==='old_luxury_building'){
+      bgCol='#f5e8ff'; textCol='#6b00a0'; icon='💎';
+      titleTxt='بناء قديم فاخر — تعديل جزئي ('+adj.toFixed(1)+'%)';
+    } else if(regime==='mid_age_building'){
+      icon='🏠'; titleTxt='بناء متوسط العمر — تعديل '+adj.toFixed(1)+'%';
+    } else if(regime==='new_building'){
+      titleTxt='بناء جديد — تعديل +'+adj.toFixed(1)+'%';
+    } else {
+      titleTxt='تعديل البناء +'+adj.toFixed(1)+'%';
+    }
+
+    // Show the card whenever we have BUA data + any regime indicator (even if adj=0, the 10-Year Rule is informative)
+    if(rawAdj>0 || regime==='qatar_10_year_rule'){
+      out+='<div class="rc"><div class="rt" style="margin-bottom:8px">'+icon+' '+titleTxt+'</div>';
+      if(age!==null && age!==undefined){
+        out+='<div class="rn" style="font-size:.82rem;margin-bottom:6px;color:#555">عمر البناء: <strong>'+age+' سنة</strong>';
+        if(bs.is_luxury===true) out+=' · <span style="color:#6b00a0">تشطيب فاخر ✓</span>';
+        // Sprint 2.5: show source badge when age was auto-detected from GIS imagery
+        if(bs.age_source==='gis_imagery'){
+          const confTxt = bs.age_confidence_years ? ' (±'+bs.age_confidence_years+' سنة)' : '';
+          out+=' · <span style="color:#0066b8;background:#e8f3fc;padding:2px 8px;border-radius:10px;font-size:.75rem">📡 مكتشف من صور الأقمار الصناعية'+confTxt+'</span>';
+        }
+        out+='</div>';
+      }
+      out+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">'+(bs.rationale_ar||'')+' (مؤشر '+bs.index+')</div>';
+      out+='<div style="display:flex;gap:12px;font-size:.85rem;color:#666;flex-wrap:wrap">';
+      out+='<span>البناء النموذجي: <strong>'+bs.typical_bua_m2+' م²</strong></span>';
+      out+='<span>البناء الفعلي: <strong>'+bs.actual_bua_m2+' م²</strong></span>';
+      if(rawAdj>0 && rawAdj!==adj){
+        out+='<span>التعديل الأصلي: <strong>+'+rawAdj.toFixed(1)+'%</strong> × معامل العمر '+bs.age_multiplier+'</span>';
+      }
+      out+='</div>';
+      out+='<div style="margin-top:10px;padding:10px;background:'+bgCol+';border-radius:6px;font-size:.85rem;color:'+textCol+'">'+(bs.methodology_note_ar||'')+'</div>';
+      out+='</div>';
+    }
+  }
+  return out;
+}
+function _strataHtml(d){
+  let out='';
+  const stockStrata=d.stock_strata;
+  if(stockStrata && stockStrata.applied && stockStrata.strata){
+    const STRATA_ORDER=['land_priced','aging_stock','modern_stock','luxury_new'];
+    const STRATA_COLORS={
+      'land_priced':  {bg:'var(--warn-bg)', fg:'var(--warn)', icon:'🏚️'},
+      'aging_stock':  {bg:'var(--alt)',     fg:'var(--muted)', icon:'🏠'},
+      'modern_stock': {bg:'var(--ok-bg)',   fg:'var(--ok)',   icon:'🏡'},
+      'luxury_new':   {bg:'#F5EFE7',        fg:'var(--bronze)', icon:'🌟'},
+    };
+    out+='<div class="rc"><div class="rt" style="margin-bottom:6px">📊 تصنيف المخزون (Stock Stratification)</div>';
+    out+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">'+(stockStrata.methodology_ar||'')+'</div>';
+
+    // Land reference card
+    const lr=stockStrata.land_reference;
+    if(lr){
+      out+='<div class="rn" style="font-size:.82rem;padding:8px 10px;background:var(--alt);border-radius:6px;margin-bottom:12px">';
+      out+='📏 <strong>مرجع الأرض:</strong> '+fmt(lr.median_per_m2)+' ر.ق/م² ';
+      out+='(n='+lr.n+' معاملة، نافذة '+lr.window_months+' شهر، ';
+      out+='شريحة: '+(lr.bracket||'—')+')';
+      out+='</div>';
+    }
+
+    // Subject classification (if listing_price was provided)
+    const sp=stockStrata.subject_property;
+    if(sp && sp.classification && sp.classification!=='unknown'){
+      const cls=STRATA_COLORS[sp.classification]||STRATA_COLORS['aging_stock'];
+      out+='<div style="padding:10px 12px;background:'+cls.bg+';border-right:4px solid '+cls.fg+';border-radius:6px;margin-bottom:12px;font-size:.86rem">';
+      out+='<div style="font-weight:600;color:'+cls.fg+';margin-bottom:4px">'+cls.icon+' عقارك يقع في فئة: '+sp.classification_label_ar+'</div>';
+      out+='<div style="font-size:.78rem;color:#555">السعر المُدخَل: '+fmt(sp.listing_price)+' ر.ق ÷ '+sp.plot_area_m2+' م² = '+fmt(sp.implied_per_m2)+' ر.ق/م²';
+      out+=' &nbsp;|&nbsp; نسبة لـ الأرض: <strong>'+sp.implied_ratio+'×</strong></div>';
+      if(sp.guidance_ar){
+        out+='<div style="font-size:.78rem;color:#555;margin-top:6px">'+sp.guidance_ar+'</div>';
+      }
+      out+='</div>';
+    }
+
+    // Strata table
+    out+='<div style="display:grid;grid-template-columns:1fr;gap:6px">';
+    STRATA_ORDER.forEach(name=>{
+      const s=stockStrata.strata[name];
+      if(!s) return;
+      const c=STRATA_COLORS[name];
+      const isSubject=(sp && sp.classification===name);
+      const isDominant=(stockStrata.dominant_stratum && stockStrata.dominant_stratum.name===name);
+      const borderStyle=isSubject?'border:2px solid '+c.fg:'border:1px solid #e5e5e5';
+      out+='<div style="padding:10px 12px;background:'+c.bg+';'+borderStyle+';border-radius:6px;font-size:.84rem">';
+      out+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">';
+      out+='<div><strong style="color:'+c.fg+'">'+c.icon+' '+s.label_ar+'</strong>';
+      out+=' <span style="color:#888;font-size:.78rem">('+s.ratio_band+'×)</span>';
+      if(isDominant) out+=' <span style="font-size:.72rem;color:'+c.fg+';background:white;padding:1px 6px;border-radius:8px;border:1px solid '+c.fg+'">المسيطرة</span>';
+      if(isSubject) out+=' <span style="font-size:.72rem;color:white;background:'+c.fg+';padding:1px 6px;border-radius:8px">← عقارك</span>';
+      out+='</div>';
+      if(s.n>0){
+        out+='<div style="text-align:left;direction:ltr"><strong>'+fmt(s.median_per_m2)+'</strong>/m²';
+        if(s.estimated_total) out+=' &nbsp;·&nbsp; '+fmt(s.estimated_total)+' ر.ق';
+        out+='</div>';
+      } else {
+        out+='<div style="color:#999;font-size:.78rem">لا توجد معاملات</div>';
+      }
+      out+='</div>';
+      // Reliability + description
+      out+='<div style="font-size:.76rem;color:#666;margin-top:6px">';
+      out+='n='+s.n+' &middot; '+s.reliability_label_ar;
+      out+='</div>';
+      out+='<div style="font-size:.74rem;color:#777;margin-top:4px;line-height:1.5">'+s.description_ar+'</div>';
+      out+='</div>';
+    });
+    out+='</div>';
+
+    // Dominant stratum note
+    if(stockStrata.dominant_stratum && stockStrata.dominant_stratum.note_ar){
+      out+='<div style="font-size:.78rem;color:#666;margin-top:10px;padding:8px;background:var(--alt);border-radius:4px">';
+      out+='ℹ <strong>الفئة المسيطرة:</strong> '+stockStrata.dominant_stratum.label_ar+' ('+stockStrata.dominant_stratum.share_pct+'% من العينة). ';
+      out+=stockStrata.dominant_stratum.note_ar;
+      out+='</div>';
+    }
+
+    // Sprint scope caveat (light grey, smaller font)
+    if(stockStrata.sprint_scope_caveat_ar){
+      out+='<div style="font-size:.72rem;color:#888;margin-top:8px;font-style:italic">'+stockStrata.sprint_scope_caveat_ar+'</div>';
+    }
+    out+='</div>';
+  }
+  return out;
+}
+
 // Sprint 2.4d: Print/Save-as-PDF support
 // Sprint 2.22.0b.15 (F1 — print parity): the TIER-2 accordions are collapsed by default; a
 // closed <details> does NOT print its content. Force every results accordion OPEN before print
@@ -1021,6 +1274,128 @@ function printReport(){
       document.body.classList.remove('printing');
       _accs.forEach((a,i)=>{a.open=_wasOpen[i];});
     },500);
+  },50);
+}
+
+// ── Sprint 2.22.0b.17 — Screen 5: the full report (print + share path) + DEF-12 ──
+// Built from the SAME response (window._lastResult, the b2.3 no-second-fetch pattern). The §3
+// structure: cover → MUC/RICS → headline + DEF-12 two-values → evidence → decomposition + 10-Year +
+// strata (the SHARED builders → one b14-coherent voice with screen 4) → basis + footprint →
+// methodology & sources (the a25 attribution CLONED at runtime from .src-credit — zero copy
+// duplication) → audience brief sections → footer (not-certified + version + timestamp + GT hook).
+function openReport(){const d=window._lastResult; if(!d)return; showReport(d); go('report');}
+function showReport(d){
+  const o=document.getElementById('repOut'); if(!o)return;
+  const v=d.valuation||{}, acc=d.accuracy||{};
+  const hasValuation=v.amount!=null&&v.amount>0;
+  const now=new Date();
+  let h='';
+  h+='<button class="copy-btn print-btn no-print" onclick="printReportA4()">🖨️ طباعة / حفظ PDF (A4)</button><div style="clear:both"></div>';
+  // (1) cover: brand + address/PIN + date + engine version + the staleness banner.
+  h+='<div class="rc rep-cover">';
+  h+='<div class="rep-brand">ثمّن<span> — تقدير سوقي آليّ للعقار</span></div>';
+  if(d.address)h+='<div class="rep-addr">'+d.address+'</div>';
+  const _pbr=d.property_basis||{};
+  h+='<div class="rep-meta">';
+  if(_pbr.pin!=null)h+='<span>الرقم المساحي: <span dir="ltr">'+_pbr.pin+'</span></span>';
+  if(d.district)h+='<span>المنطقة: '+d.district+'</span>';
+  h+='<span>التاريخ: <span dir="ltr">'+now.toISOString().slice(0,10)+'</span></span>';
+  h+='</div>';
+  if(d.data_freshness&&d.data_freshness.caveat_ar){h+='<div class="dfc s-'+(d.data_freshness.severity||'info')+'" style="margin-top:10px">'+d.data_freshness.caveat_ar+'</div>';}
+  h+='</div>';
+  // (2) MUC / RICS banner (the shared builders — same clause as screen 4, always open here).
+  const [m_ar,m_b,m_r]=_mucFields(d);
+  h+=_mucCardHtml(m_ar,m_b,m_r);
+  if(d.rics_methodology_note_ar){
+    h+='<div class="rc" style="font-size:.85rem;color:var(--muted);line-height:1.7"><div class="rt" style="font-size:.95rem;margin-bottom:6px">ℹ️ المنهجية ومعايير &lrm;RICS / IVS&lrm;</div>'+d.rics_methodology_note_ar+'</div>';
+  }
+  if(hasValuation){
+    // (3) headline range + status + DEF-12 two-values (REPORT-ONLY; display math ×0.90 — no engine
+    // change). Plain .rc (NOT calc-block — the a8 contract scopes that visual to the screen-4
+    // valuation card exactly once; test_sprint_2p22p0a_calc_visual_and_ledger pins it).
+    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">القيمة السوقية (MV)</div>';
+    const _tierR=TIER_LABEL_AR[d.tier_label]||'';
+    if(_tierR)h+='<div style="display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px">'+_tierR+'</div>';
+    if(v.low!=null&&v.high!=null){
+      h+='<div class="ri full"><div class="rl">النطاق التقديري السوقي</div><div class="rv hl" style="font-size:1.4rem">'+fmt(v.low)+' – '+fmt(v.high)+' ر.ق</div></div>';
+      h+='<div class="rn" style="font-size:.84rem">الوسيط (التقدير المركزي) ≈ <strong>'+fmt(v.amount)+'</strong> ر.ق</div>';
+    }else{
+      h+='<div class="ri full"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.4rem">'+fmt(v.amount)+' ر.ق</div></div>';
+    }
+    if(v.condition_note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.condition_note_ar+'</div>';
+    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';
+    if(v.cost_triangulation&&v.cost_triangulation.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.cost_triangulation.note_ar+'</div>';
+    if(v.value_floor){
+      const vfR=v.value_floor;
+      h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+(vfR.land_floor_note_ar||'');
+      if(vfR.land_anchored&&vfR.land_anchored_note_ar)h+=' '+vfR.land_anchored_note_ar;
+      else if(vfR.implied_building_note_ar)h+=' '+vfR.implied_building_note_ar;
+      h+='</div>';
+    }
+    if(v.hbu_note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.hbu_note_ar+'</div>';
+    if(d.moj_sample_size)h+='<div class="rn" style="margin-top:8px;font-size:.78rem">صفقات البيع المسجلة لعقارات مشابهة: '+d.moj_sample_size+' صفقة</div>';
+    // DEF-12 (§11 Q4 multi-AI «ship»): MV + the forced-sale INDICATION = MV × 0.90 — convention
+    // disclosed verbatim; report-only (NOT screen 4); display math on the existing amount.
+    const _fs=Math.round((v.amount||0)*0.90);
+    h+='<div class="rep-def12">';
+    h+='<div class="rep-def12-row"><span>القيمة السوقية (الوسيط)</span><strong>'+fmt(v.amount)+' ر.ق</strong></div>';
+    h+='<div class="rep-def12-row"><span>قيمة البيع الجبري الإرشادية (×<span dir="ltr">0.90</span>)</span><strong>'+fmt(_fs)+' ر.ق</strong></div>';
+    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً.</div>';
+    h+='</div>';
+    h+='</div>';
+    // (4) evidence quality (the b2.2 panel, full).
+    h+=evidencePanelHtml(d,acc);
+    // (5) decomposition + 10-Year + strata — the SHARED builders (b14-coherent, cross-lines intact).
+    h+=_decompHtml(d,v,hasValuation);
+    h+=_substHtml(d,v,hasValuation);
+    h+=_strataHtml(d);
+    const _rtrR=d.reasoning_trace;
+    if(_rtrR&&_rtrR.known_unknowns&&_rtrR.known_unknowns.length>0){
+      h+='<div class="rc"><div class="rt" style="margin-bottom:10px">ما لا نعرفه (يحتاج فحص ميداني)</div><div class="rn">';
+      _rtrR.known_unknowns.forEach(u=>{h+='• '+u+'<br>'});
+      h+='</div></div>';
+    }
+    // (6) property basis (b9) + footprint (b10).
+    h+='<div class="rc"><div class="rh"><div class="rt">بيانات العقار الأساسية</div></div><div class="rg">';
+    if(d.address)h+=ri('العنوان',d.address,0,1);
+    if(d.district)h+=ri('المنطقة',d.district);
+    if(d.plot_area_m2)h+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
+    if(d.asset_type)h+=ri('نوع العقار',(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type));
+    const _piR=d.property_info||{};
+    if(_piR.zoning)h+=ri('التصنيف',_piR.zoning);
+    h+=pbRows(d.property_basis);
+    const _gR=v.geometry||{};
+    if(_gR.footprint_basis==='confirmed'&&_gR.effective_footprint_m2)h+=ri('مساحة البناء المعتمدة','✓ '+fmt(_gR.effective_footprint_m2)+' م²');
+    else if(_gR.max_buildable_footprint_m2)h+=ri('مساحة البناء الأرضي (تقدير أقصى)','≈ '+fmt(_gR.max_buildable_footprint_m2)+' م²');
+    h+='</div></div>';
+  }else{
+    h+='<div class="rc"><div class="rn">'+(v.reason_ar||'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً — لا يصدر تقرير قيمة.')+'</div></div>';
+  }
+  // (7) methodology & sources — the a4 bare line + the a25 attribution cloned at runtime.
+  if(d.methodology_ar)h+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin-bottom:14px;font-size:.78rem;color:#666;line-height:1.5">'+d.methodology_ar+'</div>';
+  const _srcNode=document.querySelector('.src-credit');
+  if(_srcNode)h+='<div class="rc src-credit-rep" style="font-size:.74rem;color:var(--muted);line-height:1.7">'+_srcNode.innerHTML+'</div>';
+  // (8) audience section — the brief sections (audience-gated server-side).
+  const _brR=d.brief;
+  if(_brR&&_brR.sections&&_brR.sections.length>0){
+    h+='<div class="rc" style="background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px"><div class="rt" style="font-size:1.05rem;margin-bottom:0">'+(_brR.title_ar||'التقرير التفصيلي')+'</div></div>';
+    _brR.sections.forEach(sec=>{h+=renderSection(sec)});
+  }
+  // (9) footer: not-certified (a20 status appended) + engine version + timestamp + the GT hook
+  // (the Terms' OWN signed channel — PHASE0_b17 §3; feeds the D-3 GT kit).
+  h+='<div class="rep-foot">';
+  h+='<div>📌 تقدير سوقي آلي وليس تقييماً معتمداً'+((d.material_uncertainty||{}).rics_compliant_status_ar?(' ('+d.material_uncertainty.rics_compliant_status_ar+')'):'')+'.</div>';
+  h+='<div style="margin-top:6px" dir="ltr">'+(d.engine_version||'')+' · '+now.toISOString().replace('T',' ').slice(0,16)+' UTC</div>';
+  h+='<div class="rep-gt">هل لديك سعر بيع فعليّ لهذا العقار أو تقييم معتمد؟ شاركه لتحسين الدقّة — واتساب <span dir="ltr">+974 70177761</span>.</div>';
+  h+='</div>';
+  o.innerHTML=h;
+}
+// A4 print path for the report screen ONLY (the @media print rules key on .printing-report).
+function printReportA4(){
+  document.body.classList.add('printing-report');
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>document.body.classList.remove('printing-report'),500);
   },50);
 }
 
@@ -1080,29 +1455,11 @@ function show(d){
   // sections for backward compat with the villa path which has always written
   // them there too. This keeps villa display intact while finally surfacing the
   // MUC clause on tower / large compound / out-of-scope responses.
-  let muc_ar=null, muc_basis=null, muc_review=null;
+  // Sprint 2.22.0b.17 — resolve + build via the shared builders (the report reuses them).
+  const [muc_ar,muc_basis,muc_review]=_mucFields(d);
   const mu=d.material_uncertainty;
-  if(mu&&mu.muc_clause_ar){
-    muc_ar=mu.muc_clause_ar;
-    muc_basis=mu.muc_basis_ar;
-    muc_review=mu.muc_review_recommendation_ar;
-  }
-  if(!muc_ar&&d.brief&&Array.isArray(d.brief.sections)){
-    const muSec=d.brief.sections.find(s=>s.id==='material_uncertainty');
-    if(muSec&&muSec.content){
-      muc_ar=muSec.content.muc_clause_ar;
-      muc_basis=muSec.content.muc_basis_ar;
-      muc_review=muSec.content.muc_review_recommendation_ar;
-    }
-  }
   if(muc_ar){
-    muc+='<div style="background:var(--bad-bg);border:2px solid var(--bad);border-radius:8px;padding:16px;margin-bottom:14px">';
-    // Sprint 2.22.0a.2 Pattern A: LRM-wrap Latin tokens to prevent bidi reversal (Operational_Rules #25).
-    muc+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem">⚠️ تحفظ مادي وفق ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ و ‎VPS 6‎ — و ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎</div>';
-    muc+='<div style="white-space:pre-line;line-height:1.7;font-size:.92rem">'+muc_ar.replace(/^⚠️[^\n]*\n+/,'')+'</div>';
-    if(muc_basis)muc+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--bad);font-size:.85rem;color:var(--muted)"><strong>الأساس:</strong> '+muc_basis+'</div>';
-    if(muc_review)muc+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+muc_review+'</div>';
-    muc+='</div>';
+    muc+=_mucCardHtml(muc_ar,muc_basis,muc_review);
   }
 
   // ── Sprint 2.22.0a.8: secondary RICS/IVS methodology + models-standard note ──
@@ -1341,103 +1698,11 @@ function show(d){
     }
   }
 
-  // ── Value Decomposition: Land vs Building (Sprint 2.6) ──
-  if(hasValuation && v.value_decomposition){
-    const vd=v.value_decomposition;
-    const ld=vd.land||{};
-    const bd=vd.building_implied||{};
-    const total=v.amount||1;
-    const landPct=Math.round((ld.estimated_qar||0)/total*100);
-    const bldPct=bd.as_pct_of_total||0;
-    // Status-based color
-    const statusBg={
-      'land_dominant':'#fff4e6',
-      'land_exceeds_value':'#fdebec',
-      'building_modest':'#fdf6e3',
-      'normal':'#e6f7ed',
-      'building_dominant':'#e8f0ff'
-    }[bd.status]||'#f5f5f5';
-    const statusFg={
-      'land_dominant':'#a05a00',
-      'land_exceeds_value':'#9b1c1c',
-      'building_modest':'#806600',
-      'normal':'#0c7d41',
-      'building_dominant':'#1f4d8a'
-    }[bd.status]||'#444';
-    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">💎 تفكيك القيمة (أرض + بناء)</div>';
-    // Bar visualization
-    h+='<div style="display:flex;height:36px;border-radius:8px;overflow:hidden;margin-bottom:14px;border:1px solid #ddd">';
-    h+='<div style="flex:'+landPct+';background:linear-gradient(135deg,#a68252,#8b6e44);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700">🏞️ أرض '+landPct+'%</div>';
-    if(bldPct>0){
-      h+='<div style="flex:'+bldPct+';background:linear-gradient(135deg,#5a7a52,#456040);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700">🏠 بناء '+bldPct+'%</div>';
-    }
-    h+='</div>';
-    // Rows
-    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
-    h+='<div style="padding:10px;background:#faf7f1;border-radius:6px"><div style="font-size:.78rem;color:#666;margin-bottom:4px">🏞️ قيمة الأرض</div><div style="font-size:1.05rem;font-weight:700;color:#8b6e44">'+fmt(ld.estimated_qar)+' ر.ق</div><div style="font-size:.72rem;color:#888;margin-top:3px">'+fmt(ld.per_m2_qar)+' ر.ق/م² × '+ld.plot_area_m2+' م²</div><div style="font-size:.7rem;color:#999;margin-top:2px">n='+ld.n_transactions+' · '+ld.confidence_ar+'</div></div>';
-    if(bd.qar!=null){
-      h+='<div style="padding:10px;background:#f5f8f3;border-radius:6px"><div style="font-size:.78rem;color:#666;margin-bottom:4px">🏠 قيمة البناء الضمنية</div><div style="font-size:1.05rem;font-weight:700;color:#456040">'+(bd.qar<0?'−':'')+fmt(Math.abs(bd.qar))+' ر.ق</div>';
-      if(bd.qar_per_m2_bua)h+='<div style="font-size:.72rem;color:#888;margin-top:3px">'+fmt(bd.qar_per_m2_bua)+' ر.ق/م² BUA × '+bd.bua_m2+' م²</div>';
-      h+='<div style="font-size:.7rem;color:#999;margin-top:2px">'+bd.as_pct_of_total+'% من القيمة الكلية</div></div>';
-    }
-    h+='</div>';
-    // Interpretation banner
-    if(bd.interpretation_ar){
-      h+='<div style="padding:10px;background:'+statusBg+';color:'+statusFg+';border-radius:6px;font-size:.85rem;line-height:1.6">'+bd.interpretation_ar+'</div>';
-    }
-    h+='<div style="font-size:.72rem;color:#999;margin-top:8px;font-style:italic">'+(vd.methodology_note_ar||'')+'</div>';
-    h+='</div>';
-  }
+  // ── Value Decomposition: Land vs Building (Sprint 2.6) ── (b17: shared builder)
+  h+=_decompHtml(d,v,hasValuation);
 
-  // ── Building Substantiality + Age Regime (Sprint 2.2 + 2.3) ──
-  if(hasValuation&&v.building_substantiality){
-    const bs=v.building_substantiality;
-    const adj=bs.adjustment_pct||0;
-    const rawAdj=bs.raw_adjustment_pct||0;
-    const regime=bs.age_regime||'unknown_age';
-    const age=bs.building_age_years;
-
-    // Determine card color/icon by regime
-    let bgCol='#e6f7ed', textCol='#0c7d41', icon='🏗️', titleTxt='';
-    if(regime==='qatar_10_year_rule'){
-      bgCol='#fff4e6'; textCol='#a05a00'; icon='⏳';
-      titleTxt='قاعدة الـ 10 سنوات (السوق القطري)';
-    } else if(regime==='old_luxury_building'){
-      bgCol='#f5e8ff'; textCol='#6b00a0'; icon='💎';
-      titleTxt='بناء قديم فاخر — تعديل جزئي ('+adj.toFixed(1)+'%)';
-    } else if(regime==='mid_age_building'){
-      icon='🏠'; titleTxt='بناء متوسط العمر — تعديل '+adj.toFixed(1)+'%';
-    } else if(regime==='new_building'){
-      titleTxt='بناء جديد — تعديل +'+adj.toFixed(1)+'%';
-    } else {
-      titleTxt='تعديل البناء +'+adj.toFixed(1)+'%';
-    }
-
-    // Show the card whenever we have BUA data + any regime indicator (even if adj=0, the 10-Year Rule is informative)
-    if(rawAdj>0 || regime==='qatar_10_year_rule'){
-      h+='<div class="rc"><div class="rt" style="margin-bottom:8px">'+icon+' '+titleTxt+'</div>';
-      if(age!==null && age!==undefined){
-        h+='<div class="rn" style="font-size:.82rem;margin-bottom:6px;color:#555">عمر البناء: <strong>'+age+' سنة</strong>';
-        if(bs.is_luxury===true) h+=' · <span style="color:#6b00a0">تشطيب فاخر ✓</span>';
-        // Sprint 2.5: show source badge when age was auto-detected from GIS imagery
-        if(bs.age_source==='gis_imagery'){
-          const confTxt = bs.age_confidence_years ? ' (±'+bs.age_confidence_years+' سنة)' : '';
-          h+=' · <span style="color:#0066b8;background:#e8f3fc;padding:2px 8px;border-radius:10px;font-size:.75rem">📡 مكتشف من صور الأقمار الصناعية'+confTxt+'</span>';
-        }
-        h+='</div>';
-      }
-      h+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">'+(bs.rationale_ar||'')+' (مؤشر '+bs.index+')</div>';
-      h+='<div style="display:flex;gap:12px;font-size:.85rem;color:#666;flex-wrap:wrap">';
-      h+='<span>البناء النموذجي: <strong>'+bs.typical_bua_m2+' م²</strong></span>';
-      h+='<span>البناء الفعلي: <strong>'+bs.actual_bua_m2+' م²</strong></span>';
-      if(rawAdj>0 && rawAdj!==adj){
-        h+='<span>التعديل الأصلي: <strong>+'+rawAdj.toFixed(1)+'%</strong> × معامل العمر '+bs.age_multiplier+'</span>';
-      }
-      h+='</div>';
-      h+='<div style="margin-top:10px;padding:10px;background:'+bgCol+';border-radius:6px;font-size:.85rem;color:'+textCol+'">'+(bs.methodology_note_ar||'')+'</div>';
-      h+='</div>';
-    }
-  }
+  // ── Building Substantiality + Age Regime (Sprint 2.2 + 2.3) ── (b17: shared builder)
+  h+=_substHtml(d,v,hasValuation);
 
   // ── Sprint 2.22.0b.2.1 — Stage-2 geometry summary (DISPLAY-ONLY) ──
   // BUILDING (villa/house) paths only (brief F2 — excludes raw_land + refusals).
@@ -1588,92 +1853,8 @@ function show(d){
     h+='</div>';
   }
 
-  // ── Sprint 2.16.0: Stock Stratification (EMPIRICAL_FINDINGS Rule E4) ──
-  // Per-stratum villa medians: land_priced / aging / modern / luxury_new.
-  // Headline value unchanged; this is exposure-only transparency.
-  const stockStrata=d.stock_strata;
-  if(stockStrata && stockStrata.applied && stockStrata.strata){
-    const STRATA_ORDER=['land_priced','aging_stock','modern_stock','luxury_new'];
-    const STRATA_COLORS={
-      'land_priced':  {bg:'var(--warn-bg)', fg:'var(--warn)', icon:'🏚️'},
-      'aging_stock':  {bg:'var(--alt)',     fg:'var(--muted)', icon:'🏠'},
-      'modern_stock': {bg:'var(--ok-bg)',   fg:'var(--ok)',   icon:'🏡'},
-      'luxury_new':   {bg:'#F5EFE7',        fg:'var(--bronze)', icon:'🌟'},
-    };
-    h+='<div class="rc"><div class="rt" style="margin-bottom:6px">📊 تصنيف المخزون (Stock Stratification)</div>';
-    h+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">'+(stockStrata.methodology_ar||'')+'</div>';
-
-    // Land reference card
-    const lr=stockStrata.land_reference;
-    if(lr){
-      h+='<div class="rn" style="font-size:.82rem;padding:8px 10px;background:var(--alt);border-radius:6px;margin-bottom:12px">';
-      h+='📏 <strong>مرجع الأرض:</strong> '+fmt(lr.median_per_m2)+' ر.ق/م² ';
-      h+='(n='+lr.n+' معاملة، نافذة '+lr.window_months+' شهر، ';
-      h+='شريحة: '+(lr.bracket||'—')+')';
-      h+='</div>';
-    }
-
-    // Subject classification (if listing_price was provided)
-    const sp=stockStrata.subject_property;
-    if(sp && sp.classification && sp.classification!=='unknown'){
-      const cls=STRATA_COLORS[sp.classification]||STRATA_COLORS['aging_stock'];
-      h+='<div style="padding:10px 12px;background:'+cls.bg+';border-right:4px solid '+cls.fg+';border-radius:6px;margin-bottom:12px;font-size:.86rem">';
-      h+='<div style="font-weight:600;color:'+cls.fg+';margin-bottom:4px">'+cls.icon+' عقارك يقع في فئة: '+sp.classification_label_ar+'</div>';
-      h+='<div style="font-size:.78rem;color:#555">السعر المُدخَل: '+fmt(sp.listing_price)+' ر.ق ÷ '+sp.plot_area_m2+' م² = '+fmt(sp.implied_per_m2)+' ر.ق/م²';
-      h+=' &nbsp;|&nbsp; نسبة لـ الأرض: <strong>'+sp.implied_ratio+'×</strong></div>';
-      if(sp.guidance_ar){
-        h+='<div style="font-size:.78rem;color:#555;margin-top:6px">'+sp.guidance_ar+'</div>';
-      }
-      h+='</div>';
-    }
-
-    // Strata table
-    h+='<div style="display:grid;grid-template-columns:1fr;gap:6px">';
-    STRATA_ORDER.forEach(name=>{
-      const s=stockStrata.strata[name];
-      if(!s) return;
-      const c=STRATA_COLORS[name];
-      const isSubject=(sp && sp.classification===name);
-      const isDominant=(stockStrata.dominant_stratum && stockStrata.dominant_stratum.name===name);
-      const borderStyle=isSubject?'border:2px solid '+c.fg:'border:1px solid #e5e5e5';
-      h+='<div style="padding:10px 12px;background:'+c.bg+';'+borderStyle+';border-radius:6px;font-size:.84rem">';
-      h+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">';
-      h+='<div><strong style="color:'+c.fg+'">'+c.icon+' '+s.label_ar+'</strong>';
-      h+=' <span style="color:#888;font-size:.78rem">('+s.ratio_band+'×)</span>';
-      if(isDominant) h+=' <span style="font-size:.72rem;color:'+c.fg+';background:white;padding:1px 6px;border-radius:8px;border:1px solid '+c.fg+'">المسيطرة</span>';
-      if(isSubject) h+=' <span style="font-size:.72rem;color:white;background:'+c.fg+';padding:1px 6px;border-radius:8px">← عقارك</span>';
-      h+='</div>';
-      if(s.n>0){
-        h+='<div style="text-align:left;direction:ltr"><strong>'+fmt(s.median_per_m2)+'</strong>/m²';
-        if(s.estimated_total) h+=' &nbsp;·&nbsp; '+fmt(s.estimated_total)+' ر.ق';
-        h+='</div>';
-      } else {
-        h+='<div style="color:#999;font-size:.78rem">لا توجد معاملات</div>';
-      }
-      h+='</div>';
-      // Reliability + description
-      h+='<div style="font-size:.76rem;color:#666;margin-top:6px">';
-      h+='n='+s.n+' &middot; '+s.reliability_label_ar;
-      h+='</div>';
-      h+='<div style="font-size:.74rem;color:#777;margin-top:4px;line-height:1.5">'+s.description_ar+'</div>';
-      h+='</div>';
-    });
-    h+='</div>';
-
-    // Dominant stratum note
-    if(stockStrata.dominant_stratum && stockStrata.dominant_stratum.note_ar){
-      h+='<div style="font-size:.78rem;color:#666;margin-top:10px;padding:8px;background:var(--alt);border-radius:4px">';
-      h+='ℹ <strong>الفئة المسيطرة:</strong> '+stockStrata.dominant_stratum.label_ar+' ('+stockStrata.dominant_stratum.share_pct+'% من العينة). ';
-      h+=stockStrata.dominant_stratum.note_ar;
-      h+='</div>';
-    }
-
-    // Sprint scope caveat (light grey, smaller font)
-    if(stockStrata.sprint_scope_caveat_ar){
-      h+='<div style="font-size:.72rem;color:#888;margin-top:8px;font-style:italic">'+stockStrata.sprint_scope_caveat_ar+'</div>';
-    }
-    h+='</div>';
-  }
+  // ── Sprint 2.16.0: Stock Stratification (Rule E4) ── (b17: shared builder)
+  h+=_strataHtml(d);
 
   // ── Known unknowns ──
   const rtr=d.reasoning_trace;
@@ -1694,7 +1875,7 @@ function show(d){
   if(hasValuation){
     t3+='<div class="t3block">';
     t3+='<button class="t3btn t3-primary" onclick="go(\'refine\')">✏️ حسّن التقدير — أضف تفاصيل مبناك</button>';
-    t3+='<button class="t3btn t3-secondary" onclick="printReport()">📄 التقرير الكامل / حفظ PDF</button>';
+    t3+='<button class="t3btn t3-secondary" onclick="openReport()">📄 التقرير الكامل / حفظ PDF</button>';  // b17: rewired to screen 5
     t3+='</div>';
   }
 
