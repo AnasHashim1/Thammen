@@ -596,6 +596,24 @@ function applyAssetToForm(assetType){
   }
 }
 
+// Sprint 2.22.0b.22 — tower-pair fence (UI side): sync the tower split with
+// EVERY rendered result, and CLEAR the pair when the asset isn't tower-like.
+// Pre-b22 the section/values persisted across evaluations (applyAssetToForm
+// only ran from the insufficient-data CTA), so an apartment's 12×5000 leaked
+// into the next villa's refine submit and drove an income_led headline
+// (Phase-0 §4.3). Clearing on every non-tower render kills that vector.
+function syncTowerPair(assetType){
+  try{
+    applyAssetToForm(assetType||'');
+    var towerLike=(assetType==='tower'||assetType==='compound_large'||assetType==='apartment_building');
+    if(!towerLike){
+      var uc=document.getElementById('unitCount'),apu=document.getElementById('avgRentPerUnit');
+      if(uc)uc.value='';
+      if(apu)apu.value='';
+    }
+  }catch(e){}
+}
+
 // Sprint 2.16.8 — go to form + focus a specific field (tower UX).
 // Used by the insufficient-data CTA so users land exactly where their next
 // required input lives (rentalIncome for towers, askingPrice for others).
@@ -1429,6 +1447,10 @@ function show(d){
   const acc=d.accuracy||{};
   const hasValuation=v.amount!=null&&v.amount>0;
 
+  // Sprint 2.22.0b.22 — tower-pair fence: sync (and clear, when non-tower)
+  // the unit-pair inputs with every rendered result.
+  syncTowerPair(d&&d.asset_type);
+
   // Sprint 2.22.0b.10 — surface the geometry MAX-buildable footprint as an
   // editable hint on the refine screen (DISPLAY/CONFIRM only; the user corrects
   // DOWN). Set-or-clear every render so it never goes stale across evaluations.
@@ -1583,9 +1605,17 @@ function show(d){
     alerts+='<div><strong style="color:'+scopeColor+'">'+scopeIcon+' '+scopeLabel+'</strong> — '+ss.label_ar+'</div>';
     alerts+='<div style="font-size:.82rem;color:var(--muted)">'+ss.methodology_ar+'</div>';
     alerts+='</div>';
-    if(ss.requires_user_input_ar)alerts+='<div style="margin-top:8px;font-size:.88rem;color:var(--warn)"><strong>يتطلب:</strong> '+ss.requires_user_input_ar+'</div>';
+    // Sprint 2.22.0b.22 — the «يتطلب:» line drops once the requirement is met
+    // (a valuation exists): pre-b22 it kept demanding the rent ABOVE a
+    // successful income valuation (Phase-0 §3 stale-qualifier finding).
+    if(ss.requires_user_input_ar&&!hasValuation)alerts+='<div style="margin-top:8px;font-size:.88rem;color:var(--warn)"><strong>يتطلب:</strong> '+ss.requires_user_input_ar+'</div>';
     alerts+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted);line-height:1.6">'+ss.disclaimer_ar+'</div>';
     alerts+='</div>';
+  }
+
+  // ── Sprint 2.22.0b.22: ignored tower pair — disclosure chip (qualifier, ABOVE the number) ──
+  if(d.tower_pair_ignored&&d.tower_pair_ignored.note_ar){
+    alerts+='<div style="background:var(--warn-bg);border-right:4px solid var(--warn);padding:10px 14px;margin-bottom:14px;border-radius:0 6px 6px 0;font-size:.88rem">⚠️ '+d.tower_pair_ignored.note_ar+'</div>';
   }
 
   // ── Sprint A.3: Sanity warnings — prominent yellow card (qualifier, ABOVE the number) ──

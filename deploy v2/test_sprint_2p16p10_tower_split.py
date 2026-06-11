@@ -79,9 +79,13 @@ def verify_sync():
         # Sprint 2.19.1: dropped stale '2.16.10' version-literal pins (fail by
         # design after the version advances); feature markers below still verify
         # the Sprint 2.16.10 code is present.
+        # Sprint 2.22.0b.22: the inline derivation block became the fenced pure
+        # helper `_derive_rent_from_unit_pair` (tower-like assets only) — the
+        # old `_rent_source = None` init literal no longer exists; the helper
+        # call is the equivalent feature marker.
         'unit_count: Optional[int] = None',
         'avg_monthly_rent_per_unit: Optional[float] = None',
-        '_rent_source = None',
+        '_derive_rent_from_unit_pair(',
         'derived_from_units',
         'rent_source_ar=_rs_label',
     ]:

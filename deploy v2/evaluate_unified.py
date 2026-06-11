@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b21-inv3-rail-age-neutral'
-SPRINT_TAG = '2.22.0b.21'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b22-tower-pair-fence'
+SPRINT_TAG = '2.22.0b.22'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -3637,6 +3637,74 @@ def _check_output_sanity(result, listing_price):
 # Unified entry point
 # ============================================================
 
+# ── Sprint 2.22.0b.22 — tower-pair fence (micro Gate-2, signed 2026-06-11) ──
+# Phase-0 (docs/PHASE0_income_types_exposure.md §4) measured the Sprint 2.16.10
+# (unit_count × avg_monthly_rent_per_unit) multiplication UNGATED on asset
+# type: the pair on a villa was laundered into a "subject actual rent" and
+# income_led drove 54/541/6 to 11.2M (signed: 2.4M cost-led). The fence
+# realizes the documented §19 promise: the pair derives a building-total rent
+# for MULTI-UNIT (tower-like) assets only; on anything else it is IGNORED with
+# an explicit disclosure and never feeds income_led. The villa's legitimate
+# single-rent path (b6, bare rental_income) is untouched.
+#
+# Membership note (#39 deviation from the literal §19 four-type list):
+# compound_small IS tower-like here — an address-entry large compound is
+# quick-classified compound_small (subtype 2/3; the E20 extent promotion runs
+# AFTER the DCF fork), so excluding it would have moved the signed
+# byte-identical compound behaviour (contract: «مجمع كبير ⇒ سلوكه الحالي
+# بايت-مطابق»). commercial_building kept per the §19 list (no classify_asset
+# branch emits it today on this path — harmless).
+_TOWER_PAIR_ASSETS = frozenset({
+    'tower', 'apartment_building', 'compound_large', 'compound_small',
+    'commercial_building',
+})
+_TOWER_PAIR_IGNORED_AR = 'مدخل برجي على أصل غير برجي — تم تجاهله'
+_TOWER_PAIR_IGNORED_EN = ('Tower-style input (unit count × per-unit rent) on a '
+                          'non-tower asset — ignored')
+
+
+def _derive_rent_from_unit_pair(qtype, unit_count, avg_monthly_rent_per_unit,
+                                rental_income):
+    """Pure (b22): resolve the effective monthly rent + provenance from the
+    Sprint 2.16.10 (unit_count × per-unit) pair vs a bare rental_income.
+
+    Returns (rental_income, rent_source, pair_ignored):
+      - tower-like + complete pair → derived total wins (byte-identical to the
+        pre-b22 strings/behaviour), rent_source kind='derived_from_units'.
+      - non-tower-like + complete pair → the pair is IGNORED (pair_ignored
+        carries the verbatim disclosure); a bare rental_income, if any,
+        proceeds exactly as a pair-less request (the b6 path untouched).
+      - incomplete pair → legacy elif: bare rental_income provenance only.
+    """
+    if unit_count and avg_monthly_rent_per_unit:
+        if qtype in _TOWER_PAIR_ASSETS:
+            _derived_total = unit_count * avg_monthly_rent_per_unit
+            return _derived_total, {
+                'kind': 'derived_from_units',
+                'unit_count': unit_count,
+                'avg_per_unit': avg_monthly_rent_per_unit,
+                'derived_monthly_total': _derived_total,
+                'note_ar': f'محسوب من {unit_count} وحدة × {int(avg_monthly_rent_per_unit):,} ر.ق/شهر = {int(_derived_total):,} ر.ق/شهر إجمالي',
+            }, None
+        pair_ignored = {
+            'kind': 'tower_pair_ignored',
+            'asset_type': qtype,
+            'unit_count': unit_count,
+            'avg_per_unit': avg_monthly_rent_per_unit,
+            'note_ar': _TOWER_PAIR_IGNORED_AR,
+            'note_en': _TOWER_PAIR_IGNORED_EN,
+        }
+    else:
+        pair_ignored = None
+    if rental_income:
+        return rental_income, {
+            'kind': 'user_total',
+            'monthly_total': rental_income,
+            'note_ar': f'إفادة العميل: {int(rental_income):,} ر.ق/شهر إجمالي',
+        }, pair_ignored
+    return rental_income, None, pair_ignored
+
+
 def evaluate_thammen(
     zone: Optional[int] = None,
     street: Optional[int] = None,
@@ -3705,6 +3773,10 @@ def evaluate_thammen(
     # Sprint 2.21.0.7 — scope-safe init for the asset-type reality check flag
     # (PIN/land path). None means "no reality issue detected".
     _asset_type_reality = None
+    # Sprint 2.22.0b.22 — scope-safe init: if the Lite GIS path fails before the
+    # rent-pair derivation runs, the attach sites below still reference this.
+    # None means "no tower pair was ignored".
+    _tower_pair_ignored = None
 
     try:
         from qatar_gis import QatarGIS, classify_asset, PropertyLocation
@@ -3815,27 +3887,15 @@ def evaluate_thammen(
                 _sanity_warnings = _sanity['warnings_ar']
                 rental_income = _sanity['rental_income_adjusted']
 
-                # ── Sprint 2.16.10: derive total monthly rent from (unit_count × avg_per_unit) ──
-                # The pair wins over a bare rental_income because it's unambiguous —
-                # the user explicitly told us "this is N units × Y QAR each", not
-                # the ambiguous "this is some rent in QAR/month".
-                _rent_source = None
-                if unit_count and avg_monthly_rent_per_unit:
-                    _derived_total = unit_count * avg_monthly_rent_per_unit
-                    _rent_source = {
-                        'kind': 'derived_from_units',
-                        'unit_count': unit_count,
-                        'avg_per_unit': avg_monthly_rent_per_unit,
-                        'derived_monthly_total': _derived_total,
-                        'note_ar': f'محسوب من {unit_count} وحدة × {int(avg_monthly_rent_per_unit):,} ر.ق/شهر = {int(_derived_total):,} ر.ق/شهر إجمالي',
-                    }
-                    rental_income = _derived_total
-                elif rental_income:
-                    _rent_source = {
-                        'kind': 'user_total',
-                        'monthly_total': rental_income,
-                        'note_ar': f'إفادة العميل: {int(rental_income):,} ر.ق/شهر إجمالي',
-                    }
+                # ── Sprint 2.16.10 / 2.22.0b.22: derive total monthly rent from the
+                # (unit_count × avg_per_unit) pair — TOWER-LIKE ASSETS ONLY (the b22
+                # fence). On a non-tower asset the pair is IGNORED with an explicit
+                # disclosure and never overwrites rental_income (so it can never
+                # feed b6 income_led); a bare rental_income proceeds untouched.
+                rental_income, _rent_source, _tower_pair_ignored = (
+                    _derive_rent_from_unit_pair(
+                        _qtype, unit_count, avg_monthly_rent_per_unit,
+                        rental_income))
 
                 # ── Sprint A.1/A.2/A.3: DCF fast paths ──
                 if _qtype in DCF_ONLY:
@@ -3940,6 +4000,10 @@ def evaluate_thammen(
                     # Sprint 2.16.14 — attach Zoning cross-check flag
                     if _subtype_zoning_mismatch:
                         result['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
+                    # Sprint 2.22.0b.22 — disclose an ignored tower pair (a non-tower
+                    # asset routed to a fast path by the MoJ-thin gate).
+                    if _tower_pair_ignored:
+                        result['tower_pair_ignored'] = _tower_pair_ignored
                     # Add a warning explaining the routing decision
                     _sanity_warnings.append(
                         f'لا توجد مقارنة كافية في وزارة العدل لـ "{ASSET_TYPE_AR.get(_qtype, _qtype)}" '
@@ -5073,6 +5137,13 @@ def evaluate_thammen(
     # reason, the full pipeline must propagate it too.
     if _subtype_zoning_mismatch:
         output['subtype_zoning_mismatch'] = _subtype_zoning_mismatch
+
+    # Sprint 2.22.0b.22 — disclose an ignored tower pair on the full path
+    # (villa/house/land + (unit_count × per-unit) ⇒ the pair never entered the
+    # rent; the user must SEE that it was ignored, not wonder why the value
+    # didn't move).
+    if _tower_pair_ignored:
+        output['tower_pair_ignored'] = _tower_pair_ignored
 
     # Sprint 2.21.0.7 — attach the 'warn' asset-type reality result (non-residential
     # but tradable land, valued WITH a bold disclaimer). 'stop'/'reject' returned
