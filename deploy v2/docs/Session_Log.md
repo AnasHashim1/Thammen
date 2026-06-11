@@ -4367,7 +4367,7 @@ certified sheet + the PO RCN ladder — n=1, disclosed; the GT kit (D-3) is the 
 
 -----
 
-## 20.53 🆕 2026-06-11 — Sprint 2.22.0b.20 (EVIDENCE-CONDITIONAL LEADERSHIP + three-value stack) — BUILT + FULLY VERIFIED, ⏸ HELD AT GATE-1 (NOT deployed; live stays b18/v187)
+## 20.53 🆕 2026-06-11 — Sprint 2.22.0b.20 (EVIDENCE-CONDITIONAL LEADERSHIP + three-value stack) — **SHIPPED Heroku v188** (Gate-1 «go» 2026-06-11; built + fully verified earlier the same day)
 
 > Engine (local tree) `thammen-sprint2p22p0b20-conditional-leadership` / SPRINT_TAG `2.22.0b.20`. **🔴 Gate-2
 > VALUE-AFFECTING — SIGNED (Anas F6, `docs/SESSION_CLOSE_2026-06-11_F6_SIGNED.md` §1 — the file delivery IS the
@@ -4418,7 +4418,19 @@ entry needs `input_mode='land'` like api.py; not an engine bug) · 8 refusal/hyb
 keys. R14 real-Chromium 390×844 + desktop: all b20 lines render in TIER-1 + the report, DEF-12 intact, **0
 console errors, no overflow**.
 
-**Carried forward (Rule #42).** **⏸ GATE-1 = the single blocking step** (Anas's separate explicit consent;
+**SHIPPED + live smoke v188 (Gate-1 «go», same day).** `heroku auth:whoami` valid → `git subtree push` clean
+(`1c0f797..aafca83`, Released **v188**); `/api/health` = `3.1.0-sprint2.22.0b.20`. **Live 22-cohort smoke (browser-UA,
+#61) == the signed §2.7 table:** امريخ **cost-led 2,400,000 [2.4M…5.4M-muted]** (cost 2,378,094 · geo-full 51/0.620 in
+the JSON) · V001 **3.8M floor→3.1M** (geo-rescue 22/0.203) · V002 2.5M + V003 2.4M (geo-rescue + «عمر مُعاد تسجيله —
+غير موثوق» + floor 2.3M) · المعراض **2.6M E25-capped** + divergence + MUC high · AbuHamour 2.4M [2.2,2.6] + 56/565/19
+2.4M matched + stack emitted · F4 trio cost-led (2.4M/3.0M/2.5M @ engine costs 2,351,005/2,972,324/2,531,399) · F5
+trio cost-led (1.1M/1.7M/2.1M) · land PIN 1.2M + «DRC ≡ قيمة الأرض» · 6 refusals + 2 hybrid unchanged, no gate keys;
+one cold 45s timeout on 51/825/22 attempt-1 (the known A6-class cold pattern) → attempt-2 200@15s; the served HTML
+carries all 6 b20 renderer occurrences. **The §4.2 re-snapshot executed:** `.b20_live_fixtures.json` written from the
+fresh captures, labeled «engineering fixtures, NOT methodology truth»; the pre-b20 captures archived
+(`.p0_cases_pre_b20/`). Rule #52 closed MEASURED (live == local E2E == the signed table).
+
+**Carried forward (Rule #42).** ~~⏸ GATE-1~~ (granted + executed) — the rest of the carried items stand: **⏸ was** (Anas's separate explicit consent;
 then: subtree push → two-lane live smoke on the 22-cohort → the post-ship re-snapshot per Phase-0 §4.2 [fresh
 byte-identical guards labeled «engineering fixtures, NOT methodology truth»] → docs-close maps old→new per
 anchor). b19 (the three-value REPORT display slice) = its own signed track — the b20 stack emission is its

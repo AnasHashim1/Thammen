@@ -373,6 +373,8 @@ pre-invite blocker**; MoJ open-data licence gate ✅ CLOSED a25 — CC BY 4.0; i
 per the notice, so the in-app feedback UI [Sprint 2] is not required for the beta). Launch-gating canonical =
 CLAUDE.md #65a.**
 
+**🆕 2026-06-11 — Sprint 2.22.0b.20 SHIPPED (Heroku v188): EVIDENCE-CONDITIONAL LEADERSHIP + the three-value stack** — the headline leader is decided by per-case evidence quality (the SIGNED unified rule: matched-stratum bar · geo-full reliable bar · else the disclosed-indicative DRC leads; E25 rail — cost never leads upward); the b6 widen_down / b11 cost_reanchor_down / b16 OSR branches are SUBSUMED; the four legacy anchors RETIRED as methodology truth (V001/TD-93317 ±1% = the sole calibration anchor); live: امريخ cost-led 2.4M · V001 3.8M floor 3.1M · المعراض E25-capped. Spec `BRIEF_conditional_leadership_SIGNED.md` · signature `SESSION_CLOSE_2026-06-11_F6_SIGNED.md` · CHANGELOG_v102 · Session_Log §20.53. **b19 (the three-value REPORT display slice) = the queued sibling (separately signed).**
+
 **PRIORITY QUEUE (confirmed-current — this is the authoritative "next"):**
 
 |#|Item|What / why|Blocker|
