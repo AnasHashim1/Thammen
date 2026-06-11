@@ -193,8 +193,11 @@ html = io.open('index.html', encoding='utf-8').read()
 check('TIER-1 + report render leadership.note_ar (x2)', html.count('v.leadership.note_ar') >= 2)
 check('cost stack line rendered (x2)', html.count('v.value_stack.cost.value') >= 2)
 check('dispersion rendered (G2 visible)', html.count('v.value_stack.market.dispersion_36') >= 2)
-check('ENGINE_VERSION bumped to b20', EU.ENGINE_VERSION.startswith('thammen-sprint')
-      and '2p22p0b20' in EU.ENGINE_VERSION and EU.SPRINT_TAG == '2.22.0b.20')
+# R6/Lesson-2: NO exact version pins — b19 (the report slice) legitimately bumps after b20.
+import re as _re
+check('ENGINE_VERSION/SPRINT_TAG format (version-agnostic)',
+      EU.ENGINE_VERSION.startswith('thammen-sprint')
+      and _re.match(r'^\d+\.\d+\.\d+', EU.SPRINT_TAG) is not None)
 
 print(f'\n{PASS} passed, {FAIL} failed')
 sys.exit(1 if FAIL else 0)

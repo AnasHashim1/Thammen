@@ -1347,11 +1347,24 @@ function showReport(d){
     if(d.moj_sample_size)h+='<div class="rn" style="margin-top:8px;font-size:.78rem">صفقات البيع المسجلة لعقارات مشابهة: '+d.moj_sample_size+' صفقة</div>';
     // DEF-12 (§11 Q4 multi-AI «ship»): MV + the forced-sale INDICATION = MV × 0.90 — convention
     // disclosed verbatim; report-only (NOT screen 4); display math on the existing amount.
+    // Sprint 2.22.0b.19 — the THREE-VALUE display («نذكر هذا وذاك في التقرير», signed):
+    // the cost row composes from the b20 valuation.value_stack — the SOLE source, display-only,
+    // zero new math. Villa/house: the b19-verbatim labeled value (or the unavailable reason);
+    // raw_land: the unified «DRC ≡ قيمة الأرض» line (v.cost_note_ar). Refusal/hybrid never
+    // reach this block (hasValuation-gated). + the forced-sale BASIS disclosure line.
     const _fs=Math.round((v.amount||0)*0.90);
     h+='<div class="rep-def12">';
     h+='<div class="rep-def12-row"><span>القيمة السوقية (الوسيط)</span><strong>'+fmt(v.amount)+' ر.ق</strong></div>';
+    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
+      h+='<div class="rep-def12-row"><span>'+v.value_stack.cost.label_ar+'</span><strong>'+fmt(v.value_stack.cost.value)+' ر.ق</strong></div>';
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">'+v.value_stack.cost.sub_ar+'</div>';
+    }else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';
+    }else if(v.cost_note_ar){
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">🏗️ '+v.cost_note_ar+'</div>';
+    }
     h+='<div class="rep-def12-row"><span>قيمة البيع الجبري الإرشادية (×<span dir="ltr">0.90</span>)</span><strong>'+fmt(_fs)+' ر.ق</strong></div>';
-    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً.</div>';
+    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً. الأساس: القيمة السوقية المركزية (الوسيط) × <span dir="ltr">0.90</span>.</div>';
     h+='</div>';
     h+='</div>';
     // (4) evidence quality (the b2.2 panel, full).
