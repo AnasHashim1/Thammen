@@ -3,8 +3,9 @@
 > **Date:** 2026-06-11 · **Mode:** READ-ONLY recon — **zero engine/frontend edits** (b19 executes separately as signed).
 > **PO directive (2026-06-11):** three-value stack everywhere · leadership by evidence quality · universal DRC ·
 > legacy anchors' recorded expectations RETIRED (re-baseline post-ship) · **V001 = SOLE calibration anchor**.
-> **Status:** Phase-0 numbers for the Gate-2 signature. The companion brief = `BRIEF_conditional_leadership_DRAFT.md` (DRAFT, unsigned).
-> Build is HELD on Anas's Gate-2 signature over §2's flip-rate numbers.
+> **Status (updated 2026-06-11):** Gate-2 **F6 SIGNED** (`SESSION_CLOSE_2026-06-11_F6_SIGNED.md` §1) over the §2.7
+> FINAL numbers. The companion brief = `BRIEF_conditional_leadership_SIGNED.md` (the normative reference).
+> Build sprint 2.22.0b.20 proceeds; **Gate-1 (Heroku push) = a separate later consent.**
 
 ## §0 — #57 ground-truth handshake (measured 2026-06-11)
 

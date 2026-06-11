@@ -1,10 +1,11 @@
 # BRIEF — Evidence-Conditional Leadership + three-value stack (🔴 Gate-2 VALUE-AFFECTING)
 
-> **STATUS: DRAFT — PARTIAL SIGN (adjudication v2, 2026-06-11).** Anas signed the E25 rail (+ double-weak
-> clause) and forks **F1 (amended unified rule) · F2=B · F3=(b) · F4=FLIP · F5=fail-safe COST**.
-> **The BINDING F6 signature (the final flip number) is RESERVED** — the final recompute under the signed
-> rule-set = **7/13 = 54% cost-led** (`PHASE0_conditional_leadership.md` §2.7). Build is HELD until F6 is
-> signed. Live = b18/v187 untouched; b19 separate as signed.
+> **STATUS: ✍ SIGNED — Gate-2 COMPLETE (F6 signed by Anas 2026-06-11, `SESSION_CLOSE_2026-06-11_F6_SIGNED.md` §1
+> — the delivery of that file IS the signature).** All forks adjudicated: E25 rail (+ double-weak clause) ·
+> F1 (amended unified rule) · F2=B · F3=(b) · F4=FLIP · F5=fail-safe COST · **F6 = the final number ACCEPTED:
+> 7/13 = 54% cost-led** (`PHASE0_conditional_leadership.md` §2.7), including امريخ 3.4M → 2,378,094.
+> **This document is now the normative reference.** Build sprint = 2.22.0b.20 (b19 = the separate three-value
+> report slice, its own signed track). **Gate-1 (Heroku push) = a SEPARATE later consent — the build stops before any push.**
 
 ## §1 Premise (signed direction, this brief = the encoding)
 

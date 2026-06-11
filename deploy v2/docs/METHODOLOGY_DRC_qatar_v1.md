@@ -81,6 +81,12 @@ effective_age = chronological_age + condition_penalty
 
 **🔴 RULE (locked):** the cost-triangulation anchors on **fair Market Value** (the cost/valuer figure); **the forced-sale value is NEVER a market-value signal** (it is MV × ~0.90 by convention); any illiquidity discount comes from actual market **behaviour**, disclosed separately.
 
+> **⚠ SUPERSEDED (errata 2026-06-11, SESSION_CLOSE §5):** every «actual is ~25» / age-fitting reading in §7/§11 below
+> is RETIRED by the 2026-06-10 TD-93317 sheet extraction + **Rule E26** — the valuer LED on the SYSTEM (CGIS) age
+> («نحو 18 سنة … إسترشاداً بموقع CGIS»; the 2002 deed = أرض فضاء), and the canonical reproduction is
+> **RCN_high 3,000 × retention(18)=0.64 = 1,920 ≈ his 1,900** (+0.35% MV) — NOT «3,500×0.543@~23». The §11
+> «run depreciation on ACTUAL age» fix is likewise superseded: the SYSTEM age leads; a user age is a sensitivity line (b18 §A1).
+
 ## 7. Calibration proof — the model REPRODUCES the certified valuer (TD 93317, V001) to ~1%
 
 | component | our model | certified valuer | match |
