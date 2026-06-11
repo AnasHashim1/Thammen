@@ -110,9 +110,11 @@ chk('23. screen-4 TIER-1 renders age_sensitivity.note_ar',
 chk('24. the report renders age_sensitivity.note_ar',
     "v.age_sensitivity&&v.age_sensitivity.note_ar)h+=" in HTML)
 
-# 25: the OSR finish-delta disclosure copy is emitted (engine note suffix)
-chk('25. finish-delta disclosure suffix present in the emission',
-    'سُعِّر التشطيب الفاخر عبر فرق كلفة الإحلال' in SRC)
+# 25 (SUPERSEDED by Sprint 2.22.0b.20): the OSR finish-delta emission retired with the OSR
+# branch — finish now prices THROUGH the replacement coefficient (RCN luxury) inside the
+# gate's cost figure (same E26/b18 doctrine, more direct). Pin = the RCN path + the pure fn kept.
+chk('25. finish prices through the RCN coefficient (gate cost) + OSR calculator kept',
+    "('luxury' if is_luxury else 'ordinary')" in SRC and 'def _old_stock_reanchor(' in SRC)
 
 # 26: version format (R6 — no exact pin)
 chk('26. ENGINE/SPRINT_TAG format', ENGINE_VERSION.startswith('thammen-sprint') and re.match(r'^\d+\.\d+\.\d+', SPRINT_TAG) is not None)

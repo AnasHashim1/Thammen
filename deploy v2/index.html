@@ -1325,6 +1325,15 @@ function showReport(d){
     if(v.condition_note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.condition_note_ar+'</div>';
     if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';
     if(v.cost_triangulation&&v.cost_triangulation.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.cost_triangulation.note_ar+'</div>';
+    // Sprint 2.22.0b.20 — EVIDENCE-CONDITIONAL LEADERSHIP (Gate-2 SIGNED 2026-06-11):
+    // the leadership verdict + the three-value stack lines (cost line = the b19-signed label;
+    // dispersion shown = G2 auditability). Cost-led/E25 notes are warn-styled like the OSR note was.
+    if(v.leadership&&v.leadership.note_ar){h+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'">⚖️ '+v.leadership.note_ar+'</div>';}
+    if(v.leadership&&v.leadership.age_honesty_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem">🕰️ '+v.leadership.age_honesty_note_ar+'</div>';}
+    if(v.leadership&&v.leadership.resurvey_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem">📋 '+v.leadership.resurvey_note_ar+'</div>';}
+    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){h+='<div class="rn" style="margin-top:8px;font-size:.76rem">🏗️ '+v.value_stack.cost.label_ar+': '+fmt(v.value_stack.cost.value)+' ر.ق — '+v.value_stack.cost.sub_ar+'</div>';}
+    else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){h+='<div class="rn" style="margin-top:8px;font-size:.74rem">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
+    if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){h+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span></div>';}
     // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — the claimed age never moves the headline.
     if(v.age_sensitivity&&v.age_sensitivity.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">🕰️ '+v.age_sensitivity.note_ar+'</div>';
     if(v.value_floor){
@@ -1669,6 +1678,15 @@ function show(d){
     // + the b11/b13 cost-triangulation notes (previously JSON-only; same honest surface, signed copy).
     if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';}
     if(v.cost_triangulation&&v.cost_triangulation.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem">'+v.cost_triangulation.note_ar+'</div>';}
+    // Sprint 2.22.0b.20 — EVIDENCE-CONDITIONAL LEADERSHIP (Gate-2 SIGNED 2026-06-11):
+    // the leadership verdict + the three-value stack lines (cost line = the b19-signed label;
+    // dispersion shown = G2 auditability). Cost-led/E25 notes are warn-styled like the OSR note was.
+    if(v.leadership&&v.leadership.note_ar){t1+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'">⚖️ '+v.leadership.note_ar+'</div>';}
+    if(v.leadership&&v.leadership.age_honesty_note_ar){t1+='<div class="rn" style="margin-top:6px;font-size:.74rem">🕰️ '+v.leadership.age_honesty_note_ar+'</div>';}
+    if(v.leadership&&v.leadership.resurvey_note_ar){t1+='<div class="rn" style="margin-top:6px;font-size:.74rem">📋 '+v.leadership.resurvey_note_ar+'</div>';}
+    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){t1+='<div class="rn" style="margin-top:8px;font-size:.76rem">🏗️ '+v.value_stack.cost.label_ar+': '+fmt(v.value_stack.cost.value)+' ر.ق — '+v.value_stack.cost.sub_ar+'</div>';}
+    else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){t1+='<div class="rn" style="margin-top:8px;font-size:.74rem">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
+    if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){t1+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span></div>';}
     // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — TIER-1 (the claimed age never moves the headline).
     if(v.age_sensitivity&&v.age_sensitivity.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem">🕰️ '+v.age_sensitivity.note_ar+'</div>';}
     // MoJ sample size (cite-n discipline) — STAYS on TIER-1.

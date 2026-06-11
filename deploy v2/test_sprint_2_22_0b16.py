@@ -114,11 +114,15 @@ EP = (ROOT / 'evaluate_property.py').read_text(encoding='utf-8')
 HTML = (ROOT / 'index.html').read_text(encoding='utf-8')
 check('threading: evaluate_property attaches subject_geo_full',
       "moj_ref_dict['subject_geo_full'] = _sgf" in EP)
-check('precedence: b11 emission gated `elif _ct and not _osr:`', 'elif _ct and not _osr:' in EU)
-check('emission: elif _osr block present + sets range_is_headline', 'elif _osr:' in EU
-      and "output['valuation']['old_stock_reanchor'] = {" in EU)
-check('ISS-A07: decomposition + value_floor recomputed + b14 post-pass re-run in the _osr branch',
-      '_decomp_osr = _decompose_value(' in EU and '_vf_osr = _villa_value_floor(' in EU)
+# Sprint 2.22.0b.20 (SUPERSEDED wiring): the b11/b16 elif chain RETIRED — the single
+# evidence-conditional gate is the decision point (BRIEF_conditional_leadership_SIGNED §3.1).
+check('precedence (b20): the leadership gate is the single decision point',
+      '_gate = _leadership_gate(' in EU and "if _tri and _tri['mode'] == 'income_led':" in EU)
+check('emission (b20): cost-led sets range_is_headline + leadership emitted',
+      "output['valuation']['leadership'] = _lead20" in EU
+      and "output['valuation']['range_is_headline'] = True" in EU)
+check('ISS-A07 (b20): decomposition + value_floor recomputed + b14 post-pass in the cost-led branch',
+      '_decomp20 = _decompose_value(' in EU and '_vf20 = _villa_value_floor(' in EU)
 check('UI renders old_stock_reanchor.note_ar + cost_triangulation.note_ar (t1)',
       'v.old_stock_reanchor&&v.old_stock_reanchor.note_ar' in HTML
       and 'v.cost_triangulation&&v.cost_triangulation.note_ar' in HTML)

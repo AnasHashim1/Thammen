@@ -108,9 +108,19 @@ def subject_geo_full_ppm2(rows, area, plot_area_m2):
             return None
         vals.sort()
         med = vals[int(0.5 * (len(vals) - 1))]
+        # Sprint 2.22.0b.20 (Evidence-Conditional Leadership — ADDITIVE): the geo-full pool's
+        # own quartiles + dispersion. RULE 2's reliable bar tests the very pool a market lead
+        # would rest on ((p75−p25)/median — the same metric as the a14 gate); existing keys
+        # byte-unchanged (b16 consumers unaffected).
+        _q = quartile_stats(vals)
+        _disp = (((_q['p75'] - _q['p25']) / _q['median'])
+                 if (_q and _q.get('median')) else None)
         return {'ppm2_median_full': round(med), 'n_full': len(vals),
                 'value_full': round(med * plot_area_m2),
-                'bracket': [round(lo), round(hi)]}
+                'bracket': [round(lo), round(hi)],
+                'ppm2_p25_full': (round(_q['p25']) if _q else None),
+                'ppm2_p75_full': (round(_q['p75']) if _q else None),
+                'dispersion_full': (round(_disp, 3) if _disp is not None else None)}
     except Exception:
         return None
 

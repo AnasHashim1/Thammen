@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b18-age-basis-finish-delta'
-SPRINT_TAG = '2.22.0b.18'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b20-conditional-leadership'
+SPRINT_TAG = '2.22.0b.20'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4546,6 +4546,13 @@ def evaluate_thammen(
                 'هذه قطعة أرض فضاء — التقييم على قيمة الأرض المنفصلة فقط. '
                 'لا توجد قيمة بناء يحسبها هذا التقييم.'
             )
+            # Sprint 2.22.0b.20 (three-value stack, land leg): for bare land the DRC
+            # degenerates to the land value itself — one disclosed line, no separate math
+            # (BRIEF_conditional_leadership_SIGNED §2; Phase-0 §1.2 confirmed).
+            output['valuation']['cost_note_ar'] = (
+                'قيمة التكلفة (نهج DRC) ≡ قيمة الأرض — لا مكوّن بناء لقطعة فضاء.')
+            output['valuation']['cost_note_en'] = (
+                'Cost value (DRC) ≡ the land value — no building component on bare land.')
     elif (output.get('valuation') and output['valuation'].get('amount')
             and getattr(ev, 'plot_area_m2', None)):
         try:
@@ -4728,9 +4735,9 @@ def evaluate_thammen(
                         _lf_tri, _geom_ct.get('max_buildable_footprint_m2'), floors,
                         ('luxury' if is_luxury else 'ordinary'), _age_ct, condition,
                         footprint_actual=_eff_ct)
-                    _ct = _cost_triangulation(
-                        primary, _cost_av, _lf_tri, output.get('asset_type'),
-                        bool(_g_tri and _g_tri.get('gated')), _age_ct)
+                    # Sprint 2.22.0b.20: the b11 `_cost_triangulation` branch-decider call is
+                    # RETIRED — its trigger set lands in the leadership gate's else-branch
+                    # (the §3.1 subsumption map). The pure fn is kept above as a calculator.
                     # ── Sprint 2.22.0b.13 (Lever 1): convergent-TRIM (actual-age cost LEADS) ──
                     # USER-supplied actual age ONLY (recon R1): age_source=='user'; effective age =
                     # max(user, system) so a user age younger than the system floor can't raise retention.
@@ -4746,32 +4753,37 @@ def evaluate_thammen(
                         _ct_trim = _cost_trim(
                             primary, _cost_av_act, _lf_tri, output.get('asset_type'),
                             bool(_g_tri and _g_tri.get('gated')), _eff_trim)
-                    # ── Sprint 2.22.0b.16 (B-2 EARLY slice): old-stock central re-anchor ──
-                    # output already carries stock_strata + property_basis (attached inside
-                    # _build_unified_output, called at 4223 — verified, PHASE0_b16_bakeoff §5);
-                    # moj_ref carries subject_geo_full (threaded in evaluate_property Step 2).
-                    _osr = None
+                    # ── Sprint 2.22.0b.20: gate-input assembly (the b16 `_old_stock_reanchor`
+                    # branch is RETIRED — its basis pool must now pass RULE 2's reliable bar;
+                    # the pure fn is kept above as a superseded calculator). output already
+                    # carries stock_strata + property_basis; moj_ref carries subject_geo_full
+                    # (now with `dispersion_full` — Sprint b20 additive). ──
+                    _gate = None
                     try:
-                        _ss_osr = output.get('stock_strata') or {}
-                        _dom_osr = _ss_osr.get('dominant_stratum') or {}
-                        _aging_osr = (_ss_osr.get('strata') or {}).get('aging_stock') or {}
-                        _ab_osr = ((output.get('property_basis') or {})
-                                   .get('building_age_estimate') or {}).get('age_basis')
-                        # b18 (§A2): is_luxury no longer abstains — it rides the FINISH-DELTA
-                        # (new/renovated still abstain; out of the signed b18 scope, logged #42).
-                        _osr = _old_stock_reanchor(
-                            primary, (moj_ref or {}).get('subject_geo_full'), _aging_osr,
-                            _cost_av, _lf_tri, output.get('asset_type'),
-                            bool(_g_tri and _g_tri.get('gated')), _age_ct, _ab_osr,
-                            _dom_osr.get('name'), _dom_osr.get('share_pct'),
-                            getattr(ev, 'plot_area_m2', None),
-                            user_premium=bool((condition or '').strip().lower()
-                                              in ('new', 'renovated')),
-                            finish=('luxury' if is_luxury else None),
-                            finish_age=_age_ct,
-                            finish_bua=((_cost_av or {}).get('bua_m2')))
+                        _pb20 = ((output.get('property_basis') or {})
+                                 .get('building_age_estimate') or {})
+                        _band20 = _e26_subject_band(_pb20.get('age_floor_years'),
+                                                    _pb20.get('age_basis'))
+                        _resurvey20 = (_pb20.get('age_basis') == 'vintage_capped'
+                                       and (_pb20.get('age_floor_years') or 0) < 2)
+                        _ss20 = output.get('stock_strata') or {}
+                        _dom20 = ((_ss20.get('dominant_stratum') or {}).get('name')
+                                  if isinstance(_ss20.get('dominant_stratum'), dict) else None)
+                        _domshare20 = ((_ss20.get('dominant_stratum') or {}).get('share_pct')
+                                       if isinstance(_ss20.get('dominant_stratum'), dict) else None)
+                        _mn20 = _matched_stratum_n(_ss20.get('strata'), _band20)
+                        _match20 = (None if (_band20 is None or not _dom20)
+                                    else (_dom20 in _LEAD_BAND_STRATA.get(_band20, ())))
+                        _eff20 = (_geom_ct.get('effective_share_m2')
+                                  or getattr(ev, 'plot_area_m2', None))
+                        _disp20, _dispn20 = _bracket_disp36(moj_ref, _eff20)
+                        _sgf20 = (moj_ref or {}).get('subject_geo_full')
+                        _gate = _leadership_gate(
+                            output['valuation']['amount'], output.get('asset_type'),
+                            _mn20, _disp20, _match20, _band20, _resurvey20,
+                            _sgf20, _cost_av, _lf_tri)
                     except Exception:
-                        _osr = None
+                        _gate = None
                     if _tri and _tri['mode'] == 'income_led':
                         _capp = (round(_tri['cap_rate'] * 100, 1) if _tri['cap_rate'] else '—')
                         _xs = f"{_r10k(_tri['amount']):,}"
@@ -4811,122 +4823,151 @@ def evaluate_thammen(
                         _mu_tri = output.get('material_uncertainty')
                         if isinstance(_mu_tri, dict):
                             _mu_tri['level'] = _tri['muc_level']
-                    elif _ct and not _osr:
-                        # §20.9 cost down-re-anchor: the cost floor REPLACES §6's bare land floor.
-                        # central stays = comparison (MUTED via range_is_headline); high = market(muted);
-                        # low = max(land_floor, cost). The b6 condition-widen note does NOT run on this
-                        # branch (elif) — the cost note supersedes it.
-                        # Sprint 2.22.0b.16: `and not _osr` — on the stratum-mismatch subset the B-2
-                        # early slice UPGRADES this zone's un-led central (it inherits the same cost
-                        # floor as its range-low); everywhere else b11's floor-only treatment holds.
-                        output['valuation']['low'] = _r100k(_ct['low'])
-                        output['valuation']['high'] = _r100k(_ct['high'])
-                        output['valuation']['range_is_headline'] = True
-                        output['valuation']['central_estimate'] = output['valuation']['amount']
-                        _cd = _ct['cost_detail']
-                        output['valuation']['cost_triangulation'] = {
-                            'mode': 'cost_reanchor_down',
-                            'cost_value': _ct['cost_value'],
-                            'land_floor': _ct['land_floor'],
-                            'building_value': _cd['building_value'],
-                            'bua_m2': _cd['bua_m2'],
-                            'rcn_qar_per_m2': _cd['rcn_qar_per_m2'],
-                            'built_ratio': _cd['built_ratio'],
-                            'effective_age': _cd['effective_age'],
-                            'retention': _cd['retention'],
-                            'comparison_value': _ct['comparison_value'],
-                            'undercut_pct': _ct['undercut_pct'],
-                            'note_ar': COST_REANCHOR_NOTE_AR.format(
-                                comp=f"{_r10k(_ct['comparison_value']):,}",
-                                land=f"{_r10k(_ct['land_floor']):,}",
-                                cost=f"{_r10k(_ct['cost_value']):,}"),
-                            'note_en': COST_REANCHOR_NOTE_EN.format(
-                                comp=f"{_r10k(_ct['comparison_value']):,}",
-                                land=f"{_r10k(_ct['land_floor']):,}",
-                                cost=f"{_r10k(_ct['cost_value']):,}"),
-                        }
-                        _mu_ct = output.get('material_uncertainty')
-                        if isinstance(_mu_ct, dict):
-                            _mu_ct['level'] = 'high'
-                    elif _osr:
-                        # ── Sprint 2.22.0b.16 (B-2 EARLY slice): the re-anchored central LEADS ──
-                        # range = [max(land_floor, cost) … thin median (muted)]; range_is_headline;
-                        # MUC high + the verbatim signed label; the b14 Case-A narrative stays (the
-                        # reconcile post-pass re-runs below on the recomputed decomposition).
-                        output['valuation']['amount'] = _r100k(_osr['amount'])
-                        output['valuation']['low'] = _r100k(_osr['low'])
-                        output['valuation']['high'] = _r100k(_osr['high'])
-                        output['valuation']['range_is_headline'] = True
-                        output['valuation']['central_estimate'] = _r100k(_osr['amount'])
-                        _bos = _osr['basis']
-                        output['valuation']['old_stock_reanchor'] = {
-                            'status': 'old_stock_reanchor_indicative',
-                            'reanchored_central': _osr['amount'],
-                            'thin_median': _osr['comparison_value'],
-                            'basis_kind': _bos['kind'],
-                            'basis_ppm2': _bos['ppm2'],
-                            'basis_n': _bos['n'],
-                            'cost_floor': _osr['cost_value'],
-                            'land_floor': _osr['land_floor'],
-                            'margin_pct': _osr['margin_pct'],
-                            'dominant_stratum': _osr['dominant_stratum'],
-                            'dominant_share_pct': _osr['dominant_share_pct'],
-                            'label_ar': OSR_LABEL_AR,
-                            'label_en': OSR_LABEL_EN,
-                            'note_ar': OSR_NOTE_AR.format(
-                                comp=f"{_r10k(_osr['comparison_value']):,}",
-                                share=_osr['dominant_share_pct'], n=_bos['n']),
-                            'note_en': OSR_NOTE_EN.format(
-                                comp=f"{_r10k(_osr['comparison_value']):,}",
-                                share=_osr['dominant_share_pct'], n=_bos['n']),
-                        }
-                        # b18 (§A2): disclose the finish-delta pricing when it fired.
-                        if _osr.get('finish_delta'):
-                            _fd = f"{_r10k(_osr['finish_delta']):,}"
-                            output['valuation']['old_stock_reanchor']['finish'] = _osr.get('finish')
-                            output['valuation']['old_stock_reanchor']['finish_delta'] = _osr['finish_delta']
-                            output['valuation']['old_stock_reanchor']['note_ar'] += (
-                                f' سُعِّر التشطيب الفاخر عبر فرق كلفة الإحلال (+{_fd} ر.ق على أساس '
-                                f'المخزون القديم)، لا بتبديل وسيط المقارنة.')
-                            output['valuation']['old_stock_reanchor']['note_en'] += (
-                                f' The luxury finish is priced through the replacement-cost '
-                                f'differential (+{_fd} QAR on the old-stock base), not by '
-                                f'switching back to the raw median.')
-                        _mu_os = output.get('material_uncertainty')
-                        if isinstance(_mu_os, dict):
-                            _mu_os['level'] = 'high'
-                        # ISS-A07 coherence: the decomposition + B-1 floor were computed on the
-                        # PRE-reanchor median above — recompute on the re-anchored central and
-                        # re-run the b14 narrative post-pass so the report speaks with one voice.
-                        try:
-                            _decomp_osr = _decompose_value(
-                                valuation_amount=output['valuation']['amount'],
-                                plot_area_m2=ev.plot_area_m2, bua_m2=bua,
-                                moj_ref_dict=moj_ref)
-                            if _decomp_osr:
-                                output['valuation']['value_decomposition'] = _decomp_osr
-                                _reconcile_decomposition_narrative(output)
-                            _vf_osr = _villa_value_floor(
-                                output['valuation']['amount'],
-                                getattr(ev, 'plot_area_m2', None), moj_ref,
-                                _decomp_osr)
-                            if _vf_osr:
-                                output['valuation']['value_floor'] = _vf_osr
-                                _inject_value_floor_into_brief(output.get('brief'), _vf_osr)
-                        except Exception:
-                            pass
-                    elif _tri and _tri['mode'] == 'widen_down':
-                        output['valuation']['low'] = _r100k(_tri['low'])
-                        output['valuation']['high'] = _r100k(_tri['high'])
-                        output['valuation']['range_is_headline'] = True
-                        output['valuation']['central_estimate'] = output['valuation']['amount']
-                        output['valuation']['condition_widen_note_ar'] = CONDITION_WIDEN_NOTE_AR.format(
-                            floor=f"{_r10k(_tri['land_floor']):,}")
-                        output['valuation']['condition_widen_note_en'] = CONDITION_WIDEN_NOTE_EN.format(
-                            floor=f"{_r10k(_tri['land_floor']):,}")
-                        _mu_w = output.get('material_uncertainty')
-                        if isinstance(_mu_w, dict):
-                            _mu_w['level'] = 'high'
+                    else:
+                        # ── Sprint 2.22.0b.20: EVIDENCE-CONDITIONAL LEADERSHIP application ──
+                        # Replaces the retired b11 cost_reanchor_down / b16 OSR / b6 widen_down
+                        # elif chain (BRIEF_conditional_leadership_SIGNED §3.1 — one decision
+                        # point, no double-fire). income_led above keeps absolute precedence;
+                        # the _tri 'widen_down' mode is IGNORED (subsumed by the else-branch).
+                        if _gate:
+                            _mkt20 = output['valuation']['amount']   # the pre-gate market figure
+                            _cv20 = _gate.get('cost_value')
+                            _d20 = ('غير متاح' if _gate.get('dispersion_36') is None
+                                    else f"{_gate['dispersion_36']:.3f}")
+                            _n20 = (_gate.get('matched_n')
+                                    if _gate.get('matched_n') is not None else 'غير متاح')
+                            # ── the three-value stack (G1: the DRC was always computed — now
+                            # always SHOWN) + the leadership verdict (G2: dispersion in JSON) ──
+                            if _cost_av:
+                                _stack_cost = {
+                                    'label_ar': COST_STACK_LABEL_AR,
+                                    'label_en': COST_STACK_LABEL_EN,
+                                    'sub_ar': COST_STACK_SUB_AR,
+                                    'sub_en': COST_STACK_SUB_EN,
+                                    'value': _cost_av['value'],
+                                    'land_floor': _cost_av['land_floor'],
+                                    'building_value': _cost_av['building_value'],
+                                    'bua_m2': _cost_av['bua_m2'],
+                                    'rcn_qar_per_m2': _cost_av['rcn_qar_per_m2'],
+                                    'retention': _cost_av['retention'],
+                                    'effective_age': _cost_av['effective_age'],
+                                    'finish': _cost_av['finish'],
+                                    'assumptions_ar': ('افتراضات: تشطيب {f} · معامل احتفاظ {r} · '
+                                                       'عمر النظام (CGIS) أساس الاحتساب (E26)'
+                                                       ).format(f=_cost_av['finish'],
+                                                                r=_cost_av['retention']),
+                                }
+                            else:
+                                _reason20 = ('أرضية الأرض غير متاحة' if not _lf_tri
+                                             else ('عمر النظام غير متاح' if _age_ct is None
+                                                   else 'بصمة البناء غير متاحة'))
+                                _stack_cost = {'unavailable_reason_ar':
+                                               LEAD_COST_UNAVAILABLE_AR.format(reason=_reason20)}
+                            output['valuation']['value_stack'] = {
+                                'market': {
+                                    'median': _mkt20,
+                                    'n': output['valuation'].get('n_transactions'),
+                                    'dispersion_36': _gate.get('dispersion_36'),
+                                    'bracket_n_36': _dispn20,
+                                    'matched_stratum_n': _gate.get('matched_n'),
+                                    'dominant_stratum': _dom20,
+                                    'dominant_share_pct': _domshare20,
+                                    'geo_full_n': _gate.get('geo_full_n'),
+                                    'geo_full_dispersion': _gate.get('geo_full_dispersion'),
+                                },
+                                'cost': _stack_cost,
+                                'income_available': bool(isinstance(income, dict)
+                                                         and income.get('value')),
+                            }
+                            _lead20 = {
+                                'leader': _gate['leader'], 'rule': _gate['rule'],
+                                'matched_n': _gate.get('matched_n'),
+                                'dispersion_36': _gate.get('dispersion_36'),
+                                'stratum_match': _gate.get('stratum_match'),
+                                'band': _gate.get('band'),
+                                'resurvey': _gate.get('resurvey'),
+                                'geo_full_n': _gate.get('geo_full_n'),
+                                'geo_full_dispersion': _gate.get('geo_full_dispersion'),
+                                'cost_value': _cv20,
+                                'market_value': _mkt20,
+                                'thresholds': _gate.get('thresholds'),
+                            }
+                            if _gate.get('divergence'):
+                                _lead20['divergence'] = True
+                            if _gate.get('resurvey'):
+                                _lead20['resurvey_note_ar'] = LEAD_RESURVEY_NOTE_AR
+                                _lead20['resurvey_note_en'] = LEAD_RESURVEY_NOTE_EN
+                            _mu20 = output.get('material_uncertainty')
+                            if _gate['rule'] == 'cost_led':
+                                # F3(b) — the COST leads: range [cost … market-muted], MUC high.
+                                output['valuation']['amount'] = _r100k(_cv20)
+                                output['valuation']['low'] = _r100k(_gate['low'])
+                                output['valuation']['high'] = _r100k(_gate['high'])
+                                output['valuation']['range_is_headline'] = True
+                                output['valuation']['central_estimate'] = _r100k(_cv20)
+                                _lead20['note_ar'] = LEAD_COST_NOTE_AR.format(
+                                    n=_n20, d=_d20, cost=f'{_r10k(_cv20):,}',
+                                    comp=f'{_r10k(_mkt20):,}')
+                                _lead20['note_en'] = LEAD_COST_NOTE_EN.format(
+                                    n=_n20, d=_d20, cost=f'{_r10k(_cv20):,}',
+                                    comp=f'{_r10k(_mkt20):,}')
+                                if _gate.get('band') == 'old' or (_age_ct or 0) >= 10:
+                                    # SESSION_CLOSE §6-b: age-graded cost honesty — the cost
+                                    # leads here BY ELIMINATION (the pool failed), not precision.
+                                    _lead20['age_honesty_note_ar'] = LEAD_COST_AGE_HONESTY_AR
+                                    _lead20['age_honesty_note_en'] = LEAD_COST_AGE_HONESTY_EN
+                                if isinstance(_mu20, dict):
+                                    _mu20['level'] = 'high'
+                                # ISS-A07 coherence (the b16 pattern): recompute the
+                                # decomposition + B-1 floor on the new central + re-run b14.
+                                try:
+                                    _decomp20 = _decompose_value(
+                                        valuation_amount=output['valuation']['amount'],
+                                        plot_area_m2=ev.plot_area_m2, bua_m2=bua,
+                                        moj_ref_dict=moj_ref)
+                                    if _decomp20:
+                                        output['valuation']['value_decomposition'] = _decomp20
+                                        _reconcile_decomposition_narrative(output)
+                                    _vf20 = _villa_value_floor(
+                                        output['valuation']['amount'],
+                                        getattr(ev, 'plot_area_m2', None), moj_ref, _decomp20)
+                                    if _vf20:
+                                        output['valuation']['value_floor'] = _vf20
+                                        _inject_value_floor_into_brief(output.get('brief'), _vf20)
+                                except Exception:
+                                    pass
+                            elif _gate['rule'] == 'geo_full':
+                                # RULE 2 — market leads via the unmatched geo-full pool:
+                                # disclosure + MUC one notch + the cost value as the range floor.
+                                _gd20 = (f"{_gate['geo_full_dispersion']:.3f}"
+                                         if _gate.get('geo_full_dispersion') is not None else '—')
+                                _lead20['note_ar'] = LEAD_GEO_FULL_NOTE_AR.format(
+                                    n=_gate.get('geo_full_n'), d=_gd20)
+                                _lead20['note_en'] = LEAD_GEO_FULL_NOTE_EN.format(
+                                    n=_gate.get('geo_full_n'), d=_gd20)
+                                if _cv20:
+                                    _lo20 = output['valuation'].get('low')
+                                    if not _lo20 or _cv20 > _lo20:
+                                        output['valuation']['low'] = _r100k(_cv20)
+                                if isinstance(_mu20, dict):
+                                    _mu20['level'] = _muc_one_notch(_mu20.get('level'))
+                            elif _gate['rule'] == 'e25_capped':
+                                # E25 RAIL — divergence disclosed; the market keeps the lead
+                                # as the anti-inflation cap (double-weak clause: MUC >= high).
+                                _lead20['note_ar'] = LEAD_E25_NOTE_AR.format(
+                                    cost=f'{_r10k(_cv20):,}', comp=f'{_r10k(_mkt20):,}')
+                                _lead20['note_en'] = LEAD_E25_NOTE_EN.format(
+                                    cost=f'{_r10k(_cv20):,}', comp=f'{_r10k(_mkt20):,}')
+                                if isinstance(_mu20, dict) and \
+                                        (_mu20.get('level') or 'moderate') not in ('high', 'critical'):
+                                    _mu20['level'] = 'high'
+                            elif _gate['rule'] == 'cost_unavailable':
+                                _lead20['note_ar'] = _stack_cost.get('unavailable_reason_ar')
+                                if isinstance(_mu20, dict) and \
+                                        (_mu20.get('level') or 'moderate') not in ('high', 'critical'):
+                                    _mu20['level'] = 'high'
+                            # rule == 'matched' → the market leads normally; emission only.
+                            output['valuation']['leadership'] = _lead20
                     # ── Sprint 2.22.0b.18 (§A1 — AGE BASIS, signed directive) ──
                     # Every LEADING cost/retention computation uses the SYSTEM (CGIS-documented)
                     # age — TD-93317: the certified valuer led on the system age («نحو 18 سنة …
@@ -5722,6 +5763,182 @@ def _old_stock_reanchor(primary, sgf, aging_cell, cost, land_floor, asset_type,
         'dominant_stratum': dom_name,
         'dominant_share_pct': dom_share,
     }
+
+
+# ══ Sprint 2.22.0b.20 — EVIDENCE-CONDITIONAL LEADERSHIP (🔴 Gate-2 SIGNED) ══════════════
+# Anas's binding F6 signature 2026-06-11: docs/SESSION_CLOSE_2026-06-11_F6_SIGNED.md §1
+# (7/13 = 54% cost-led on the Phase-0 cohort, incl. امريخ 3.4M → 2,378,094); normative spec
+# = docs/BRIEF_conditional_leadership_SIGNED.md §3. The headline leader is decided by
+# EVIDENCE QUALITY per case (E23 — «الوسيط لا يُؤتمن بقرار ولا يُعدم بقرار — يُمتحن بالتشتت»):
+#   RULE 1 — matched-stratum pool: market leads iff n>=10 matched AND disp36<0.30 AND
+#            stratum match (subject band = the E26 SYSTEM-age band — the G5 proxy).
+#   RULE 2 — an UNMATCHED geo-full pool sustains market leadership ONLY at the reliable
+#            bar: n_geo_full>=20 AND dispersion(geo_full)<0.30 → disclosure «حوض جغرافي
+#            غير مطابق طبقياً» + MUC raised one notch + the cost line/floor.
+#   else (thin OR dispersed OR untestable) → COST LEADS: F3(b) range [cost … market-muted],
+#            MUC high, disclosed-indicative.
+# RAILS: E25 LOCKED (cost NEVER leads upward — المعراض proof; double-weak clause: when
+# cost >= market AND the pool failed the gates → market keeps the lead + a MANDATORY
+# divergence line + MUC >= high) · E26 (system age leads every retention) · the §4-a
+# INVARIANT (the headline always lies between the cost-informed floor and the market
+# figure) · no invented central · F2=B (re-surveyed age → untestable band + the verbatim
+# disclosure) · F4/F5 subsumed (dispersed / strata-absent fall into the else-branch).
+# SUBSUMES the b6 widen_down + b11 cost_reanchor_down + b16 old_stock_reanchor BRANCHES
+# (the pure calculators above are KEPT as superseded references — their isolated tests
+# stay green); income_led precedence, the b13/b18 age-sensitivity line, and the b4
+# explicit teardown/luxury levers are UNCHANGED.
+
+LEAD_MATCHED_MIN_N = 10            # RULE 1 matched-stratum depth bar
+LEAD_GEO_FULL_MIN_N = 20           # RULE 2 reliable bar (geo-full pool)
+LEAD_DISPERSION_T = 0.30           # the same reliability bar as STAGE1_DISPERSION_T
+
+_LEAD_BAND_STRATA = {'old': ('land_priced', 'aging_stock'),
+                     'modern': ('modern_stock',),
+                     'new': ('luxury_new',)}
+_LEAD_ASSET_TYPES = ('standalone_villa', 'house', 'villa')
+
+# b19-signed verbatim labels (SESSION_CLOSE §7 — «معامل الإحلال» stays reserved for soil).
+COST_STACK_LABEL_AR = 'قيمة التكلفة (أرض + بناء مُهلَك) — نهج DRC'
+COST_STACK_SUB_AR = 'استرشادي، مُعايَر على تقييم معتمد واحد (V001)'
+COST_STACK_LABEL_EN = 'Cost value (land + depreciated building) — DRC approach'
+COST_STACK_SUB_EN = 'Indicative — calibrated on a single certified appraisal (V001)'
+LEAD_COST_NOTE_AR = ('قيادة كلفة استرشادية — حوض المقارنات لم يجتز اختبار الموثوقية '
+                     '(n={n}، تشتت={d}). النطاق من قيمة التكلفة {cost} ر.ق إلى وسيط السوق '
+                     '{comp} ر.ق (مكتوماً) — لا رقم مركزيّ مُخترَع.')
+LEAD_COST_NOTE_EN = ('Indicative cost leadership — the comparison pool failed the '
+                     'reliability test (n={n}, dispersion={d}). The range spans the cost '
+                     'value {cost} QAR up to the muted market median {comp} QAR — no '
+                     'invented central.')
+LEAD_COST_AGE_HONESTY_AR = ('تقدير الإهلاك يزداد ذاتيةً مع التقادم؛ معايرتنا على شيت مثمّن '
+                            'وأرضية السوق تخففه.')
+LEAD_COST_AGE_HONESTY_EN = ('Depreciation estimates grow more subjective with age; our '
+                            'calibration on a certified appraisal sheet and the market land '
+                            'floor mitigate this.')
+LEAD_GEO_FULL_NOTE_AR = ('يقود السوقُ عبر حوض جغرافي غير مطابق طبقياً (n={n}، تشتت={d} — '
+                         'اجتاز عتبة الموثوقية)؛ رُفع التحفظ المادي درجةً وأُدرجت قيمة '
+                         'التكلفة أرضيةً للنطاق.')
+LEAD_GEO_FULL_NOTE_EN = ('The market leads via a geographically-pooled, stratum-UNMATCHED '
+                         'sample (n={n}, dispersion={d} — passes the reliability bar); '
+                         'material uncertainty raised one notch and the cost value applied '
+                         'as the range floor.')
+LEAD_E25_NOTE_AR = ('تباعد المنهجين: قيمة التكلفة ({cost} ر.ق) أعلى من وسيط السوق '
+                    '({comp} ر.ق) — يقود السوقُ سقفاً مضاداً للتضخيم (الكلفة أرضية لا بديل '
+                    'سوق)، مع أن حوض المقارنات لم يجتز اختبار الموثوقية؛ عدم اليقين مرتفع.')
+LEAD_E25_NOTE_EN = ('Approach divergence: the cost value ({cost} QAR) sits ABOVE the market '
+                    'median ({comp} QAR) — the market figure keeps the lead as the '
+                    'anti-inflation cap (cost is a floor, never a market proxy), although '
+                    'the comparison pool failed the reliability test; uncertainty is high.')
+LEAD_RESURVEY_NOTE_AR = 'عمر مُعاد تسجيله — غير موثوق'          # F2=B verbatim
+LEAD_RESURVEY_NOTE_EN = 'Re-registered survey age — unreliable'
+LEAD_COST_UNAVAILABLE_AR = 'قيمة التكلفة غير متاحة — {reason}'
+_MUC_LADDER = ('low', 'moderate', 'high', 'critical')
+
+
+def _e26_subject_band(age_floor_years, age_basis):
+    """The subject's expected stratum band from the E26 SYSTEM age (the G5 proxy).
+    Returns 'old' | 'modern' | 'new' | None (= UNTESTABLE — incl. the F2=B re-survey
+    case: vintage_capped with a near-zero system age, where the true age is unknown)."""
+    if age_basis == 'vintage_capped':
+        if age_floor_years is not None and age_floor_years >= 10:
+            return 'old'                      # the 2009-12 survey cliff: a true age FLOOR
+        return None                           # re-survey re-stamp → untestable (F2=B)
+    if age_floor_years is None:
+        return None
+    if age_floor_years >= 10:
+        return 'old'
+    if age_floor_years >= 2:
+        return 'modern'
+    return 'new'
+
+
+def _matched_stratum_n(strata_dict, band):
+    """Effective n of the subject's matched stratum band (None when untestable)."""
+    if band is None or not isinstance(strata_dict, dict):
+        return None
+    try:
+        return sum(int((strata_dict.get(k) or {}).get('n') or 0)
+                   for k in _LEAD_BAND_STRATA.get(band, ()))
+    except Exception:
+        return None
+
+
+def _bracket_disp36(moj_ref_dict, plot_eff):
+    """The subject-bracket 36mo ppm² dispersion + n_36 from the moj_reference villa
+    brackets (the same metric the a14 gate uses). Returns (dispersion, n_36) —
+    (None, None) when the cell is absent/unparsable (→ untestable, fail-safe)."""
+    try:
+        if not plot_eff or plot_eff <= 0:
+            return None, None
+        brackets = (((moj_ref_dict or {}).get('categories') or {})
+                    .get('villa') or {}).get('size_brackets') or {}
+        for label, cell in brackets.items():
+            try:
+                lo, hi = label.split('-')
+                if float(lo) <= float(plot_eff) < float(hi):
+                    return cell.get('ppm2_dispersion_36'), cell.get('n_36')
+            except Exception:
+                continue
+        return None, None
+    except Exception:
+        return None, None
+
+
+def _muc_one_notch(level):
+    """Raise a MUC level by exactly one notch (RULE 2)."""
+    try:
+        i = _MUC_LADDER.index((level or 'moderate'))
+        return _MUC_LADDER[min(i + 1, len(_MUC_LADDER) - 1)]
+    except Exception:
+        return 'high'
+
+
+def _leadership_gate(amount, asset_type, matched_n, disp36, stratum_match, band,
+                     resurvey, geo_full, cost, land_floor):
+    """The SIGNED unified rule (BRIEF_conditional_leadership_SIGNED §3). PURE — returns
+    the leadership decision dict, or None for out-of-scope inputs (non-villa/house, no
+    market figure). Never mutates. The caller applies the decision + emissions."""
+    if asset_type not in _LEAD_ASSET_TYPES:
+        return None
+    if not amount or amount <= 0:
+        return None
+    g_n = (geo_full or {}).get('n_full')
+    g_disp = (geo_full or {}).get('dispersion_full')
+    cost_val = (cost or {}).get('value')
+    base = {
+        'matched_n': matched_n, 'dispersion_36': disp36, 'stratum_match': stratum_match,
+        'band': band, 'resurvey': bool(resurvey),
+        'geo_full_n': g_n, 'geo_full_dispersion': g_disp,
+        'cost_value': cost_val, 'land_floor': land_floor,
+        'market_value': amount,
+        'thresholds': {'matched_min_n': LEAD_MATCHED_MIN_N,
+                       'geo_full_min_n': LEAD_GEO_FULL_MIN_N,
+                       'dispersion_t': LEAD_DISPERSION_T},
+    }
+    # RULE 1 — matched-stratum pool.
+    if (matched_n is not None and matched_n >= LEAD_MATCHED_MIN_N
+            and disp36 is not None and disp36 < LEAD_DISPERSION_T
+            and stratum_match is True):
+        return {**base, 'leader': 'market', 'rule': 'matched'}
+    # RULE 2 — unmatched geo-full pool at the reliable bar.
+    if (g_n is not None and g_n >= LEAD_GEO_FULL_MIN_N
+            and g_disp is not None and g_disp < LEAD_DISPERSION_T):
+        return {**base, 'leader': 'market', 'rule': 'geo_full',
+                'muc_notch': True, 'cost_floor': cost_val}
+    # else-branch: the pool failed → cost leads, subject to the rails.
+    if not cost_val or cost_val <= 0:
+        # No cost figure to lead with (input-starved §6) → market keeps the lead,
+        # disclosed + MUC >= high (a failed pool with no counterweight).
+        return {**base, 'leader': 'market', 'rule': 'cost_unavailable',
+                'muc_min_high': True}
+    if cost_val >= amount:
+        # E25 RAIL (LOCKED): cost NEVER leads upward — the market figure is the
+        # anti-inflation cap; double-weak clause → divergence line + MUC >= high.
+        return {**base, 'leader': 'market', 'rule': 'e25_capped',
+                'muc_min_high': True, 'divergence': True}
+    return {**base, 'leader': 'cost', 'rule': 'cost_led',
+            'low': max(land_floor or 0, cost_val),       # cost >= land by construction
+            'high': amount,                              # F3(b): the muted market median
+            'muc_min_high': True}
 
 
 def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
