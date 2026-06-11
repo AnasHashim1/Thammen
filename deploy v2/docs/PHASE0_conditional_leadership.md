@@ -180,6 +180,43 @@ A 69% vs variant B 85%) — a Gate-2 wording decision, not a threshold decision.
 5. **Strata-absent cohort** (54/788/10, 55/1056/60, 55/1044/63): no dominant-stratum signal → fail-safe
    cost-led. If the PO prefers "strata absent → keep today's treatment", the rate drops 9/13 → 6/13 = 46%.
 
+### §2.7 — FINAL recompute under the SIGNED rule-set (adjudication v2, 2026-06-11 — local arithmetic, zero live calls)
+
+Anas signed (partial): E25 rail + double-weak clause · F1 = amended unified rule (RULE 1 matched n≥10/disp<0.30/match
+→ market; RULE 2 unmatched geo-full at the reliable bar n≥20 AND disp(geo-full)<0.30 → market + disclosure + MUC+1 +
+cost floor; else cost) · F2=B · F3=(b) · F4=FLIP · F5=fail-safe COST. **F6 (the binding number) reserved.**
+Geo-full pool stats computed via the production filters of `subject_geo_full_ppm2` (a18 key + A2 built-type + A1
+usage + geo bracket [0.8,1.2], FULL window) + `quartile_stats` — measured✓-local (E14). Script: `.p0_final_recompute.py`.
+
+| case | amount | matched-n / disp36 / match | **geo-full n / median / disp** | cost (default DRC) | today | **FINAL leader** | via |
+|---|---|---|---|---|---|---|---|
+| 56/565/21 أبو هامور | 2,400,000 | 22 / 0.208 / ✓ | 54 / 5,189 / 0.212 | 2,194,070 | market | **market** | RULE 1 (matched) |
+| 56/565/19 | 2,400,000 | 22 / 0.208 / ✓ | 54 / 5,189 / 0.212 | 2,194,070 | market | **market** | RULE 1 (matched) |
+| V002 56/565/10 | 2,500,000 | re-survey (F2=B → untestable) | 54 / 5,189 / **0.212** | 2,263,592 | market | **market** | RULE 2 (geo-full + disclosure + MUC+1 + cost floor) |
+| V003 56/565/12 | 2,400,000 | re-survey (F2=B → untestable) | 54 / 5,189 / **0.212** | 2,263,592 | market | **market** | RULE 2 |
+| V001 56/647/6 | 3,800,000 | 1 / 0.440 / ✗ | **22 / 5,058 / 0.203** | 3,119,090 | market (widened) | **market** | RULE 2 (geo-full RESCUE) |
+| **مريخ 54/541/6** | 3,400,000 (OSR) | 3 / 0.165 / ✗ | **51 / 5,567 / 0.620 → FAILS** | **2,378,094** | OSR central | **cost** | else — the OSR basis pool fails its own reliability test |
+| المعراض 55/296/13 | 2,600,000 | 7 / 0.492 / ✓ | 22 / 2,644 / 0.409 | 3,741,570 | market (thin) | **market (capped)** | **E25 rail** (cost≥market) + divergence line + MUC≥high |
+| 51/825/22 | 2,800,000 | 22 / **0.346** / ✗ | 75 / 4,761 / **0.385** | ~2,755,482 | market (a14-gated) | **cost** | else (F4) |
+| 51/833/37 | 4,100,000 | 14 / **0.428** / ✗ | 47 / 4,441 / **0.569** | ~2,996,906 | market (a14-gated) | **cost** | else (F4) |
+| 53/736/4 | 3,000,000 | 14 / **0.446** / ✓ | 113 / 4,114 / **0.356** | ~2,501,384 | market (a14-gated) | **cost** | else (F4) |
+| 54/788/10 | 3,000,000 | strata absent | 0 / — / — | 1,103,260 | market + b11 floor | **cost** | else (F5 — untestable) |
+| 55/1056/60 | 2,700,000 | strata absent | 3 / — / — | 1,674,798 | market + b11 floor | **cost** | else (F5) |
+| 55/1044/63 | 2,700,000 | strata absent (disp36 0.132 = «وسيط خادع», n tiny) | 1 / — / — | 2,079,723 | market (preliminary) | **cost** | else (F5) |
+
+**FINAL headline (pending the F6 signature): cost-led 7/13 = 54%** — market via RULE 1: 2 · rescued by the
+geo-full clause (RULE 2): 3 (V001 · V002 · V003) · E25-rail-capped: 1 (المعراض) · cost-led: 7.
+Leadership moves vs today: **4 pure flips** (51/825/22 · 51/833/37 · 53/736/4 · 55/1044/63) + **امريخ OSR→cost
+(3.4M → 2,378,094, −30%)** + 2 floor→lead upgrades (54/788/10 · 55/1056/60, already cost-floored today).
+
+**The امريخ answer (the F1 question):** the geo-full pool b16's OSR was built on = **n=51, median 5,567/m²,
+dispersion 0.620** — more than double the 0.30 reliable bar → under the signed unified doctrine that pool's
+MEDIAN cannot anchor a headline; the cost leads at 2,378,094 with the F3(b) range [2.38M … 5.4M-muted].
+
+**F4/F5 interaction (one line each, as asked):** F4 — subsumed by F1 (the 3 a14-dispersed cases fail RULE 1 on
+disp36 AND their geo-full pools also fail: 0.385/0.569/0.356); no separate mechanism. F5 — subsumed by F1's
+else-branch («untestable»: strata absent + geo-full n=0/3/1 < 5); the F2 precedent generalizes.
+
 ---
 
 ## §3 — Calibration gate (V001 / TD-93317) — **PASS** (production functions, E14)
