@@ -57,9 +57,11 @@ check('a8 contract: no calc-block in the report block', 'calc-block' not in blk)
 
 print('— §4 engine untouched (version bump only) —')
 import evaluate_unified as EU
-check('ENGINE_VERSION = b19 slug', '2p22p0b19' in EU.ENGINE_VERSION
-      and EU.ENGINE_VERSION.startswith('thammen-sprint'))
-check('SPRINT_TAG = 2.22.0b.19', EU.SPRINT_TAG == '2.22.0b.19')
+# R6/Lesson-2: NO exact version pins (b21 bumps after b19).
+import re as _re
+check('ENGINE_VERSION/SPRINT_TAG format (version-agnostic)',
+      EU.ENGINE_VERSION.startswith('thammen-sprint')
+      and _re.match(r'^\d+\.\d+\.\d+', EU.SPRINT_TAG) is not None)
 check('the b20 gate untouched (leadership chain intact)',
       callable(getattr(EU, '_leadership_gate', None))
       and EU.LEAD_GEO_FULL_MIN_N == 20 and EU.LEAD_DISPERSION_T == 0.30)

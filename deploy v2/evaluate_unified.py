@@ -41,8 +41,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b19-three-value-report'
-SPRINT_TAG = '2.22.0b.19'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b21-inv3-rail-age-neutral'
+SPRINT_TAG = '2.22.0b.21'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4717,8 +4717,11 @@ def evaluate_thammen(
                                                   getattr(ev, 'plot_area_m2', None),
                                                   moj_ref, decomp) or {}).get('land_floor')
                     _g_tri = _stage1_dispersion_gate(primary, geo_v2_result)
+                    # Sprint 2.22.0b.21 (E26 / INV-3): the rail's ceiling is age-neutralized
+                    # when the age is USER-claimed — see _age_neutral_rail_cost.
                     _tri = _income_triangulation(
-                        primary, income, cost, _lf_tri, output.get('asset_type'),
+                        primary, income, _age_neutral_rail_cost(cost, age_source),
+                        _lf_tri, output.get('asset_type'),
                         dispersion_gated=bool(_g_tri and _g_tri.get('gated')))
                     # ── Sprint §20.9 (R7) cost-approach DOWN-re-anchor (SHIP-NOW slice) ──
                     # An independent DRC cost (land_floor + a depreciated building, from the b9
@@ -5321,6 +5324,34 @@ _INCOME_LED_METHODS = ('comparison_bracket', 'comparison_thin', 'comparison_wide
                        'comparison_widened_indicative', 'comparison_preliminary')
 _WIDEN_DOWN_METHODS = ('comparison_thin', 'comparison_widened',
                        'comparison_widened_indicative', 'comparison_preliminary')
+
+def _age_neutral_rail_cost(cost, age_source):
+    """Sprint 2.22.0b.21 — the INV-3 back-door close (micro Gate-2 SIGNED 2026-06-11).
+
+    E26: «كل حساب قائد يستخدم عمر النظام» — the income-eligibility CEILING (the b6 rail
+    consumed by _income_triangulation) must NOT vary with a USER-claimed age. When the
+    age came from the user, restore the v3 replacement-cost ceiling to its AGE-0 figure
+    (un-depreciate the building leg: value − depreciated + new; land + external works
+    unchanged) — exactly the number the rail uses when no age is supplied.
+
+    #39 DEVIATION (measured, PHASE0 sweep 2026-06-11): the directive named the literal
+    `_cost_av` (system-age DRC ≈ 2,378,094 on the lead case) as the new ceiling — measured,
+    that ceiling×1.05 (≈2.50M) BLOCKS the with-rent baseline surface (income 2.79–4.66M,
+    incl. every no-footprint row where the rail was inert with ceil=None) — breaching the
+    signed «الحركات المتوقعة (الحصر الكامل)». THIS age-neutralized v3 ceiling reproduces
+    the signed enumeration EXACTLY: only the three fp+rent breach groups return to
+    income_led; everything else byte-identical. Pure; never mutates the input."""
+    try:
+        if (age_source == 'user' and isinstance(cost, dict) and cost.get('value')
+                and cost.get('building_value_new') is not None
+                and cost.get('building_value_depreciated') is not None):
+            return {**cost, 'value': round(cost['value']
+                                           - cost['building_value_depreciated']
+                                           + cost['building_value_new'])}
+    except Exception:
+        pass
+    return cost
+
 
 def _income_triangulation(primary, income, cost, land_floor, asset_type,
                           dispersion_gated=False):
