@@ -7,6 +7,11 @@ Durable ground-truth corpus seeding the **2.22.y** calibration audit
 accuracy statement is derived from this log until **n ≥ 20** within a comparable
 ground-truth class. An asking-price match is NOT a transaction match — see strength tiers.
 
+**🔴 INTAKE RULE (2026-06-10, PO-mandated — RETRO-APPLIES):** **no case counts toward any n
+(GT-1/GT-2) without a DOCUMENT (سند ملكية / عقد بيع / شيت تقييم موقَّع).** Undocumented verbal /
+owner-stated reports enter as **T2-aspiration — sentiment context only** (E1/E3: asking/aspiration
+prices are NEVER calibration evidence). First retro-application: **V002/V003** (see the errata below).
+
 ## Ground-truth strength tiers (weight when aggregating)
 | Tier | Source | Strength | Note |
 |---|---|---|---|
@@ -28,8 +33,8 @@ When 2.22.y computes delta, **filter to GT-1/GT-2**; GT-3/GT-4 are directional c
 | id | pin | district | thammen_point | gt_value | gt_type | delta | status |
 |---|---|---|---|---|---|---|---|
 | V001 | 56/647/6 | المعمورة 56 | 3,800,000 | 3,800,000 | GT-3 (rejected/sticky asking — unsold ~5y, 4.8M→3.8M since 2020) | 0% vs ask | open — re-verified a20 (2026-06-03): still 3.8M widened n=34, still unsold; + independent structural inspection |
-| **V002** | **56/565/10** | بو هامور (Abu Hamour) | **2,500,000** | **4,000,000** | **GT-2 (confirmed sale)** | **engine −37.5%** | open — new premium villa (built ~1mo, was empty land 1y ago); engine UNDER-anchors (age/condition-blind) |
-| **V003** | **56/565/12** | بو هامور (Abu Hamour) | **2,400,000** | **4,000,000** | **GT-2 (confirmed sale)** | **engine −40.0%** | open — adjacent twin of V002; same spec, same 4.0M |
+| **V002** | **56/565/10** | بو هامور (Abu Hamour) | **2,500,000** | 4,000,000 **(ASPIRATION)** | **T2-aspiration (ERRATA 2026-06-10 — was mislogged GT-2; owner aspiration, no document)** | **n/a — no transaction** | sentiment context only; awaiting a documented sale |
+| **V003** | **56/565/12** | بو هامور (Abu Hamour) | **2,400,000** | 4,000,000 **(ASPIRATION)** | **T2-aspiration (ERRATA 2026-06-10 — was mislogged GT-2; owner aspiration, no document)** | **n/a — no transaction** | sentiment context only; awaiting a documented sale |
 
 ---
 
@@ -84,7 +89,20 @@ When 2.22.y computes delta, **filter to GT-1/GT-2**; GT-3/GT-4 are directional c
 
 ---
 
-## V002 / V003 — 56/565/10 + 56/565/12 (بو هامور / Abu Hamour) — **FIRST GT-2 (confirmed sales)**
+## V002 / V003 — 56/565/10 + 56/565/12 (بو هامور / Abu Hamour) — ~~FIRST GT-2 (confirmed sales)~~ **T2-ASPIRATION (errata)**
+
+> **🔴 ERRATA (2026-06-10, PO disclosure):** the «SOLD 4,000,000 each» entries below were **OWNER
+> ASPIRATION (asking)**, NOT completed transactions — no document exists. **Every in-section claim
+> that depends on a sale is SUPERSEDED:** «FIRST GT-2» → false (the corpus has **ZERO** documented
+> confirmed sales of new-premium stock); «delta −37.5/−40.0%» → **n/a, UNMEASURED** (a delta vs an
+> ask is not an under-anchor measurement — E1/E3); «new-premium ≈ +67% over the bracket» → an
+> ASK-premium, consistent with the Empirical §3 asking-premium bands (+30–60% new-build), not a
+> measured market premium; «breaks the 2.16.16 blocker» → it did not. What REMAINS measured:
+> the engine outputs (2.5M/2.4M, bracket n=37), the PIN-path reality-stop, the a17/a19 caveat
+> firing, and the composition estimate ≈ **3.35M** (RCN_lux 3,500 × ~470 BUA + land 3,778 × 450,
+> n=33) — vs the **ASK 4.0M**. The §20.47 Lever-2 drop **stands on different grounds**: a cost
+> approach must never chase ASK prices (E25 rewritten). The historical text below is kept
+> as-written for the audit trail; read it through this errata.
 
 - **date_logged:** 2026-06-03 · **engine:** a20 · sprint2p22p0a20 (Heroku v159)
 - **What:** two **adjacent, identical-spec NEW villas**, **450 m²** each, **built ~1 month ago**
