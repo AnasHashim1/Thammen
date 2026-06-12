@@ -379,9 +379,12 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <!-- HOME -->
 <div class="home screen active" id="homeScreen">
   <div class="hlogo"><img src="logo.png" alt="ثمّن"></div>
-  <div class="htag">تقييم عقارك في قطر<br>مبني على بيانات وزارة العدل الفعلية</div>
-  <button class="hbtn" onclick="go('form')">ابدأ التقييم</button>
-  <div class="hfoot" id="dfSubtitle">بيانات وزارة العدل القطرية الرسمية</div>
+  <!-- Sprint 2.22.0b.24 (R13 text bundle, م0): تقدير not تقييم on the home surface +
+       the data-recency line as the static default (the /api/freshness subtitle_ar
+       refresh keeps the same صيغة and self-heals when MoJ updates). -->
+  <div class="htag">تقدير عقارك في قطر<br>مبني على بيانات وزارة العدل الفعلية</div>
+  <button class="hbtn" onclick="go('form')">ابدأ التقدير</button>
+  <div class="hfoot" id="dfSubtitle">بيانات وزارة العدل حتى ديسمبر 2025</div>
   <!-- Sprint 2.14.0 — RICS VPS 1 Scope link -->
   <div style="margin-top:14px;font-size:.85rem;color:var(--muted);position:relative;z-index:1">
     <a href="#" onclick="openScope();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer">
@@ -436,10 +439,15 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
              superseded. -->
       </div>
     </div>
-    <div class="ftitle">👤 نوع التقرير</div>
+    <!-- Sprint 2.22.0b.24 (R13 text bundle, م0): the selector sets PRESENTATION only —
+         one number for everyone (signed label). «مالك» restored as the DEFAULT first
+         option; the engine normalizes owner→buyer (default view), so the value axis
+         is untouched. valuer keeps its v4 skip-to-results routing. -->
+    <div class="ftitle">👤 من أنت؟ <span style="font-weight:400;font-size:.82rem;color:var(--muted)">(يحدّد طريقة العرض فقط — الرقم واحد للجميع)</span></div>
     <div class="fcard">
       <div class="aud-row">
-        <div class="aud-btn sel" onclick="selAud(this,'buyer')"><span class="aud-icon">🏠</span>مشتري</div>
+        <div class="aud-btn sel" onclick="selAud(this,'owner')"><span class="aud-icon">🔑</span>مالك</div>
+        <div class="aud-btn" onclick="selAud(this,'buyer')"><span class="aud-icon">🏠</span>مشتري</div>
         <div class="aud-btn" onclick="selAud(this,'seller')"><span class="aud-icon">💰</span>بائع</div>
         <div class="aud-btn" onclick="selAud(this,'investor')"><span class="aud-icon">📊</span>مستثمر</div>
         <div class="aud-btn" onclick="selAud(this,'valuer')"><span class="aud-icon">📋</span>مثمّن</div>
@@ -562,7 +570,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 
 <script>
 const API='https://thammen-app-123-227a7106a67a.herokuapp.com';
-let audience='buyer';
+let audience='owner';  // Sprint 2.22.0b.24 (م0): «مالك» default — engine normalizes owner→buyer (presentation only)
 
 const ASSET_AR={'standalone_villa':'فيلا منفردة','raw_land':'أرض فضاء','palace':'قصر','compound_small':'مجمع فلل صغير','compound_large':'مجمع فلل كبير','apartment_building':'عمارة سكنية','tower':'برج سكني','commercial':'تجاري','industrial':'صناعي','agricultural':'مزرعة','unknown':'غير محدد'};
 
@@ -807,7 +815,33 @@ function showConfirm(d){
   h+='<div class="cg-est"><div class="cg-lbl">تقدير مبدئي (نطاق)</div>';
   if(v.low!=null&&v.high!=null){
     h+='<div class="cg-range">'+fmt(v.low)+' – '+fmt(v.high)+' <span class="cg-unit">ر.ق</span></div>';
-    if(v.amount!=null)h+='<div class="cg-mid">الوسيط ≈ <b>'+fmt(v.amount)+'</b> ر.ق</div>';
+    if(v.amount!=null){
+      // Sprint 2.22.0b.24 (م0): leadership-aware central-value label from the b20 JSON —
+      // «الوسيط» renders ONLY on a true comparison median; cost-led gets the DRC anchor
+      // label; anything else (income_led / income-only / hybrid) gets the neutral label.
+      var _ld=v.leadership||null;
+      // income_led keeps the comparison method STRING while the amount is the income
+      // value (measured: evaluate_unified ~:4865 — method untouched) → guard on
+      // income_triangulation.mode so the method fallback can't mislabel it «الوسيط».
+      var _ildC=((v.income_triangulation||{}).mode==='income_led');
+      var _midLbl='التقدير المركزي';
+      if(_ld&&_ld.leader==='cost')_midLbl='مرتكز التكلفة (أرض + بناء مُهلَك)';
+      else if(_ld&&_ld.leader==='market')_midLbl='الوسيط';
+      else if(!_ld&&!_ildC&&String(v.method||'').indexOf('comparison')===0)_midLbl='الوسيط';
+      h+='<div class="cg-mid">'+_midLbl+' ≈ <b>'+fmt(v.amount)+'</b> ر.ق</div>';
+      if(_ld&&_ld.leader==='cost'){
+        // Dual evidence line on cost leadership: matched-stratum n + geo-full n/dispersion
+        // (each with the failing threshold) — all from the broadcast, zero JS arithmetic.
+        var _t=_ld.thresholds||{};
+        var _mn=(_t.matched_min_n!=null?_t.matched_min_n:10);
+        var _dt=(_t.dispersion_t!=null?_t.dispersion_t:0.30);
+        var _gmn=(_t.geo_full_min_n!=null?_t.geo_full_min_n:20);
+        var _gn=(_ld.geo_full_n!=null?_ld.geo_full_n:'—');
+        var _gd=(_ld.geo_full_dispersion!=null?_ld.geo_full_dispersion:null);
+        var _gWhy=(_gd!=null&&_gd>=_dt)?' (&gt;'+_dt+')':((_ld.geo_full_n!=null&&_ld.geo_full_n<_gmn)?' (&lt;'+_gmn+')':'');
+        h+='<div class="cg-mid" style="font-size:.78rem;opacity:.85">شواهد السوق: مطابق <span dir="ltr">n='+(_ld.matched_n!=null?_ld.matched_n:'—')+' (&lt;'+_mn+')</span> · جغرافي <span dir="ltr">'+_gn+'/'+(_gd!=null?_gd:'—')+_gWhy+'</span></div>';
+      }
+    }
   }else{
     h+='<div class="cg-range">'+fmt(v.amount)+' <span class="cg-unit">ر.ق</span></div>';
   }

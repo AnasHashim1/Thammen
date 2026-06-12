@@ -282,7 +282,10 @@ def _render_caveat(latest_ar: str, tier: str) -> str:
 
 
 def _render_subtitle(month_ar: str) -> str:
-    return f"بيانات وزارة العدل القطرية الرسمية — آخر تحديث {month_ar}"
+    # Sprint 2.22.0b.24 (R13 text bundle, م0): the signed home-surface recency line
+    # «بيانات وزارة العدل حتى {الشهر}» — matches the static index.html default and
+    # self-heals when MoJ refreshes (month_ar is derived from the latest record).
+    return f"بيانات وزارة العدل حتى {month_ar}"
 
 
 # ────────────────────────────────────────────────────────────

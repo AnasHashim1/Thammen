@@ -20,7 +20,8 @@ class TestSupportedAssets(unittest.TestCase):
     def test_standalone_villa_is_supported(self):
         s = classify_asset_scope('standalone_villa')
         self.assertEqual(s.tier, 'supported')
-        self.assertIn('فلة', s.label_ar)
+        # Sprint 2.22.0b.24 (م0): villa-term unified to the app-canonical «فيلا منفردة»
+        self.assertIn('فيلا', s.label_ar)
         self.assertIn('Sales Comparison', s.methodology_ar)
 
     def test_land_is_supported(self):

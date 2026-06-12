@@ -118,7 +118,10 @@ _ASSET_SCOPE = {
     'standalone_villa': AssetScope(
         asset_type='standalone_villa',
         tier='supported',
-        label_ar='فلة مستقلة',
+        # Sprint 2.22.0b.24 (R13 text bundle, م0): villa-term unification — the app's
+        # canonical term everywhere is «فيلا منفردة» (index.html ASSET_AR), not the
+        # colloquial «فلة مستقلة» this card carried since 2.14.0.
+        label_ar='فيلا منفردة',
         methodology_ar='مقارنة المبيعات (Sales Comparison) من سجلات وزارة العدل',
         methodology_en='Sales Comparison from MoJ registered transactions',
         requires_user_input_ar=None,
@@ -312,7 +315,17 @@ def service_scope_summary() -> dict:
     supported = []
     limited = []
     unsupported = []
+    # Sprint 2.22.0b.24 (R13 text bundle, م0): alias keys (Rule #47 — e.g.
+    # 'raw_land' → the 'land' AssetScope object) made .values() emit the SAME
+    # scope twice, so the scope window showed a duplicated «أرض سكنية» card and
+    # the summary counted 4 supported categories instead of 3. Dedupe by object
+    # identity — the alias stays (classify_asset_scope is untouched); only the
+    # ENUMERATION lists each scope once.
+    _seen_ids = set()
     for s in _ASSET_SCOPE.values():
+        if id(s) in _seen_ids:
+            continue
+        _seen_ids.add(id(s))
         entry = {
             'asset_type': s.asset_type,
             'label_ar': s.label_ar,

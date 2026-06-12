@@ -45,7 +45,11 @@ check('old headline two-box removed («الحد الأدنى» gone)', 'الحد
 check('condition_note_ar still rendered', 'condition_note_ar' in HTML)
 check('value_floor (B-1) secondary, still rendered', 'value_floor' in HTML and 'land_floor_note_ar' in HTML)
 check('evidence panel (b2.2) still called', 'evidencePanelHtml(d,acc)' in HTML)
-check('showConfirm (b2.3) still range-led', 'cg-range' in HTML and 'الوسيط ≈' in HTML)
+# Sprint 2.22.0b.24 (م0) re-point: the showConfirm median marker became LEADERSHIP-AWARE
+# (cost-led → «مرتكز التكلفة»; «الوسيط» only on a true comparison median), so the literal
+# 'الوسيط ≈' concatenation is gone — pin the behavior markers instead (range + mid marker
+# + the median label still present as a conditional value).
+check('showConfirm (b2.3) still range-led', 'cg-range' in HTML and 'cg-mid' in HTML and "'الوسيط'" in HTML)
 
 # Engine version present + well-formed — R6 / Lesson-2: NOT an exact pin (an exact b3
 # pin here broke when the b4 teardown sprint bumped the version; scope to FORMAT only).

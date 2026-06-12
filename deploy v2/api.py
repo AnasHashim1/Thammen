@@ -278,6 +278,11 @@ _LAND_OVERRIDE_MAX = 10_000.0
 _AUDIENCE_ACCEPTED = frozenset({
     # canonical
     'buyer', 'seller', 'investor', 'valuer',
+    # Sprint 2.22.0b.24 (R13 text bundle, م0): «مالك» restored as the UI default.
+    # The selector sets PRESENTATION only (one number for everyone); the engine's
+    # _normalize_audience maps unknown→buyer, so 'owner' renders the default view
+    # with zero engine change.
+    'owner', 'مالك',
     # English aliases
     'valuator',
     # Arabic equivalents
@@ -299,8 +304,8 @@ def _check_audience(v):
     if v in _AUDIENCE_ACCEPTED or v.strip().lower() in _AUDIENCE_ACCEPTED:
         return v
     raise ValueError(
-        "audience must be one of: buyer/seller/investor/valuer "
-        "(or Arabic مشتري/بائع/مستثمر/مثمن/مقيم). "
+        "audience must be one of: owner/buyer/seller/investor/valuer "
+        "(or Arabic مالك/مشتري/بائع/مستثمر/مثمن/مقيم). "
         f"Got: {v!r}"
     )
 
