@@ -1249,6 +1249,33 @@ async def serve_logo():
     return FileResponse("logo.png", media_type="image/png")
 
 
+# ── Sprint 2.22.0b.25 (م2) — the thm-report LOCAL assets (no CDN) ──
+# The app deliberately has NO blanket StaticFiles mount (docs are locked down,
+# Sprint 2.16.17) — every static asset is an explicit whitelisted route. The
+# post-deploy live smoke caught these two 404ing (the local preview's http.server
+# serves everything, masking the gap — the #52 class on a static surface).
+_THMR_FONT_WHITELIST = frozenset({
+    'IBMPlexSansArabic-Regular.woff2',
+    'IBMPlexSansArabic-Medium.woff2',
+    'IBMPlexSansArabic-SemiBold.woff2',
+    'IBMPlexSansArabic-Bold.woff2',
+    'LICENSE-IBM-Plex-Sans-Arabic.txt',
+})
+
+
+@app.get("/qrcode.local.js")
+async def serve_qrcode_lib():
+    return FileResponse("qrcode.local.js", media_type="application/javascript")
+
+
+@app.get("/fonts/{fname}")
+async def serve_thmr_font(fname: str):
+    if fname not in _THMR_FONT_WHITELIST:
+        raise HTTPException(status_code=404, detail="not found")
+    media = "font/woff2" if fname.endswith(".woff2") else "text/plain"
+    return FileResponse(os.path.join("fonts", fname), media_type=media)
+
+
 # ── Run (for local dev only; production uses `uvicorn api:app` via Procfile) ──
 if __name__ == "__main__":
     import uvicorn

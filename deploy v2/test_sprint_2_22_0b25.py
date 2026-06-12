@@ -199,7 +199,20 @@ check('printShortReport toggles the class around window.print',
       "document.body.classList.add('printing-short')" in HTML
       and "document.body.classList.remove('printing-short')" in HTML)
 
-print('\n[11] refusal honesty + version format')
+print('\n[11] api serves the local assets (whitelisted routes — the live-smoke catch)')
+import api as _api  # the real FastAPI module (E14)
+_routes = {getattr(r, 'path', '') for r in _api.app.routes}
+check('/qrcode.local.js route registered', '/qrcode.local.js' in _routes)
+check('/fonts/{fname} route registered', '/fonts/{fname}' in _routes)
+check('font whitelist = exactly the 4 weights + the OFL license',
+      _api._THMR_FONT_WHITELIST == frozenset({
+          'IBMPlexSansArabic-Regular.woff2', 'IBMPlexSansArabic-Medium.woff2',
+          'IBMPlexSansArabic-SemiBold.woff2', 'IBMPlexSansArabic-Bold.woff2',
+          'LICENSE-IBM-Plex-Sans-Arabic.txt'}))
+check('no blanket StaticFiles mount (the 2.16.17 lockdown posture holds)',
+      'StaticFiles(' not in open('api.py', encoding='utf-8').read())
+
+print('\n[12] refusal honesty + version format')
 check('refusal path: no value → honest line + full-report escape (no DEF-12/scenarios)',
       'لم يصدر تقدير لهذا العقار' in SR)
 with open('evaluate_unified.py', encoding='utf-8') as fh:
