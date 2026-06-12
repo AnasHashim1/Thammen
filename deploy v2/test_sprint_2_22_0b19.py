@@ -27,10 +27,16 @@ check('rep-def12 block found', bool(m))
 blk = m.group(1) if m else ''
 
 print('— §1 the three-value rows (order + sources) —')
-i_mv = blk.find('القيمة السوقية (الوسيط)')
+# Sprint 2.22.0b.26 (م3 — the PDF-audit blind-«الوسيط» fix, signed) re-point: the MV
+# row label is LEADER-AWARE (_def12R — «الوسيط» only on a true comparison median;
+# cost-led → «مرتكز التكلفة»). The row renders _def12R; the median literal lives in
+# the label-decision branches (in showReport, outside this block regex).
+i_mv = blk.find("'+_def12R+'")
 i_cost = blk.find('v.value_stack.cost.label_ar')
 i_fs = blk.find('قيمة البيع الجبري الإرشادية')
-check('MV row present', i_mv >= 0)
+check('MV row present (leader-aware _def12R)', i_mv >= 0)
+check('the median label survives for true-median leads',
+      'القيمة السوقية (الوسيط)' in HTML)
 check('cost row composes from value_stack.cost.label_ar (the SOLE source)', i_cost >= 0)
 check('forced-sale row present', i_fs >= 0)
 check('order: MV -> cost -> forced-sale', 0 <= i_mv < i_cost < i_fs)
@@ -49,8 +55,10 @@ check('exactly ONE Math.round in the block (the existing x0.90 only)',
       blk.count('Math.round') == 0 and HTML.count("const _fs=Math.round((v.amount||0)*0.90);") == 1)
 check('no arithmetic on the cost value (display verbatim)',
       not re.search(r"value_stack\.cost\.value\s*[*+\-/]", blk))
+# م3 re-point: the basis line drops the blind «(الوسيط)» qualifier (the central may
+# be cost-led) — the ×0.90 disclosure itself stays verbatim.
 check('forced-sale basis line discloses the central x0.90',
-      'الأساس: القيمة السوقية المركزية (الوسيط) ×' in blk)
+      'الأساس: القيمة التقديرية المركزية ×' in blk)
 check('forced-sale convention line intact (b17 verbatim)',
       'ليست تقييم تصفية معتمداً' in blk)
 check('a8 contract: no calc-block in the report block', 'calc-block' not in blk)

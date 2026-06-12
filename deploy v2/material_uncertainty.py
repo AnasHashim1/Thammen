@@ -219,10 +219,14 @@ def regime_muc(regime=None) -> dict:
         f'(‎Valuation Reports‎) — و ‎IVS‎ '
         f'(‎effective 31 January 2025‎) — ‎IVS 106‎ '
         f'(‎Documentation and Reporting‎)\n\n'
-        f'تواجه السوق العقاري القطري في تاريخ هذا التقدير '
-        f'({_since_iso_ar} وما بعده) '
-        f'قيوداً جوهرية على شواهد السوق المتاحة، في ظل فجوة طويلة في '
-        f'تحديث بيانات وزارة العدل وضعف في حجم المعاملات الحديثة المنشورة.\n\n'
+        # Sprint 2.22.0b.26 (م3/D4 — signed): the event-dated «({active_since} وما بعده)»
+        # anchoring is REPLACED by a general data-recency wording tied to the SAME basis
+        # the freshness banner shows (the MoJ latest record). No event date, no narrative
+        # — the verifiable constraint alone (the C1 neutralization posture preserved).
+        f'تعتمد شواهد السوق المتاحة في تاريخ هذا التقدير على بيانات '
+        f'وزارة العدل المسجَّلة حتى ‎{moj_last.isoformat() if moj_last else "؟"}‎، '
+        f'في ظل فجوة طويلة في تحديث البيانات وضعف في حجم المعاملات '
+        f'الحديثة المنشورة — وهو ما يفرض قيوداً جوهرية على شواهد السوق.\n\n'
         f'نطاق التحفّظ: يشمل القيمة التقديرية المُعلنة، النطاق المُعلَن '
         f'(الأدنى/الأعلى)، ومدى انطباق منهجية المقارنة السوقية على ظروف '
         f'السوق الحالية.\n\n'
@@ -238,11 +242,12 @@ def regime_muc(regime=None) -> dict:
         f'Valuation Uncertainty) and VPS 6 (Valuation Reports) — and '
         f'IVS (effective 31 January 2025) — IVS 106 (Documentation '
         f'and Reporting)\n\n'
-        f'The Qatari real estate market is experiencing, at the valuation '
-        f'date ({_since_iso_en} onwards), material constraints on available '
-        f'market evidence, given an extended gap in the publication of '
-        f'Ministry of Justice transaction data and a low volume of recently '
-        f'published transactions.\n\n'
+        f'Available market evidence at the valuation date rests on Ministry '
+        f'of Justice records published up to '
+        f'{moj_last.isoformat() if moj_last else "?"}, given an extended gap '
+        f'in data publication and a low volume of recently published '
+        f'transactions — material constraints on available market '
+        f'evidence.\n\n'
         f'Scope of uncertainty: this affects the reported value, the '
         f'disclosed range (low/high), and the applicability of the Sales '
         f'Comparison approach under current market conditions.\n\n'
@@ -252,16 +257,21 @@ def regime_muc(regime=None) -> dict:
         f'The valuation should be kept under frequent review.'
     )
 
-    # MoJ lag specifically — explain WHY the uncertainty bites
+    # MoJ lag specifically — explain WHY the uncertainty bites.
+    # Sprint 2.22.0b.26 (م3/D4 — signed): the «قبل بدء الاضطراب الحالي» event-anchored
+    # arithmetic is REPLACED by the SAME days-old figure the freshness banner renders
+    # (today − the MoJ latest record) — one recency basis everywhere, no event date.
+    from datetime import date as _d4_date
+    _d4_days = (_d4_date.today() - moj_last).days if moj_last else None
     muc_basis_ar = (
         f'بيانات وزارة العدل المسجَّلة تنتهي عند '
         f'{moj_last.isoformat() if moj_last else "؟"}'
         + (
-            f' — أي قبل بدء الاضطراب الحالي بـ '
-            f'{(active_since - moj_last).days if active_since and moj_last else "؟"} يوماً. '
-            if active_since and moj_last else '. '
+            f' — أي قبل تاريخ هذا التقدير بـ {_d4_days} يوماً '
+            f'(وهو ما يعرضه شريط حداثة البيانات). '
+            if _d4_days is not None else '. '
         )
-        + 'بالتالي لا تعكس البيانات الأساسية أثر الأحداث الراهنة على الأسعار.'
+        + 'بالتالي قد لا تعكس البيانات الأساسية آخر تحركات السوق.'
     )
 
     muc_review_recommendation_ar = (

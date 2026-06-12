@@ -48,10 +48,13 @@ def test_muc_clause_ar_carries_neutral_cause_paragraph():
     clause = out.get('muc_clause_ar') or ''
     assert clause, 'regime_muc must produce muc_clause_ar for non-normal regime'
 
-    # The neutral cause-of-uncertainty paragraph (per VPGA 10 §6)
+    # The neutral cause-of-uncertainty paragraph (per VPGA 10 §6).
+    # Sprint 2.22.0b.26 (م3/D4 — signed) re-point: the event-dated anchoring was
+    # replaced by the banner-tied data-recency wording; the C1 INVARIANT (neutral,
+    # verifiable constraint: data freshness + sparse recent transactions) holds.
     expected_neutral = (
-        'قيوداً جوهرية على شواهد السوق المتاحة، '
-        'في ظل فجوة طويلة في تحديث بيانات وزارة العدل'
+        'في ظل فجوة طويلة في تحديث البيانات وضعف في حجم المعاملات '
+        'الحديثة المنشورة — وهو ما يفرض قيوداً جوهرية على شواهد السوق'
     )
     assert expected_neutral in clause, (
         f"C1: neutral VPGA 10 cause-of-uncertainty paragraph not found "
@@ -85,11 +88,13 @@ def test_muc_clause_en_no_geopolitical_strings():
             f"C1 regression: forbidden English string {forbidden!r} "
             f"still appears in muc_clause_en."
         )
-    # Positive check: the neutral English paragraph is present
+    # Positive check: the neutral English paragraph is present.
+    # Sprint 2.22.0b.26 (م3/D4 — signed) re-point: banner-tied recency wording.
     expected_en_neutral = (
-        'material constraints on available market evidence, '
-        'given an extended gap in the publication of Ministry of Justice '
-        'transaction data and a low volume of recently published transactions'
+        'given an extended gap '
+        'in data publication and a low volume of recently published '
+        'transactions — material constraints on available market '
+        'evidence'
     )
     assert expected_en_neutral in clause, (
         f"C1: neutral English VPGA 10 cause paragraph not found "

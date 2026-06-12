@@ -1418,9 +1418,14 @@ function printReport(){
 function openReport(){const d=window._lastResult; if(!d)return; showReport(d); go('report');}
 function showReport(d){
   const o=document.getElementById('repOut'); if(!o)return;
+  // م3 — the thm-report identity on the full report (the short report's column).
+  o.classList.add('thmr');
   const v=d.valuation||{}, acc=d.accuracy||{};
   const hasValuation=v.amount!=null&&v.amount>0;
   const now=new Date();
+  // م3/D8 — the SIGNED six keep-annexes get NUMBERED labels (page order).
+  let _axN=0; const _ax=()=>{_axN++;return '<div style="color:var(--thmr-bronze,#A4814A);font-weight:700;font-size:.72rem;margin:2px 0 4px">ملحق '+_axN+'</div>';};
+  const _axWrap=(html)=>html?(_ax()+html):'';
   let h='';
   h+='<button class="copy-btn print-btn no-print" onclick="printReportA4()">🖨️ طباعة / حفظ PDF (A4)</button><div style="clear:both"></div>';
   // (1) cover: brand + address/PIN + date + engine version + the staleness banner.
@@ -1435,13 +1440,19 @@ function showReport(d){
   h+='</div>';
   if(d.data_freshness&&d.data_freshness.caveat_ar){h+='<div class="dfc s-'+(d.data_freshness.severity||'info')+'" style="margin-top:10px">'+d.data_freshness.caveat_ar+'</div>';}
   h+='</div>';
-  // (2) MUC / RICS banner (the shared builders — same clause as screen 4, always open here).
+  // Sprint 2.22.0b.26 (م3/D8): the MUC block MOVED to AFTER the number (ص1+ص9 merged
+  // into ONE block — the brief MU section is skipped in the loop below); the a8
+  // standards note moved into the ONE «المنهجية والمعايير» annex (ص2+ص9 merged).
   const [m_ar,m_b,m_r]=_mucFields(d);
-  h+=_mucCardHtml(m_ar,m_b,m_r);
-  if(d.rics_methodology_note_ar){
-    h+='<div class="rc" style="font-size:.85rem;color:var(--muted);line-height:1.7"><div class="rt" style="font-size:.95rem;margin-bottom:6px">ℹ️ المنهجية ومعايير &lrm;RICS / IVS&lrm;</div>'+d.rics_methodology_note_ar+'</div>';
-  }
   if(hasValuation){
+    // (3+) leader-aware central-value labeling (the م0 semantics — the PDF-audit
+    // blind-«الوسيط» fix): «الوسيط» only on a true comparison median.
+    const _ldR=v.leadership||null;
+    const _ildR=((v.income_triangulation||{}).mode==='income_led')||v.method==='income_approach_only';
+    let _midR='التقدير المركزي', _def12R='القيمة التقديرية (المركزية)';
+    if(_ldR&&_ldR.leader==='cost'){_midR='مرتكز التكلفة (أرض + بناء مُهلَك)';_def12R='القيمة التقديرية (مرتكز التكلفة — أرض + بناء مُهلَك)';}
+    else if(_ldR&&_ldR.leader==='market'){_midR='الوسيط (التقدير المركزي)';_def12R='القيمة السوقية (الوسيط)';}
+    else if(!_ldR&&!_ildR&&String(v.method||'').indexOf('comparison')===0){_midR='الوسيط (التقدير المركزي)';_def12R='القيمة السوقية (الوسيط)';}
     // (3) headline range + status + DEF-12 two-values (REPORT-ONLY; display math ×0.90 — no engine
     // change). Plain .rc (NOT calc-block — the a8 contract scopes that visual to the screen-4
     // valuation card exactly once; test_sprint_2p22p0a_calc_visual_and_ledger pins it).
@@ -1450,11 +1461,13 @@ function showReport(d){
     if(_tierR)h+='<div style="display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px">'+_tierR+'</div>';
     if(v.low!=null&&v.high!=null){
       h+='<div class="ri full"><div class="rl">النطاق التقديري السوقي</div><div class="rv hl" style="font-size:1.4rem">'+fmt(v.low)+' – '+fmt(v.high)+' ر.ق</div></div>';
-      h+='<div class="rn" style="font-size:.84rem">الوسيط (التقدير المركزي) ≈ <strong>'+fmt(v.amount)+'</strong> ر.ق</div>';
+      h+='<div class="rn" style="font-size:.84rem">'+_midR+' ≈ <strong>'+fmt(v.amount)+'</strong> ر.ق</div>';
     }else{
       h+='<div class="ri full"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.4rem">'+fmt(v.amount)+' ر.ق</div></div>';
     }
-    if(v.condition_note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.condition_note_ar+'</div>';
+    // م3/D8: the «حالة أفضل/أدنى» prose is FOLDED when the scenarios table answers it
+    // with numbers (the a17/a19 disclosure stays verbatim wherever no scenarios exist).
+    if(v.condition_note_ar&&!(v.scenarios&&v.scenarios.items&&v.scenarios.items.length>1))h+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.condition_note_ar+'</div>';
     if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';
     if(v.cost_triangulation&&v.cost_triangulation.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.cost_triangulation.note_ar+'</div>';
     // Sprint 2.22.0b.20 — EVIDENCE-CONDITIONAL LEADERSHIP (Gate-2 SIGNED 2026-06-11):
@@ -1465,7 +1478,16 @@ function showReport(d){
     if(v.leadership&&v.leadership.resurvey_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem">📋 '+v.leadership.resurvey_note_ar+'</div>';}
     if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){h+='<div class="rn" style="margin-top:8px;font-size:.76rem">🏗️ '+v.value_stack.cost.label_ar+': '+fmt(v.value_stack.cost.value)+' ر.ق — '+v.value_stack.cost.sub_ar+'</div>';}
     else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){h+='<div class="rn" style="margin-top:8px;font-size:.74rem">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
-    if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){h+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span></div>';}
+    // م3 (the PDF-audit mixed-pool fix): on cost leadership the pool line becomes the
+    // SIGNED dual-evidence line (matched n vs geo n/dispersion — the b20 format); on a
+    // market lead the bracket dispersion renders WITH ITS OWN n (no more n=3-beside-0.165).
+    if(_ldR&&_ldR.leader==='cost'){
+      const _tR=_ldR.thresholds||{};
+      const _gdR=(_ldR.geo_full_dispersion!=null)?_ldR.geo_full_dispersion:'—';
+      h+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 شواهد السوق: مطابق <span dir="ltr">n='+(_ldR.matched_n!=null?_ldR.matched_n:'—')+' (&lt;'+(_tR.matched_min_n!=null?_tR.matched_min_n:10)+')</span> · جغرافي <span dir="ltr">'+(_ldR.geo_full_n!=null?_ldR.geo_full_n:'—')+'/'+_gdR+((_gdR!=='—'&&_gdR>=(_tR.dispersion_t!=null?_tR.dispersion_t:0.30))?' (&gt;'+(_tR.dispersion_t!=null?_tR.dispersion_t:0.30)+')':'')+'</span></div>';
+    }else if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){
+      h+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span>'+((v.value_stack.market.bracket_n_36!=null)?' <span dir="ltr">(n='+v.value_stack.market.bracket_n_36+')</span>':'')+'</div>';
+    }
     // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — the claimed age never moves the headline.
     if(v.age_sensitivity&&v.age_sensitivity.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">🕰️ '+v.age_sensitivity.note_ar+'</div>';
     if(v.value_floor){
@@ -1486,7 +1508,7 @@ function showReport(d){
     // reach this block (hasValuation-gated). + the forced-sale BASIS disclosure line.
     const _fs=Math.round((v.amount||0)*0.90);
     h+='<div class="rep-def12">';
-    h+='<div class="rep-def12-row"><span>القيمة السوقية (الوسيط)</span><strong>'+fmt(v.amount)+' ر.ق</strong></div>';
+    h+='<div class="rep-def12-row"><span>'+_def12R+'</span><strong>'+fmt(v.amount)+' ر.ق</strong></div>';
     if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
       h+='<div class="rep-def12-row"><span>'+v.value_stack.cost.label_ar+'</span><strong>'+fmt(v.value_stack.cost.value)+' ر.ق</strong></div>';
       h+='<div class="rn" style="font-size:.72rem;margin-top:2px">'+v.value_stack.cost.sub_ar+'</div>';
@@ -1496,9 +1518,15 @@ function showReport(d){
       h+='<div class="rn" style="font-size:.72rem;margin-top:2px">🏗️ '+v.cost_note_ar+'</div>';
     }
     h+='<div class="rep-def12-row"><span>قيمة البيع الجبري الإرشادية (×<span dir="ltr">0.90</span>)</span><strong>'+fmt(_fs)+' ر.ق</strong></div>';
-    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً. الأساس: القيمة السوقية المركزية (الوسيط) × <span dir="ltr">0.90</span>.</div>';
+    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً. الأساس: القيمة التقديرية المركزية × <span dir="ltr">0.90</span>.</div>';
+    // م3/D8 — ONE DECLARED rounding (the triple-rounding fold): the engine's broadcast
+    // figures render AS-IS; the only display derivation is the disclosed ×0.90.
+    h+='<div class="rn" style="font-size:.7rem;margin-top:4px">الأرقام كما يبثّها المحرك — تدوير موحَّد من المصدر، لا تقريب إضافي في العرض.</div>';
     h+='</div>';
     h+='</div>';
+    // م3/D8 — the ONE MUC block, AFTER the number (ص1 + ص9 merged; the brief MU
+    // section is skipped in the annex loop below).
+    h+=_mucCardHtml(m_ar,m_b,m_r);
     // (3b) Sprint 2.22.0b.23 «بثّ المختصر» — scenarios panel (villa/house; DRC what-ifs).
     // Additive/display-only: the headline above is the certified estimate; these show the
     // effect of condition/finish/teardown on the SAME plot + footprint.
@@ -1513,14 +1541,26 @@ function showReport(d){
       if(_scn.note_ar)h+='<div class="rn" style="font-size:.74rem;margin-top:6px">'+_scn.note_ar+'</div>';
       h+='</div>';
     }
-    // (4) evidence quality (the b2.2 panel, full).
-    h+=evidencePanelHtml(d,acc);
-    // (5) decomposition + 10-Year + strata — the SHARED builders (b14-coherent, cross-lines intact).
-    h+=_decompHtml(d,v,hasValuation);
+    // (4) evidence quality (the b2.2 panel, full) — numbered annex (D8 keep-list).
+    h+=_axWrap(evidencePanelHtml(d,acc));
+    // (5) decomposition + 10-Year + strata — the SHARED builders (b14-coherent).
+    // م3/D8 (ص3+ص4 merge): on COST leadership the analytic residual narration is
+    // superseded — the DRC stack IS the decomposition (direct figures, no computed
+    // residual); _decompHtml renders only when the cost does NOT lead.
+    if(!(v.leadership&&v.leadership.leader==='cost'))h+=_decompHtml(d,v,hasValuation);
+    else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
+      const _cR=v.value_stack.cost;
+      h+='<div class="rc"><div class="rh"><div class="rt">تفكيك المرتكز (أرقام DRC مباشرة)</div></div>';
+      h+='<div class="rep-def12-row"><span>الأرض (مرجع وزارة العدل)</span><strong>'+fmt(_cR.land_floor)+' ر.ق</strong></div>';
+      h+='<div class="rep-def12-row"><span>البناء المُهلَك'+((_cR.bua_m2&&_cR.rcn_qar_per_m2&&_cR.retention!=null)?(' (<span dir="ltr">BUA '+_cR.bua_m2+' × '+fmt(_cR.rcn_qar_per_m2)+' × '+_cR.retention+'</span>)'):'')+'</span><strong>'+fmt(_cR.building_value)+' ر.ق</strong></div>';
+      if(_cR.sub_ar)h+='<div class="rn" style="font-size:.72rem;margin-top:4px">'+_cR.sub_ar+'</div>';
+      h+='</div>';
+    }
     h+=_substHtml(d,v,hasValuation);
-    h+=_strataHtml(d);
+    h+=_axWrap(_strataHtml(d));
     const _rtrR=d.reasoning_trace;
     if(_rtrR&&_rtrR.known_unknowns&&_rtrR.known_unknowns.length>0){
+      h+=_ax();
       h+='<div class="rc"><div class="rt" style="margin-bottom:10px">ما لا نعرفه (يحتاج فحص ميداني)</div><div class="rn">';
       _rtrR.known_unknowns.forEach(u=>{h+='• '+u+'<br>'});
       h+='</div></div>';
@@ -1540,16 +1580,37 @@ function showReport(d){
     h+='</div></div>';
   }else{
     h+='<div class="rc"><div class="rn">'+(v.reason_ar||'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً — لا يصدر تقرير قيمة.')+'</div></div>';
+    // refusal keeps its MVU clause (b17 contract) — rendered here since the one
+    // MUC block now lives after the number on the valued path.
+    h+=_mucCardHtml(m_ar,m_b,m_r);
   }
-  // (7) methodology & sources — the a4 bare line + the a25 attribution cloned at runtime.
-  if(d.methodology_ar)h+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin-bottom:14px;font-size:.78rem;color:#666;line-height:1.5">'+d.methodology_ar+'</div>';
-  const _srcNode=document.querySelector('.src-credit');
-  if(_srcNode)h+='<div class="rc src-credit-rep" style="font-size:.74rem;color:var(--muted);line-height:1.7">'+_srcNode.innerHTML+'</div>';
-  // (8) audience section — the brief sections (audience-gated server-side).
+  // (7) م3/D8 — ONE «المنهجية والمعايير» annex (ص2 + ص9 merged): the a4 bare line +
+  // the brief methodology section + the a8 standards note, in one card.
+  h+='<div class="rc"><div class="rt" style="margin-bottom:8px">المنهجية والمعايير</div>';
+  if(d.methodology_ar)h+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin-bottom:10px;font-size:.78rem;color:#666;line-height:1.5">'+d.methodology_ar+'</div>';
   const _brR=d.brief;
+  const _methSecR=(_brR&&_brR.sections||[]).find(s=>s&&s.id==='methodology');
+  if(_methSecR)h+=renderSection(_methSecR);
+  if(d.rics_methodology_note_ar){
+    h+='<div style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-top:8px"><div style="font-weight:600;font-size:.9rem;margin-bottom:4px">ℹ️ معايير &lrm;RICS / IVS&lrm;</div>'+d.rics_methodology_note_ar+'</div>';
+  }
+  h+='</div>';
+  const _srcNode=document.querySelector('.src-credit');
+  if(_srcNode){h+=_ax();h+='<div class="rc src-credit-rep" style="font-size:.74rem;color:var(--muted);line-height:1.7">'+_srcNode.innerHTML+'</div>';}
+  // (8) audience section — the brief sections (audience-gated server-side).
+  // م3/D8 skips: material_uncertainty (merged into the ONE MUC block above) ·
+  // methodology (merged into the annex above) · flags when NO listing exists
+  // (the empty-ad section folds — the b14 copy stays for screen 4).
   if(_brR&&_brR.sections&&_brR.sections.length>0){
     h+='<div class="rc" style="background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px"><div class="rt" style="font-size:1.05rem;margin-bottom:0">'+(_brR.title_ar||'التقرير التفصيلي')+'</div></div>';
-    _brR.sections.forEach(sec=>{h+=renderSection(sec)});
+    _brR.sections.forEach(sec=>{
+      if(!sec)return;
+      if(sec.id==='material_uncertainty')return;
+      if(sec.id==='methodology')return;
+      if(sec.id==='flags'&&!(d.active_listings&&d.active_listings.length))return;
+      if(sec.id==='due_diligence'||sec.id==='cap_rate_provenance')h+=_ax();
+      h+=renderSection(sec);
+    });
   }
   // (9) footer: not-certified (a20 status appended) + engine version + timestamp + the GT hook
   // (the Terms' OWN signed channel — PHASE0_b17 §3; feeds the D-3 GT kit).
@@ -2509,7 +2570,11 @@ function renderSection(sec){
     case 'material_uncertainty':
       const levelLabels={'low':'منخفض','moderate':'متوسط','high':'مرتفع','critical':'حرج'};
       const levelCls={'low':'pos','moderate':'','high':'neg','critical':'neg'};
-      if(c.level)body+=row('مستوى التحفظ',levelLabels[c.level]||c.level,levelCls[c.level]||'');
+      // م3 (the PDF-audit MUC contradiction fix): the brief content's level is built
+      // BEFORE the b20 gate may raise MU — the displayed level reads the BROADCAST
+      // material_uncertainty.level (the single truth), with the brief value as fallback.
+      const _bLvl=(((window._lastResult||{}).material_uncertainty)||{}).level||c.level;
+      if(_bLvl)body+=row('مستوى التحفظ',levelLabels[_bLvl]||_bLvl,levelCls[_bLvl]||'');
       if(c.factors&&c.factors.length){
         body+='<div style="margin-top:10px;font-weight:600">العوامل:</div><ul class="br-opts">';
         c.factors.forEach(f=>{body+='<li>'+f+'</li>'});body+='</ul>';

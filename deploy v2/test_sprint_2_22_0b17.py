@@ -42,14 +42,17 @@ check('strata inner content intact (builder)', 'تصنيف المخزون (Stock
       and 'الفئة المسيطرة:' in HTML)
 check('10-Year regime inner content intact (builder)', 'قاعدة الـ 10 سنوات (السوق القطري)' in HTML)
 
-# ── §3 report structure order (cover → MUC → headline/DEF-12 → evidence → decomp → strata → basis →
-#     methodology/sources → audience → footer) ──
+# ── report structure order — Sprint 2.22.0b.26 (م3/D8 — signed) re-point: the MUC
+#    block MOVED to AFTER the number (ص1+ص9 merged into ONE block after the headline);
+#    the rest of the b17 spine holds (cover → headline/DEF-12 → MUC → evidence →
+#    decomp → strata → basis → methodology/sources → audience → footer). ──
 rep = HTML[HTML.index('function showReport(d){'):HTML.index('function printReportA4(){')]
-order = ['rep-cover', '_mucCardHtml(m_ar', 'القيمة السوقية (MV)', 'rep-def12',
+order = ['rep-cover', 'القيمة السوقية (MV)', 'rep-def12', '_mucCardHtml(m_ar',
          'evidencePanelHtml(d,acc)', '_decompHtml(d,v,hasValuation)', '_strataHtml(d)',
          'بيانات العقار الأساسية', 'src-credit', 'renderSection(sec)', 'rep-foot']
 idx = [rep.find(t) for t in order]
-check('report §3 structure order correct', all(i >= 0 for i in idx) and idx == sorted(idx))
+check('report §3 structure order correct (D8: MUC after the number)',
+      all(i >= 0 for i in idx) and idx == sorted(idx))
 
 # ── DEF-12 (report-only; display math ×0.90; verbatim label) ──
 check('DEF-12 math = Math.round(amount*0.90)', 'Math.round((v.amount||0)*0.90)' in rep)
