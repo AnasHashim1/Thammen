@@ -317,6 +317,18 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .thmr-btn{flex:1;border:none;border-radius:11px;padding:12px;font-weight:700;font-size:.92rem;cursor:pointer;font-family:inherit;background:var(--thmr-navy);color:#fff}
 .thmr-btn.alt{background:#fff;color:var(--thmr-navy);border:1.5px solid var(--thmr-navy)}
 .thmr-pay input{width:54px;border:1px solid var(--thmr-line);border-radius:6px;padding:1px 4px;font-size:.8rem;font-weight:700;color:var(--thmr-navy);text-align:center;font-family:inherit}
+/* Sprint 2.22.0b.27 (م4) — the refine three-group accordions + the effect tags (the v3 contract). */
+.thmr-grp{background:#fff;border:1px solid var(--thmr-line,#E3DDD2);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.thmr-grp summary{list-style:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap;cursor:pointer;padding:13px 16px;font-weight:700;color:var(--thmr-navy,#16324F);font-size:.95rem}
+.thmr-grp summary::-webkit-details-marker{display:none}
+.thmr-grp .garrow{margin-inline-start:auto;color:var(--thmr-bronze,#A4814A);transition:transform .2s}
+.thmr-grp[open] .garrow{transform:rotate(90deg)}
+.thmr-grp .gnum{color:var(--thmr-bronze,#A4814A);border:1px solid var(--thmr-bronze,#A4814A);border-radius:6px;padding:0 7px;font-size:.72rem}
+.thmr-grp .gbody{padding:6px 16px 14px;border-top:1px dashed var(--thmr-line,#E3DDD2)}
+.tagfx{font-size:.68rem;font-weight:700;border-radius:999px;padding:2px 11px}
+.tagfx.move{color:#fff;background:var(--thmr-bronze,#A4814A)}
+.tagfx.tune{color:var(--thmr-navy,#16324F);background:#F3EBDD;border:1px solid #E4D2B4}
+.tagfx.opt{color:var(--muted);background:var(--alt);border:1px solid var(--thmr-line,#E3DDD2)}
 
 /* Sprint 2.4d: Print / Save-as-PDF styles */
 @media print {
@@ -400,7 +412,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
      Session-only (sessionStorage, in-memory fallback). No cookie, no server write, stores nothing.
      Shown on first load of a session; an affirmative click reveals the tool. Complements the
      result-surface disclaimers + MUC banner + B-1 land-floor — does not duplicate them. ── -->
-<div class="bgate" id="betaGate" role="dialog" aria-modal="true" aria-labelledby="bgTitle">
+<div class="bgate thmr" id="betaGate" role="dialog" aria-modal="true" aria-labelledby="bgTitle">
   <div class="bgate-card">
     <div class="bgate-logo"><img src="logo.png" alt="ثمّن"></div>
     <h2 id="bgTitle">ثمّن — تقدير سوقي آلي للفلل والأراضي في قطر</h2>
@@ -439,7 +451,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <div class="dfb" id="dfBanner" role="status" aria-live="polite" hidden></div>
 
 <!-- HOME -->
-<div class="home screen active" id="homeScreen">
+<div class="home screen active thmr" id="homeScreen">
   <div class="hlogo"><img src="logo.png" alt="ثمّن"></div>
   <!-- Sprint 2.22.0b.24 (R13 text bundle, م0): تقدير not تقييم on the home surface +
        the data-recency line as the static default (the /api/freshness subtitle_ar
@@ -471,7 +483,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 </div>
 
 <!-- FORM -->
-<div class="screen" id="formScreen">
+<div class="screen thmr" id="formScreen">
   <div class="tbar">
     <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
     <div class="tbar-st" id="statusBar">جاري الاتصال...</div>
@@ -524,7 +536,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 </div>
 
 <!-- REFINE — Sprint 2.22.0b.2.1: optional property details on their own screen (Stage 2). -->
-<div class="screen" id="refineScreen">
+<div class="screen thmr" id="refineScreen">
   <div class="tbar">
     <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
     <div class="tbar-st">تحسين التقدير</div>
@@ -532,33 +544,16 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   <div class="fwrap">
     <button class="bbtn" onclick="go('results')">→ رجوع للنتيجة</button>
     <div class="ftitle">📐 تفاصيل العقار (المرحلة 2)</div>
+    <!-- Sprint 2.22.0b.27 (م4 — signed): the refine fields regrouped into the THREE
+         v3-contract groups, each TAGGED by its real effect (يحرّك التقدير / يدقّق
+         مرتكز التكلفة / اختياري للإثراء). Every field id is UNCHANGED (the re-eval
+         JS reads by id). towerRentSection stays OUTSIDE the groups (the 2.16.10/b22
+         tower flow reveals + focuses it — keeping it ungrouped preserves that path). -->
     <div class="fcard">
-      <div class="rn" style="font-size:.85rem;color:var(--muted);margin-bottom:12px;line-height:1.6">أدخِل التفاصيل الفعليّة لعقارك لتدقيق التقدير المبدئي. كل الحقول اختيارية — اترك ما لا تعرفه.</div>
-      <div class="fr2">
-        <div class="fg"><label>عدد الطوابق فوق الأرض</label><select id="floors"><option value="">— اختر —</option><option value="1">طابق واحد (أرضي)</option><option value="2">طابقين (أرضي + أول)</option><option value="3">ثلاثة (أرضي + أول + ثاني)</option><option value="4">أربعة</option></select></div>
-        <div class="fg"><label>سرداب (تحت الأرض)</label><select id="basement"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد سرداب</option></select></div>
-        <div class="fg"><label>بنتهاوس (نصف طابق علوي)</label><select id="penthouse"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد بنتهاوس</option></select></div>
-      </div>
-      <div class="fr2">
-        <div class="fg"><label>عدد الملاحق</label><select id="annexes"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">ملحق واحد</option><option value="2">ملحقين</option><option value="3">ثلاثة</option></select></div>
-        <div class="fg"><label>مجلس خارجي منفصل</label><select id="externalMajlis"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد</option></select></div>
-      </div>
-      <div class="fr2">
-        <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option><option value="teardown">آيل للسقوط / يجب هدمه</option></select></div>
-        <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من أبعاد القطعة" min="0"><div id="fpHint" class="rn" style="font-size:.75rem;color:#8b6e44;margin-top:5px;line-height:1.5"></div></div>
-      </div>
-      <div class="fr2">
-        <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" min="0" max="100"><div style="font-size:.72rem;color:var(--muted);margin-top:3px">العمر المسجَّل في النظام حدٌّ أدنى (مسح GIS) — إدخال العمر الفعلي يرفع الدقّة.</div></div>
-        <div class="fg"><label>تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="">— اختر —</option><option value="0">لا</option><option value="1">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
-      </div>
-      <div class="trow" style="margin-top:6px;padding-top:10px"><span style="font-size:.82rem;color:var(--muted);font-weight:600">معلومات مالية (اختياري)</span></div>
-      <div class="fr2">
-        <div class="fg"><label>السعر المطلوب (ر.ق)</label><input type="number" id="askingPrice" placeholder="اختياري" min="0"></div>
-        <div class="fg"><label id="rentalIncomeLabel">الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"></div>
-      </div>
+      <div class="rn" style="font-size:.85rem;color:var(--muted);margin-bottom:12px;line-height:1.6">أجب بما تعرفه فقط — كل مجموعة موسومة بأثرها الحقيقي، واترك ما لا تعرفه فارغاً.</div>
       <!-- Sprint 2.16.10 — tower/compound rental split (revealed by applyAssetToForm
            when the asset is a tower / compound_large / apartment_building). -->
-      <div id="towerRentSection" class="tower-only" style="display:none;background:var(--alt);border-right:3px solid var(--bronze);padding:10px 12px;margin-top:6px;border-radius:0 6px 6px 0">
+      <div id="towerRentSection" class="tower-only" style="display:none;background:var(--alt);border-right:3px solid var(--bronze);padding:10px 12px;margin-bottom:10px;border-radius:0 6px 6px 0">
         <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px">
           <strong>للأبراج والمجمعات الكبيرة:</strong> إذا لم تعرف الإجمالي،
           أدخل تفاصيل الوحدات بدلاً منه. سيُحسب الإجمالي تلقائياً.
@@ -568,10 +563,50 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
           <div class="fg"><label>متوسط الإيجار الشهري لكل وحدة (ر.ق)</label><input type="number" id="avgRentPerUnit" placeholder="مثال: 12000" min="1"></div>
         </div>
       </div>
-      <div class="fr2">
-        <div class="fg"><label>الإيجار الشهري المتوقع (ر.ق)</label><input type="number" id="potentialRental" placeholder="تقدير" min="0"></div>
-        <div class="fg"></div>
-      </div>
+      <details class="thmr-grp" open>
+        <summary><span class="gnum">١</span>الهندسة <span class="tagfx move">يحرّك التقدير</span><span class="garrow">‹</span></summary>
+        <div class="gbody">
+          <div class="fr2">
+            <div class="fg"><label>عدد الطوابق فوق الأرض</label><select id="floors"><option value="">— اختر —</option><option value="1">طابق واحد (أرضي)</option><option value="2">طابقين (أرضي + أول)</option><option value="3">ثلاثة (أرضي + أول + ثاني)</option><option value="4">أربعة</option></select></div>
+            <div class="fg"><label>سرداب (تحت الأرض)</label><select id="basement"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد سرداب</option></select></div>
+            <div class="fg"><label>بنتهاوس (نصف طابق علوي)</label><select id="penthouse"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد بنتهاوس</option></select></div>
+          </div>
+          <div class="fr2">
+            <div class="fg"><label>عدد الملاحق</label><select id="annexes"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">ملحق واحد</option><option value="2">ملحقين</option><option value="3">ثلاثة</option></select></div>
+            <div class="fg"><label>مجلس خارجي منفصل</label><select id="externalMajlis"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد</option></select></div>
+          </div>
+          <div class="fr2">
+            <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من أبعاد القطعة" min="0"><div id="fpHint" class="rn" style="font-size:.75rem;color:#8b6e44;margin-top:5px;line-height:1.5"></div></div>
+            <div class="fg"></div>
+          </div>
+        </div>
+      </details>
+      <details class="thmr-grp">
+        <summary><span class="gnum">٢</span>العمر والحالة <span class="tagfx tune">يدقّق مرتكز التكلفة</span><span class="garrow">‹</span></summary>
+        <div class="gbody">
+          <div class="fr2">
+            <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" min="0" max="100"><div style="font-size:.72rem;color:var(--muted);margin-top:3px">العمر المسجَّل في النظام حدٌّ أدنى (مسح GIS) — إدخال العمر الفعلي يرفع الدقّة.</div></div>
+            <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option><option value="teardown">آيل للسقوط / يجب هدمه</option></select></div>
+          </div>
+          <div class="fr2">
+            <div class="fg"><label>تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="">— اختر —</option><option value="0">لا</option><option value="1">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
+            <div class="fg"></div>
+          </div>
+        </div>
+      </details>
+      <details class="thmr-grp">
+        <summary><span class="gnum">٣</span>معلومات مالية <span class="tagfx opt">اختياري للإثراء</span><span class="garrow">‹</span></summary>
+        <div class="gbody">
+          <div class="fr2">
+            <div class="fg"><label id="rentalIncomeLabel">الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"><div class="rn" style="font-size:.72rem;color:#8b6e44;margin-top:3px">إيجار فعلي + معدّل رسملة معايَر لمنطقتك ⇒ قد يقود الدخلُ التقدير.</div></div>
+            <div class="fg"><label>الإيجار الشهري المتوقع (ر.ق)</label><input type="number" id="potentialRental" placeholder="تقدير" min="0"></div>
+          </div>
+          <div class="fr2">
+            <div class="fg"><label>السعر المطلوب (ر.ق)</label><input type="number" id="askingPrice" placeholder="اختياري" min="0"><div style="font-size:.72rem;color:var(--muted);margin-top:3px">لا يؤثّر على التقدير — يُعرَض للمقارنة في تقريرك فقط (الأسعار المعلنة ليست أدلّة).</div></div>
+            <div class="fg"></div>
+          </div>
+        </div>
+      </details>
     </div>
     <button class="sbtn" id="refineBtn" onclick="thammenReEvalGeometry()">احسب التقدير المُحسَّن</button>
     <div id="refineRes"></div>
@@ -582,7 +617,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
      Inserted between identification (formScreen) and the result render; populated by
      showConfirm() from the SAME /api/evaluate response (no second fetch). Read-only
      review + explicit confirm (signed 5.2). Valuer + refusals skip to results (run()). -->
-<div class="screen" id="confirmScreen">
+<div class="screen thmr" id="confirmScreen">
   <div class="tbar">
     <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
     <div class="tbar-st">مراجعة البيانات</div>
@@ -721,6 +756,10 @@ function goForm(focusId){
   setTimeout(function(){
     var el=document.getElementById(focusId);
     if(!el)return;
+    // Sprint 2.22.0b.27 (م4): the refine fields now live inside <details> groups —
+    // open a closed ancestor group before focusing (the b13 age-nudge + rent CTAs).
+    var dts=el.closest&&el.closest('details');
+    if(dts&&!dts.open)dts.open=true;
     // Open the .det collapsible if it's still closed
     var det=el.closest&&el.closest('.det');
     if(det&&!det.classList.contains('open')){
@@ -947,8 +986,9 @@ function showConfirm(d){
   // an ESTIMATED CEILING (max-buildable from plot dims − setbacks), labelled as such
   // — the user corrects DOWN in the refine step. Display-only / value-invariant.
   if(geo.max_buildable_footprint_m2&&_b2IsBuilding(d.asset_type)){
+    // Sprint 2.22.0b.27 (م4): the setbacks equation on the confirm basis row too (E15).
     var _mbDims=(geo.footprint_method==='setback_envelope'&&geo.plot_dims_m&&geo.plot_dims_m.length===2)
-      ? (' (من أبعاد القطعة <span dir="ltr">'+geo.plot_dims_m[0]+'×'+geo.plot_dims_m[1]+'</span> م)')
+      ? (' (من أبعاد القطعة <span dir="ltr">'+geo.plot_dims_m[0]+'×'+geo.plot_dims_m[1]+'</span> م بعد الارتدادات القانونية: أمامي 5 · جانبي 3 · خلفي 3، وضمن سقف تغطية 60%)')
       : (geo.footprint_method==='coverage_cap_shared'
           ? (' (حصة الوحدة في قطعة مشتركة'+(geo.n_share?' بين '+geo.n_share+' وحدات':'')+')') : '');
     h+=ri('مساحة البناء الأرضي (تقدير أقصى)','≈ '+fmt(geo.max_buildable_footprint_m2)+' م²'+_mbDims+' — عدّله لواقع مبناك في خطوة التحسين');
@@ -1848,9 +1888,12 @@ function show(d){
       const _g=v.geometry||{}, _mb=_g.max_buildable_footprint_m2;
       if(_mb&&_g.footprint_basis!=='confirmed'){
         const _dims=_g.plot_dims_m;
+        // Sprint 2.22.0b.27 (م4 — signed): the SETBACKS EQUATION disclosed under the
+        // building area (E15: front 5 · side 3 · rear 3 · the 60% coverage cap) —
+        // setback-envelope plots only (the cov-cap/shared methods don't use setbacks).
         var _ctx=(_g.footprint_method==='coverage_cap_shared')
           ? ('(حصة الوحدة في قطعة مشتركة'+(_g.n_share?' بين '+_g.n_share+' وحدات':'')+') ≈ ')
-          : (_dims&&_dims.length===2?('من أبعاد قطعتك (<span dir="ltr">'+_dims[0]+' × '+_dims[1]+'</span> م) ≈ '):'≈ ');
+          : (_dims&&_dims.length===2?('من أبعاد قطعتك (<span dir="ltr">'+_dims[0]+' × '+_dims[1]+'</span> م)'+(_g.footprint_method==='setback_envelope'?' بعد الارتدادات القانونية (أمامي 5 · جانبي 3 · خلفي 3) وضمن سقف تغطية 60%':'')+' ≈ '):'≈ ');
         _fph.innerHTML='💡 الحدّ الأقصى المُقدَّر '+_ctx+
           '<strong>'+fmt(_mb)+' م²</strong> — عدّله لواقع مبناك (الفعلي عادةً أصغر).';
       }else{_fph.textContent='';}
