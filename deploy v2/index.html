@@ -1721,6 +1721,13 @@ function printShortReport(){
   document.body.classList.add('printing-short');
   setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('printing-short'),500);},50);
 }
+// Sprint 2.22.0b.28 (م2 print-contract alignment): the PO delivered the GOVERNING print
+// contract docs/ثمن_التقرير_المختصر_v2_امريخ.pdf — the surface re-rendered to its two-page
+// copy (الزبدة في صفحة واحدة + ملحق المختصين). Every figure stays BROADCAST-BOUND; the
+// only derivations are the DISCLOSED convention multipliers: ×0.90 (D2 forced-sale),
+// ×1.10 / ×1.30 (the project's SIGNED hard ceilings — buyer/seller negotiation bars),
+// the D3 financing line and price-per-m² (the declared pair). The matrix's conditional
+// skeleton holds for the non-cost leaders (the PDF shows the cost-led case).
 function showShortReport(d){
   const o=document.getElementById('srOut'); if(!o)return;
   const v=d.valuation||{}, ld=v.leadership||null, tri=v.income_triangulation||{};
@@ -1736,23 +1743,26 @@ function showShortReport(d){
     h+='<div class="thmr-btns"><button class="thmr-btn alt" onclick="openReport()">التقرير الكامل</button></div></div>';
     o.innerHTML=h; return;
   }
-  // ── bindings per the signed matrix ──
+  // ── bindings (the matrix skeleton + the PDF-contract figures, all broadcast-bound) ──
   const _n=v.n_transactions, _mn=(ld?ld.matched_n:null), _d36=(ld&&ld.dispersion_36!=null)?ld.dispersion_36:null;
   const _gn=(ld?ld.geo_full_n:null), _gd=(ld&&ld.geo_full_dispersion!=null)?ld.geo_full_dispersion:null;
   const _capPct=(inc.cap_rate!=null)?(inc.cap_rate*100).toFixed(2).replace(/\.?0+$/,''):null;
   const _capN=(d.cap_rate_provenance||{}).sample_size!=null?d.cap_rate_provenance.sample_size:null;
-  const heroLbl={cost:'القيمة التقديرية — مرتكز التكلفة (أرض + بناء مُهلَك)',market:'القيمة التقديرية — وسيط شريحتك',
-    income:'القيمة التقديرية — متّسقة مع إيجارك الفعلي',land:'قيمة الأرض'}[cs];
+  const _mkt=stack.market||{}, _domShare=(_mkt.dominant_share_pct!=null)?Math.round(_mkt.dominant_share_pct):null;
+  const _ageY=age.age_floor_years||null;
+  // the PDF hero: one warm label; the leader story rides the BASIS line (the matrix
+  // hero labels survive as the basis qualifiers for the non-cost leaders).
   let basisLn='';
-  if(cs==='cost')basisLn=cost.label_ar||'قيمة التكلفة (أرض + بناء مُهلَك) — نهج DRC';
-  else if(cs==='market')basisLn='وسيط '+(_mn!=null?_mn:(_n!=null?_n:'—'))+' صفقة مطابقة لنوعك وعمرك، تشتت '+(_d36!=null?_d36:'—');
-  else if(cs==='income')basisLn='إيجارك ÷ رسملة معايَرة'+(_capPct?(' '+_capPct+'% صافٍ'):'')+(_capN!=null?(' (n='+_capN+')'):'')+(tri.bracket_borrowed?' — معدل مُستعار من شريحة مجاورة (مُفصَح)':'');
-  else basisLn='وسيط أراضي منطقتك'+(vf.land_per_m2_qar?(' '+fmt(vf.land_per_m2_qar)+' ر.ق/م²'):'')+(d.plot_area_m2?(' × '+fmt(d.plot_area_m2)+' م²'):'')+(vf.land_n_transactions?(' (n='+vf.land_n_transactions+')'):'');
+  if(cs==='cost')basisLn='محسوبة من قيمة الأرض + قيمة البناء بعد عمره، لأن صفقات بيوتٍ مثل بيتك في المنطقة قليلة'+(_mn!=null?(' ('+_mn+' فقط)'):'');
+  else if(cs==='market')basisLn='وسيط شريحتك: '+(_mn!=null?_mn:(_n!=null?_n:'—'))+' صفقة مطابقة لنوعك وعمرك، تشتت '+(_d36!=null?_d36:'—');
+  else if(cs==='income')basisLn='متّسقة مع إيجارك الفعلي ÷ رسملة معايَرة'+(_capPct?(' '+_capPct+'% صافٍ'):'')+(_capN!=null?(' (n='+_capN+')'):'')+(tri.bracket_borrowed?' — معدل مُستعار من شريحة مجاورة (مُفصَح)':'');
+  else basisLn='قيمة الأرض: وسيط أراضي منطقتك'+(vf.land_per_m2_qar?(' '+fmt(vf.land_per_m2_qar)+' ر.ق/م²'):'')+(d.plot_area_m2?(' × '+fmt(d.plot_area_m2)+' م²'):'')+(vf.land_n_transactions?(' (n='+vf.land_n_transactions+')'):'');
   let neigh='';
   if(cs==='cost'){
-    neigh='أكثر صفقات منطقتك حديثة وفاخرة'+((ld&&ld.market_value)?(' (وسيطها '+fmt(ld.market_value)+' على '+(_n!=null?_n:'—')+' صفقة)'):'')
-      +(age.age_floor_years?(' بينما مبناك تجاوز '+age.age_floor_years+' سنة'):'')
-      +' — فالأصدق كلفة الإحلال: أرضك + بناؤك بعد الإهلاك.';
+    neigh='أغلب ما بيع غالياً في منطقتك خلال آخر فترة كان فللاً جديدة فاخرة'+(_domShare!=null?(' — نحو '+_domShare+'% من الصفقات —'):' —')
+      +((ld&&ld.market_value)?(' ووصلت أسعارها إلى '+fmt(ld.market_value)+'.'):'.')
+      +(_ageY?(' بيتك عمره فوق '+_ageY+' سنة، ومثل أغلب الفلل في قطر بعد سن العاشرة، قيمته العادلة تقترب من قيمة أرضه مضافاً إليها بناء أخذ نصيبه من العمر.'):'')
+      +' مقارنة بيتك بأسعار الفلل الجديدة مقارنةٌ غير عادلة — لك وعليك.';
   }else if(cs==='market'){
     neigh='صفقات مثل بيتك كافية وواضحة: '+(_mn!=null?_mn:(_n!=null?_n:'—'))+' مطابقة خلال 24 شهراً — وسيطها مرجعك.';
   }else if(cs==='income'){
@@ -1760,74 +1770,111 @@ function showShortReport(d){
   }else{
     neigh='الأرض تُقاس بسعر المتر في منطقتك — وموقع قطعتك داخل النطاق يحدده حجمها وواجهتها.';
   }
-  // ════ Page 1 — الزبدة ════
+  const vUrl=_verifyUrl(d);
+  // the SIGNED hard-ceiling negotiation bars (project doctrine: buyer MoJ+10% /
+  // seller +30%) — DISCLOSED convention multipliers, the same class as ×0.90.
+  const _bar10=Math.round(v.amount*1.10), _bar30=Math.round(v.amount*1.30);
+  // ════ Page 1 — الزبدة في صفحة واحدة (the PDF contract) ════
   h+='<div class="thmr-page" id="srPage1">';
-  h+='<div class="thmr-head"><div class="b1">ثمّن — التقرير المختصر<small>تقدير سوقي آلي · ليس تقييماً معتمداً</small></div>';
-  h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b><br>'):'')+'التاريخ <span dir="ltr">'+today+'</span> · <span dir="ltr">'+(d.engine_version||'')+'</span></div></div>';
-  h+='<div class="thmr-hero"><span class="lbl">'+heroLbl+'</span>';
-  h+='<div class="num">'+fmt(v.amount)+' <small>ر.ق</small></div>';
-  h+='<div class="basis">'+basisLn+'</div>';
+  h+='<div class="thmr-head"><div class="b1">ثمّن — التقرير المختصر<small>الزبدة في صفحة واحدة</small></div>';
+  h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b><br>'):'')+'<span dir="ltr">'+(d.engine_version||'')+'</span></div></div>';
+  // the property strip (the PDF header row).
+  h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:10px"><span class="k">'+(ASSET_AR[d.asset_type]||'عقار')+' <b dir="ltr">'+(d.address||'')+'</b>'+(d.district?(' · '+d.district):'')+'</span><span class="v" style="font-weight:400">'+(d.plot_area_m2?('مساحة الأرض: <b>'+fmt(d.plot_area_m2)+' م²</b>'):'')+(_ageY?(' · عمر البناء: <b>فوق '+_ageY+' سنة</b> (سجل رسمي)'):'')+' · التاريخ: <span dir="ltr">'+today+'</span></span></div>';
+  h+='<div class="thmr-hero" style="background:var(--thmr-navy);border:none"><span class="lbl" style="color:#E8C99A">قيمة بيتك التقديرية اليوم</span>';
+  h+='<div class="num" style="color:#fff">'+fmt(v.amount)+' <small>ريال</small></div>';
+  h+='<div style="display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:2px 14px;margin-top:7px;font-size:.74rem;color:#EAF0F6">تقدير استرشادي — وليس تقييماً معتمداً</div>';
+  h+='<div class="basis" style="color:#C9D4DF">'+basisLn+'</div>';
   if(cs==='cost'&&ld&&ld.market_value&&ld.market_value>v.amount){
     h+='<div class="thmr-rbar"><div class="track"><span class="dot c"></span><span class="dot m"></span></div>';
-    h+='<div class="lbls"><span class="a">'+fmt(v.amount)+' — المرتكز</span><span>'+fmt(ld.market_value)+' — طرف سوق المنطقة (مؤشرات حذرة)</span></div></div>';
+    h+='<div class="lbls"><span class="a" style="color:#fff">'+fmt(v.amount)+' — المرتكز</span><span style="color:#C9D4DF">'+fmt(ld.market_value)+' — طرف سوق المنطقة (مؤشرات حذرة)</span></div></div>';
   }
   h+='</div>';
-  h+='<div class="thmr-lay">'+neigh+'</div>';
-  // card ١ — التفكيك (cost: the DRC stack rows; else the broadcast decomposition) + الجبري ×0.90 (D2).
-  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">١</span>'+(cs==='cost'?'تفكيك المرتكز':'تفكيك القيمة')+'</div>';
+  // the D3 financing line — the PDF wording, the three assumptions EDITABLE inline.
+  h+='<div class="thmr-micro thmr-pay" style="text-align:center;margin:0 0 12px">للتصوّر فقط: تمويل <span dir="ltr"><input id="srDown" type="number" value="20" min="0" max="90" oninput="srRecalcPay()"></span>% دفعة أولى على <input id="srYears" type="number" value="25" min="1" max="35" oninput="srRecalcPay()"> سنة ≈ <b id="srPay">'+(function(){const p=_srPayment(v.amount,20,25,4.5);return p?(fmt(p)+' ر.ق شهرياً'):'—';})()+'</b> (بمعدل افتراضي <input id="srRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="srRecalcPay()">% — استشر بنكك)</div>';
+  // §١ — the leader story paragraph (the PDF cost-led title; matrix stories otherwise).
+  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">١</span>'+(cs==='cost'?'لماذا أقل مما تسمعه عن بيوت حولك؟':'على ماذا يرتكز الرقم؟')+'</div>';
+  h+='<div class="thmr-lay" style="margin-bottom:0;border:none;padding:2px 0 0">'+neigh+'</div></div>';
+  // §٢ — الأرقام الثلاثة التي تهمّك (the PDF three-card row).
+  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٢</span>الأرقام الثلاثة التي تهمّك</div>';
+  h+='<div class="thmr-row"><span class="k">سعر عادل لبيتك اليوم — تقديرنا المركزي'+(d.plot_area_m2?(' · ≈ <span dir="ltr">'+fmt(Math.round(v.amount/d.plot_area_m2))+'</span> ر.ق/م² أرض'):'')+'</span><span class="v">'+fmt(v.amount)+'</span></div>';
+  h+='<div class="thmr-row"><span class="k">لو احتجت بيعاً سريعاً (تقدير البنوك عادةً) — خصم 10% المتعارف عليه (×0.90، ليست تقييم تصفية)</span><span class="v">≈ '+fmt(Math.round(v.amount*0.90))+'</span></div>';
+  if(cs==='cost'&&ld&&ld.market_value){
+    h+='<div class="thmr-row"><span class="k">ما تبيعه الفلل الجديدة الفاخرة حولك — فئة أخرى، ليست فئة بيتك</span><span class="v">حتى '+fmt(ld.market_value)+'</span></div>';
+  }else if(v.low!=null&&v.high!=null){
+    h+='<div class="thmr-row"><span class="k">النطاق التقديري حول الرقم</span><span class="v"><span dir="ltr">'+fmt(v.low)+' – '+fmt(v.high)+'</span></span></div>';
+  }
+  h+='</div>';
+  // §٣ — الزبدة العملية (the PDF seller/buyer advice; the bars = the SIGNED hard ceilings).
+  if(hasVal){
+    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٣</span>الزبدة العملية <span style="font-weight:400;font-size:.7rem;color:var(--thmr-ink2)">(إرشادية — والقرار قرارك)</span></div>';
+    h+='<div class="thmr-micro" style="font-size:.8rem"><b>◆ إن كنت بائعاً:</b> اعرض حول ≈ '+fmt(_bar10)+' (هامش تفاوض +10% — عُرف السوق) واترك مجالاً للتفاوض؛ الإقفال الواقعي قرب '+fmt(v.amount)+' ما لم يكن في البيت ما يميّزه فعلاً. التمسك طويلاً فوق سقف +30% (≈ '+fmt(_bar30)+') يعني غالباً انتظاراً بلا مشترٍ جاد.</div>';
+    h+='<div class="thmr-micro" style="font-size:.8rem"><b>◆ إن كنت مشترياً:</b> ما فوق ≈ '+fmt(_bar10)+' يحتاج سبباً واضحاً تتحقق منه بعينك: تجديد كامل، إضافات موثقة، أو دخل إيجار حقيقي. اطلب بيان وزارة العدل، واسأل عن عمر البناء الحقيقي لا ما يقوله البائع.</div></div>';
+  }
+  // §٤ — من أين جاء الرقم؟ (cost: the PDF three sources; else the broadcast decomposition).
+  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٤</span>من أين جاء الرقم؟</div>';
   if(cs==='cost'&&cost.value){
-    h+='<div class="thmr-row"><span class="k">الأرض'+((d.plot_area_m2&&vf.land_per_m2_qar)?(' (<span dir="ltr">'+fmt(d.plot_area_m2)+' م² × '+fmt(vf.land_per_m2_qar)+'</span> ر.ق/م²'+(vf.land_n_transactions?(' · n='+vf.land_n_transactions):'')+')'):'')+'</span><span class="v">'+fmt(cost.land_floor)+'</span></div>';
-    h+='<div class="thmr-row"><span class="k">البناء المُهلَك'+((cost.bua_m2&&cost.rcn_qar_per_m2&&cost.retention!=null)?(' (<span dir="ltr">BUA '+cost.bua_m2+' × '+fmt(cost.rcn_qar_per_m2)+' × '+cost.retention+'</span>)'):'')+'</span><span class="v">'+fmt(cost.building_value)+'</span></div>';
+    h+='<div class="thmr-row"><span class="k">الأرض'+((d.plot_area_m2&&vf.land_per_m2_qar)?(' (<span dir="ltr">'+fmt(d.plot_area_m2)+' م² × '+fmt(vf.land_per_m2_qar)+'</span> ر.ق/م²'+(vf.land_n_transactions?(' — من '+vf.land_n_transactions+' صفقة أرض حقيقية مسجلة في منطقتك'):'')+')'):'')+'</span><span class="v">≈ '+fmt(cost.land_floor)+'</span></div>';
+    h+='<div class="thmr-row"><span class="k">البناء بعد العمر — كلفة بنائه اليوم بعد خصم إهلاك '+(_ageY?(_ageY+'+ سنة'):'عمره')+((cost.bua_m2&&cost.rcn_qar_per_m2&&cost.retention!=null)?(' (<span dir="ltr">BUA '+cost.bua_m2+' × '+fmt(cost.rcn_qar_per_m2)+' × '+cost.retention+'</span>)'):'')+'</span><span class="v">≈ '+fmt(cost.building_value)+'</span></div>';
   }else{
     const vd=v.value_decomposition||{};
     if(vd.land&&vd.land.value!=null)h+='<div class="thmr-row"><span class="k">مكوّن الأرض الاسترشادي</span><span class="v">'+fmt(vd.land.value)+'</span></div>';
     if(vd.building_implied&&vd.building_implied.value!=null)h+='<div class="thmr-row"><span class="k">مساهمة البناء الضمنية</span><span class="v">'+fmt(vd.building_implied.value)+'</span></div>';
     if(cs==='land'&&vf.land_floor)h+='<div class="thmr-row"><span class="k">قيمة الأرض (وسيط المنطقة × المساحة)</span><span class="v">'+fmt(vf.land_floor)+'</span></div>';
   }
-  h+='<div class="thmr-row"><span class="k">القيمة الجبرية الإرشادية (×0.90 — عُرف سوقي، ليست تقييم تصفية)</span><span class="v">'+fmt(Math.round(v.amount*0.90))+'</span></div>';
-  if(d.plot_area_m2&&v.amount)h+='<div class="thmr-row"><span class="k">سعر المتر (على مساحة القسيمة)</span><span class="v"><span dir="ltr">'+fmt(Math.round(v.amount/d.plot_area_m2))+'</span> ر.ق/م²</span></div>';
+  h+='<div class="thmr-row"><span class="k">المصدر: وزارة العدل — صفقات مسجلة حتى ديسمبر 2025</span><span class="v" style="font-weight:400">لا أسعار إعلانات ولا «كلام سوق»</span></div>';
   h+='</div>';
-  // card ٢ — البطاقة الثالثة (per the matrix).
-  const c3t={cost:'سيناريوهات «ماذا لو» (محسوبة لا مُختلَقة)',market:'مدى شريحتك',income:'قراءة الدخل: NOI والرسملة — صافٍ لا إجمالي',land:'موقعك في نطاق المتر'}[cs];
-  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٢</span>'+c3t+'</div>';
+  // §٥ — أشياء قد ترفع الرقم — أخبرنا بها (from the b23 scenarios broadcast).
   const scn=v.scenarios;
   if(cs==='cost'&&scn&&scn.items&&scn.items.length){
-    h+='<table class="thmr-sctab"><tr><th>الحالة</th><th class="l">القيمة التقريبية</th></tr>';
-    scn.items.forEach(it=>{h+='<tr><td>'+it.label_ar+'</td><td class="num">'+(it.key==='as_is'?'':'≈ ')+fmt(it.value)+'</td></tr>';});
-    h+='</table>';
-    if(scn.note_ar)h+='<div class="thmr-micro">'+scn.note_ar+'</div>';
-    h+='<div class="thmr-micro">ولو أُجّرت: أدخل إيجارك الفعلي في «حسّن التقدير» ليقود الدخلُ القراءة.</div>';
+    const _scnBy={}; scn.items.forEach(it=>{_scnBy[it.key]=it;});
+    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٥</span>أشياء قد ترفع الرقم — أخبرنا بها</div>';
+    if(_scnBy.renovated_excellent)h+='<div class="thmr-row"><span class="k">مجدَّد بالكامل؟ حالة ممتازة تقرّبه من</span><span class="v">≈ '+fmt(_scnBy.renovated_excellent.value)+'</span></div>';
+    if(_scnBy.luxury_finish)h+='<div class="thmr-row"><span class="k">تشطيب فاخر؟ يقرّبه من</span><span class="v">≈ '+fmt(_scnBy.luxury_finish.value)+'</span></div>';
+    h+='<div class="thmr-row"><span class="k">مؤجَّر بعقد فعلي؟</span><span class="v" style="font-weight:400">الإيجار أقوى معلومة — قد يغيّر الصورة كلها</span></div>';
+    h+='<div class="thmr-micro">أدخلها بنفسك من زر «حسّن التقدير» في الموقع — الرقم يتحدّث مع معلوماتك، لا مع الافتراضات.</div>';
+    h+='</div>';
   }else if(cs==='market'){
-    h+='<div class="thmr-micro" style="font-size:.82rem">مدى شريحتك المطابقة: <span dir="ltr">'+fmt(v.low)+' – '+fmt(v.high)+'</span> حول الوسيط '+fmt(v.amount)+(_d36!=null?(' — تشتت '+_d36):'')+'.</div>';
+    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٥</span>مدى شريحتك</div><div class="thmr-micro" style="font-size:.82rem">مدى شريحتك المطابقة: <span dir="ltr">'+fmt(v.low)+' – '+fmt(v.high)+'</span> حول الوسيط '+fmt(v.amount)+(_d36!=null?(' — تشتت '+_d36):'')+'.</div></div>';
   }else if(cs==='income'){
-    h+='<div class="thmr-micro" style="font-size:.82rem">'+(inc.monthly_rent?('الإيجار المعتمد <span dir="ltr">'+fmt(inc.monthly_rent)+'</span> ر.ق/شهر'+(inc.rent_source_ar?(' ('+inc.rent_source_ar+')'):'')+' → '):'')+(inc.noi?('NOI <span dir="ltr">'+fmt(inc.noi)+'</span>'):'')+(_capPct?(' ÷ رسملة معايَرة '+_capPct+'% صافٍ'):'')+(inc.income_value?(' ⇒ ≈ <b>'+fmt(inc.income_value)+'</b>'):'')+'. <b>صافٍ لا إجمالي.</b></div>';
+    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٥</span>قراءة الدخل: NOI والرسملة — صافٍ لا إجمالي</div><div class="thmr-micro" style="font-size:.82rem">'+(inc.monthly_rent?('الإيجار المعتمد <span dir="ltr">'+fmt(inc.monthly_rent)+'</span> ر.ق/شهر'+(inc.rent_source_ar?(' ('+inc.rent_source_ar+')'):'')+' → '):'')+(inc.noi?('NOI <span dir="ltr">'+fmt(inc.noi)+'</span>'):'')+(_capPct?(' ÷ رسملة معايَرة '+_capPct+'% صافٍ'):'')+(inc.income_value?(' ⇒ ≈ <b>'+fmt(inc.income_value)+'</b>'):'')+'. <b>صافٍ لا إجمالي.</b></div></div>';
   }else{
-    h+='<div class="thmr-micro" style="font-size:.82rem">وسيط منطقتك'+(vf.land_per_m2_qar?(' <span dir="ltr">'+fmt(vf.land_per_m2_qar)+'</span> ر.ق/م²'):'')+(vf.land_n_transactions?(' (n='+vf.land_n_transactions+')'):'')+' — والواجهة والحجم يحددان موضع قطعتك داخل النطاق.</div>';
+    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٥</span>موقعك في نطاق المتر</div><div class="thmr-micro" style="font-size:.82rem">وسيط منطقتك'+(vf.land_per_m2_qar?(' <span dir="ltr">'+fmt(vf.land_per_m2_qar)+'</span> ر.ق/م²'):'')+(vf.land_n_transactions?(' (n='+vf.land_n_transactions+')'):'')+' — والواجهة والحجم يحددان موضع قطعتك داخل النطاق.</div></div>';
   }
-  h+='</div>';
-  // card ٣ — القسط (D3: the three assumptions EDITABLE inline + «استشر بنكك»).
-  h+='<div class="thmr-card thmr-pay"><div class="thmr-seclbl"><span class="n">٣</span>القسط التقريبي <span style="font-weight:400;font-size:.7rem;color:var(--thmr-ink2)">(افتراضات قابلة للتعديل داخل السطر — D3)</span></div>';
-  h+='<div class="thmr-row"><span class="k">دفعة أولى <input id="srDown" type="number" value="20" min="0" max="90" oninput="srRecalcPay()">% · مدة <input id="srYears" type="number" value="25" min="1" max="35" oninput="srRecalcPay()"> سنة · فائدة <input id="srRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="srRecalcPay()">%</span><span class="v" id="srPay">≈ '+(function(){const p=_srPayment(v.amount,20,25,4.5);return p?fmt(p):'—';})()+' ر.ق/شهر</span></div>';
-  h+='<div class="thmr-micro">حسابٌ استرشادي على رقم '+(cs==='cost'?'المرتكز':'التقدير المركزي')+' — استشر بنكك للعرض الفعلي.</div></div>';
-  // fpline + QR + the GT hook.
-  const vUrl=_verifyUrl(d);
+  // the page-1 footer (the PDF wording) + QR + the GT hook.
+  h+='<div class="thmr-micro" style="margin-top:10px"><b>تقدير سوقي آلي وليس تقييماً معتمداً</b> — للقرارات الكبيرة استعن بمعاينة ميدانية ومقيّم مرخّص. عندك سعر بيع حقيقي أو تقييم بنك لهذا العقار؟ شاركه يصير تقديرنا أدق للجميع: واتساب <span dir="ltr">+974 70177761</span>.</div>';
   h+='<div class="thmr-fpline">'+(vUrl?'<span class="thmr-qr" id="srQr1"></span>':'')
-    +'<span>'+(d.report_fp?('البصمة <span class="fp" dir="ltr">'+d.report_fp+'</span> · '):'')+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a> · '):'')+'أرسل سعراً فعلياً تعرفه: واتساب <span dir="ltr">+974 70177761</span></span></div>';
+    +'<span>'+(d.report_fp?('البصمة <span class="fp" dir="ltr">'+d.report_fp+'</span> · '):'')+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a> · '):'')+'بيانات وزارة العدل عبر بوابة قطر للبيانات المفتوحة (<span dir="ltr">CC BY 4.0</span>) — التقدير مُشتق وليس تقييماً رسمياً</span></div>';
   h+='<div class="thmr-btns"><button class="thmr-btn" onclick="document.getElementById(\'srPage2\').scrollIntoView({behavior:\'smooth\'})">الملحق المتخصص ↓</button>'
     +'<button class="thmr-btn alt" onclick="openReport()">التقرير الكامل</button>'
     +'<button class="thmr-btn alt no-print" onclick="printShortReport()">طباعة / PDF</button></div>';
   h+='</div>';
-  // ════ Page 2 — ملحق المختصين ════
+  // ════ Page 2 — ملحق المختصّين (the PDF contract §٦–٩) ════
   h+='<div class="thmr-page" id="srPage2">';
-  h+='<div class="thmr-head"><div class="b1">ملحق المختصين<small>الصفحة الثانية من المختصر — للمثمّن والبنكي والمدقّق</small></div>';
-  h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b>'):'')+'</div></div>';
-  // card ١ — شفافية الأدلة (the dual-evidence line per the matrix + the D-3 calibration hook).
-  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">١</span>شفافية الأدلة</div>';
-  if(_n!=null)h+='<div class="thmr-row"><span class="k">حوض الجوار'+(v.window_used?(' ('+v.window_used+')'):'')+'</span><span class="v">'+_n+' صفقة</span></div>';
+  h+='<div class="thmr-head"><div class="b1">ثمّن — ملحق المختصّين<small>للمستثمر · البنك · المحامي · المثمّن</small></div>';
+  h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b><br>'):'')+(d.report_fp?('بصمة المحتوى: <b dir="ltr">'+d.report_fp+'</b>'):'')+'</div></div>';
+  // §٦ — جدول السيناريوهات «وش لو؟» (the b23 broadcast + the PDF idea column).
+  if(scn&&scn.items&&scn.items.length){
+    const _idea={as_is:'بيع عادل بحالته الحالية',renovated_excellent:'التجديد يستردّ جزءاً من عمر البناء',
+      luxury_finish:'سقف واقعي لفئة بيتك دون هدم',teardown_land:'نقطة الانطلاق بعد الهدم — والبناء الجديد استثمار مستقل'};
+    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٦</span>جدول السيناريوهات — «وش لو؟»</div>';
+    h+='<table class="thmr-sctab"><tr><th>السيناريو</th><th class="l">القيمة التقريبية</th><th>الفكرة</th></tr>';
+    scn.items.forEach(it=>{h+='<tr><td>'+it.label_ar+'</td><td class="num">'+(it.key==='as_is'?'':'≈ ')+fmt(it.value)+'</td><td style="font-size:.74rem;color:var(--thmr-ink2)">'+(_idea[it.key]||'')+'</td></tr>';});
+    h+='</table>';
+    h+='<div class="thmr-micro">القيم من محاكاة المحرّك الفعلية لهذا العقار — وتتدقّق أكثر بمعلوماتك الحقيقية عبر «حسّن التقدير».</div></div>';
+  }
+  // §٧ — للمستثمر: منظور الدخل (broadcast-only; folded when absent).
+  if(inc.income_value||inc.monthly_rent){
+    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٧</span>للمستثمر — منظور الدخل</div>';
+    h+='<div class="thmr-micro" style="font-size:.8rem">'+(inc.monthly_rent?((inc.rent_source==='actual_provided'?'إيجارك الفعلي: ':'إيجار شهري متّسق مع هذه القيمة: ')+'≈ <b><span dir="ltr">'+fmt(inc.monthly_rent)+'</span> ر.ق</b>'):'')
+      +(_capPct?(' (معدل رسملة مُعايَر <b>'+_capPct+'%</b>'+(_capN!=null?(' من '+_capN+' عقد إيجار في المنطقة'):'')+').'):'.')
+      +' وتذكير ثمّن الدائم: <b>قِس صافي العائد بعد المصاريف</b> (صيانة، إدارة، شواغر) لا الإجمالي — الطبيعي في قطر للسكني <b>5–6% صافياً</b>؛ ما دونه ضعيف وما فوق 6% يستحق التدقيق لا الفرح.</div></div>';
+  }
+  // §٨ — شفافية الدليل — بلا تجميل (the PDF three cards; leader-aware middle card).
+  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٨</span>شفافية الدليل — بلا تجميل</div>';
+  if(_n!=null)h+='<div class="thmr-row"><span class="k"><b>'+_n+' صفقة</b> في شريحة مساحتك'+(v.window_used?(' ('+v.window_used+')'):'')+' — والمثالي إحصائياً 20+</span><span class="v" style="font-weight:400">لذلك تجد كلمة «استرشادي»</span></div>';
   if(cs==='cost'){
-    const _t=(ld&&ld.thresholds)||{};
-    h+='<div class="thmr-row"><span class="k">المطابق لشريحتك (نوع/عمر)</span><span class="v"><span dir="ltr">n='+(_mn!=null?_mn:'—')+'</span> — أقل من '+(_t.matched_min_n!=null?_t.matched_min_n:10)+'، غير كافٍ</span></div>';
-    h+='<div class="thmr-row"><span class="k">الجغرافي الكامل</span><span class="v"><span dir="ltr">n='+(_gn!=null?_gn:'—')+' · '+(_gd!=null?_gd:'—')+'</span>'+((_gd!=null&&_gd>=((ld.thresholds||{}).dispersion_t||0.30))?' (>'+(((ld.thresholds||{}).dispersion_t)||0.30)+' متنافر)':'')+'</span></div>';
+    h+='<div class="thmr-row"><span class="k"><b>'+(_mn!=null?_mn:'—')+' فقط</b> تشبه بيتك فعلاً (عمراً وفئة)</span><span class="v" style="font-weight:400">ولهذا قادت الكلفةُ الرقمَ لا أسعار الجيران</span></div>';
+    h+='<div class="thmr-row"><span class="k">الجغرافي الكامل</span><span class="v"><span dir="ltr">n='+(_gn!=null?_gn:'—')+' · '+(_gd!=null?_gd:'—')+'</span>'+((_gd!=null&&_gd>=((ld&&ld.thresholds||{}).dispersion_t||0.30))?' (>'+(((ld&&ld.thresholds||{}).dispersion_t)||0.30)+' متنافر)':'')+'</span></div>';
   }else if(cs==='market'){
     h+='<div class="thmr-row"><span class="k">المطابق لشريحتك</span><span class="v"><span dir="ltr">'+(_mn!=null?_mn:(_n!=null?_n:'—'))+'</span> مطابقة، تشتت <span dir="ltr">'+(_d36!=null?_d36:'—')+'</span></span></div>';
   }else if(cs==='income'){
@@ -1835,29 +1882,15 @@ function showShortReport(d){
   }else{
     h+='<div class="thmr-row"><span class="k">صفقات الأرض</span><span class="v">'+(vf.land_n_transactions!=null?vf.land_n_transactions:(_n!=null?_n:'—'))+' صفقة'+(vf.window_months?('، نافذة '+vf.window_months+' شهراً'):'')+'</span></div>';
   }
-  // the D-3 hook (matrix constant #5): retention-curve wording for buildings; generic for land.
   if(cs==='land')h+='<div class="thmr-row"><span class="k">المعايرة</span><span class="v">شيتات موثَّقة محدودة — <b>كل شيت جديد يدقّقها</b></span></div>';
-  else h+='<div class="thmr-row"><span class="k">معايرة منحنى الاحتفاظ</span><span class="v">شيت موثَّق واحد (V001 ±1%) — <b>شيتك يدقّقها</b></span></div>';
+  else h+='<div class="thmr-row"><span class="k">معايرة الكلفة: <b>تقييم معتمد واحد</b> حتى الآن (V001 ±1%)</span><span class="v" style="font-weight:400">وتتدقّق مع كل تقييم حقيقي يصلنا — <b>شاركنا تقييمك</b></span></div>';
   h+='</div>';
-  // card ٢ — القراءة الدخلية (تقاطعية) — broadcast-only; folded when absent.
-  if(inc.income_value){
-    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٢</span>القراءة الدخلية (تقاطعية)</div>';
-    if(inc.monthly_rent)h+='<div class="thmr-row"><span class="k">'+(inc.rent_source==='actual_provided'?'إيجارك الفعلي':'إيجار سوقي مُقدَّر')+(inc.rent_source_ar?(' — '+inc.rent_source_ar):'')+'</span><span class="v">≈ <span dir="ltr">'+fmt(inc.monthly_rent)+'</span> ر.ق/شهر</span></div>';
-    if(inc.cap_rate_label_ar)h+='<div class="thmr-row"><span class="k">رسملة معايَرة للمنطقة</span><span class="v">'+inc.cap_rate_label_ar+'</span></div>';
-    h+='<div class="thmr-row"><span class="k">قراءة الاتساق</span><span class="v">≈ '+fmt(inc.income_value)+(cs==='cost'?' — تقاطعية مع المرتكز':'')+'</span></div>';
-    h+='</div>';
-  }
-  // card ٣ — الأساس والمنهج والقيود.
-  const mu=(d.material_uncertainty||{});
-  const lblLead={cost:'التكلفة (DRC) لتعذّر شريحة مطابقة كافية',market:'المقارنة بالمبيعات (وسيط الشريحة)',income:'الدخل (إيجار فعلي ÷ رسملة معايَرة)',land:'المقارنة بالمبيعات (أراضٍ)'}[cs];
-  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+(inc.income_value?'٣':'٢')+'</span>الأساس والمنهج والقيود</div>';
-  h+='<div class="thmr-micro" style="line-height:2;font-size:.78rem">أساس القيمة: القيمة السوقية · المنهج القائد: '+lblLead
-    +' · بيانات وزارة العدل حتى <span dir="ltr">2025-12-31</span> (مُفصَح عنه) · تحفّظ MUC: '+({'low':'منخفض','moderate':'متوسط','high':'مرتفع','critical':'حرج'}[mu.level]||mu.level||'—')
-    +' · خريطة معايير 2025 (RICS Red Book / IVS) — ترقيم موحَّد.</div></div>';
-  // الكتلة القانونية — verbatim (the matrix constant #4, incl. IFRS 13).
-  h+='<div class="thmr-legal"><b>إخلاء مسؤولية:</b> هذا تحليل معلوماتي آلي لدعم القرار، وليس تقييماً رسمياً ولا تقريراً صادراً عن مُقيِّم مرخَّص وفق معايير RICS/IVS، ولا يصلح للأغراض الرسمية (قروض، محاكم، تقارير محاسبية)، وليس قياساً للقيمة العادلة بموجب <span dir="ltr">IFRS 13</span>. القرارات المتخذة بناءً عليه على مسؤولية متخذها.</div>';
+  // §٩ — الإطار القانوني والمحاسبي (the PDF FULL legal block + the tamper line).
+  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٩</span>الإطار القانوني والمحاسبي</div>';
+  h+='<div class="thmr-legal" style="margin-top:0">هذا <b>تقدير آلي استرشادي</b> صادر بتاريخه وفق البيانات المتاحة حينه، و<b>ليس تقييماً عقارياً معتمداً</b> وفق التنظيم القطري لمزاولة التقييم. لا يصلح حجةً قضائية أو مصرفية، ولا لأغراض التقارير المالية (<span dir="ltr">IFRS 13</span>)، ولا لقسمة التركات دون تراضي الأطراف، <b>ولا ينشئ أي التزام أو مسؤولية على المنصة</b>. ما ورد في «الزبدة العملية» إرشادٌ تفاوضي عام لا توصية فردية — والقرار وتبعته لصاحبه. للقرارات الرسمية: معاينة ميدانية ومقيّم مرخّص.</div>';
+  h+='<div class="thmr-micro" style="margin-top:8px">أي نسخة من هذا الملف بمرجعٍ أو بصمةٍ مختلفَين ليست النسخة الصادرة بهذا التاريخ.</div></div>';
   h+='<div class="thmr-fpline">'+(vUrl?'<span class="thmr-qr" id="srQr2"></span>':'')
-    +'<span>تحقق من سلامة هذا التقرير: '+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a>'):'<span>التحقّق غير مُفعَّل</span>')+(d.report_fp?(' · البصمة <span class="fp" dir="ltr">'+d.report_fp+'</span>'):'')+'</span></div>';
+    +'<span>تحقق من سلامة هذا التقرير: '+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a>'):'<span>التحقّق غير مُفعَّل</span>')+(d.report_fp?(' · البصمة <span class="fp" dir="ltr">'+d.report_fp+'</span>'):'')+(d.report_ref?(' · المرجع <span dir="ltr">'+d.report_ref+'</span>'):'')+'</span></div>';
   h+='</div>';
   o.innerHTML=h;
   // the verify QR (LOCAL lib — no CDN); rendered post-injection into both pages.

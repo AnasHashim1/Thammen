@@ -95,34 +95,43 @@ check('the b23 verify link now shares _verifyUrl (one builder, no drift)',
       HTML.count('function _verifyUrl(') == 1 and '_verifyUrl(d)' in HTML
       and HTML.count("'&rule='+encodeURIComponent") == 1)
 
-print('\n[4] the signed matrix — hero labels (verbatim)')
-check('cost hero', 'القيمة التقديرية — مرتكز التكلفة (أرض + بناء مُهلَك)' in SR)
-check('market hero', 'القيمة التقديرية — وسيط شريحتك' in SR)
-check('income hero', 'القيمة التقديرية — متّسقة مع إيجارك الفعلي' in SR)
-check('land hero', "'قيمة الأرض'" in SR)
+# Sprint 2.22.0b.28 re-point (the PO delivered the GOVERNING print contract
+# docs/ثمن_التقرير_المختصر_v2_امريخ.pdf — م2's anticipated copy-tweak pass):
+# the cost-led surface re-rendered to the PDF's two-page copy; the matrix's
+# conditional SKELETON survives as the basis lines for the non-cost leaders.
+print('\n[4] the PDF-contract hero + the matrix skeleton in the basis lines')
+check('the PDF hero (universal, warm)', 'قيمة بيتك التقديرية اليوم' in SR)
+check('the PDF hero pill', 'تقدير استرشادي — وليس تقييماً معتمداً' in SR)
+check('cost basis = the PDF sentence, matched_n-bound',
+      'محسوبة من قيمة الأرض + قيمة البناء بعد عمره' in SR
+      and 'مثل بيتك في المنطقة قليلة' in SR)
+check('market basis keeps the matrix label «وسيط شريحتك»', 'وسيط شريحتك:' in SR)
+check('income basis keeps the matrix label «متّسقة مع إيجارك الفعلي»',
+      'متّسقة مع إيجارك الفعلي' in SR)
+check('land basis keeps the matrix label «قيمة الأرض»', 'قيمة الأرض:' in SR)
 
-print('\n[5] the signed matrix — basis + neighbor + evidence (broadcast-bound)')
-check('cost basis = the b19/b20 broadcast label (cost.label_ar, with the verbatim fallback)',
-      'cost.label_ar' in SR and 'قيمة التكلفة (أرض + بناء مُهلَك) — نهج DRC' in SR)
-check('market basis bound to matched_n + dispersion_36',
-      'صفقة مطابقة لنوعك وعمرك، تشتت' in SR and '_mn' in SR and '_d36' in SR)
-check('income basis bound to cap_rate + provenance n + the borrow disclosure',
-      'رسملة معايَرة' in SR and '_capPct' in SR and '_capN' in SR
-      and 'مُستعار من شريحة مجاورة' in SR)
-check('land basis bound to value_floor ppm2 × plot',
-      'وسيط أراضي منطقتك' in SR and 'vf.land_per_m2_qar' in SR and 'd.plot_area_m2' in SR)
-check('cost neighbor (matrix verbatim core)',
-      'فالأصدق كلفة الإحلال: أرضك + بناؤك بعد الإهلاك' in SR
-      and 'أكثر صفقات منطقتك حديثة وفاخرة' in SR)
+print('\n[5] the PDF/matrix stories + evidence (broadcast-bound)')
+check('cost neighbor = the PDF story, share/market/age-bound',
+      'أغلب ما بيع غالياً في منطقتك' in SR and 'فللاً جديدة فاخرة' in SR
+      and '_domShare' in SR and 'مقارنةٌ غير عادلة — لك وعليك' in SR)
 check('market neighbor (matrix verbatim core)',
       'صفقات مثل بيتك كافية وواضحة' in SR and 'وسيطها مرجعك' in SR)
 check('income neighbor (matrix verbatim core)',
       'والدخل أصدق مرجع لعقار مُدِرّ' in SR)
 check('land neighbor (matrix verbatim core)',
       'الأرض تُقاس بسعر المتر في منطقتك' in SR)
-check('cost dual-evidence row (matched vs geo, thresholds from the broadcast)',
-      'المطابق لشريحتك (نوع/عمر)' in SR and 'الجغرافي الكامل' in SR
-      and 'ld.thresholds' in SR)
+check('the PDF §٢ three-numbers row (fair / quick-sale / the other-class card)',
+      'الأرقام الثلاثة التي تهمّك' in SR and 'لو احتجت بيعاً سريعاً' in SR
+      and 'فئة أخرى، ليست فئة بيتك' in SR)
+check('the PDF §٣ practical-essence advice (the SIGNED hard-ceiling bars, disclosed)',
+      'الزبدة العملية' in SR and 'إن كنت بائعاً' in SR and 'إن كنت مشترياً' in SR
+      and 'v.amount*1.10' in SR and 'v.amount*1.30' in SR
+      and 'هامش تفاوض +10%' in SR and 'سقف +30%' in SR)
+check('the PDF §٤ sources (no-listings disclosure)',
+      'من أين جاء الرقم؟' in SR and 'لا أسعار إعلانات ولا «كلام سوق»' in SR)
+check('cost evidence (§٨): matched-tells-the-story + geo dispersion + thresholds',
+      'تشبه بيتك فعلاً' in SR and 'قادت الكلفةُ الرقمَ' in SR
+      and 'الجغرافي الكامل' in SR and 'ld.thresholds' in SR or 'ld&&ld.thresholds' in SR)
 check('land evidence row (n + window)',
       'صفقات الأرض' in SR and 'vf.window_months' in SR)
 
@@ -136,27 +145,34 @@ check('D3 — «استشر بنكك» line', 'استشر بنكك' in SR)
 check('ref + fp + QR on the surface',
       'd.report_ref' in SR and 'd.report_fp' in SR and 'srQr1' in SR and 'srQr2' in SR
       and "new QRCode(" in SR)
-check('the GT hook (the D-3 WhatsApp channel)',
-      'أرسل سعراً فعلياً تعرفه: واتساب' in SR and '+974 70177761' in SR)
-check('the legal block VERBATIM incl. IFRS 13',
-      'هذا تحليل معلوماتي آلي لدعم القرار، وليس تقييماً رسمياً ولا تقريراً صادراً عن مُقيِّم مرخَّص' in SR
-      and 'IFRS 13' in SR and 'القرارات المتخذة بناءً عليه على مسؤولية متخذها' in SR)
-check('the D-3 calibration hook (retention for buildings, generic for land)',
-      'معايرة منحنى الاحتفاظ' in SR and 'V001 ±1%' in SR and 'شيتك يدقّقها' in SR
+check('the GT hook (the D-3 WhatsApp channel — the PDF wording)',
+      'شاركه يصير تقديرنا أدق للجميع' in SR and '+974 70177761' in SR)
+check('the legal block = the PDF FULL text incl. IFRS 13',
+      'تقدير آلي استرشادي' in SR and 'ليس تقييماً عقارياً معتمداً' in SR
+      and 'IFRS 13' in SR and 'حجةً قضائية أو مصرفية' in SR)
+check('the D-3 calibration hook (the PDF §٨ wording; generic for land)',
+      'معايرة الكلفة' in SR and 'V001 ±1%' in SR and 'شاركنا تقييمك' in SR
       and 'كل شيت جديد يدقّقها' in SR)
-check('the rent-axis hint is NUMBER-FREE (no fabricated sweep figures)',
-      'ولو أُجّرت: أدخل إيجارك الفعلي' in SR and '1.9M' not in SR and '4.7M' not in SR)
-check('scenarios table bound to the b23 broadcast (scn.items, no literals)',
-      'v.scenarios' in SR and 'scn.items.forEach' in SR and 'it.label_ar' in SR)
+check('the PDF §٥ raise-invitations bound to the scenarios broadcast (no sweep figures)',
+      'أشياء قد ترفع الرقم — أخبرنا بها' in SR and 'الإيجار أقوى معلومة' in SR
+      and 'حسّن التقدير' in SR and '1.9M' not in SR and '4.7M' not in SR)
+check('the §٦ scenarios table bound to the b23 broadcast (scn.items + the idea column)',
+      'v.scenarios' in SR and 'scn.items.forEach' in SR and 'it.label_ar' in SR
+      and 'وش لو؟' in SR and 'الفكرة' in SR)
+check('the tamper line (the PDF §٩)', 'ليست النسخة الصادرة بهذا التاريخ' in SR)
+check('the FULL PDF legal block (التركات + المنصة + الزبدة العملية caveat)',
+      'لقسمة التركات دون تراضي الأطراف' in SR
+      and 'ولا ينشئ أي التزام أو مسؤولية على المنصة' in SR
+      and 'إرشادٌ تفاوضي عام لا توصية فردية' in SR)
 
-print('\n[7] zero JS value-math except D3 + price-per-m² (the declared pair)')
+print('\n[7] zero JS value-math except the DECLARED conventions')
 check('price-per-m² is the division on plot area (declared exception)',
       'Math.round(v.amount/d.plot_area_m2)' in SR)
 check('the payment formula is the amortized D3 exception',
       'principal*r/(1-Math.pow(1+r,-n))' in HTML)
-_muls = re.findall(r'v\.amount\s*[*/]\s*[\d.]+', SR)
-check('the ONLY amount-math on the surface = ×0.90 (D2) [+ /plot for per-m²]',
-      _muls == ['v.amount*0.90'], str(_muls))
+_muls = sorted(set(re.findall(r'v\.amount\s*\*\s*[\d.]+', SR)))
+check('amount-math = EXACTLY the three disclosed conventions (×0.90 D2 · ×1.10/×1.30 the signed hard ceilings)',
+      _muls == ['v.amount*0.90', 'v.amount*1.10', 'v.amount*1.30'], str(_muls))
 
 print('\n[8] _srPayment mirror (D3 math)')
 def payment(P, down, years, rate):
