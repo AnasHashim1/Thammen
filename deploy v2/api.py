@@ -11,6 +11,7 @@ Sprint 1 hardening applied:
     - Centralized logging
 """
 
+import hmac
 import json
 import logging
 import os
@@ -21,7 +22,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -55,7 +56,10 @@ from data_freshness import (
 
 # ── NEW v3.1: Unified engine with geo_v2 + listings ──
 try:
-    from evaluate_unified import evaluate_thammen, ENGINE_VERSION, SPRINT_TAG
+    from evaluate_unified import (
+        evaluate_thammen, ENGINE_VERSION, SPRINT_TAG,
+        _report_canonical, _report_fingerprint,   # Sprint 2.22.0b.23 — shared so /verify can't drift
+    )
     _UNIFIED_OK = True
     log.info(f"Unified engine loaded: {ENGINE_VERSION}")
 except ImportError as e:
@@ -935,6 +939,76 @@ async def scope():
         return service_scope_summary()
     except Exception as e:
         return {"error": str(e), "available": False}
+
+
+def _verify_html(status, fields, ref, reason_ar):
+    """Sprint 2.22.0b.23 — the ✓/✗ verification page (RTL, bidi-safe). status ∈
+    {'ok','fail','unavailable'}. No storage; rendered from the posted fields only."""
+    import html as _html
+    palette = {
+        'ok':          ('#0a7d35', '#e8f5ec', '✓', 'تقرير أصليّ — البصمة مطابقة'),
+        'fail':        ('#b3261e', '#fbeae9', '✗', 'فشل التحقّق — البيانات لا تطابق البصمة'),
+        'unavailable': ('#8a6d00', '#fff7e0', '⚠', 'التحقّق غير مُفعَّل على الخادم'),
+    }
+    color, bg, icon, title = palette.get(status, palette['fail'])
+    rows = ''
+    _labels = [('address', 'العنوان'), ('date', 'التاريخ'), ('amount', 'القيمة (الوسيط/المركزي)'),
+               ('low', 'الحدّ الأدنى'), ('high', 'الحدّ الأعلى'), ('rule', 'أساس القيادة'),
+               ('engine', 'إصدار المحرّك')]
+    for k, lab in _labels:
+        val = fields.get(k)
+        if val is None or val == '':
+            continue
+        rows += (f'<tr><td style="padding:7px 10px;color:#6B7280;white-space:nowrap">{_html.escape(lab)}</td>'
+                 f'<td style="padding:7px 10px;font-weight:600" dir="ltr">{_html.escape(str(val))}</td></tr>')
+    ref_html = (f'<div style="margin-top:10px;font-size:.82rem;color:#6B7280">رقم التقرير: '
+                f'<span dir="ltr" style="font-weight:600">{_html.escape(str(ref))}</span></div>') if ref else ''
+    reason_html = (f'<div style="margin-top:8px;font-size:.85rem;color:{color}">{_html.escape(reason_ar)}</div>'
+                   if reason_ar else '')
+    return (
+        '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<title>التحقّق من تقرير ثمّن</title>'
+        '<style>body{font-family:Tahoma,Arial,sans-serif;background:#F3F0EB;margin:0;padding:18px;color:#12344D}'
+        '.card{max-width:560px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 2px 14px rgba(0,0,0,.08);overflow:hidden}'
+        '.hd{padding:18px 20px;display:flex;align-items:center;gap:12px}'
+        '.ic{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#fff;flex:none}'
+        'table{width:100%;border-collapse:collapse;margin:0 20px 8px;width:calc(100% - 40px)}'
+        'tr:nth-child(odd){background:#F3F0EB}'
+        '.ft{padding:14px 20px;font-size:.78rem;color:#9CA3AF;border-top:1px solid #eee}'
+        '</style></head><body><div class="card">'
+        f'<div class="hd" style="background:{bg}"><div class="ic" style="background:{color}">{icon}</div>'
+        f'<div><div style="font-weight:700;color:{color}">{_html.escape(title)}</div>{reason_html}{ref_html}</div></div>'
+        f'<table>{rows}</table>'
+        '<div class="ft">التحقّق يُعاد احتسابه لحظياً من الحقول أعلاه دون تخزين. '
+        'هذه أداة نزاهة للتقرير، وليست تقييماً معتمداً.</div>'
+        '</div></body></html>'
+    )
+
+
+@app.get("/verify", response_class=HTMLResponse)
+@limiter.limit(";".join(RATE_LIMIT_LIST))
+async def verify_report(request: Request, ref: str = "", fp: str = "", addr: str = "",
+                        date: str = "", eng: str = "", amount: str = "", low: str = "",
+                        high: str = "", rule: str = ""):
+    """Sprint 2.22.0b.23 «بثّ المختصر» — recompute the report fingerprint from the posted
+    core fields and show a ✓/✗ page. The HMAC key lives in HMAC_REPORT_KEY (Heroku config);
+    absent → 'verification unavailable' (dormant). No storage; rate-limited (string form)."""
+    fields = {'address': addr, 'date': date, 'engine': eng, 'amount': amount,
+              'low': low, 'high': high, 'rule': rule}
+    if not _UNIFIED_OK:
+        return HTMLResponse(_verify_html('unavailable', fields, ref, 'المحرّك غير متاح.'), status_code=200)
+    if not os.environ.get('HMAC_REPORT_KEY'):
+        return HTMLResponse(_verify_html('unavailable', fields, ref,
+                                         'لم يُضبَط مفتاح التحقّق على الخادم بعد.'), status_code=200)
+    canonical = _report_canonical(addr, date, eng, amount, low, high, rule)
+    expected = _report_fingerprint(canonical)   # reads HMAC_REPORT_KEY from env
+    # constant-time compare; a forged amount/range/rule changes the canonical → mismatch.
+    ok = bool(expected) and bool(fp) and hmac.compare_digest(expected, str(fp))
+    return HTMLResponse(
+        _verify_html('ok' if ok else 'fail', fields, ref,
+                     '' if ok else 'البصمة المُرسَلة لا تطابق الحقول — قد يكون التقرير عُدِّل.'),
+        status_code=200)
 
 
 @app.post("/api/evaluate")

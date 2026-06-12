@@ -22,6 +22,8 @@ Important departure from Sprint 1.a:
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 import os
 import re
@@ -41,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b22-tower-pair-fence'
-SPRINT_TAG = '2.22.0b.22'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b23-short-report-verify'
+SPRINT_TAG = '2.22.0b.23'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -3141,7 +3143,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
     # Sprint 2.11: surface district + plot geometry
     _ctx = _enrich_fast_context(loc, plot)
 
-    return _attach_scope({
+    _fast_result = _attach_scope({
         'status': 'ok',
         'engine_version': ENGINE_VERSION,
         'tier_label': _tier_label_for('income_approach_only'),  # Sprint 2.22.0a/2 — 'analytical_range'
@@ -3234,6 +3236,11 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
             'reason': 'تقدير سريع بطريقة الدخل — لم يُجرَ بحث إعلانات',
         },
     })
+    # Sprint 2.22.0b.23: the apartment income report is verifiable too (no scenarios —
+    # those are villa/house DRC-only). Additive; never touches the income headline.
+    _attach_report_identity(_fast_result, zone, street, building, None,
+                            {'rental_income': rental_income, 'asking_price': listing_price})
+    return _fast_result
 
 
 def _build_out_of_scope_response(zone, street, building, loc, plot, asset_type, audience):
@@ -5203,6 +5210,42 @@ def evaluate_thammen(
         import sys
         print(f'[comparable_grid warning] {e}', file=sys.stderr)
 
+    # ── Sprint 2.22.0b.23 «بثّ المختصر»: scenarios panel (villa/house) — ADDITIVE/DISPLAY ──
+    # ZERO new GIS: reuses the SETTLED headline + the B-1 land floor + the b10 footprint +
+    # the b9 system age, all already on `output`. The headline (amount/low/high/method/rule)
+    # is NOT touched. Swallows errors so a scenario edge can never break evaluate.
+    try:
+        _vv = output.get('valuation') or {}
+        if (_vv.get('amount') and output.get('asset_type') in _TEARDOWN_ASSET_TYPES):
+            _lf_sc = (_villa_value_floor(_vv['amount'], getattr(ev, 'plot_area_m2', None),
+                                         moj_ref, _vv.get('value_decomposition')) or {}).get('land_floor')
+            _geom_sc = _vv.get('geometry') or {}
+            _age_sc = ((output.get('property_basis') or {}).get('building_age_estimate') or {}).get('age_floor_years')
+            _eff_sc = (_vv.get('effective_footprint_m2')
+                       if _vv.get('footprint_basis') == 'confirmed' else None)
+            _scn = _valuation_scenarios(
+                _vv['amount'], _vv.get('low'), _vv.get('high'), _lf_sc,
+                _geom_sc.get('max_buildable_footprint_m2'), _eff_sc, floors, _age_sc)
+            if _scn and len(_scn) > 1:   # only attach when the DRC what-ifs computed (not as_is-only)
+                output['valuation']['scenarios'] = {
+                    'items': _scn,
+                    'note_ar': SCENARIO_PANEL_NOTE_AR, 'note_en': SCENARIO_PANEL_NOTE_EN,
+                }
+    except Exception as _esc:
+        import sys
+        print(f'[scenarios warning] {_esc}', file=sys.stderr)
+
+    # ── Sprint 2.22.0b.23: report identity + tamper-evident fingerprint (ADDITIVE) ──
+    _attach_report_identity(output, zone, street, building, pin, {
+        'floors': floors, 'condition': condition, 'annexes': annexes,
+        'basement': basement, 'footprint_m2': footprint_m2,
+        'external_majlis': external_majlis, 'building_age_years': building_age_years,
+        'is_luxury': is_luxury, 'penthouse': penthouse,
+        'asking_price': listing_price, 'rental_income': rental_income,
+        'unit_count': unit_count, 'avg_monthly_rent_per_unit': avg_monthly_rent_per_unit,
+        'override_land_area': override_land_area,
+    })
+
     _check_output_sanity(output, listing_price)
     return output
 
@@ -5629,6 +5672,169 @@ def _cost_approach_value(land_floor, footprint_max_m2, floors, finish, age_years
         }
     except Exception:
         return None
+
+
+# ── Sprint 2.22.0b.23 — «بثّ المختصر» (short-report): scenarios + report id/fingerprint ──
+# ADDITIVE / DISPLAY-ONLY. The headline (amount/low/high/method/rule/leadership) is NEVER
+# touched — these are sibling keys the report renders. All four scenarios reuse the EXISTING
+# pure calculators (the b11/b13 DRC `_cost_approach_value` + the B-1 land floor + the b4
+# teardown demolition band) on the already-fetched context → ZERO new GIS.
+
+SCENARIO_LABELS = {
+    'as_is':              ('كما هي (التقدير الحالي)',           'As-is (current estimate)'),
+    'renovated_excellent':('بعد ترميم كامل — حالة ممتازة',     'Renovated to excellent condition'),
+    'luxury_finish':      ('بتشطيب فاخر',                       'Luxury finish'),
+    'teardown_land':      ('هدم وإعادة تطوير (قيمة الأرض − الهدم)', 'Teardown / redevelopment (land − demolition)'),
+}
+SCENARIO_PANEL_NOTE_AR = ('سيناريوهات استرشادية بمنهج التكلفة (DRC) على نفس الأرض والبصمة — '
+                          'لا تُغيّر التقدير المعتمد أعلاه؛ تُظهر فقط أثر الحالة/التشطيب.')
+SCENARIO_PANEL_NOTE_EN = ('Indicative cost-approach (DRC) what-ifs on the same plot and footprint — '
+                          'they do NOT change the headline estimate above; they only show the '
+                          'effect of condition / finish.')
+
+
+def _valuation_scenarios(amount, low, high, land_floor, footprint_max_m2, footprint_actual,
+                         floors, age_years):
+    """Pure (b23): the 4-scenario what-if panel for a valued villa/house.
+    as_is = the headline mirror; renovated_excellent / luxury_finish = the DRC at
+    finish=good/luxury + condition=excellent; teardown_land = land_floor − demolition
+    (the b4 band, clamped). Returns a list of {key,label_ar,label_en,value,low,high,
+    assumptions_ar} or None when the cost inputs (land floor / footprint / age) are
+    unavailable. NEVER mutates; the headline is passed in, not read from a shared dict."""
+    try:
+        if not amount or amount <= 0:
+            return None
+        out = [{
+            'key': 'as_is',
+            'label_ar': SCENARIO_LABELS['as_is'][0], 'label_en': SCENARIO_LABELS['as_is'][1],
+            'value': amount, 'low': low, 'high': high,
+            'assumptions_ar': 'التقدير المعتمد كما هو أعلاه.',
+        }]
+        # the DRC scenarios need a land floor + footprint + age; absent → as_is only.
+        if not land_floor or land_floor <= 0 or age_years is None or not (
+                (footprint_actual and footprint_actual > 0) or (footprint_max_m2 and footprint_max_m2 > 0)):
+            return out
+        for key, finish, cond in (('renovated_excellent', 'good', 'excellent'),
+                                  ('luxury_finish', 'luxury', 'excellent')):
+            c = _cost_approach_value(land_floor, footprint_max_m2, floors, finish,
+                                     age_years, cond, footprint_actual=footprint_actual)
+            if c and c.get('value'):
+                v = _r100k(c['value'])
+                out.append({
+                    'key': key,
+                    'label_ar': SCENARIO_LABELS[key][0], 'label_en': SCENARIO_LABELS[key][1],
+                    'value': v,
+                    'low': _r100k(round(c['value'] * 0.90)),
+                    'high': _r100k(round(c['value'] * 1.10)),
+                    'assumptions_ar': ('منهج التكلفة: تشطيب {f} · معامل احتفاظ {r} · '
+                                       'مساحة بناء ≈ {b} م² (قابلة للتعديل).').format(
+                                           f=finish, r=c['retention'], b=c['bua_m2']),
+                })
+        # teardown_land — the b4 demolition band on the actual/estimated BUA.
+        _bua_td = (footprint_actual * max(1, int(floors) if floors else COST_DEFAULT_FLOORS)) \
+            if (footprint_actual and footprint_actual > 0) \
+            else (footprint_max_m2 * COST_BUILT_RATIO * max(1, int(floors) if floors else COST_DEFAULT_FLOORS))
+        demo = min(max(round(DEMO_QAR_PER_M2 * (_bua_td or 0)), DEMO_FLOOR_QAR), DEMO_CAP_QAR)
+        central = max(land_floor - demo, 0)
+        out.append({
+            'key': 'teardown_land',
+            'label_ar': SCENARIO_LABELS['teardown_land'][0], 'label_en': SCENARIO_LABELS['teardown_land'][1],
+            'value': _r100k(central),
+            'low': _r100k(max(round(central * 0.88), 0)),
+            'high': _r100k(land_floor),
+            'assumptions_ar': ('قيمة الأرض ({l} ر.ق) − هدم تقديري ({d} ر.ق) — المبنى عبء لا قيمة.').format(
+                l=f'{_r10k(land_floor):,}', d=f'{demo:,}'),
+        })
+        return out
+    except Exception:
+        return None
+
+
+# ── report identity + tamper-evident fingerprint (b23) ──
+# report_ref = a human-quotable id (TH-YYYYMMDD-ZZSSSBBB[-4hex]); the 4hex disambiguates
+# re-evaluations of the SAME address with different refine inputs. report_fp = an
+# HMAC-SHA256 over the canonical core fields, keyed on HMAC_REPORT_KEY (Heroku config) —
+# DORMANT (None) without a key. The /verify endpoint recomputes report_fp from the SAME
+# canonical (the shared functions below) so a forged amount/range fails. No storage.
+REPORT_FP_VERSION = 'v1'
+
+
+def _report_canonical(address, date, engine, amount, low, high, rule):
+    """The exact signing string, whitespace-normalized PER FIELD (the spec's \\s+ rule:
+    collapse runs + strip each field before the join, so no whitespace ever lands next to
+    a `|` delimiter). Shared by the emit (evaluate) and the /verify recompute (api) so they
+    can NEVER drift."""
+    parts = [REPORT_FP_VERSION, str(address or ''), str(date or ''), str(engine or ''),
+             '' if amount is None else str(amount),
+             '' if low is None else str(low),
+             '' if high is None else str(high),
+             str(rule or '')]
+    return '|'.join(re.sub(r'\s+', ' ', p).strip() for p in parts)
+
+
+def _report_fingerprint(canonical, key=None):
+    """HMAC-SHA256(key, canonical)[:12] hex; None when no key (DORMANT — never a plain
+    hash of the low-entropy fields, #62). Reads HMAC_REPORT_KEY from env when key=None."""
+    if key is None:
+        key = os.environ.get('HMAC_REPORT_KEY')
+    if not key:
+        return None
+    return hmac.new(key.encode('utf-8'), canonical.encode('utf-8'),
+                    hashlib.sha256).hexdigest()[:12]
+
+
+def _refine_fp4(refine_inputs):
+    """4 hex of a plain SHA-256 over the sorted non-empty refine inputs (display-only
+    disambiguation, NOT security → a plain hash is correct here). None when no refine
+    input was supplied (a bare /api/evaluate → ref carries no suffix)."""
+    items = sorted((str(k), str(v)) for k, v in (refine_inputs or {}).items()
+                   if v is not None and v != '' and v is not False)
+    if not items:
+        return None
+    return hashlib.sha256(repr(items).encode('utf-8')).hexdigest()[:4]
+
+
+def _report_ref(zone, street, building, pin, valuation_date, refine_fp4=None):
+    """TH-YYYYMMDD-ZZSSSBBB[-4hex]; falls back to P{pin} for a bare-land PIN entry."""
+    ymd = re.sub(r'\D', '', str(valuation_date or ''))[:8] or '00000000'
+    try:
+        if zone is not None and street is not None and building is not None:
+            loc = f'{int(zone):02d}{int(street):03d}{int(building):03d}'
+        elif pin:
+            loc = f'P{re.sub(r"[^0-9A-Za-z]", "", str(pin))[:12]}'
+        else:
+            loc = '00000000'
+    except Exception:
+        loc = '00000000'
+    base = f'TH-{ymd}-{loc}'
+    return f'{base}-{refine_fp4}' if refine_fp4 else base
+
+
+def _attach_report_identity(output, zone, street, building, pin, refine_inputs):
+    """Set output['report_ref'] + output['report_fp'] + output['report_fp_basis'] from the
+    SETTLED valuation (call LATE — after the headline/leadership are final). The basis dict
+    is the verify payload (what /verify recomputes over). DORMANT fp (None) without a key.
+    Additive — never touches amount/low/high/method/rule. Swallows errors."""
+    try:
+        v = output.get('valuation') or {}
+        rule = ((v.get('leadership') or {}).get('rule')
+                or (v.get('income_triangulation') or {}).get('mode')
+                or v.get('method') or '')
+        addr = output.get('address') or (f'{zone}/{street}/{building}'
+                                         if zone is not None else (f'PIN {pin}' if pin else ''))
+        date = output.get('valuation_date')
+        engine = output.get('engine_version') or ENGINE_VERSION
+        amount, low, high = v.get('amount'), v.get('low'), v.get('high')
+        canonical = _report_canonical(addr, date, engine, amount, low, high, rule)
+        output['report_ref'] = _report_ref(zone, street, building, pin, date,
+                                            _refine_fp4(refine_inputs))
+        output['report_fp'] = _report_fingerprint(canonical)   # None when no key (dormant)
+        output['report_fp_basis'] = {
+            'version': REPORT_FP_VERSION, 'address': addr, 'date': date, 'engine': engine,
+            'amount': amount, 'low': low, 'high': high, 'rule': rule,
+        }
+    except Exception:
+        pass
 
 
 def _cost_triangulation(primary, cost, land_floor, asset_type, dispersion_gated, age_for_gate):

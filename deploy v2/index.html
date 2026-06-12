@@ -1385,6 +1385,20 @@ function showReport(d){
     h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً. الأساس: القيمة السوقية المركزية (الوسيط) × <span dir="ltr">0.90</span>.</div>';
     h+='</div>';
     h+='</div>';
+    // (3b) Sprint 2.22.0b.23 «بثّ المختصر» — scenarios panel (villa/house; DRC what-ifs).
+    // Additive/display-only: the headline above is the certified estimate; these show the
+    // effect of condition/finish/teardown on the SAME plot + footprint.
+    const _scn=v.scenarios;
+    if(_scn&&_scn.items&&_scn.items.length>1){
+      h+='<div class="rc"><div class="rh"><div class="rt">سيناريوهات الحالة والتشطيب</div></div>';
+      _scn.items.forEach(it=>{
+        const _isAs=(it.key==='as_is');
+        h+='<div class="rep-def12-row" style="'+(_isAs?'font-weight:700':'')+'"><span>'+it.label_ar+'</span><strong>'+fmt(it.value)+' ر.ق</strong></div>';
+        if(it.assumptions_ar)h+='<div class="rn" style="font-size:.72rem;margin:0 0 4px">'+it.assumptions_ar+'</div>';
+      });
+      if(_scn.note_ar)h+='<div class="rn" style="font-size:.74rem;margin-top:6px">'+_scn.note_ar+'</div>';
+      h+='</div>';
+    }
     // (4) evidence quality (the b2.2 panel, full).
     h+=evidencePanelHtml(d,acc);
     // (5) decomposition + 10-Year + strata — the SHARED builders (b14-coherent, cross-lines intact).
@@ -1428,6 +1442,20 @@ function showReport(d){
   h+='<div class="rep-foot">';
   h+='<div>📌 تقدير سوقي آلي وليس تقييماً معتمداً'+((d.material_uncertainty||{}).rics_compliant_status_ar?(' ('+d.material_uncertainty.rics_compliant_status_ar+')'):'')+'.</div>';
   h+='<div style="margin-top:6px" dir="ltr">'+(d.engine_version||'')+' · '+now.toISOString().replace('T',' ').slice(0,16)+' UTC</div>';
+  // Sprint 2.22.0b.23 — report id + tamper-evident verify link (when the server has the key).
+  if(d.report_ref){
+    h+='<div style="margin-top:6px">رقم التقرير: <span dir="ltr" style="font-weight:600">'+d.report_ref+'</span>';
+    const _b=d.report_fp_basis;
+    if(d.report_fp&&_b){
+      const _q='ref='+encodeURIComponent(d.report_ref)+'&fp='+encodeURIComponent(d.report_fp)
+        +'&addr='+encodeURIComponent(_b.address||'')+'&date='+encodeURIComponent(_b.date||'')
+        +'&eng='+encodeURIComponent(_b.engine||'')+'&amount='+encodeURIComponent(_b.amount==null?'':_b.amount)
+        +'&low='+encodeURIComponent(_b.low==null?'':_b.low)+'&high='+encodeURIComponent(_b.high==null?'':_b.high)
+        +'&rule='+encodeURIComponent(_b.rule||'');
+      h+=' · <a href="'+API+'/verify?'+_q+'" target="_blank" rel="noopener" style="color:var(--bronze)">تحقّق من صحّة التقرير ✓</a>';
+    }
+    h+='</div>';
+  }
   h+='<div class="rep-gt">هل لديك سعر بيع فعليّ لهذا العقار أو تقييم معتمد؟ شاركه لتحسين الدقّة — واتساب <span dir="ltr">+974 70177761</span>.</div>';
   h+='</div>';
   o.innerHTML=h;
