@@ -19,7 +19,13 @@ def check(name, cond):
 check('reportScreen markup present (screen 5)', 'id="reportScreen"' in HTML and 'التقرير الكامل</div>' in HTML)
 check('openReport() renders from window._lastResult (no re-fetch)',
       'function openReport(){const d=window._lastResult; if(!d)return; showReport(d); go(\'report\');}' in HTML)
-check('TIER-3 report CTA rewired to openReport (b17)', 'onclick="openReport()">📄 التقرير الكامل' in HTML
+# Sprint 2.22.0b.25 (م2/D6) re-point: the TIER-3 CTA now opens the SHORT report FIRST
+# (openShortReport); the full report stays one click away INSIDE it (its «التقرير
+# الكامل» button → openReport). The b17 invariant becomes: openReport remains wired
+# and reachable, and the dead printReport CTA never returns.
+check('TIER-3 report CTA → short-first (D6), full report one click away (b17 path intact)',
+      'onclick="openShortReport()">📄 التقرير المختصر' in HTML
+      and 'onclick="openReport()">التقرير الكامل' in HTML
       and 't3-secondary" onclick="printReport()"' not in HTML)
 
 # ── shared builders: ONE voice across screens 4 + 5 (b14 coherence) ──

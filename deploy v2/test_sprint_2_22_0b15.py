@@ -77,8 +77,10 @@ check('brief sections → flat (refusal verbatim)', "flat+='<div class=\"rc\" st
 # ── TIER-3 actions ──
 # 16. TIER-3 refine + report CTAs (valued path).
 check('TIER-3 refine CTA → go(refine)', "t3+='<button class=\"t3btn t3-primary\" onclick=\"go(\\'refine\\')\">✏️ حسّن التقدير" in HTML)
-# b17 landed: the report CTA now opens screen 5 (openReport) — exactly the rewire b15 anticipated.
-check('TIER-3 report CTA → openReport (b17 rewired as planned)', "t3+='<button class=\"t3btn t3-secondary\" onclick=\"openReport()\">📄 التقرير الكامل" in HTML)
+# b17 landed: the report CTA opened screen 5 (openReport); Sprint 2.22.0b.25 (م2/D6)
+# then made the SHORT report the first stop (full report one click away inside it) —
+# the b15 invariant is that the TIER-3 secondary CTA leads to a REPORT surface.
+check('TIER-3 report CTA → report surface (b17→b25/D6 chain)', "t3+='<button class=\"t3btn t3-secondary\" onclick=\"openShortReport()\">📄 التقرير المختصر" in HTML)
 
 # ── Print parity (F1) ──
 # 17. printReport force-opens the accordions before print + restores after.

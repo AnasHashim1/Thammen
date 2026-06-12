@@ -140,7 +140,12 @@ check('8.9 /verify dormant without HMAC_REPORT_KEY', "os.environ.get('HMAC_REPOR
 html = io.open(os.path.join(HERE, 'index.html'), encoding='utf-8').read()
 check('8.10 report renders the scenarios panel', 'v.scenarios' in html and 'سيناريوهات الحالة والتشطيب' in html)
 check('8.11 report renders report_ref + verify link', 'd.report_ref' in html and '/verify?' in html and 'تحقّق من صحّة التقرير' in html)
-check('8.12 verify link gated on report_fp present (key configured)', 'if(d.report_fp&&_b)' in html)
+# Sprint 2.22.0b.25 (م2) re-point: the gate moved INTO the shared _verifyUrl builder
+# (one builder for the report link + the short-report QR — no drift); the link still
+# renders ONLY when ref+fp+basis are present (the builder returns null otherwise).
+check('8.12 verify link gated on report_fp present (key configured)',
+      'if(!(d.report_ref&&d.report_fp&&_b))return null;' in html
+      and 'const _vu=_verifyUrl(d);' in html and 'if(_vu){' in html)
 
 print('=' * 64)
 print(f'{len(PASS)} passed / {len(FAIL)} failed')

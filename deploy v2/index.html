@@ -263,6 +263,61 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .rep-gt{margin-top:10px;padding:8px 10px;background:var(--alt);border-radius:8px;color:var(--text)}
 @media(max-width:600px){.hlogo img{max-width:260px}.fr3,.fr2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}.fcard{padding:18px}.aud-row{grid-template-columns:1fr 1fr}}
 
+/* ════ Sprint 2.22.0b.25 (م2) — the thm-report design system ════
+   Scope: the REPORTS ONLY (D7) — everything namespaced under .thmr.
+   Tokens per the signed plan §B: navy #16324F · bronze #A4814A · paper #FBF8F2.
+   Font: IBM Plex Sans Arabic (OFL) hosted LOCALLY (fonts/*.woff2 — no CDN),
+   applied inside .thmr only. Visual contract = docs/index_mockup_full_journey_v3.html
+   (screens ٦/٧) + docs/MATRIX_short_report_copy_SIGNED.md. */
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('fonts/IBMPlexSansArabic-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('fonts/IBMPlexSansArabic-Medium.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('fonts/IBMPlexSansArabic-SemiBold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'IBM Plex Sans Arabic';src:url('fonts/IBMPlexSansArabic-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+.thmr{--thmr-navy:#16324F;--thmr-bronze:#A4814A;--thmr-paper:#FBF8F2;--thmr-line:#E3DDD2;--thmr-ink:#2A3138;--thmr-ink2:#5B6670;--thmr-wash:#F6F2EA;
+  font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;color:var(--thmr-ink);direction:rtl}
+.thmr-page{background:#fff;border:1px solid var(--thmr-line);border-radius:16px;padding:22px 20px;margin-bottom:14px;box-shadow:0 1px 3px rgba(22,50,79,.05)}
+.thmr-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;border-bottom:2px solid var(--thmr-bronze);padding-bottom:10px;margin-bottom:14px;flex-wrap:wrap}
+.thmr-head .b1{font-weight:700;color:var(--thmr-navy);font-size:1.1rem}
+.thmr-head .b1 small{display:block;font-size:.72rem;font-weight:600;color:var(--thmr-bronze)}
+.thmr-head .meta{text-align:left;font-size:.72rem;color:var(--thmr-ink2);line-height:1.8}
+.thmr-head .meta b{color:var(--thmr-navy);font-family:ui-monospace,Consolas,monospace}
+.thmr-hero{text-align:center;background:linear-gradient(180deg,#fff,#FDFAF4);border:1px solid var(--thmr-line);border-radius:14px;padding:16px 12px;margin-bottom:12px}
+.thmr-hero .lbl{display:block;font-size:.86rem;font-weight:700;color:var(--thmr-bronze);margin-bottom:6px}
+.thmr-hero .num{font-size:2rem;font-weight:700;color:var(--thmr-navy);font-feature-settings:'tnum'}
+.thmr-hero .num small{font-size:.95rem;font-weight:600}
+.thmr-hero .basis{font-size:.8rem;color:var(--thmr-ink2);margin-top:5px;line-height:1.8}
+.thmr-rbar{margin-top:12px}
+.thmr-rbar .track{position:relative;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--thmr-bronze),#E8DFCE)}
+.thmr-rbar .dot{position:absolute;top:50%;transform:translate(50%,-50%);width:14px;height:14px;border-radius:50%;border:2.5px solid #fff;box-shadow:0 0 0 1.5px var(--thmr-line)}
+.thmr-rbar .dot.c{right:0;background:var(--thmr-navy)}
+.thmr-rbar .dot.m{right:100%;background:#C9CFD6}
+.thmr-rbar .lbls{display:flex;justify-content:space-between;font-size:.7rem;color:var(--thmr-ink2);margin-top:7px;gap:8px}
+.thmr-rbar .lbls .a{font-weight:700;color:var(--thmr-navy)}
+.thmr-lay{font-size:.86rem;line-height:2;color:var(--thmr-ink);background:var(--thmr-paper);border:1px solid var(--thmr-line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.thmr-card{background:#fff;border:1px solid var(--thmr-line);border-radius:12px;padding:13px 15px;margin-bottom:11px}
+.thmr-seclbl{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--thmr-navy);font-size:.9rem;margin-bottom:8px}
+.thmr-seclbl .n{color:var(--thmr-bronze);border:1px solid var(--thmr-bronze);border-radius:6px;padding:0 7px;font-size:.72rem}
+.thmr-row{display:flex;justify-content:space-between;gap:12px;font-size:.82rem;padding:7px 2px;border-bottom:1px dashed var(--thmr-line)}
+.thmr-row:last-child{border-bottom:none}
+.thmr-row .k{color:var(--thmr-ink2)}
+.thmr-row .v{font-weight:600;color:var(--thmr-navy);text-align:left;font-feature-settings:'tnum'}
+.thmr-sctab{width:100%;border-collapse:collapse;font-size:.82rem;margin:4px 0}
+.thmr-sctab th{font-size:.72rem;font-weight:700;color:var(--thmr-bronze);text-align:right;padding:6px 8px;border-bottom:1.5px solid var(--thmr-bronze)}
+.thmr-sctab th.l,.thmr-sctab td.num{text-align:left}
+.thmr-sctab td{padding:7px 8px;border-bottom:1px dashed var(--thmr-line);color:var(--thmr-ink)}
+.thmr-sctab td.num{font-weight:700;color:var(--thmr-navy);font-feature-settings:'tnum'}
+.thmr-micro{font-size:.74rem;color:var(--thmr-ink2);margin-top:6px;line-height:1.9}
+.thmr-legal{font-size:.74rem;color:var(--thmr-ink2);background:var(--thmr-wash);border:1px solid var(--thmr-line);border-radius:10px;padding:11px 13px;line-height:1.95;margin-top:12px}
+.thmr-legal b{color:var(--thmr-navy)}
+.thmr-fpline{font-size:.72rem;color:var(--thmr-ink2);display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.thmr-fpline .fp{font-family:ui-monospace,Consolas,monospace;font-weight:700;color:var(--thmr-navy)}
+.thmr-qr{width:96px;height:96px;flex:0 0 auto;border:1.5px solid var(--thmr-navy);border-radius:8px;padding:5px;background:#fff;display:grid;place-items:center}
+.thmr-qr img,.thmr-qr canvas{max-width:100%;max-height:100%}
+.thmr-btns{display:flex;gap:10px;margin-top:14px}
+.thmr-btn{flex:1;border:none;border-radius:11px;padding:12px;font-weight:700;font-size:.92rem;cursor:pointer;font-family:inherit;background:var(--thmr-navy);color:#fff}
+.thmr-btn.alt{background:#fff;color:var(--thmr-navy);border:1.5px solid var(--thmr-navy)}
+.thmr-pay input{width:54px;border:1px solid var(--thmr-line);border-radius:6px;padding:1px 4px;font-size:.8rem;font-weight:700;color:var(--thmr-navy);text-align:center;font-family:inherit}
+
 /* Sprint 2.4d: Print / Save-as-PDF styles */
 @media print {
   /* Sprint 2.22.0b.17 — A4 sizing for the share path (fixes the Marikh-PDF card-split class). */
@@ -271,6 +326,13 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   body.printing-report .screen { display: none !important; }
   body.printing-report #reportScreen { display: block !important; }
   body.printing-report .tbar, body.printing-report .no-print { display: none !important; }
+  /* Sprint 2.22.0b.25 (م2) — the SHORT report prints alone: two A4 pages. */
+  body.printing-short .screen { display: none !important; }
+  body.printing-short #shortReportScreen { display: block !important; }
+  body.printing-short .tbar, body.printing-short .bbtn, body.printing-short .thmr-btns { display: none !important; }
+  body.printing-short .thmr-page { border: none !important; box-shadow: none !important; border-radius: 0 !important; page-break-after: always; }
+  body.printing-short .thmr-page:last-child { page-break-after: auto; }
+  .thmr-card, .thmr-hero, .thmr-legal, .thmr-fpline { page-break-inside: avoid; }
   .rep-def12, .rep-cover, .rep-foot { page-break-inside: avoid; }
   /* Hide everything not part of the report */
   .hero, .fcard, .sbtn, .bbtn, .copy-btn, .map-btn-main, .map-popup, .aud-row,
@@ -568,6 +630,24 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   </div>
 </div>
 
+<!-- SHORT REPORT — Sprint 2.22.0b.25 (م2): «التقرير المختصر» (الزبدة + ملحق المختصين)
+     on the thm-report design system. D6: opens FIRST after evaluation; the full report
+     is one click away. Composed EXCLUSIVELY from the broadcast (value_stack + leadership
+     + scenarios + report_ref/fp) — zero JS value-math except the D3 financing line +
+     price-per-m². Contracts: docs/index_mockup_full_journey_v3.html (screens ٦/٧) +
+     docs/MATRIX_short_report_copy_SIGNED.md. -->
+<div class="screen" id="shortReportScreen">
+  <div class="tbar">
+    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
+    <div class="tbar-st">التقرير المختصر</div>
+  </div>
+  <div class="rwrap">
+    <button class="bbtn no-print" onclick="go('results')">→ رجوع للنتيجة</button>
+    <div id="srOut" class="thmr"></div>
+  </div>
+</div>
+
+<script src="qrcode.local.js"></script>
 <script>
 const API='https://thammen-app-123-227a7106a67a.herokuapp.com';
 let audience='owner';  // Sprint 2.22.0b.24 (م0): «مالك» default — engine normalizes owner→buyer (presentation only)
@@ -1479,14 +1559,10 @@ function showReport(d){
   // Sprint 2.22.0b.23 — report id + tamper-evident verify link (when the server has the key).
   if(d.report_ref){
     h+='<div style="margin-top:6px">رقم التقرير: <span dir="ltr" style="font-weight:600">'+d.report_ref+'</span>';
-    const _b=d.report_fp_basis;
-    if(d.report_fp&&_b){
-      const _q='ref='+encodeURIComponent(d.report_ref)+'&fp='+encodeURIComponent(d.report_fp)
-        +'&addr='+encodeURIComponent(_b.address||'')+'&date='+encodeURIComponent(_b.date||'')
-        +'&eng='+encodeURIComponent(_b.engine||'')+'&amount='+encodeURIComponent(_b.amount==null?'':_b.amount)
-        +'&low='+encodeURIComponent(_b.low==null?'':_b.low)+'&high='+encodeURIComponent(_b.high==null?'':_b.high)
-        +'&rule='+encodeURIComponent(_b.rule||'');
-      h+=' · <a href="'+API+'/verify?'+_q+'" target="_blank" rel="noopener" style="color:var(--bronze)">تحقّق من صحّة التقرير ✓</a>';
+    // Sprint 2.22.0b.25 (م2): the URL builder is shared with the short-report QR (_verifyUrl).
+    const _vu=_verifyUrl(d);
+    if(_vu){
+      h+=' · <a href="'+_vu+'" target="_blank" rel="noopener" style="color:var(--bronze)">تحقّق من صحّة التقرير ✓</a>';
     }
     h+='</div>';
   }
@@ -1501,6 +1577,195 @@ function printReportA4(){
     window.print();
     setTimeout(()=>document.body.classList.remove('printing-report'),500);
   },50);
+}
+
+// ════ Sprint 2.22.0b.25 (م2) — «التقرير المختصر» (الزبدة + ملحق المختصين) ════
+// thm-report surface. Bindings = the broadcast ONLY (value_stack + leadership +
+// scenarios + income_approach + value_floor + report_ref/fp) — zero JS value-math
+// except the D3 financing line (assumptions editable inline) + price-per-m².
+// Copy contract = docs/MATRIX_short_report_copy_SIGNED.md (signed verbatim).
+function _verifyUrl(d){
+  // the b23 verify link, shared by the report link + the short-report QR.
+  const _b=d.report_fp_basis;
+  if(!(d.report_ref&&d.report_fp&&_b))return null;
+  return API+'/verify?ref='+encodeURIComponent(d.report_ref)+'&fp='+encodeURIComponent(d.report_fp)
+    +'&addr='+encodeURIComponent(_b.address||'')+'&date='+encodeURIComponent(_b.date||'')
+    +'&eng='+encodeURIComponent(_b.engine||'')+'&amount='+encodeURIComponent(_b.amount==null?'':_b.amount)
+    +'&low='+encodeURIComponent(_b.low==null?'':_b.low)+'&high='+encodeURIComponent(_b.high==null?'':_b.high)
+    +'&rule='+encodeURIComponent(_b.rule||'');
+}
+function _srCase(d){
+  // leader-case resolution (mirrors the م0 confirm-screen logic).
+  const v=d.valuation||{}, ld=v.leadership||null, tri=v.income_triangulation||{};
+  if(d.asset_type==='raw_land')return 'land';
+  if(tri.mode==='income_led'||v.method==='income_approach_only')return 'income';
+  if(ld&&ld.leader==='cost')return 'cost';
+  return 'market';
+}
+function _srPayment(P,downPct,years,ratePct){
+  // D3 — the ONE allowed value-math: an indicative amortized monthly payment.
+  const principal=P*(1-downPct/100), r=(ratePct/100)/12, n=years*12;
+  if(!(principal>0&&r>0&&n>0))return null;
+  return Math.round(principal*r/(1-Math.pow(1+r,-n)));
+}
+function srRecalcPay(){
+  const v=((window._lastResult||{}).valuation||{});
+  const dEl=document.getElementById('srDown'),yEl=document.getElementById('srYears'),rEl=document.getElementById('srRate'),out=document.getElementById('srPay');
+  if(!(dEl&&yEl&&rEl&&out))return;
+  const p=_srPayment(v.amount||0,parseFloat(dEl.value)||0,parseFloat(yEl.value)||0,parseFloat(rEl.value)||0);
+  out.textContent=p?('≈ '+fmt(p)+' ر.ق/شهر'):'—';
+}
+function openShortReport(){const d=window._lastResult; if(!d)return; showShortReport(d); go('shortReport');}
+function printShortReport(){
+  document.body.classList.add('printing-short');
+  setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('printing-short'),500);},50);
+}
+function showShortReport(d){
+  const o=document.getElementById('srOut'); if(!o)return;
+  const v=d.valuation||{}, ld=v.leadership||null, tri=v.income_triangulation||{};
+  const stack=v.value_stack||{}, cost=stack.cost||{}, vf=v.value_floor||{};
+  const inc=d.income_approach||{}, basis=d.property_basis||{}, age=(basis.building_age_estimate||{});
+  const cs=_srCase(d), hasVal=v.amount!=null&&v.amount>0;
+  const today=new Date().toISOString().slice(0,10);
+  let h='';
+  if(!hasVal){
+    // refusal — no short report body; honest line + route to the full report.
+    h='<div class="thmr-page"><div class="thmr-head"><div class="b1">ثمّن — التقرير المختصر<small>تقدير سوقي آلي · ليس تقييماً معتمداً</small></div></div>';
+    h+='<div class="thmr-lay">لم يصدر تقدير لهذا العقار'+((d.refusal_reason||{}).message_ar?(': '+d.refusal_reason.message_ar):'.')+'</div>';
+    h+='<div class="thmr-btns"><button class="thmr-btn alt" onclick="openReport()">التقرير الكامل</button></div></div>';
+    o.innerHTML=h; return;
+  }
+  // ── bindings per the signed matrix ──
+  const _n=v.n_transactions, _mn=(ld?ld.matched_n:null), _d36=(ld&&ld.dispersion_36!=null)?ld.dispersion_36:null;
+  const _gn=(ld?ld.geo_full_n:null), _gd=(ld&&ld.geo_full_dispersion!=null)?ld.geo_full_dispersion:null;
+  const _capPct=(inc.cap_rate!=null)?(inc.cap_rate*100).toFixed(2).replace(/\.?0+$/,''):null;
+  const _capN=(d.cap_rate_provenance||{}).sample_size!=null?d.cap_rate_provenance.sample_size:null;
+  const heroLbl={cost:'القيمة التقديرية — مرتكز التكلفة (أرض + بناء مُهلَك)',market:'القيمة التقديرية — وسيط شريحتك',
+    income:'القيمة التقديرية — متّسقة مع إيجارك الفعلي',land:'قيمة الأرض'}[cs];
+  let basisLn='';
+  if(cs==='cost')basisLn=cost.label_ar||'قيمة التكلفة (أرض + بناء مُهلَك) — نهج DRC';
+  else if(cs==='market')basisLn='وسيط '+(_mn!=null?_mn:(_n!=null?_n:'—'))+' صفقة مطابقة لنوعك وعمرك، تشتت '+(_d36!=null?_d36:'—');
+  else if(cs==='income')basisLn='إيجارك ÷ رسملة معايَرة'+(_capPct?(' '+_capPct+'% صافٍ'):'')+(_capN!=null?(' (n='+_capN+')'):'')+(tri.bracket_borrowed?' — معدل مُستعار من شريحة مجاورة (مُفصَح)':'');
+  else basisLn='وسيط أراضي منطقتك'+(vf.land_per_m2_qar?(' '+fmt(vf.land_per_m2_qar)+' ر.ق/م²'):'')+(d.plot_area_m2?(' × '+fmt(d.plot_area_m2)+' م²'):'')+(vf.land_n_transactions?(' (n='+vf.land_n_transactions+')'):'');
+  let neigh='';
+  if(cs==='cost'){
+    neigh='أكثر صفقات منطقتك حديثة وفاخرة'+((ld&&ld.market_value)?(' (وسيطها '+fmt(ld.market_value)+' على '+(_n!=null?_n:'—')+' صفقة)'):'')
+      +(age.age_floor_years?(' بينما مبناك تجاوز '+age.age_floor_years+' سنة'):'')
+      +' — فالأصدق كلفة الإحلال: أرضك + بناؤك بعد الإهلاك.';
+  }else if(cs==='market'){
+    neigh='صفقات مثل بيتك كافية وواضحة: '+(_mn!=null?_mn:(_n!=null?_n:'—'))+' مطابقة خلال 24 شهراً — وسيطها مرجعك.';
+  }else if(cs==='income'){
+    neigh='أدخلتَ إيجاراً فعلياً، والدخل أصدق مرجع لعقار مُدِرّ: القيمة ما يبرّره إيجارك بسوق منطقتك.';
+  }else{
+    neigh='الأرض تُقاس بسعر المتر في منطقتك — وموقع قطعتك داخل النطاق يحدده حجمها وواجهتها.';
+  }
+  // ════ Page 1 — الزبدة ════
+  h+='<div class="thmr-page" id="srPage1">';
+  h+='<div class="thmr-head"><div class="b1">ثمّن — التقرير المختصر<small>تقدير سوقي آلي · ليس تقييماً معتمداً</small></div>';
+  h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b><br>'):'')+'التاريخ <span dir="ltr">'+today+'</span> · <span dir="ltr">'+(d.engine_version||'')+'</span></div></div>';
+  h+='<div class="thmr-hero"><span class="lbl">'+heroLbl+'</span>';
+  h+='<div class="num">'+fmt(v.amount)+' <small>ر.ق</small></div>';
+  h+='<div class="basis">'+basisLn+'</div>';
+  if(cs==='cost'&&ld&&ld.market_value&&ld.market_value>v.amount){
+    h+='<div class="thmr-rbar"><div class="track"><span class="dot c"></span><span class="dot m"></span></div>';
+    h+='<div class="lbls"><span class="a">'+fmt(v.amount)+' — المرتكز</span><span>'+fmt(ld.market_value)+' — طرف سوق المنطقة (مؤشرات حذرة)</span></div></div>';
+  }
+  h+='</div>';
+  h+='<div class="thmr-lay">'+neigh+'</div>';
+  // card ١ — التفكيك (cost: the DRC stack rows; else the broadcast decomposition) + الجبري ×0.90 (D2).
+  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">١</span>'+(cs==='cost'?'تفكيك المرتكز':'تفكيك القيمة')+'</div>';
+  if(cs==='cost'&&cost.value){
+    h+='<div class="thmr-row"><span class="k">الأرض'+((d.plot_area_m2&&vf.land_per_m2_qar)?(' (<span dir="ltr">'+fmt(d.plot_area_m2)+' م² × '+fmt(vf.land_per_m2_qar)+'</span> ر.ق/م²'+(vf.land_n_transactions?(' · n='+vf.land_n_transactions):'')+')'):'')+'</span><span class="v">'+fmt(cost.land_floor)+'</span></div>';
+    h+='<div class="thmr-row"><span class="k">البناء المُهلَك'+((cost.bua_m2&&cost.rcn_qar_per_m2&&cost.retention!=null)?(' (<span dir="ltr">BUA '+cost.bua_m2+' × '+fmt(cost.rcn_qar_per_m2)+' × '+cost.retention+'</span>)'):'')+'</span><span class="v">'+fmt(cost.building_value)+'</span></div>';
+  }else{
+    const vd=v.value_decomposition||{};
+    if(vd.land&&vd.land.value!=null)h+='<div class="thmr-row"><span class="k">مكوّن الأرض الاسترشادي</span><span class="v">'+fmt(vd.land.value)+'</span></div>';
+    if(vd.building_implied&&vd.building_implied.value!=null)h+='<div class="thmr-row"><span class="k">مساهمة البناء الضمنية</span><span class="v">'+fmt(vd.building_implied.value)+'</span></div>';
+    if(cs==='land'&&vf.land_floor)h+='<div class="thmr-row"><span class="k">قيمة الأرض (وسيط المنطقة × المساحة)</span><span class="v">'+fmt(vf.land_floor)+'</span></div>';
+  }
+  h+='<div class="thmr-row"><span class="k">القيمة الجبرية الإرشادية (×0.90 — عُرف سوقي، ليست تقييم تصفية)</span><span class="v">'+fmt(Math.round(v.amount*0.90))+'</span></div>';
+  if(d.plot_area_m2&&v.amount)h+='<div class="thmr-row"><span class="k">سعر المتر (على مساحة القسيمة)</span><span class="v"><span dir="ltr">'+fmt(Math.round(v.amount/d.plot_area_m2))+'</span> ر.ق/م²</span></div>';
+  h+='</div>';
+  // card ٢ — البطاقة الثالثة (per the matrix).
+  const c3t={cost:'سيناريوهات «ماذا لو» (محسوبة لا مُختلَقة)',market:'مدى شريحتك',income:'قراءة الدخل: NOI والرسملة — صافٍ لا إجمالي',land:'موقعك في نطاق المتر'}[cs];
+  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٢</span>'+c3t+'</div>';
+  const scn=v.scenarios;
+  if(cs==='cost'&&scn&&scn.items&&scn.items.length){
+    h+='<table class="thmr-sctab"><tr><th>الحالة</th><th class="l">القيمة التقريبية</th></tr>';
+    scn.items.forEach(it=>{h+='<tr><td>'+it.label_ar+'</td><td class="num">'+(it.key==='as_is'?'':'≈ ')+fmt(it.value)+'</td></tr>';});
+    h+='</table>';
+    if(scn.note_ar)h+='<div class="thmr-micro">'+scn.note_ar+'</div>';
+    h+='<div class="thmr-micro">ولو أُجّرت: أدخل إيجارك الفعلي في «حسّن التقدير» ليقود الدخلُ القراءة.</div>';
+  }else if(cs==='market'){
+    h+='<div class="thmr-micro" style="font-size:.82rem">مدى شريحتك المطابقة: <span dir="ltr">'+fmt(v.low)+' – '+fmt(v.high)+'</span> حول الوسيط '+fmt(v.amount)+(_d36!=null?(' — تشتت '+_d36):'')+'.</div>';
+  }else if(cs==='income'){
+    h+='<div class="thmr-micro" style="font-size:.82rem">'+(inc.monthly_rent?('الإيجار المعتمد <span dir="ltr">'+fmt(inc.monthly_rent)+'</span> ر.ق/شهر'+(inc.rent_source_ar?(' ('+inc.rent_source_ar+')'):'')+' → '):'')+(inc.noi?('NOI <span dir="ltr">'+fmt(inc.noi)+'</span>'):'')+(_capPct?(' ÷ رسملة معايَرة '+_capPct+'% صافٍ'):'')+(inc.income_value?(' ⇒ ≈ <b>'+fmt(inc.income_value)+'</b>'):'')+'. <b>صافٍ لا إجمالي.</b></div>';
+  }else{
+    h+='<div class="thmr-micro" style="font-size:.82rem">وسيط منطقتك'+(vf.land_per_m2_qar?(' <span dir="ltr">'+fmt(vf.land_per_m2_qar)+'</span> ر.ق/م²'):'')+(vf.land_n_transactions?(' (n='+vf.land_n_transactions+')'):'')+' — والواجهة والحجم يحددان موضع قطعتك داخل النطاق.</div>';
+  }
+  h+='</div>';
+  // card ٣ — القسط (D3: the three assumptions EDITABLE inline + «استشر بنكك»).
+  h+='<div class="thmr-card thmr-pay"><div class="thmr-seclbl"><span class="n">٣</span>القسط التقريبي <span style="font-weight:400;font-size:.7rem;color:var(--thmr-ink2)">(افتراضات قابلة للتعديل داخل السطر — D3)</span></div>';
+  h+='<div class="thmr-row"><span class="k">دفعة أولى <input id="srDown" type="number" value="20" min="0" max="90" oninput="srRecalcPay()">% · مدة <input id="srYears" type="number" value="25" min="1" max="35" oninput="srRecalcPay()"> سنة · فائدة <input id="srRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="srRecalcPay()">%</span><span class="v" id="srPay">≈ '+(function(){const p=_srPayment(v.amount,20,25,4.5);return p?fmt(p):'—';})()+' ر.ق/شهر</span></div>';
+  h+='<div class="thmr-micro">حسابٌ استرشادي على رقم '+(cs==='cost'?'المرتكز':'التقدير المركزي')+' — استشر بنكك للعرض الفعلي.</div></div>';
+  // fpline + QR + the GT hook.
+  const vUrl=_verifyUrl(d);
+  h+='<div class="thmr-fpline">'+(vUrl?'<span class="thmr-qr" id="srQr1"></span>':'')
+    +'<span>'+(d.report_fp?('البصمة <span class="fp" dir="ltr">'+d.report_fp+'</span> · '):'')+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a> · '):'')+'أرسل سعراً فعلياً تعرفه: واتساب <span dir="ltr">+974 70177761</span></span></div>';
+  h+='<div class="thmr-btns"><button class="thmr-btn" onclick="document.getElementById(\'srPage2\').scrollIntoView({behavior:\'smooth\'})">الملحق المتخصص ↓</button>'
+    +'<button class="thmr-btn alt" onclick="openReport()">التقرير الكامل</button>'
+    +'<button class="thmr-btn alt no-print" onclick="printShortReport()">طباعة / PDF</button></div>';
+  h+='</div>';
+  // ════ Page 2 — ملحق المختصين ════
+  h+='<div class="thmr-page" id="srPage2">';
+  h+='<div class="thmr-head"><div class="b1">ملحق المختصين<small>الصفحة الثانية من المختصر — للمثمّن والبنكي والمدقّق</small></div>';
+  h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b>'):'')+'</div></div>';
+  // card ١ — شفافية الأدلة (the dual-evidence line per the matrix + the D-3 calibration hook).
+  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">١</span>شفافية الأدلة</div>';
+  if(_n!=null)h+='<div class="thmr-row"><span class="k">حوض الجوار'+(v.window_used?(' ('+v.window_used+')'):'')+'</span><span class="v">'+_n+' صفقة</span></div>';
+  if(cs==='cost'){
+    const _t=(ld&&ld.thresholds)||{};
+    h+='<div class="thmr-row"><span class="k">المطابق لشريحتك (نوع/عمر)</span><span class="v"><span dir="ltr">n='+(_mn!=null?_mn:'—')+'</span> — أقل من '+(_t.matched_min_n!=null?_t.matched_min_n:10)+'، غير كافٍ</span></div>';
+    h+='<div class="thmr-row"><span class="k">الجغرافي الكامل</span><span class="v"><span dir="ltr">n='+(_gn!=null?_gn:'—')+' · '+(_gd!=null?_gd:'—')+'</span>'+((_gd!=null&&_gd>=((ld.thresholds||{}).dispersion_t||0.30))?' (>'+(((ld.thresholds||{}).dispersion_t)||0.30)+' متنافر)':'')+'</span></div>';
+  }else if(cs==='market'){
+    h+='<div class="thmr-row"><span class="k">المطابق لشريحتك</span><span class="v"><span dir="ltr">'+(_mn!=null?_mn:(_n!=null?_n:'—'))+'</span> مطابقة، تشتت <span dir="ltr">'+(_d36!=null?_d36:'—')+'</span></span></div>';
+  }else if(cs==='income'){
+    h+='<div class="thmr-row"><span class="k">خلية الرسملة</span><span class="v">'+((d.cap_rate_provenance||{}).district_ar||(d.cap_rate_provenance||{}).district||d.district||'—')+(((d.cap_rate_provenance||{}).size_bracket)?(' / '+d.cap_rate_provenance.size_bracket):'')+'</span></div>';
+  }else{
+    h+='<div class="thmr-row"><span class="k">صفقات الأرض</span><span class="v">'+(vf.land_n_transactions!=null?vf.land_n_transactions:(_n!=null?_n:'—'))+' صفقة'+(vf.window_months?('، نافذة '+vf.window_months+' شهراً'):'')+'</span></div>';
+  }
+  // the D-3 hook (matrix constant #5): retention-curve wording for buildings; generic for land.
+  if(cs==='land')h+='<div class="thmr-row"><span class="k">المعايرة</span><span class="v">شيتات موثَّقة محدودة — <b>كل شيت جديد يدقّقها</b></span></div>';
+  else h+='<div class="thmr-row"><span class="k">معايرة منحنى الاحتفاظ</span><span class="v">شيت موثَّق واحد (V001 ±1%) — <b>شيتك يدقّقها</b></span></div>';
+  h+='</div>';
+  // card ٢ — القراءة الدخلية (تقاطعية) — broadcast-only; folded when absent.
+  if(inc.income_value){
+    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٢</span>القراءة الدخلية (تقاطعية)</div>';
+    if(inc.monthly_rent)h+='<div class="thmr-row"><span class="k">'+(inc.rent_source==='actual_provided'?'إيجارك الفعلي':'إيجار سوقي مُقدَّر')+(inc.rent_source_ar?(' — '+inc.rent_source_ar):'')+'</span><span class="v">≈ <span dir="ltr">'+fmt(inc.monthly_rent)+'</span> ر.ق/شهر</span></div>';
+    if(inc.cap_rate_label_ar)h+='<div class="thmr-row"><span class="k">رسملة معايَرة للمنطقة</span><span class="v">'+inc.cap_rate_label_ar+'</span></div>';
+    h+='<div class="thmr-row"><span class="k">قراءة الاتساق</span><span class="v">≈ '+fmt(inc.income_value)+(cs==='cost'?' — تقاطعية مع المرتكز':'')+'</span></div>';
+    h+='</div>';
+  }
+  // card ٣ — الأساس والمنهج والقيود.
+  const mu=(d.material_uncertainty||{});
+  const lblLead={cost:'التكلفة (DRC) لتعذّر شريحة مطابقة كافية',market:'المقارنة بالمبيعات (وسيط الشريحة)',income:'الدخل (إيجار فعلي ÷ رسملة معايَرة)',land:'المقارنة بالمبيعات (أراضٍ)'}[cs];
+  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+(inc.income_value?'٣':'٢')+'</span>الأساس والمنهج والقيود</div>';
+  h+='<div class="thmr-micro" style="line-height:2;font-size:.78rem">أساس القيمة: القيمة السوقية · المنهج القائد: '+lblLead
+    +' · بيانات وزارة العدل حتى <span dir="ltr">2025-12-31</span> (مُفصَح عنه) · تحفّظ MUC: '+({'low':'منخفض','moderate':'متوسط','high':'مرتفع','critical':'حرج'}[mu.level]||mu.level||'—')
+    +' · خريطة معايير 2025 (RICS Red Book / IVS) — ترقيم موحَّد.</div></div>';
+  // الكتلة القانونية — verbatim (the matrix constant #4, incl. IFRS 13).
+  h+='<div class="thmr-legal"><b>إخلاء مسؤولية:</b> هذا تحليل معلوماتي آلي لدعم القرار، وليس تقييماً رسمياً ولا تقريراً صادراً عن مُقيِّم مرخَّص وفق معايير RICS/IVS، ولا يصلح للأغراض الرسمية (قروض، محاكم، تقارير محاسبية)، وليس قياساً للقيمة العادلة بموجب <span dir="ltr">IFRS 13</span>. القرارات المتخذة بناءً عليه على مسؤولية متخذها.</div>';
+  h+='<div class="thmr-fpline">'+(vUrl?'<span class="thmr-qr" id="srQr2"></span>':'')
+    +'<span>تحقق من سلامة هذا التقرير: '+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a>'):'<span>التحقّق غير مُفعَّل</span>')+(d.report_fp?(' · البصمة <span class="fp" dir="ltr">'+d.report_fp+'</span>'):'')+'</span></div>';
+  h+='</div>';
+  o.innerHTML=h;
+  // the verify QR (LOCAL lib — no CDN); rendered post-injection into both pages.
+  if(vUrl&&typeof QRCode!=='undefined'){
+    try{
+      new QRCode(document.getElementById('srQr1'),{text:vUrl,width:84,height:84,correctLevel:QRCode.CorrectLevel.M});
+      new QRCode(document.getElementById('srQr2'),{text:vUrl,width:84,height:84,correctLevel:QRCode.CorrectLevel.M});
+    }catch(e){}
+  }
 }
 
 function show(d){
@@ -2002,7 +2267,9 @@ function show(d){
   if(hasValuation){
     t3+='<div class="t3block">';
     t3+='<button class="t3btn t3-primary" onclick="go(\'refine\')">✏️ حسّن التقدير — أضف تفاصيل مبناك</button>';
-    t3+='<button class="t3btn t3-secondary" onclick="openReport()">📄 التقرير الكامل / حفظ PDF</button>';  // b17: rewired to screen 5
+    // Sprint 2.22.0b.25 (م2/D6): the SHORT report opens FIRST; the full report is one
+    // click away inside it (its «التقرير الكامل» button → openReport, the b17 screen).
+    t3+='<button class="t3btn t3-secondary" onclick="openShortReport()">📄 التقرير المختصر / حفظ PDF</button>';
     t3+='</div>';
   }
 
