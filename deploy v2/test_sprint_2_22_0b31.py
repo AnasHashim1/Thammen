@@ -64,9 +64,12 @@ check('luxury-new premium STAYS t1', 'v.luxury_new_premium.note_ar){t1+=' in HTM
 check('age-sensitivity STAYS t1 (b18 §A1 — NOT in the named-9)', 'v.age_sensitivity.note_ar){t1+=' in HTML)
 check('moj sample-size (cite-n) STAYS t1', 'صفقات البيع المسجلة لعقارات مشابهة' in HTML)
 
-# ── 6. evidence panel renderer is reused, NOT deleted (still in showConfirm + showReport) ──
+# ── 6. evidence panel renderer is reused, NOT deleted (folded on result + still in showReport) ──
 check('evidencePanelHtml still defined', 'function evidencePanelHtml(d,acc){' in HTML)
-check('evidencePanelHtml still in showConfirm', 'h+=evidencePanelHtml(d,acc);' in HTML)
+# Re-pointed for DEF-UX13/b32 (R6/Lesson-2): the standalone `h+=evidencePanelHtml(d,acc);`
+# render is GONE everywhere — folded into the «كيف وصلنا» result accordion (b31) and dropped
+# from the confirm gate (b32). The panel survives, just never as a bare standalone h+= call.
+check('standalone h+=evidencePanelHtml render gone (folded b31 / confirm-removed b32)', 'h+=evidencePanelHtml(d,acc);' not in HTML)
 check('evidencePanelHtml still in showReport', '_axWrap(evidencePanelHtml(d,acc))' in HTML)
 
 # ── 7. VALUE-INVARIANCE — show() does NOT mutate v.amount/v.low/v.high (b24) ──

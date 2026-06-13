@@ -71,7 +71,10 @@ chk('المساحة المعتمدة في التقدير' in SHOWCONFIRM, '4.7 p
 chk('البيانات صحيحة — تابِع' not in HTML, '5.1 REJECTED DRAFT CTA absent (read-only honesty)')
 chk('صحّح' not in SHOWCONFIRM, '5.2 no «صحّح» correction button in the gate (read-only)')
 chk('✏' not in SHOWCONFIRM, '5.3 no ✏ correction pencils in the gate (read-only)')
-chk('evidencePanelHtml(d,acc)' in SHOWCONFIRM, '5.4 reuses the b.2.2 evidence panel (no new logic)')
+# Re-pointed for DEF-UX13/b32 (R6/Lesson-2): the confirm gate NO LONGER carries the evidence
+# panel — it was dropped (study §3 «لا لوحة أدلّة») and now lives only on the result, inside
+# the b31 «كيف وصلنا» accordion. The gate stays read-only + minimal.
+chk('evidencePanelHtml(d,acc)' not in SHOWCONFIRM, '5.4 (DEF-UX13): evidence panel DROPPED from the confirm gate → lives on the result')
 chk(r"go(\'results\')" in SHOWCONFIRM, '5.5 full-report link → results (no 2nd fetch)')
 
 # ── 6. value-invariance: engine diff = version-string only (format, R6) ───────

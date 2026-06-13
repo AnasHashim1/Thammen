@@ -916,9 +916,14 @@ const MUC_LEVEL_AR={'low':'منخفض','medium':'متوسط','moderate':'متو�
 // Sprint 2.22.0b.9 — property-basis rows (PIN / رقم الكهرباء / water / building-age
 // FLOOR) from the QARS data we already fetch. Inspired by the Al Manara bank report
 // (TD 93317), which prints الرقم المساحي + رقم الكهرباء + عمر البناء. Display-only.
-function pbRows(pb){
+function pbRows(pb, basisOnly){
   pb=pb||{};var h='';
   if(pb.pin!=null)h+=ri('الرقم المساحي',pb.pin);
+  // Sprint 2.22.0b.32 (DEF-UX13): on the confirm screen (basisOnly) show only the
+  // cadastral id — the utility numbers + the survey-vintage age move OUT of the default
+  // view (the age message already lives at the refine «عمر البناء» field). The other
+  // call-sites (results/report) pass NO flag → full panel, byte-identical.
+  if(basisOnly)return h;
   if(pb.electricity_no!=null)h+=ri('رقم الكهرباء',pb.electricity_no);
   if(pb.water_no!=null)h+=ri('رقم الماء',pb.water_no);
   var b=pb.building_age_estimate;
@@ -982,22 +987,29 @@ function showConfirm(d){
     var differs=(rawCad!=null&&Math.round(rawCad)!==Math.round(d.plot_area_m2));
     h+=ri(differs?'المساحة المعتمدة في التقدير':'مساحة القسيمة',fmt(d.plot_area_m2)+' م²');
   }
-  h+=pbRows(d.property_basis);  // Sprint 2.22.0b.9 — PIN/electricity/water/age-floor
+  h+=pbRows(d.property_basis,true);  // Sprint 2.22.0b.32 (DEF-UX13): basis-only — cadastral id; utilities+survey-age moved out of the confirm view
   // Sprint 2.22.0b.10.1 — surface the AUTO building footprint in the basis review
   // too (b10 had it on the results card + refine hint only, not on Screen 2). It is
   // an ESTIMATED CEILING (max-buildable from plot dims − setbacks), labelled as such
   // — the user corrects DOWN in the refine step. Display-only / value-invariant.
   if(geo.max_buildable_footprint_m2&&_b2IsBuilding(d.asset_type)){
-    // Sprint 2.22.0b.27 (م4): the setbacks equation on the confirm basis row too (E15).
-    var _mbDims=(geo.footprint_method==='setback_envelope'&&geo.plot_dims_m&&geo.plot_dims_m.length===2)
-      ? (' (من أبعاد القطعة <span dir="ltr">'+geo.plot_dims_m[0]+'×'+geo.plot_dims_m[1]+'</span> م بعد الارتدادات القانونية: أمامي 5 · جانبي 3 · خلفي 3، وضمن سقف تغطية 60%)')
+    // Sprint 2.22.0b.32 (DEF-UX13): the E15 setbacks equation (was inline since م4) moves
+    // to a hover TOOLTIP — the owner keeps the max-buildable NUMBER + the «عدّله» CTA; the
+    // formula is one hover away, no inline overload on the confirm screen.
+    var _mbTip=(geo.footprint_method==='setback_envelope'&&geo.plot_dims_m&&geo.plot_dims_m.length===2)
+      ? ('من أبعاد القطعة ‎'+geo.plot_dims_m[0]+'×'+geo.plot_dims_m[1]+'‎ م بعد الارتدادات القانونية (أمامي 5 · جانبي 3 · خلفي 3) وضمن سقف تغطية 60%')
       : (geo.footprint_method==='coverage_cap_shared'
-          ? (' (حصة الوحدة في قطعة مشتركة'+(geo.n_share?' بين '+geo.n_share+' وحدات':'')+')') : '');
-    h+=ri('مساحة البناء الأرضي (تقدير أقصى)','≈ '+fmt(geo.max_buildable_footprint_m2)+' م²'+_mbDims+' — عدّله لواقع مبناك في خطوة التحسين');
+          ? ('حصة الوحدة في قطعة مشتركة'+(geo.n_share?(' بين '+geo.n_share+' وحدات'):'')) : '');
+    var _mbVal='≈ '+fmt(geo.max_buildable_footprint_m2)+' م²'
+      +(_mbTip?(' <span class="cg-tip" title="'+_mbTip+'" style="cursor:help;border-bottom:1px dotted var(--light)">ⓘ</span>'):'')
+      +' — <span style="color:var(--bronze)">عدّله في خطوة التحسين</span>';
+    h+=ri('مساحة البناء الأرضي (تقدير أقصى)',_mbVal);
   }
   h+='</div></div>';
-  // (3) evidence panel — reuse the b.2.2 panel verbatim (no new logic; explanation ≠ confidence).
-  h+=evidencePanelHtml(d,acc);
+  // (3) Sprint 2.22.0b.32 (DEF-UX13): the full evidence panel is DROPPED from the confirm
+  // screen — it lives on the RESULT, inside the «🔍 كيف وصلنا لهذا الرقم؟» accordion (b31).
+  // The owner's confirm screen = basis review + muted preliminary range + confirm + escape;
+  // no evidence panel, no formula (study §3 «لا لوحة أدلّة، لا معادلات»).
   // (4) explicit confirm (no auto-advance) + permanent full-report escape.
   h+='<div class="cg-confirm"><button class="sbtn" onclick="confirmProceed()">تابِع بهذه البيانات</button>';
   h+='<a class="cg-link" onclick="go(\'results\')">التقرير الكامل الآن ◂</a></div>';
