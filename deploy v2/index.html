@@ -1793,15 +1793,47 @@ function srRecalcPay(){
   const p=_srPayment(v.amount||0,parseFloat(dEl.value)||0,parseFloat(yEl.value)||0,parseFloat(rEl.value)||0);
   out.textContent=p?('≈ '+fmt(p)+' ر.ق/شهر'):'—';
 }
+// ── Sprint 2.22.0b.40 (DEF-UX8): affordability / LTV guards on the b35 buyer financing
+// calculator. DISPLAY-ONLY — derived from v.amount + the calculator inputs (DRY, no new math).
+// The optional monthly income is CLIENT-SIDE ONLY: read from the DOM input, never POSTed
+// (a24/DPIA — "we do not store the address/income"). Returns guard rows as HTML. ──
+function _bcGuards(amount,downPct,payment,income,costLed){
+  if(!(amount>0))return '';
+  var rows='';
+  // (1) LTV guard — financed share = 100 − down% (QCB resident cap ~80%, ~75% non-resident/2nd).
+  var ltv=Math.max(0,Math.min(100,Math.round(100-(parseFloat(downPct)||0))));
+  var ltvBad=ltv>80;
+  rows+='<div class="rn" style="margin-top:6px;font-size:.76rem'+(ltvBad?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'">'+(ltvBad?'⚠️ ':'')+'نسبة التمويل ≈ <span dir="ltr">'+ltv+'%</span> — حدّ مصرف قطر المركزي للمقيمين عادةً ≤ <span dir="ltr">80%</span> (≤ <span dir="ltr">75%</span> لغير المقيمين/العقار الثاني)؛ راجع بنكك.</div>';
+  // (2) DBR / installment-vs-income guard — ONLY when an income is entered (housing prudence ≤30%).
+  var inc=parseFloat(income)||0;
+  if(inc>0&&payment>0){
+    var dbr=Math.round(payment/inc*100);
+    var dbrBad=dbr>30;
+    rows+='<div class="rn" style="margin-top:6px;font-size:.76rem'+(dbrBad?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'">'+(dbrBad?'⚠️ ':'')+'القسط ≈ <span dir="ltr">'+dbr+'%</span> من دخلك الشهريّ — القاعدة الحصيفة للسكن ≤ <span dir="ltr">30%</span> (سقف نسبة عبء الدين لدى المصرف المركزي أعلى لكنه يشمل كل التزاماتك).</div>';
+  }
+  // (3) cost-led alert — the headline is the DRC cost FLOOR of an old/over-anchored property.
+  if(costLed){
+    rows+='<div class="rn" style="margin-top:6px;font-size:.76rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚠️ تقديرك مرتكز على الكلفة (أرض + بناء مُهلَك لعقار قديم) — لا تموّل فوق هذا الرقم؛ سعر السوق قد يكون أعلى بلا مبرّر بنائيّ.</div>';
+  }
+  return rows;
+}
 // ── Sprint 2.22.0b.35 (DEF-UX16): the RESULT-screen buyer financing calculator's live recalc.
 // Reuses _srPayment (the b25 D3 amortization — DRY). Separate ids (bc*) so it never collides
 // with the short-report calculator (sr*), which lives on a different screen. DISPLAY-ONLY.
+// b40 (DEF-UX8): also refreshes the affordability/LTV guards from the SAME inputs (display-only).
 function bcRecalc(){
   const v=((window._lastResult||{}).valuation||{});
   const dEl=document.getElementById('bcDown'),yEl=document.getElementById('bcYears'),rEl=document.getElementById('bcRate'),out=document.getElementById('bcPay');
   if(!(dEl&&yEl&&rEl&&out))return;
-  const p=_srPayment(v.amount||0,parseFloat(dEl.value)||0,parseFloat(yEl.value)||0,parseFloat(rEl.value)||0);
+  const down=parseFloat(dEl.value)||0;
+  const p=_srPayment(v.amount||0,down,parseFloat(yEl.value)||0,parseFloat(rEl.value)||0);
   out.textContent=p?(fmt(p)+' ر.ق/شهر'):'—';
+  const g=document.getElementById('bcGuards');
+  if(g){
+    const incEl=document.getElementById('bcIncome');
+    const costLed=!!(v.leadership&&v.leadership.leader==='cost');
+    g.innerHTML=_bcGuards(v.amount||0,down,p||0,incEl?incEl.value:null,costLed);
+  }
 }
 function openShortReport(){const d=window._lastResult; if(!d)return; showShortReport(d); go('shortReport');}
 function printShortReport(){
@@ -2301,7 +2333,12 @@ function show(d){
     // contract (b28). Separate ids (bc*) → no collision with the short-report calculator (sr*). ──
     if(d.audience==='buyer'&&v.amount){
       const _bcInit=_srPayment(v.amount,20,25,4.5);
-      t1+='<div class="rn" style="margin-top:12px;font-size:.82rem;line-height:2;border-right:3px solid var(--bronze);background:var(--alt)">🏦 حاسبة التمويل التقريبية: <span dir="ltr"><input id="bcDown" type="number" value="20" min="0" max="90" oninput="bcRecalc()" style="width:46px;padding:2px 4px"></span>% دفعة أولى · <input id="bcYears" type="number" value="25" min="1" max="35" oninput="bcRecalc()" style="width:46px;padding:2px 4px"> سنة · <input id="bcRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="bcRecalc()" style="width:52px;padding:2px 4px">% فائدة → القسط الشهريّ ≈ <b id="bcPay">'+(_bcInit?(fmt(_bcInit)+' ر.ق/شهر'):'—')+'</b> <span style="color:var(--muted);font-size:.76rem">— تقديريّ، استشر بنكك</span></div>';
+      // DEF-UX8 (b40): the affordability/LTV guards build ON TOP of the b35 calculator.
+      const _bcCostLed=!!(v.leadership&&v.leadership.leader==='cost');
+      t1+='<div class="rn" style="margin-top:12px;font-size:.82rem;line-height:2;border-right:3px solid var(--bronze);background:var(--alt)">🏦 حاسبة التمويل التقريبية: <span dir="ltr"><input id="bcDown" type="number" value="20" min="0" max="90" oninput="bcRecalc()" style="width:46px;padding:2px 4px"></span>% دفعة أولى · <input id="bcYears" type="number" value="25" min="1" max="35" oninput="bcRecalc()" style="width:46px;padding:2px 4px"> سنة · <input id="bcRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="bcRecalc()" style="width:52px;padding:2px 4px">% فائدة → القسط الشهريّ ≈ <b id="bcPay">'+(_bcInit?(fmt(_bcInit)+' ر.ق/شهر'):'—')+'</b> <span style="color:var(--muted);font-size:.76rem">— تقديريّ، استشر بنكك</span>'
+        +'<div style="margin-top:6px;font-size:.76rem;color:var(--muted)">دخلك الشهريّ (اختياريّ، لا يُرسَل): <input id="bcIncome" type="number" min="0" max="1000000" placeholder="—" oninput="bcRecalc()" style="width:90px;padding:2px 4px"> ر.ق · نطاق الفائدة في قطر عادةً <span dir="ltr">4–6%</span></div>'
+        +'<div id="bcGuards">'+_bcGuards(v.amount,20,_bcInit,null,_bcCostLed)+'</div>'
+        +'</div>';
     }
     // ── DEF-UX11: the «9-note parade» (value-floor · HBU · old-stock · cost-triangulation · leadership ·
     // age-honesty · resurvey · cost-value-line · market-dispersion) → `how`, NOT `t1`. Every condition +
