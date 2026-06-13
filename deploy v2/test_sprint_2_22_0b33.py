@@ -35,8 +35,10 @@ _form_end = HTML.index('id="refineScreen"', _form_start)
 FORM = HTML[_form_start:_form_end]
 
 # ── 0. engine version bump (single source; /api/health derives from SPRINT_TAG) ──
-check('ENGINE_VERSION → b33-identity-input-default', "thammen-sprint2p22p0b33-identity-input-default" in ENG)
-check('SPRINT_TAG → 2.22.0b.33', "'2.22.0b.33'" in ENG)
+# R6/Lesson-2: no exact version pins — re-pointed to a format check when b34 bumped the tag
+# (b33 is a frontend/value-invariant sprint, so any later tag is valid here).
+check('ENGINE_VERSION has the sprint-tag format', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)
+check('SPRINT_TAG dotted-numeric format', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
 check('no stale b32 engine tag left in evaluate_unified.py', "sprint2p22p0b32-confirm-simplify" not in ENG)
 
 # ── (a) HELP LINE on the address input ──

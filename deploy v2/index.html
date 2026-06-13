@@ -1991,6 +1991,13 @@ function show(d){
   // Sprint 2.22.0b.22 — tower-pair fence: sync (and clear, when non-tower)
   // the unit-pair inputs with every rendered result.
   syncTowerPair(d&&d.asset_type);
+  // ── Sprint 2.22.0b.34 (DEF-UX12): role-driven density — «من أنت؟» drives the DEFAULT
+  // fold-state of the «كيف وصلنا» evidence accordion (study §1 «المفصل»). `audience` is
+  // ALREADY broadcast top-level in the response, so this is FRONTEND-ONLY (api.py UNTOUCHED).
+  // Specialists (investor/valuer) generate with the evidence OPEN («الأدلّة أولاً»); owner/
+  // buyer/seller keep it folded (the simple-owner default, b31). VALUE-INVARIANT — only the
+  // accordion's `open` attribute changes; the value, range, copy, and tier order are untouched.
+  const _dense=(function(a){return a==='investor'||a==='valuer';})(d.audience||'owner');
 
   // Sprint 2.22.0b.10 — surface the geometry MAX-buildable footprint as an
   // editable hint on the refine screen (DISPLAY/CONFIRM only; the user corrects
@@ -2303,7 +2310,7 @@ function show(d){
     // «جودة الأدلّة (تفصيل)» accordion). Collapsed by default → its <summary> IS the 5th core element (the
     // «button»). The TIER-1 evidence one-row pill stays the summary; the full panel lives here. No panel
     // lost — every note + the panel stay fully reachable. ──
-    t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc));
+    t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc), _dense);  // DEF-UX12: OPEN for investor/valuer
     t2+=_acc('🏠 بيانات العقار الأساسية',_info);
   }
 

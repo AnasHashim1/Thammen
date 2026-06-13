@@ -81,7 +81,7 @@ check("panel renderer evidencePanelHtml present", "function evidencePanelHtml(d,
 # Re-pointed for DEF-UX13/b32 (R6/Lesson-2 — stale structural pin): the panel is still
 # rendered user-visibly, but folded into the b31 «كيف وصلنا لهذا الرقم؟» result accordion
 # (it was dropped from the confirm gate by b32). Intent (panel-is-rendered) preserved.
-check("panel rendered on the result (b31 «كيف وصلنا» accordion)", "how+evidencePanelHtml(d,acc))" in HTML)
+check("panel rendered on the result (b31 «كيف وصلنا» accordion)", "how+evidencePanelHtml(d,acc)" in HTML)  # b34: 3rd open arg added → drop trailing )
 check("binary confidence badge REMOVED (bc/bt gone)",
       "bc='rb" not in HTML and "bt=acc.label" not in HTML and 'class="rb \'+bc+\'"' not in HTML)
 check("tier-coloured «ما معنى ذلك؟» RENDER block REMOVED (binary confidence visual gone)",

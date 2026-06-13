@@ -23,7 +23,8 @@ def check(name, cond):
 # ── 1. the `how` buffer + the ONE «كيف وصلنا» accordion ──
 check('show() declares the `how` fold buffer', "let how='';" in HTML)
 check('ONE «كيف وصلنا لهذا الرقم؟» accordion = how + full evidence panel',
-      "t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc));" in HTML)
+      # b34 (DEF-UX12) added a 3rd `open` arg (role-driven density) — match without the trailing `);`
+      "t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML)
 # the «كيف وصلنا» accordion is built FIRST (right after the figure+MVU), before basic-info.
 check('«كيف وصلنا» accordion is the FIRST t2 accordion (before basic-info)',
       HTML.index("t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟'") < HTML.index("t2+=_acc('🏠 بيانات العقار الأساسية',_info);"))

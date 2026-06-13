@@ -44,7 +44,8 @@ check('no pill substitute injected on confirm (study §3 «لا لوحة أدل�
 # the panel function itself MUST survive — it is still used on the result + the report.
 check('evidencePanelHtml() function still defined', 'function evidencePanelHtml(d,acc){' in HTML)
 check('evidence panel still on the RESULT (b31 «كيف وصلنا» accordion)',
-      "t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc));" in HTML)
+      # b34 (DEF-UX12) added a 3rd `open` arg (role density) — match without the trailing `);`
+      "t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML)
 check('evidence panel still in the full REPORT (numbered annex)',
       '_axWrap(evidencePanelHtml(d,acc))' in HTML)
 

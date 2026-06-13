@@ -71,7 +71,7 @@ check('scratch consumed before assembly', "h='';  // scratch consumed" in HTML)
 #     longer a standalone «جودة الأدلّة (تفصيل)» accordion — it now folds INTO the «كيف وصلنا لهذا الرقم؟»
 #     accordion alongside the 9-note parade; assertion below + test_sprint_2_22_0b31.py own the new shape.)
 check('basic-info → TIER-2 accordion', "t2+=_acc('🏠 بيانات العقار الأساسية',_info);" in HTML)
-check('full evidence panel → «كيف وصلنا» accordion (b31 fold)', "t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc));" in HTML)
+check('full evidence panel → «كيف وصلنا» accordion (b31 fold)', "t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML)  # b34: 3rd open arg → drop trailing );
 # 15. brief sections: valued → accordion; refusal → flat (verbatim title card).
 check('brief sections → TIER-2 accordion (valued)', "t2+=_acc('📄 '+(br.title_ar||'تفاصيل التقرير'),_secs);" in HTML)
 check('brief sections → flat (refusal verbatim)', "flat+='<div class=\"rc\" style=\"background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px\"><div class=\"rt\" style=\"font-size:1.15rem;margin-bottom:0\">'+(br.title_ar||'التقرير')+'</div></div>';" in HTML)
