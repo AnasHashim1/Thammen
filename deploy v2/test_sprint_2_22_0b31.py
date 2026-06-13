@@ -40,7 +40,10 @@ check('note 4/9 cost-triangulation → how', 'v.cost_triangulation.note_ar){how+
 check('note 5/9 leadership → how', 'v.leadership.note_ar){how+=' in HTML)
 check('note 6/9 age-honesty → how', 'v.leadership.age_honesty_note_ar){how+=' in HTML)
 check('note 7/9 resurvey → how', 'v.leadership.resurvey_note_ar){how+=' in HTML)
-check('note 8/9 cost-value-line → how', 'v.value_stack.cost.value){how+=' in HTML)
+# R6/Lesson-2 re-point (b37/DEF-UX9): the cost-value line moved into a {const _vc=…; how+='…🏗️…'} block
+# (the cost-mechanics BUA/RCN/retention sibling was added beside it). The cost-value note still lives in
+# `how` (the «كيف وصلنا» accordion), not t1 — proven by the 🏗️ label line appending to `how`.
+check('note 8/9 cost-value-line → how', '🏗️ \'+_vc.label_ar' in HTML and 'const _vc=v.value_stack.cost;' in HTML)
 check('note 9/9 market-dispersion → how', 'v.value_stack.market.dispersion_36!=null){how+=' in HTML)
 
 # ── 3. the 9 notes are GONE from t1 (no double-render) ──

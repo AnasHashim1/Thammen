@@ -2327,7 +2327,19 @@ function show(d){
     if(v.leadership&&v.leadership.note_ar){how+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'">⚖️ '+v.leadership.note_ar+'</div>';}
     if(v.leadership&&v.leadership.age_honesty_note_ar){how+='<div class="rn" style="margin-top:6px;font-size:.74rem">🕰️ '+v.leadership.age_honesty_note_ar+'</div>';}
     if(v.leadership&&v.leadership.resurvey_note_ar){how+='<div class="rn" style="margin-top:6px;font-size:.74rem">📋 '+v.leadership.resurvey_note_ar+'</div>';}
-    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){how+='<div class="rn" style="margin-top:8px;font-size:.76rem">🏗️ '+v.value_stack.cost.label_ar+': '+fmt(v.value_stack.cost.value)+' ر.ق — '+v.value_stack.cost.sub_ar+'</div>';}
+    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
+      const _vc=v.value_stack.cost;
+      how+='<div class="rn" style="margin-top:8px;font-size:.76rem">🏗️ '+_vc.label_ar+': '+fmt(_vc.value)+' ر.ق — '+_vc.sub_ar+'</div>';
+      // Sprint 2.22.0b.37 (DEF-UX9): surface the DRC cost MECHANICS (BUA × كلفة الإحلال × معامل الاحتفاظ →
+      // depreciated building + land) for the المهندس/المثمّن — all BROADCAST in value_stack.cost, previously
+      // visible ONLY on the full/short report (showReport :1672 / showShortReport :1904), not on the result
+      // screen. Lands inside «كيف وصلنا» (the appraiser-detail accordion, b34 density-open for investor/valuer).
+      // Display-only / value-invariant. Numbers in dir=ltr islands (Rule #25).
+      if(_vc.bua_m2&&_vc.rcn_qar_per_m2&&_vc.retention!=null){
+        how+='<div class="rn" style="margin-top:4px;font-size:.72rem;color:var(--muted)">🔧 آليّة الكلفة (نهج DRC): مساحة البناء BUA ≈ <span dir="ltr">'+_vc.bua_m2+'</span> م² · كلفة الإحلال '+fmt(_vc.rcn_qar_per_m2)+' ر.ق/م² · معامل الاحتفاظ <span dir="ltr">'+_vc.retention+'</span> ← البناء المُهلَك ≈ '+fmt(_vc.building_value)+' ر.ق + الأرض '+fmt(_vc.land_floor)+' ر.ق</div>';
+        if(_vc.assumptions_ar)how+='<div class="rn" style="font-size:.7rem;color:var(--muted);margin-top:2px">'+_vc.assumptions_ar+'</div>';
+      }
+    }
     else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){how+='<div class="rn" style="margin-top:8px;font-size:.74rem">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
     if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){how+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span></div>';}
     // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — TIER-1 (the claimed age never moves the headline).

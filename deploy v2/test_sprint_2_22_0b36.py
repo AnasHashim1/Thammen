@@ -41,8 +41,10 @@ _insuf_end = SHOW.index('// For unknown/no district', _insuf_start)
 INSUF = SHOW[_insuf_start:_insuf_end]
 
 # ── 0. engine version bump (frontend-only → version strings are the only engine diff) ──
-check('ENGINE_VERSION → b36-honest-apt-refusal', "thammen-sprint2p22p0b36-honest-apt-refusal" in ENG)
-check('SPRINT_TAG → 2.22.0b.36', "'2.22.0b.36'" in ENG)
+# R6/Lesson-2 re-point (b37): the exact-version pin broke the broad walk on the next bump —
+# the project's own «no exact version pins» rule. The behavior checks below still prove b36 shipped.
+check('ENGINE_VERSION is a valid thammen-sprint tag', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)
+check('SPRINT_TAG is dotted-numeric', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
 check('no stale b35 engine tag left', "sprint2p22p0b35-buyer-financing-calc" not in ENG)
 
 # ── 1. the predicate: apartment_building + tower, ONLY on the refusal (no value) ──
