@@ -26,8 +26,10 @@ _sh_end = HTML.index('\nfunction pctFmt(', _sh_start)
 SHOW = HTML[_sh_start:_sh_end]
 
 # ── 0. engine version bump ──
-check('ENGINE_VERSION → b35-buyer-financing-calc', "thammen-sprint2p22p0b35-buyer-financing-calc" in ENG)
-check('SPRINT_TAG → 2.22.0b.35', "'2.22.0b.35'" in ENG)
+# R6/Lesson-2 re-point (b36): the exact-version pin broke the broad walk on the next bump —
+# the project's own «no exact version pins» rule. Behavior checks below still prove b35 shipped.
+check('ENGINE_VERSION is a valid thammen-sprint tag', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)
+check('SPRINT_TAG is dotted-numeric', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
 check('no stale b34 engine tag left', "sprint2p22p0b34-role-driven-density" not in ENG)
 
 # ── 1. the result-screen recalc reuses the existing amortization (DRY) ──
