@@ -2196,32 +2196,39 @@ function show(d){
     }else{
       t1+='<div class="ri full" style="margin-bottom:10px"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.amount)+' ر.ق</div></div>';
     }
-    // Headline honesty notes (a17/a19 condition · b4 teardown/luxury · B-1 value_floor · b12 hbu) — STAY on TIER-1.
+    // Sprint 2.22.0b.31 (DEF-UX11): condition / teardown / luxury are DECISION-RELEVANT, user-input-driven
+    // headline qualifiers (conditional) → STAY on TIER-1. The 9-note methodology «parade» below folds into
+    // the «كيف وصلنا لهذا الرقم؟» accordion (the `how` buffer) so the simple owner sees a 5-element core.
     if(v.condition_note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.8rem">'+v.condition_note_ar+'</div>';}
     if(v.teardown&&v.teardown.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--warn);background:var(--warn-bg)">🏚️ '+v.teardown.note_ar+'</div>';}
     if(v.luxury_new_premium&&v.luxury_new_premium.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--ok);background:var(--ok-bg)">💎 '+v.luxury_new_premium.note_ar+'</div>';}
+    // ── DEF-UX11: the «9-note parade» (value-floor · HBU · old-stock · cost-triangulation · leadership ·
+    // age-honesty · resurvey · cost-value-line · market-dispersion) → `how`, NOT `t1`. Every condition +
+    // HTML string is VERBATIM (only the buffer prefix changed) → value byte-identical (b24). The `how`
+    // buffer becomes the body of ONE collapsed «🔍 كيف وصلنا لهذا الرقم؟» accordion (built below). ──
+    let how='';
     if(v.value_floor){
       const vf=v.value_floor;
-      t1+='<div class="rn" style="margin-top:10px;font-size:.8rem">';
-      if(vf.land_floor_note_ar)t1+='<div>'+vf.land_floor_note_ar+'</div>';
-      if(vf.land_anchored){if(vf.land_anchored_note_ar)t1+='<div style="margin-top:6px">'+vf.land_anchored_note_ar+'</div>';}
-      else if(vf.implied_building_note_ar){t1+='<div style="margin-top:6px">'+vf.implied_building_note_ar+'</div>';}
-      t1+='</div>';
+      how+='<div class="rn" style="margin-top:10px;font-size:.8rem">';
+      if(vf.land_floor_note_ar)how+='<div>'+vf.land_floor_note_ar+'</div>';
+      if(vf.land_anchored){if(vf.land_anchored_note_ar)how+='<div style="margin-top:6px">'+vf.land_anchored_note_ar+'</div>';}
+      else if(vf.implied_building_note_ar){how+='<div style="margin-top:6px">'+vf.implied_building_note_ar+'</div>';}
+      how+='</div>';
     }
-    if(v.hbu_note_ar){t1+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.hbu_note_ar+'</div>';}
+    if(v.hbu_note_ar){how+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.hbu_note_ar+'</div>';}
     // Sprint 2.22.0b.16 — old-stock re-anchor disclosure (§4: the raw thin median stays VISIBLE muted)
     // + the b11/b13 cost-triangulation notes (previously JSON-only; same honest surface, signed copy).
-    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';}
-    if(v.cost_triangulation&&v.cost_triangulation.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem">'+v.cost_triangulation.note_ar+'</div>';}
+    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar){how+='<div class="rn" style="margin-top:10px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';}
+    if(v.cost_triangulation&&v.cost_triangulation.note_ar){how+='<div class="rn" style="margin-top:10px;font-size:.78rem">'+v.cost_triangulation.note_ar+'</div>';}
     // Sprint 2.22.0b.20 — EVIDENCE-CONDITIONAL LEADERSHIP (Gate-2 SIGNED 2026-06-11):
     // the leadership verdict + the three-value stack lines (cost line = the b19-signed label;
     // dispersion shown = G2 auditability). Cost-led/E25 notes are warn-styled like the OSR note was.
-    if(v.leadership&&v.leadership.note_ar){t1+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'">⚖️ '+v.leadership.note_ar+'</div>';}
-    if(v.leadership&&v.leadership.age_honesty_note_ar){t1+='<div class="rn" style="margin-top:6px;font-size:.74rem">🕰️ '+v.leadership.age_honesty_note_ar+'</div>';}
-    if(v.leadership&&v.leadership.resurvey_note_ar){t1+='<div class="rn" style="margin-top:6px;font-size:.74rem">📋 '+v.leadership.resurvey_note_ar+'</div>';}
-    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){t1+='<div class="rn" style="margin-top:8px;font-size:.76rem">🏗️ '+v.value_stack.cost.label_ar+': '+fmt(v.value_stack.cost.value)+' ر.ق — '+v.value_stack.cost.sub_ar+'</div>';}
-    else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){t1+='<div class="rn" style="margin-top:8px;font-size:.74rem">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
-    if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){t1+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span></div>';}
+    if(v.leadership&&v.leadership.note_ar){how+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'">⚖️ '+v.leadership.note_ar+'</div>';}
+    if(v.leadership&&v.leadership.age_honesty_note_ar){how+='<div class="rn" style="margin-top:6px;font-size:.74rem">🕰️ '+v.leadership.age_honesty_note_ar+'</div>';}
+    if(v.leadership&&v.leadership.resurvey_note_ar){how+='<div class="rn" style="margin-top:6px;font-size:.74rem">📋 '+v.leadership.resurvey_note_ar+'</div>';}
+    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){how+='<div class="rn" style="margin-top:8px;font-size:.76rem">🏗️ '+v.value_stack.cost.label_ar+': '+fmt(v.value_stack.cost.value)+' ر.ق — '+v.value_stack.cost.sub_ar+'</div>';}
+    else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){how+='<div class="rn" style="margin-top:8px;font-size:.74rem">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
+    if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){how+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span></div>';}
     // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — TIER-1 (the claimed age never moves the headline).
     if(v.age_sensitivity&&v.age_sensitivity.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem">🕰️ '+v.age_sensitivity.note_ar+'</div>';}
     // MoJ sample size (cite-n discipline) — STAYS on TIER-1.
@@ -2239,9 +2246,13 @@ function show(d){
     }
     t1+='</div>';
 
-    // TIER-2 accordions: basic info + full evidence panel (no information lost — both fully reachable).
+    // ── Sprint 2.22.0b.31 (DEF-UX11): ONE «🔍 كيف وصلنا لهذا الرقم؟» accordion (FIRST, right after the
+    // figure + MVU clause) = the folded 9-note parade (`how`) + the full evidence panel (which was its own
+    // «جودة الأدلّة (تفصيل)» accordion). Collapsed by default → its <summary> IS the 5th core element (the
+    // «button»). The TIER-1 evidence one-row pill stays the summary; the full panel lives here. No panel
+    // lost — every note + the panel stay fully reachable. ──
+    t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc));
     t2+=_acc('🏠 بيانات العقار الأساسية',_info);
-    t2+=_acc('📊 جودة الأدلّة (تفصيل)',evidencePanelHtml(d,acc));
   }
 
   // ── BRIEF SECTIONS (Sprint D — was missing entirely) ── valued→TIER-2 accordion; refusal→flat (verbatim) ──

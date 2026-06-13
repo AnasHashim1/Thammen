@@ -67,9 +67,11 @@ check('service-scope badge → alerts', "alerts+='<div style=\"background:'+scop
 check('detail scratch → TIER-2 accordion (valued)', "if(hasValuation){ t2+=_acc('🔎 التفاصيل الكاملة (التحليل والمقارنات)', a8acc+h); }" in HTML)
 check('detail scratch → flat (refusal)', 'else { flat+=h; }' in HTML)
 check('scratch consumed before assembly', "h='';  // scratch consumed" in HTML)
-# 14. basic-info + full evidence panel → their own TIER-2 accordions (both reachable).
+# 14. basic-info → its own TIER-2 accordion. (b31/DEF-UX11 re-point: the full evidence panel is no
+#     longer a standalone «جودة الأدلّة (تفصيل)» accordion — it now folds INTO the «كيف وصلنا لهذا الرقم؟»
+#     accordion alongside the 9-note parade; assertion below + test_sprint_2_22_0b31.py own the new shape.)
 check('basic-info → TIER-2 accordion', "t2+=_acc('🏠 بيانات العقار الأساسية',_info);" in HTML)
-check('full evidence panel → TIER-2 accordion', "t2+=_acc('📊 جودة الأدلّة (تفصيل)',evidencePanelHtml(d,acc));" in HTML)
+check('full evidence panel → «كيف وصلنا» accordion (b31 fold)', "t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc));" in HTML)
 # 15. brief sections: valued → accordion; refusal → flat (verbatim title card).
 check('brief sections → TIER-2 accordion (valued)', "t2+=_acc('📄 '+(br.title_ar||'تفاصيل التقرير'),_secs);" in HTML)
 check('brief sections → flat (refusal verbatim)', "flat+='<div class=\"rc\" style=\"background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px\"><div class=\"rt\" style=\"font-size:1.15rem;margin-bottom:0\">'+(br.title_ar||'التقرير')+'</div></div>';" in HTML)
@@ -95,7 +97,11 @@ check('.t3block CSS present', '.t3block{' in HTML and '.t3block .t3-primary{' in
 # ── VALUE-INVARIANCE (show() does not touch the figure; range-as-lead b3 retained) ──
 check('range headline label retained (range-as-lead)', 'النطاق التقديري السوقي' in HTML)
 check('median muted marker retained', 'الوسيط (التقدير المركزي) ≈ <strong>' in HTML)
-check('condition note / value_floor / hbu still on TIER-1', 'v.condition_note_ar' in HTML and 'land_floor_note_ar' in HTML and 'v.hbu_note_ar' in HTML)
+# b31/DEF-UX11 re-point: condition note STAYS on TIER-1 (decision-relevant); value_floor + hbu
+# FOLD into the «كيف وصلنا» accordion (the `how` buffer). Strings still present — buffer changed.
+check('condition note STAYS on TIER-1 (b31)', "if(v.condition_note_ar){t1+=" in HTML)
+check('value_floor + hbu FOLD into «كيف وصلنا» (how buffer, b31)',
+      'if(v.value_floor){' in HTML and 'how+=' in HTML and 'if(v.hbu_note_ar){how+=' in HTML)
 check('moj sample-size (cite-n) still on TIER-1', 'صفقات البيع المسجلة لعقارات مشابهة' in HTML)
 # show() does NOT mutate v.amount/v.low/v.high (no assignment to those fields anywhere).
 check('no mutation of v.amount/v.low/v.high in show()', not re.search(r'\bv\.(amount|low|high)\s*=[^=]', HTML))
