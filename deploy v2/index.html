@@ -1206,10 +1206,25 @@ function copyResult(){
   if(v.amount){
     lines.push('');lines.push('قيمة التقدير السوقي: '+fmt(v.amount)+' ر.ق');
     if(v.low&&v.high)lines.push('النطاق: '+fmt(v.low)+' – '+fmt(v.high)+' ر.ق');
+    // Sprint 2.22.0b.30 (persona — السمسار/الورثة/البنك): the shared copy now carries the
+    // EVIDENCE + PROVENANCE it was missing, so the recipient can answer «من أين الرقم؟».
+    // Value-invariant — every field is already broadcast/shown; no engine change.
+    const _n=v.n_transactions!=null?v.n_transactions:d.moj_sample_size;
+    if(_n!=null)lines.push('عدد الصفقات المقارِنة: '+_n);
+    const _df=d.data_freshness||{};
+    if(_df.latest_record_ar)lines.push('حداثة بيانات وزارة العدل: حتى '+_df.latest_record_ar+(_df.days_old!=null?(' ('+_df.days_old+' يوماً)'):''));
   }else if(v.reason_ar){
     lines.push('');lines.push('ملاحظة: '+v.reason_ar);
   }
   if(d.methodology_ar)lines.push('');lines.push('المنهجية: '+d.methodology_ar);
+  // honesty label — the shared artifact must NOT read as a certified valuation.
+  if(v.amount)lines.push('تقدير سوقيّ آليّ، وليس تقييماً معتمداً.');
+  // provenance / tamper-anchor — lets the recipient verify the exact figures (b23 /verify).
+  if(d.report_ref){
+    lines.push('');lines.push('مرجع التقرير: '+d.report_ref);
+    const _vu=(typeof _verifyUrl==='function')?_verifyUrl(d):null;
+    if(_vu)lines.push('تحقّق من الأصالة: '+_vu);
+  }
   lines.push('');lines.push('— مُولَّد من ثمّن (thammen.qa)');
   navigator.clipboard.writeText(lines.join('\n')).then(()=>{
     const btn=document.getElementById('copyBtn');
