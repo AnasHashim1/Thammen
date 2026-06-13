@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b38-keystone-comparables'
-SPRINT_TAG = '2.22.0b.38'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b39-keystone-geo'
+SPRINT_TAG = '2.22.0b.39'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1192,16 +1192,30 @@ def _age_quality_adj(valuation, exclude_user_age=False) -> float:
 # Primary value selection (Sales Comparison Approach)
 # ============================================================
 
-def _keystone_comparables(rows, n, window_used, cap=8):
-    """Sprint 2.22.0b.38 (DEF-UX1) — build the keystone-comparables DISPLAY block from
-    the subject-bracket MoJ transactions that produced the displayed median. The rows are
-    already newest-first (moj_reference.build_reference sorts desc). ANONYMOUS by construction:
-    the source rows carry NO PIN / address / coordinates (E12 — the PN-hash is stripped from the
+def _keystone_comparables(rows, n, window_used, cap=8, basis='matched_bracket', pool_n=None):
+    """Sprint 2.22.0b.38 (DEF-UX1) / b39 (DEF-UX1.1) — build the keystone-comparables DISPLAY
+    block from the MoJ transactions behind the displayed median. ANONYMOUS by construction: the
+    source rows carry NO PIN / address / coordinates (E12 — the PN-hash is stripped from the
     export) → only date / size / total / ppm². DISPLAY-ONLY / value-invariant. Returns None when
     there are no usable rows; never raises into the caller.
+
+    basis:
+      'matched_bracket' (b38) — the subject SIZE-bracket rows that PRODUCED the median (market led
+                                via the matched bracket). Rows pre-sorted desc by build_reference.
+      'geo_widened'     (b39) — the subject's PRIMARY-area raw transactions WITHIN the geo-widened
+                                pool (market led via geo_full/widened). The full pool also includes
+                                location-adjusted NEIGHBOUR rows → the panel shows only the real,
+                                unadjusted same-area subset + discloses the widening (the frontend
+                                never claims «these decided your number» for geo). `pool_n` = the
+                                full pool size for the disclosure. Geo rows key ppm² as `price_m2`.
     """
     if not rows or not isinstance(rows, (list, tuple)):
         return None
+    # newest-first (the bracket path is pre-sorted; the geo pool is row-order) — idempotent on sorted input
+    try:
+        rows = sorted(rows, key=lambda r: (r.get('date') or '') if isinstance(r, dict) else '', reverse=True)
+    except Exception:
+        pass
     out = []
     for r in rows[:cap]:
         if not isinstance(r, dict):
@@ -1210,7 +1224,7 @@ def _keystone_comparables(rows, n, window_used, cap=8):
         area = r.get('area_m2')
         if not (tot and area):
             continue
-        ppm2 = r.get('price_per_m2')
+        ppm2 = r.get('price_per_m2') or r.get('price_m2')   # bracket key vs geo key
         out.append({
             'date': (r.get('date') or '')[:10],
             'area_m2': round(area),
@@ -1220,8 +1234,9 @@ def _keystone_comparables(rows, n, window_used, cap=8):
     if not out:
         return None
     return {
-        'basis': 'matched_bracket',
+        'basis': basis,
         'n': n,
+        'pool_n': pool_n,              # b39: full geo-pool size (primary + neighbours) for the geo disclosure
         'shown': len(out),
         'window_label': window_used,   # a14 «{n36} معاملة، منها {n24} خلال 24 شهراً» when 36mo count, else None
         'rows': out,
@@ -1295,6 +1310,11 @@ def _select_primary_comparison(ev, geo_v2, user_age=False) -> Optional[dict]:
             'method_label_ar': 'منهج المقارنة بالمبيعات (مجموعة موسَّعة جغرافياً) (‎RICS VPS 3 / IVS 103‎)',
             'n': geo_n,
             'source_ar': f'وسيط {geo_n} معاملة بعد توسيع للمناطق المجاورة مع تسوية موقع',
+            # Sprint 2.22.0b.39 (DEF-UX1.1): the subject's PRIMARY-area raw transactions within the
+            # geo-widened pool (real, unadjusted, same-area). Surfaced only when the market leads via
+            # this widened path (gated in the b4-region). Anonymous (E12). The frontend discloses that
+            # the full pool ALSO included location-adjusted neighbour rows (never overclaims).
+            'comparables': (geo_v2.get('primary') or {}).get('transactions') if isinstance(geo_v2, dict) else None,
         }
 
     # Case 3: Use widening even if not as large (when bracket is too thin)
@@ -1308,6 +1328,9 @@ def _select_primary_comparison(ev, geo_v2, user_age=False) -> Optional[dict]:
             'method_label_ar': 'منهج المقارنة بالمبيعات (مجموعة موسَّعة جغرافياً) — شواهد محدودة (‎RICS VPS 3 / IVS 103‎)',
             'n': geo_n,
             'source_ar': f'وسيط {geo_n} معاملة بعد توسيع — شواهد محدودة بسبب عينة صغيرة',
+            # Sprint 2.22.0b.39 (DEF-UX1.1): same as Case 2 — the primary-area raw rows of the
+            # geo-widened pool (anonymous; surfaced gated on market-led in the b4-region).
+            'comparables': (geo_v2.get('primary') or {}).get('transactions') if isinstance(geo_v2, dict) else None,
         }
 
     # Case 4: Fallback — bracket only with low-confidence flag
@@ -5093,13 +5116,23 @@ def evaluate_thammen(
                             # + refusals (no _gate → this block never runs). Anonymous (E12: no
                             # PIN/address), CC BY 4.0 public. DISPLAY-ONLY / value-invariant — adds a
                             # display field; amount/low/high/method/rule/leadership untouched.
+                            # b38 = matched bracket (subject-bracket rows that PRODUCED the median);
+                            # Sprint 2.22.0b.39 (DEF-UX1.1) extends to the geo-led market path
+                            # (comparison_widened / _indicative) → the primary-area raw rows of the
+                            # geo-widened pool (basis='geo_widened'; the frontend discloses the widening).
+                            _kc_method = output['valuation'].get('method')
                             if (_gate['leader'] == 'market'
-                                    and output['valuation'].get('method') == 'comparison_bracket'):
+                                    and _kc_method in ('comparison_bracket', 'comparison_widened',
+                                                       'comparison_widened_indicative')):
+                                _kc_basis = ('matched_bracket' if _kc_method == 'comparison_bracket'
+                                             else 'geo_widened')
                                 _kc = _keystone_comparables(
                                     (primary.get('comparables')
                                      if isinstance(primary, dict) else None),
                                     output['valuation'].get('n_transactions'),
-                                    output['valuation'].get('window_used'))
+                                    output['valuation'].get('window_used'),
+                                    basis=_kc_basis,
+                                    pool_n=output['valuation'].get('n_transactions'))
                                 if _kc:
                                     output['valuation']['comparables'] = _kc
                     # ── Sprint 2.22.0b.18 (§A1 — AGE BASIS, signed directive) ──

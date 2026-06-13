@@ -131,15 +131,17 @@ print("\n── D. evaluate_unified.py structural gating (the leader=='market' &
 _eu = open('evaluate_unified.py', encoding='utf-8').read()
 check("D1 Case 1 stashes comparables from ev.valuation.bracket_transactions",
       "'comparables': getattr(ev.valuation, 'bracket_transactions', None)" in _eu)
-check("D2 b4-region attach gated on leader=='market' AND method=='comparison_bracket'",
+# D2 — re-pointed at b39: the gate STILL requires leader=='market' and STILL includes comparison_bracket,
+# but b39 broadened the method check to a set (comparison_bracket / _widened / _widened_indicative).
+check("D2 b4-region attach gated on leader=='market' (comparison_bracket among the gated methods)",
       "_gate['leader'] == 'market'" in _eu
-      and "output['valuation'].get('method') == 'comparison_bracket'" in _eu
+      and "'comparison_bracket'" in _eu
       and "output['valuation']['comparables'] = _kc" in _eu)
-# D3 — ONLY Case 1 (comparison_bracket) sets primary['comparables'] → widened/thin/preliminary never do
-_after_case1 = _eu.split("'method': 'comparison_widened'", 1)
-check("D3 comparables stashed ONLY in Case 1 (not in the widened/thin/preliminary returns)",
-      _after_case1[0].count("'comparables'") == 1
-      and "'comparables'" not in _after_case1[1].split('def ', 1)[0])
+# D3 — re-pointed at b39: comparables now stashed in Case 1 (bracket) AND Cases 2-3 (geo widened),
+# but NEVER in the thin/preliminary returns (Cases 4-5 — those never produced the market-led keystone).
+_thin_seg = _eu.split("'method': 'comparison_thin'", 1)[1].split('\ndef ', 1)[0]
+check("D3 comparables NOT stashed in the thin/preliminary returns (Cases 4-5)",
+      "'comparables'" not in _thin_seg)
 check("D4 the attach reads primary.get('comparables') (the stashed rows)",
       "primary.get('comparables')" in _eu and "_keystone_comparables(" in _eu)
 
@@ -149,7 +151,7 @@ check("E1 render block gated on v.comparables.rows.length",
       'if(v.comparables&&v.comparables.rows&&v.comparables.rows.length){' in _html)
 check("E2 keystone header «هي ما قرّر رقمك»", 'هي ما قرّر رقمك' in _html)
 check("E3 numeric rows in a dir=ltr table (Rule #25)",
-      'direction:ltr' in _html.split('v.comparables', 1)[1][:1200])
+      'direction:ltr' in _html.split('if(v.comparables', 1)[1].split('// Sprint 2.22.0b.18', 1)[0])
 check("E4 renders the CC BY 4.0 source line (_kc.source_ar)",
       '_kc.source_ar' in _html)
 # E5 — lives in `how` (the b31 accordion) → density-gated + value-invariant (NOT t1).

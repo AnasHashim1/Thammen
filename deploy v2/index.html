@@ -2342,15 +2342,17 @@ function show(d){
     }
     else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){how+='<div class="rn" style="margin-top:8px;font-size:.74rem">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
     if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){how+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span></div>';}
-    // Sprint 2.22.0b.38 (DEF-UX1): keystone comparables — the subject-bracket MoJ transactions that
-    // PRODUCED the displayed median. The engine attaches v.comparables ONLY when the MARKET led via the
-    // matched bracket (leader=='market' && method=='comparison_bracket') → honest «هذه قرّرت رقمك».
+    // Sprint 2.22.0b.38 (DEF-UX1) + b39 (DEF-UX1.1): keystone comparables — the MoJ transactions behind
+    // the displayed median. The engine attaches v.comparables ONLY when the MARKET led: basis='matched_bracket'
+    // (b38 — the subject-bracket rows that PRODUCED the median, «هذه قرّرت رقمك») OR basis='geo_widened'
+    // (b39 — the subject's PRIMARY-area raw rows within the geo-widened pool; the panel discloses that
+    // location-adjusted NEIGHBOUR rows were also pooled, so it never overclaims for the geo case).
     // Anonymous (no address — E12), CC BY 4.0 public. Numeric rows in a dir=ltr table (Rule #25). Lives
     // in «كيف وصلنا» (b34 density-open for investor/valuer). DISPLAY-ONLY → appends to `how`, value byte-identical.
     if(v.comparables&&v.comparables.rows&&v.comparables.rows.length){
-      var _kc=v.comparables;
+      var _kc=v.comparables, _kcGeo=(_kc.basis==='geo_widened');
       how+='<div class="rn" style="margin-top:10px;font-size:.76rem;border-right:3px solid var(--bronze);background:var(--alt)">';
-      how+='<div style="font-weight:600;margin-bottom:5px">🔑 '+(_kc.n||_kc.rows.length)+' صفقة في شريحتك ومنطقتك — هي ما قرّر رقمك'+(_kc.window_label?(' <span style="color:var(--muted);font-weight:400;font-size:.9em">('+_kc.window_label+')</span>'):'')+'</div>';
+      how+='<div style="font-weight:600;margin-bottom:5px">🔑 '+(_kcGeo?'صفقات في منطقتك ضمن حوض المقارنة الموسَّع جغرافياً':((_kc.n||_kc.rows.length)+' صفقة في شريحتك ومنطقتك — هي ما قرّر رقمك'))+(_kc.window_label?(' <span style="color:var(--muted);font-weight:400;font-size:.9em">('+_kc.window_label+')</span>'):'')+'</div>';
       _kc.rows.forEach(function(c){
         how+='<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px solid #e6ddd0;direction:ltr">'
            +'<span style="color:var(--muted)">'+(c.date||'').slice(0,10)+'</span>'
@@ -2358,7 +2360,8 @@ function show(d){
            +'<span style="font-weight:600">'+fmt(c.total_price)+' ر.ق</span>'
            +'</div>';
       });
-      if(_kc.shown&&_kc.n&&_kc.shown<_kc.n)how+='<div style="color:var(--muted);font-size:.7rem;margin-top:4px">عرض '+_kc.shown+' من '+_kc.n+' معاملة (الأحدث)</div>';
+      if(_kcGeo)how+='<div style="color:var(--muted);font-size:.7rem;margin-top:4px">وُسِّع الحوض لمناطق مجاورة (مُعدَّلة الموقع في الحساب) لاكتمال العيّنة'+(_kc.pool_n?(' — إجمالي '+_kc.pool_n+' صفقة'):'')+'</div>';
+      else if(_kc.shown&&_kc.n&&_kc.shown<_kc.n)how+='<div style="color:var(--muted);font-size:.7rem;margin-top:4px">عرض '+_kc.shown+' من '+_kc.n+' معاملة (الأحدث)</div>';
       if(_kc.source_ar)how+='<div style="color:var(--muted);font-size:.68rem;margin-top:5px">'+_kc.source_ar+'</div>';
       how+='</div>';
     }
