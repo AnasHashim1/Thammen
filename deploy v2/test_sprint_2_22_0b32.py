@@ -31,9 +31,11 @@ _sc_start = HTML.index('function showConfirm(d){')
 _sc_end = HTML.index('function confirmProceed(', _sc_start)
 SHOWCONFIRM = HTML[_sc_start:_sc_end]
 
-# ── 0. engine version bump (single source; /api/health derives from SPRINT_TAG) ──
-check('ENGINE_VERSION → b32-confirm-simplify', "thammen-sprint2p22p0b32-confirm-simplify" in ENG)
-check('SPRINT_TAG → 2.22.0b.32', "'2.22.0b.32'" in ENG)
+# ── 0. engine version follows the sprint-tag format (R6/Lesson-2: no exact version
+#       pins — b32's literal pin was re-pointed to a format check when b33 bumped the
+#       tag; b32 is a frontend/value-invariant sprint, so any later tag is valid here) ──
+check('ENGINE_VERSION has the sprint-tag format', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)
+check('SPRINT_TAG dotted-numeric format', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
 check('no stale b31 engine tag left in evaluate_unified.py', "sprint2p22p0b31-tier1-howfold" not in ENG)
 
 # ── (18) full evidence panel DROPPED from the confirm screen ──

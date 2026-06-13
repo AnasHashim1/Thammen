@@ -489,7 +489,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <div class="tbar-st" id="statusBar">جاري الاتصال...</div>
   </div>
   <div class="fwrap">
-    <div class="ftitle">📍 إدخال العقار</div>
+    <div class="ftitle">📍 إدخال العقار <a id="clrIdent" onclick="clearIdentity()" style="display:none;font-weight:400;font-size:.78rem;color:var(--bronze);cursor:pointer;margin-right:10px">مسح ✕</a></div>
     <div class="fcard">
       <!-- Sprint 2.21.0: input mode tabs — address (villa/building) OR land PIN -->
       <div class="aud-row" style="margin-bottom:12px">
@@ -502,6 +502,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
           <div class="fg"><label>رقم الشارع</label><input type="number" id="street" placeholder="مثال: 380" min="1"></div>
           <div class="fg"><label>رقم المبنى</label><input type="number" id="building" placeholder="مثال: 25" min="1"></div>
         </div>
+        <!-- Sprint 2.22.0b.33 (DEF-UX14): help line — the simple owner sees three
+             bare number fields with no source hint (the PIN field already had one).
+             Tells the Qatari user WHERE the national address comes from. -->
+        <div class="br-note" style="margin-top:8px;font-size:.78rem;color:var(--muted)">هذه الأرقام على لوحة عنوان المبنى أو فاتورة كهرماء (المنطقة، ثم الشارع، ثم رقم المبنى).</div>
       </div>
       <div id="grpLand" style="display:none">
         <div class="fg"><label>رقم القطعة (PIN)</label><input type="text" id="pin" inputmode="numeric" placeholder="مثال: 74328443" pattern="\d{7,9}"></div>
@@ -842,6 +846,39 @@ function selTab(t){
 }
 // Sprint 2.22.0b.2.1 — tog()/dOpen removed: the optional-details toggle was on
 // formScreen; those inputs now live on the always-visible #refineScreen.
+
+// ── Sprint 2.22.0b.33 (DEF-UX14): identity-input default — remember the last
+// property identity LOCALLY so a returning owner/agent doesn't retype it. First
+// visit = empty (zero first-time clutter for the new owner, the study's persona).
+// VALUE-INVARIANT: this only PRE-FILLS the fields; run() reads/builds bd exactly
+// as before. localStorage (in-memory fallback if blocked) — no cookie, no server
+// write, the address never leaves the device (consistent with the a24 sessionStorage
+// gate + the DPIA "no server-side address").
+var _IDENT_KEY='thammen_last_ident', _identMem=null;
+function _identGet(){try{return JSON.parse(localStorage.getItem(_IDENT_KEY)||'null');}catch(e){return _identMem;}}
+function _identPut(o){try{localStorage.setItem(_IDENT_KEY,JSON.stringify(o));}catch(e){_identMem=o;}}
+function _identDel(){try{localStorage.removeItem(_IDENT_KEY);}catch(e){}_identMem=null;}
+function _saveIdentity(){
+  _identPut({tab:inputTab,
+    zone:(document.getElementById('zone').value||''),
+    street:(document.getElementById('street').value||''),
+    building:(document.getElementById('building').value||''),
+    pin:(document.getElementById('pin').value||'')});
+}
+function _restoreIdentity(){
+  var o=_identGet(); if(!o)return;
+  if(o.tab==='land')selTab('land');
+  var set=function(id,v){var el=document.getElementById(id);if(el&&v)el.value=v;};
+  set('zone',o.zone);set('street',o.street);set('building',o.building);set('pin',o.pin);
+  if(o.zone||o.street||o.building||o.pin){var c=document.getElementById('clrIdent');if(c)c.style.display='inline';}
+}
+function clearIdentity(){
+  _identDel();
+  ['zone','street','building','pin'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  var c=document.getElementById('clrIdent');if(c)c.style.display='none';
+}
+document.addEventListener('DOMContentLoaded',_restoreIdentity);
+
 function fmt(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('ar-QA')}
 
 // ── Sprint 2.22.0b.2.2 — evidence-quality diagnosis (DESIGN_2p2x §3) ──
@@ -1030,6 +1067,9 @@ async function run(){
     if(!z||!s||!b){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">يرجى إدخال رقم المنطقة والشارع والمبنى</div>';return}
     bd={zone:+z,street:+s,building:+b,audience};
   }
+  // Sprint 2.22.0b.33 (DEF-UX14): remember this identity locally (value-invariant —
+  // bd is already built/validated above; this only persists the fields for next time).
+  _saveIdentity();
   const btn=document.getElementById('sBtn');btn.disabled=true;btn.innerHTML='جاري التقييم... <span class="sp"></span>';
   // Sprint D: progressive loading with elapsed time
   const fRes=document.getElementById('fRes');
