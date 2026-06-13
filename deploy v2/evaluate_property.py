@@ -371,6 +371,7 @@ class MoJValuation:
     # Sprint 2.22.0a.14 (vi) — bracket honest-range + window disclosure (thin-cell follow-up):
     bracket_ppm2_dispersion: Optional[float] = None  # (a) 36mo ppm² (p75-p25)/median; gated vs 0.30
     bracket_window_used: Optional[str] = None        # (b) recent/total split string when n is a 36mo count
+    bracket_transactions: Optional[list] = None      # Sprint 2.22.0b.38 (DEF-UX1): the subject-bracket MoJ rows that produced the median (anonymous; display-only; surfaced only when the market leads via this bracket)
 
 
 @dataclass
@@ -732,6 +733,11 @@ def apply_moj_strategy(asset_type: str, plot_area_m2: float,
         notes=notes,
         bracket_ppm2_dispersion=_vi_disp,
         bracket_window_used=_vi_win,
+        # Sprint 2.22.0b.38 (DEF-UX1): the subject-bracket rows that produced this median.
+        # Present only when build_reference ran with return_transactions=True AND this bracket
+        # has data (the fallback-to-overall path leaves `bracket` empty → None). Anonymous.
+        bracket_transactions=(bracket.get('transactions')
+                              if isinstance(bracket, dict) else None),
     )
 
 
@@ -1573,7 +1579,10 @@ def evaluate_property(zone: int, street: int, building: int,
                     f'MoJ reference: "{area_name_in_moj}" (n={n_transactions} all-time).'
                 )
 
-            moj_ref_dict = build_reference(rows, area_name_in_moj, max_d)
+            # Sprint 2.22.0b.38 (DEF-UX1): carry the subject-bracket comparable ROWS
+            # (return_transactions=True). ADDITIVE — only adds bracket['transactions'];
+            # every aggregate output (median/n/quartiles) is byte-identical → value-invariant.
+            moj_ref_dict = build_reference(rows, area_name_in_moj, max_d, return_transactions=True)
 
             # ── Sprint 2.22.0b.16 (B-2 EARLY slice): thread the subject geo-bracket
             # FULL-window ppm² (the §20.10.1 estimator / bake-off M1c) additively on the

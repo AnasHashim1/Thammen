@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b37-cost-mechanics-display'
-SPRINT_TAG = '2.22.0b.37'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b38-keystone-comparables'
+SPRINT_TAG = '2.22.0b.38'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1192,6 +1192,44 @@ def _age_quality_adj(valuation, exclude_user_age=False) -> float:
 # Primary value selection (Sales Comparison Approach)
 # ============================================================
 
+def _keystone_comparables(rows, n, window_used, cap=8):
+    """Sprint 2.22.0b.38 (DEF-UX1) — build the keystone-comparables DISPLAY block from
+    the subject-bracket MoJ transactions that produced the displayed median. The rows are
+    already newest-first (moj_reference.build_reference sorts desc). ANONYMOUS by construction:
+    the source rows carry NO PIN / address / coordinates (E12 — the PN-hash is stripped from the
+    export) → only date / size / total / ppm². DISPLAY-ONLY / value-invariant. Returns None when
+    there are no usable rows; never raises into the caller.
+    """
+    if not rows or not isinstance(rows, (list, tuple)):
+        return None
+    out = []
+    for r in rows[:cap]:
+        if not isinstance(r, dict):
+            continue
+        tot = r.get('total_price')
+        area = r.get('area_m2')
+        if not (tot and area):
+            continue
+        ppm2 = r.get('price_per_m2')
+        out.append({
+            'date': (r.get('date') or '')[:10],
+            'area_m2': round(area),
+            'total_price': round(tot),
+            'price_per_m2': round(ppm2) if ppm2 else None,
+        })
+    if not out:
+        return None
+    return {
+        'basis': 'matched_bracket',
+        'n': n,
+        'shown': len(out),
+        'window_label': window_used,   # a14 «{n36} معاملة، منها {n24} خلال 24 شهراً» when 36mo count, else None
+        'rows': out,
+        'source_ar': 'بيانات وزارة العدل القطرية (CC BY 4.0) — مجموعة عامّة بلا عنوان أو ترقيم فرديّ',
+        'source_en': 'Qatar Ministry of Justice data (CC BY 4.0) — public aggregate, no address or per-record id',
+    }
+
+
 def _select_primary_comparison(ev, geo_v2, user_age=False) -> Optional[dict]:
     """
     Choose the primary comparison value following RICS VPS 3.
@@ -1241,6 +1279,10 @@ def _select_primary_comparison(ev, geo_v2, user_age=False) -> Optional[dict]:
             'source_ar': f'وسيط {bracket_n} معاملة في نفس الشريحة والمنطقة{_win_sfx}',
             'window_used': _bwin,        # (vi)(b) recent/total split → Methodology brief
             'ppm2_dispersion': _bdisp,   # (vi)(a) 36mo ppm² dispersion → _stage1_dispersion_gate
+            # Sprint 2.22.0b.38 (DEF-UX1): the subject-bracket rows that produced this median.
+            # Stashed on `primary`; SURFACED only when the market leads via this bracket (gated in
+            # the b4-region — leader=='market' AND method=='comparison_bracket'). Anonymous (E12).
+            'comparables': getattr(ev.valuation, 'bracket_transactions', None),
         }
 
     # Case 2: Bracket weak but widening succeeded
@@ -5042,6 +5084,24 @@ def evaluate_thammen(
                                     _mu20['level'] = 'high'
                             # rule == 'matched' → the market leads normally; emission only.
                             output['valuation']['leadership'] = _lead20
+                            # ── Sprint 2.22.0b.38 (DEF-UX1): keystone comparables ──
+                            # Surface the subject-bracket MoJ transactions that PRODUCED the
+                            # displayed median — ONLY when the MARKET led via that exact bracket
+                            # (leader=='market' AND method=='comparison_bracket' → the headline IS
+                            # the bracket median). Excludes cost-led / income-led / geo-led / thin /
+                            # preliminary (comparables did NOT lead) + land (its own comparable_grid)
+                            # + refusals (no _gate → this block never runs). Anonymous (E12: no
+                            # PIN/address), CC BY 4.0 public. DISPLAY-ONLY / value-invariant — adds a
+                            # display field; amount/low/high/method/rule/leadership untouched.
+                            if (_gate['leader'] == 'market'
+                                    and output['valuation'].get('method') == 'comparison_bracket'):
+                                _kc = _keystone_comparables(
+                                    (primary.get('comparables')
+                                     if isinstance(primary, dict) else None),
+                                    output['valuation'].get('n_transactions'),
+                                    output['valuation'].get('window_used'))
+                                if _kc:
+                                    output['valuation']['comparables'] = _kc
                     # ── Sprint 2.22.0b.18 (§A1 — AGE BASIS, signed directive) ──
                     # Every LEADING cost/retention computation uses the SYSTEM (CGIS-documented)
                     # age — TD-93317: the certified valuer led on the system age («نحو 18 سنة …

@@ -31,8 +31,10 @@ _b37_idx = SHOW.find('Sprint 2.22.0b.37 (DEF-UX9)')
 B37 = SHOW[_b37_idx:_b37_idx + 1400] if _b37_idx >= 0 else ''
 
 # ── 0. engine version bump (frontend-only → version strings are the only engine diff) ──
-check('ENGINE_VERSION → b37-cost-mechanics-display', "thammen-sprint2p22p0b37-cost-mechanics-display" in ENG)
-check('SPRINT_TAG → 2.22.0b.37', "'2.22.0b.37'" in ENG)
+# R6/Lesson-2 (re-pointed at b38): version-AGNOSTIC format check, not an exact-version pin
+# (an exact `bN` literal breaks every later sprint bump — the project's own «no exact version pins» rule).
+check('ENGINE_VERSION prefixed thammen-sprint*', bool(re.search(r"ENGINE_VERSION = 'thammen-sprint[\w.-]+'", ENG)))
+check('SPRINT_TAG dotted-numeric', bool(re.search(r"SPRINT_TAG = '\d+\.\d+\.", ENG)))
 check('no stale b36 engine tag left', "sprint2p22p0b36-honest-apt-refusal" not in ENG)
 
 # ── 1. the DEF-UX9 block exists and is gated on the three broadcast fields being present ──
