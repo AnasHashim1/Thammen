@@ -1793,6 +1793,16 @@ function srRecalcPay(){
   const p=_srPayment(v.amount||0,parseFloat(dEl.value)||0,parseFloat(yEl.value)||0,parseFloat(rEl.value)||0);
   out.textContent=p?('≈ '+fmt(p)+' ر.ق/شهر'):'—';
 }
+// ── Sprint 2.22.0b.35 (DEF-UX16): the RESULT-screen buyer financing calculator's live recalc.
+// Reuses _srPayment (the b25 D3 amortization — DRY). Separate ids (bc*) so it never collides
+// with the short-report calculator (sr*), which lives on a different screen. DISPLAY-ONLY.
+function bcRecalc(){
+  const v=((window._lastResult||{}).valuation||{});
+  const dEl=document.getElementById('bcDown'),yEl=document.getElementById('bcYears'),rEl=document.getElementById('bcRate'),out=document.getElementById('bcPay');
+  if(!(dEl&&yEl&&rEl&&out))return;
+  const p=_srPayment(v.amount||0,parseFloat(dEl.value)||0,parseFloat(yEl.value)||0,parseFloat(rEl.value)||0);
+  out.textContent=p?(fmt(p)+' ر.ق/شهر'):'—';
+}
 function openShortReport(){const d=window._lastResult; if(!d)return; showShortReport(d); go('shortReport');}
 function printShortReport(){
   document.body.classList.add('printing-short');
@@ -2261,6 +2271,15 @@ function show(d){
     if(v.condition_note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.8rem">'+v.condition_note_ar+'</div>';}
     if(v.teardown&&v.teardown.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--warn);background:var(--warn-bg)">🏚️ '+v.teardown.note_ar+'</div>';}
     if(v.luxury_new_premium&&v.luxury_new_premium.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--ok);background:var(--ok-bg)">💎 '+v.luxury_new_premium.note_ar+'</div>';}
+    // ── Sprint 2.22.0b.35 (DEF-UX16): buyer financing calculator — display-only, under the figure,
+    // ONLY for audience=buyer (study §2 «المشترية: حاسبة تمويل»). Reuses _srPayment (b25 D3 amortization,
+    // DRY). VALUE-INVARIANT — an illustrative monthly payment derived FROM v.amount; the engine, amount,
+    // range, and tier order are untouched. Defaults (20% down · 25y · 4.5%) match the signed short-report
+    // contract (b28). Separate ids (bc*) → no collision with the short-report calculator (sr*). ──
+    if(d.audience==='buyer'&&v.amount){
+      const _bcInit=_srPayment(v.amount,20,25,4.5);
+      t1+='<div class="rn" style="margin-top:12px;font-size:.82rem;line-height:2;border-right:3px solid var(--bronze);background:var(--alt)">🏦 حاسبة التمويل التقريبية: <span dir="ltr"><input id="bcDown" type="number" value="20" min="0" max="90" oninput="bcRecalc()" style="width:46px;padding:2px 4px"></span>% دفعة أولى · <input id="bcYears" type="number" value="25" min="1" max="35" oninput="bcRecalc()" style="width:46px;padding:2px 4px"> سنة · <input id="bcRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="bcRecalc()" style="width:52px;padding:2px 4px">% فائدة → القسط الشهريّ ≈ <b id="bcPay">'+(_bcInit?(fmt(_bcInit)+' ر.ق/شهر'):'—')+'</b> <span style="color:var(--muted);font-size:.76rem">— تقديريّ، استشر بنكك</span></div>';
+    }
     // ── DEF-UX11: the «9-note parade» (value-floor · HBU · old-stock · cost-triangulation · leadership ·
     // age-honesty · resurvey · cost-value-line · market-dispersion) → `how`, NOT `t1`. Every condition +
     // HTML string is VERBATIM (only the buffer prefix changed) → value byte-identical (b24). The `how`

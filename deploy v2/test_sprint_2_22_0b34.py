@@ -30,8 +30,9 @@ _sh_end = HTML.index('\nfunction pctFmt(', _sh_start)  # the next top-level fn a
 SHOW = HTML[_sh_start:_sh_end]
 
 # ── 0. engine version bump ──
-check('ENGINE_VERSION → b34-role-driven-density', "thammen-sprint2p22p0b34-role-driven-density" in ENG)
-check('SPRINT_TAG → 2.22.0b.34', "'2.22.0b.34'" in ENG)
+# R6/Lesson-2: no exact version pins — re-pointed to a format check when b35 bumped the tag.
+check('ENGINE_VERSION has the sprint-tag format', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)
+check('SPRINT_TAG dotted-numeric format', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
 check('no stale b33 engine tag left', "sprint2p22p0b33-identity-input-default" not in ENG)
 
 # ── 1. the density flag, derived from the broadcast audience ──
