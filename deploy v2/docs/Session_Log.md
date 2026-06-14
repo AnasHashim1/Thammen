@@ -5604,6 +5604,26 @@ Postgres store (the a15 D-2 path) if volume grows. **NEXT remains the binding co
 collection, D-3 — PO decision); this report-copy is the operator-side memory that complements it.** The «التقدير
 السوقي» term remains PROVISIONAL.
 
+**🆕 Fix-follow-up (b42.1, same session — Heroku v215, commit `0efec63`, CHANGELOG_v125):** the email-send LIVE
+test (the «only open item» above) RAN — the operator supplied a Resend API key + `ans_hashim@hotmail.com`; CC ran
+a direct Resend connectivity check (✓ id returned) → set the Heroku config vars (`RESEND_API_KEY` +
+`REPORT_COPY_EMAIL`, release v214) → ran a live eval. The first real send **403'd with Cloudflare `error code:
+1010`** on `api.resend.com` (the bare `urllib` User-Agent — **Resend's API is Cloudflare-fronted too → the SAME
+#61 / RISK_REGISTER R12 block as thammen.qa**; the diagnostic isolated it: `curl` passed, `urllib`-no-UA →
+403/1010, `urllib`+browser-UA → success). **Fix:** a browser `User-Agent` header on the Resend POST in
+`report_mailer._post` (+ a `_BROWSER_UA` constant, comment cites #61). Verified: isolated
+`test_sprint_2_22_0b42.py` **40/40** (36 + 4 new: monkeypatch `urllib.request.urlopen`, assert the real `_post`
+sets `Mozilla/5.0` + the Authorization bearer + the `/emails` URL) + DoD aggregator **392/392** / security
+**15/15** / surface **45/45** / broad **110/110 ALL GREEN**. SPRINT_TAG → `2.22.0b.42.1`, ENGINE
+`thammen-sprint2p22p0b42p1-report-copy-ua-fix`; redeployed Heroku **v215** (`45a9701..4c72e8b`) + origin
+`0efec63`. Re-run eval (Marikh 54/541/6 → **2,400,000**, ref `TH-20260614-54541006-b052`, value byte-identical) →
+**no send-failure logged after the v215 release** → the report copy delivers (subject `[ثمن]
+TH-20260614-54541006-b052 — 54/541/6 — 2,400,000 ر.ق` + full result JSON attached; Anas inbox-confirm). **The
+report-copy memory is now LIVE + ACTIVE.** **Lesson:** #61/R12 (Cloudflare 1010 blocks the bare `urllib` UA) is
+NOT thammen.qa-specific — it extends to ANY Cloudflare-fronted API the app POSTs to via stdlib `urllib` (here
+Resend) → always set a browser `User-Agent` on such POSTs. The a24 notice update («العنوان لا يُخزَّن» →
+operator-copy disclosure, Rule #39) remains the gate for beta-wide use.
+
 -----
 
 -----
