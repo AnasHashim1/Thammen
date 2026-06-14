@@ -210,12 +210,40 @@ def t_api_wiring():
     check("api: seam gated on _MAIL_OK", src.count("if _MAIL_OK:") == 2)
 
 
+# ── 6. the real _post sets a browser User-Agent (Cloudflare 1010 fix, #61) ──
+def t_post_browser_ua():
+    import urllib.request
+    os.environ["RESEND_API_KEY"] = "re_unit_key"
+    captured = {}
+
+    class _FakeResp:
+        def read(self): return b'{"id":"x"}'
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    orig = urllib.request.urlopen
+    urllib.request.urlopen = lambda req, timeout=None: (captured.setdefault("req", req), _FakeResp())[1]
+    try:
+        rm._post({"from": "x", "to": ["a@b.co"], "subject": "s", "html": "h"})
+    finally:
+        urllib.request.urlopen = orig
+    req = captured.get("req")
+    check("_post: reached urlopen (real path)", req is not None)
+    check("_post: sets a browser User-Agent (Cloudflare 1010 fix #61)",
+          req is not None and "Mozilla/5.0" in (req.get_header("User-agent") or ""))
+    check("_post: carries the Authorization bearer",
+          req is not None and (req.get_header("Authorization") or "").startswith("Bearer re_"))
+    check("_post: targets the Resend /emails endpoint",
+          req is not None and req.full_url == rm._RESEND_URL)
+
+
 def main():
     saved = _save_env()
     try:
         for fn in (t_gate, t_build, t_build_refusal_and_fallback,
                    t_send_dormant_no_network, t_send_active_one_post,
-                   t_send_swallows_failure, t_value_invariance, t_api_wiring):
+                   t_send_swallows_failure, t_value_invariance, t_api_wiring,
+                   t_post_browser_ua):
             fn()
     finally:
         _restore_env(saved)

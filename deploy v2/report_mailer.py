@@ -43,6 +43,12 @@ log = logging.getLogger("thammen.report_mailer")
 _RESEND_URL = "https://api.resend.com/emails"
 _DEFAULT_FROM = "Thammen <onboarding@resend.dev>"
 _HTTP_TIMEOUT = 10  # seconds — the background task is off the response path anyway
+# api.resend.com is Cloudflare-fronted and blocks the bare Python-urllib User-Agent
+# with "error code: 1010" (Operational #61 / RISK_REGISTER R12 — the same bot-integrity
+# block thammen.qa has). A browser User-Agent passes. Caught by the b42 live email-send
+# test (the dormant-until-activation path 403'd on the first real send).
+_BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+               "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 
 
 # ── activation gate ────────────────────────────────────────────────────────
@@ -192,6 +198,7 @@ def _post(payload: dict) -> None:
         headers={
             "Authorization": f"Bearer {os.environ['RESEND_API_KEY'].strip()}",
             "Content-Type": "application/json",
+            "User-Agent": _BROWSER_UA,   # Cloudflare 1010 blocks bare urllib (#61)
         },
     )
     with urllib.request.urlopen(req, timeout=_HTTP_TIMEOUT) as resp:
