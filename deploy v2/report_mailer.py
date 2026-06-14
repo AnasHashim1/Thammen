@@ -25,6 +25,14 @@ provider) → that line MUST be updated to disclose the operator copy (+ a PDPPL
 nod) BEFORE the invited beta opens. The flag is the on/off; the notice update is
 the gate for beta-wide use.
 
+PERSONAL-DATA MINIMISATION (Sprint 2.22.0b.43): the copy keeps the property's
+IDENTITY — address, cadastral PIN, district, age, valuation — so it stays a
+useful, searchable memory; but the Kahramaa utility ACCOUNT numbers
+(electricity_no / water_no) are PERSONAL DATA tied to a person's billing and are
+stripped from BOTH the summary body AND the attached JSON (`_scrub_personal`).
+The report stays fully regenerable on thammen.qa from the address + report_ref —
+the account numbers add nothing to that and do not travel.
+
 ISOLATION: reads ONLY the engine `result` + request identifiers; NEVER mutates
 `result`; never raises into the caller (failures are swallowed + logged). Runs in
 a FastAPI BackgroundTask so it adds ZERO latency to the response. urllib (stdlib)
@@ -88,6 +96,26 @@ def _age_str(age):
     return str(age) if age else None
 
 
+# Utility ACCOUNT numbers (Kahramaa electricity/water) are personal data tied to a
+# person's billing → stripped from the operator copy (b43). The property's identity
+# (address, cadastral PIN, district, age, valuation) is retained, so the email stays
+# a useful searchable memory while the personal account numbers do not travel.
+_PERSONAL_PB_FIELDS = ("electricity_no", "water_no")
+
+
+def _scrub_personal(result: dict) -> dict:
+    """Return a DEEP COPY of `result` with the personal utility-account fields removed
+    from property_basis. NEVER mutates the caller's `result` (the isolation invariant
+    — the engine result must stay byte-identical to what the response carried)."""
+    import copy  # stdlib; lazy
+    out = copy.deepcopy(result or {})
+    pb = out.get("property_basis")
+    if isinstance(pb, dict):
+        for k in _PERSONAL_PB_FIELDS:
+            pb.pop(k, None)
+    return out
+
+
 def _asset_label(result: dict) -> str:
     """Arabic asset label, preferring the human label over the engine slug:
     top-level asset_type_ar → service_scope.label_ar → the raw asset_type."""
@@ -122,9 +150,9 @@ def _summary_fields(result: dict, inputs: dict) -> dict:
         "rule": lead.get("rule") or (v.get("income_triangulation") or {}).get("mode") or "—",
         "lead_note": lead.get("note_ar") or "",
         "muc": muc.get("level") or "—",
-        "pin": pb.get("pin"),
-        "electricity_no": pb.get("electricity_no"),
+        "pin": pb.get("pin"),                                 # cadastral parcel id (property data, kept)
         "age": _age_str(pb.get("building_age_estimate")),
+        # NOTE: electricity_no / water_no are NOT surfaced — personal data (b43).
         "date": result.get("valuation_date") or "—",
         "engine": result.get("engine_version") or "—",
     }
@@ -149,8 +177,6 @@ def _html(f: dict) -> str:
     pb_bits = []
     if f["pin"]:
         pb_bits.append(f'الرقم المساحي {_ltr(f["pin"])}')
-    if f["electricity_no"]:
-        pb_bits.append(f'كهرباء {_ltr(f["electricity_no"])}')
     if f["age"]:
         pb_bits.append(str(f["age"]))
     pb_line = " · ".join(pb_bits) if pb_bits else "—"
@@ -190,7 +216,9 @@ def build_email(result: dict, inputs: Optional[dict] = None) -> dict:
     unit-testable: no env, no network. Attaches the FULL result JSON so the email
     is a complete archive of the report."""
     f = _summary_fields(result, inputs or {})
-    raw = json.dumps(result or {}, ensure_ascii=False, default=str).encode("utf-8")
+    # Attach the result MINUS the personal utility-account fields (b43). Deep-copied
+    # inside _scrub_personal → the caller's `result` is never mutated.
+    raw = json.dumps(_scrub_personal(result), ensure_ascii=False, default=str).encode("utf-8")
     attach_name = f"report-{f['report_ref']}.json".replace("/", "_")
     return {
         "from": os.getenv("REPORT_COPY_FROM", "").strip() or _DEFAULT_FROM,

@@ -60,7 +60,9 @@ SAMPLE = {
     },
     "material_uncertainty": {"level": "high"},
     # building_age_estimate is a DICT in the real result (b9 shape), NOT a string.
-    "property_basis": {"pin": "54360025", "electricity_no": "140502",
+    # electricity_no + water_no are the Kahramaa utility ACCOUNT numbers — personal
+    # data, stripped from the operator copy by b43 (E14 — both present in the real result).
+    "property_basis": {"pin": "54360025", "electricity_no": "140502", "water_no": "131980",
                        "building_age_estimate": {
                            "surveyed_year": 2009, "age_floor_years": 17,
                            "basis": "qars_survey", "age_basis": "vintage_capped",
@@ -118,11 +120,26 @@ def t_build():
           "{'surveyed_year'" not in p["html"] and "age_floor_years" not in p["html"])
     check("build: age renders the floor years", "العمر ≥ 17 سنة" in p["html"])
     check("build: html rtl + ltr number islands", 'dir="rtl"' in p["html"] and 'dir="ltr"' in p["html"])
-    # attachment = base64 of the FULL result JSON
+    # b43: personal utility ACCOUNT numbers are stripped from the body — the address
+    # + property identity (PIN, age) stay; the account numbers do not.
+    check("b43: html keeps the cadastral PIN (property data)", "54360025" in p["html"])
+    check("b43: html does NOT carry the electricity account number",
+          "140502" not in p["html"] and "كهرباء" not in p["html"])
+    check("b43: html does NOT carry the water account number", "131980" not in p["html"])
+    # attachment = base64 of the result MINUS the personal utility-account fields
     att = p["attachments"][0]
     check("build: attachment filename slug-safe (no /)", "/" not in att["filename"])
     decoded = json.loads(base64.b64decode(att["content"]).decode("utf-8"))
-    check("build: attachment is the full result JSON", decoded == SAMPLE)
+    check("b43: attachment == result minus the personal account fields",
+          decoded == rm._scrub_personal(SAMPLE))
+    check("b43: attachment keeps the property identity (address + PIN)",
+          decoded["address"] == "54/541/6" and decoded["property_basis"]["pin"] == "54360025")
+    check("b43: attachment dropped electricity_no + water_no",
+          "electricity_no" not in decoded["property_basis"]
+          and "water_no" not in decoded["property_basis"])
+    check("b43: ISOLATION — build_email did NOT mutate the caller's result",
+          SAMPLE["property_basis"]["electricity_no"] == "140502"
+          and SAMPLE["property_basis"]["water_no"] == "131980")
     # from override
     _set(RESEND_API_KEY="re_x", REPORT_COPY_EMAIL="anas@example.qa",
          REPORT_COPY_FROM="Thammen <reports@thammen.qa>")
