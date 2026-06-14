@@ -381,6 +381,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .bgate ul{list-style:none;margin:0 0 12px;padding:0}
 .bgate li{font-size:.85rem;line-height:1.7;color:var(--text);padding:9px 12px;background:var(--alt);border-radius:8px;margin-bottom:7px;border-right:3px solid var(--bronze)}
 .bgate li strong{color:var(--primary)}
+.bg-more{margin:2px 0 12px}
+.bg-more>summary{cursor:pointer;list-style:none;color:var(--bronze);font-size:.88rem;font-weight:600;text-align:center;padding:10px;background:var(--bronze-g);border-radius:8px}
+.bg-more>summary::-webkit-details-marker{display:none}
+.bg-more:not([open])>ul{display:none}
+.bg-more[open]>summary{margin-bottom:8px}
 .bg-note{font-size:.84rem;line-height:1.7;color:var(--muted);text-align:center;margin:4px 0 14px}
 .bg-ack{font-size:.86rem;line-height:1.7;color:var(--text);background:var(--bronze-g);border-radius:8px;padding:12px 14px;margin:0 0 16px}
 .bgate .hbtn{display:block;width:100%;padding:15px;font-size:1.1rem;box-shadow:0 4px 15px rgba(166,130,82,.3)}
@@ -415,6 +420,8 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <div class="bgate-logo"><img src="logo.png" alt="ثمّن"></div>
     <h2 id="bgTitle">ثمّن — تقدير سوقي آلي للفلل والأراضي في قطر</h2>
     <div class="bg-sub">نسخة تجريبية مجانية بالدعوة — هدفها قياس دقّة التقدير قبل الإطلاق العام.</div>
+    <details class="bg-more">
+      <summary>اعرف المزيد عن النسخة التجريبية ↓</summary>
     <ul>
       <li><strong>ما هذا؟</strong> تقدير سوقي آلي مبني على بيانات معاملات وزارة العدل ومصادر السوق، غرضه دعم القرار بمعلومة سريعة.</li>
       <li><strong>ما ليس هذا؟</strong> ليس تقييماً رسمياً ولا تقريراً معتمداً صادراً عن مُقيِّم مُرخّص وفق معايير &lrm;RICS/IVS&lrm;. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.</li>
@@ -422,6 +429,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       <li><strong>حدود نعرضها بصراحة:</strong> البيانات الحكومية لم تُحدَّث منذ نهاية ديسمبر &lrm;2025&lrm; (يظهر تنبيه بذلك)؛ والتقدير لا يأخذ بعد حالة العقار الداخلية وتشطيباته — لذلك قد ينخفض السعر الفعلي نحو قيمة الأرض (عقار قديم/بسيط) أو يتجاوز التقدير (جديد/فاخر).</li>
       <li><strong>دورك:</strong> جرّب التقدير، وشاركنا أي سعر فعلي تعرفه — ملاحظاتك تُحسّن الدقّة.</li>
     </ul>
+    </details>
     <div class="bg-note">بالمتابعة تُقرّ بأن هذه نتيجة بحثية للدعم، وليست تقييماً معتمداً.</div>
     <div class="bg-ack">أُقرّ بأنني فهمت أن ثمّن تقدير سوقي آلي للدعم وليس تقييماً معتمداً، وأوافق على المشاركة في النسخة التجريبية على الأساس الموضّح في الشروط وإشعار الخصوصية.</div>
     <button class="hbtn" onclick="ackBeta()">أوافق وأكمل</button>
