@@ -8,7 +8,7 @@
 > الأجزاء بسطر واحد لكلّ بند ولا **تكرّر** التفاصيل المتغيّرة (حتى لا تصير شظيّة رابعة تنجرف). عند التعارض:
 > `/api/health` الحيّ + `CLAUDE.md` يفوزان.
 >
-> **الحيّ الآن:** b40 / Heroku **v211** / `master==origin @9cb4887` (2026-06-14).
+> **الحيّ الآن:** b41 / Heroku **v212** / `master==origin @e51a505` (2026-06-14).
 
 ## Product Goal
 إطلاق **بيتا مدعوّة** (فلل + أرض) لـ AVM صادق وفق RICS Red Book 2025 — يصل لرقم قابل للدفاع + يكشف أدلّته،
@@ -19,7 +19,8 @@
 | # | البند | النوع / البوّابة | الحالة | التفصيل يعيش في |
 |---|---|---|---|---|
 | **1** | **إطلاق البيتا المدعوّة + بدء جمع GT (D-3)** — حلقة المستخدم الحقيقيّ؛ كلّ تحسينات الدقّة محجوبة على بيانات لا يُنتجها إلا الإطلاق | 🔴 **قرار PO** (ليس sprint هندسيًّا) | **مفتوح — القيد** | `BETA_LAUNCH_PLAN_v1.md` · `LAUNCH_READINESS_GATES_v1.md` · `GT_INTAKE_KIT_v1.md` · CLAUDE.md #65a |
-| **2** | **b41 — صفوف الجيران الجغرافيّة** (شقيقة §20.70 «الحوض الجغرافيّ الكامل»: `accepted_areas` بعمود اسم منطقة + ×تعديل) | 🟢 frontend/value-invariant (deploy-on-green) | NEXT (الشريحة 🟢 المتبقّية) | `PHASE0_DEF_UX1.2_keystone_enrichment_recon.md` §3 · CLAUDE.md «⚡ LIVE NOW» |
+| ~~**2**~~ | ~~**b41 — صفوف الجيران الجغرافيّة**~~ (`accepted_areas` بعمود اسم منطقة + ×تعديل + ppm² مُعدَّل مُشتقّ self-consistent، nested `comparables.neighbours` على geo-led فقط) | 🟢 frontend/value-invariant | ✅ **SHIPPED b41 / Heroku v212** (e51a505، §20.72/CHANGELOG_v124) — **سلسلة الكَيستون (b38→b41) مكتملة** | §20.72 |
+| **2ب** | **بنود §4ب الخفيفة المتبقّية** — UX4 (بانر حداثة + slider) · UX6 (delta التحسين) — صارت أعلى الشريحة 🟢 بعد إغلاق b41 | 🟢/🟡 display | NEXT (الشريحة 🟢 المتبقّية) | `ISSUES_LOG §4ب` |
 | **3** | **DEF-UX8 — حواجز القدرة/LTV** على حاسبة b35 | 🟡 NET-NEW (يحتاج مدخل دخل + قرار منتج) | مؤجَّل | `ISSUES_LOG §4ب-2` |
 | **4** | **بنود §4ب الخفيفة** — UX4 (بانر حداثة + slider) · UX6 (delta التحسين) | 🟢/🟡 display | مؤجَّل | `ISSUES_LOG §4ب` |
 | **5** | **مسار الدقّة (R7)** — B-2 (طبقة `luxury_new` المعايَرة) · §6 v2 (Fork C + age-rent) | 🔴 Gate-2 | **PARKED على n≥20 موثَّقة** (مفكوك بالبند #1) | `BRIEF_SprintB2_*_SIGNED.md` · `RISK_REGISTER` R7/E25 |
