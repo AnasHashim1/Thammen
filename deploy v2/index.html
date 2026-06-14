@@ -2362,6 +2362,25 @@ function show(d){
       });
       if(_kcGeo)how+='<div style="color:var(--muted);font-size:.7rem;margin-top:4px">وُسِّع الحوض لمناطق مجاورة (مُعدَّلة الموقع في الحساب) لاكتمال العيّنة'+(_kc.pool_n?(' — إجمالي '+_kc.pool_n+' صفقة'):'')+'</div>';
       else if(_kc.shown&&_kc.n&&_kc.shown<_kc.n)how+='<div style="color:var(--muted);font-size:.7rem;margin-top:4px">عرض '+_kc.shown+' من '+_kc.n+' معاملة (الأحدث)</div>';
+      // Sprint 2.22.0b.41 (DEF-UX1.1b): the geo NEIGHBOUR rows that were location-adjusted into the
+      // subject's area (the b39 sibling — b39 disclosed only the pool size). Geo-led only (_kcGeo).
+      // 2-line row: «📍 area · ×factor» (RTL name + LTR factor island) over «date · م² · raw→adjusted ر.ق/م²»
+      // (dir=ltr). Shows BOTH the raw sale ppm² and the DERIVED location-adjusted ppm² (rates, never a
+      // "sold-for" price). E12: area name + ratio only. DISPLAY-ONLY → value byte-identical.
+      if(_kcGeo&&_kc.neighbours&&_kc.neighbours.rows&&_kc.neighbours.rows.length){
+        var _kn=_kc.neighbours;
+        how+='<div style="margin-top:7px;padding-top:5px;border-top:1px dashed #d8ccb8">';
+        how+='<div style="font-weight:600;font-size:.72rem;margin-bottom:4px">الصفقات المجاورة المُعدَّلة الموقع (دخلت الحوض)</div>';
+        _kn.rows.forEach(function(g){
+          how+='<div style="padding:4px 0;border-top:1px solid #e6ddd0">'
+             +'<div style="display:flex;justify-content:space-between;gap:8px;font-size:.72rem"><span>📍 '+g.source_area+'</span><span dir="ltr" style="color:var(--muted)">×'+(g.adjustment_factor!=null?g.adjustment_factor:'—')+'</span></div>'
+             +'<div style="display:flex;justify-content:space-between;gap:8px;direction:ltr;font-size:.7rem;color:var(--muted);margin-top:1px"><span>'+(g.date||'').slice(0,10)+'</span><span>'+fmt(g.area_m2)+' م²</span><span>'+(g.price_per_m2_raw!=null?fmt(g.price_per_m2_raw):'—')+' → <span style="color:var(--primary);font-weight:600">'+(g.price_per_m2_adjusted!=null?fmt(g.price_per_m2_adjusted):'—')+'</span> ر.ق/م²</span></div>'
+             +'</div>';
+        });
+        if(_kn.shown&&_kn.total_n&&_kn.shown<_kn.total_n)how+='<div style="color:var(--muted);font-size:.68rem;margin-top:3px">عرض '+_kn.shown+' من '+_kn.total_n+' صفقة مجاورة ('+_kn.areas_n+' مناطق · الأحدث)</div>';
+        how+='<div style="color:var(--muted);font-size:.66rem;margin-top:3px">السعر المعروض هو سعر البيع الفعليّ في منطقة الجار؛ ×التعديل يُحوّله إلى مستوى موقعك (لم تُبَع بالرقم المُعدَّل).</div>';
+        how+='</div>';
+      }
       if(_kc.source_ar)how+='<div style="color:var(--muted);font-size:.68rem;margin-top:5px">'+_kc.source_ar+'</div>';
       how+='</div>';
     }

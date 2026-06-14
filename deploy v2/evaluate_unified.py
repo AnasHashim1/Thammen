@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b40-keystone-considered'
-SPRINT_TAG = '2.22.0b.40'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b41-keystone-geo-neighbours'
+SPRINT_TAG = '2.22.0b.41'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1242,6 +1242,73 @@ def _keystone_comparables(rows, n, window_used, cap=8, basis='matched_bracket', 
         'rows': out,
         'source_ar': 'بيانات وزارة العدل القطرية (CC BY 4.0) — مجموعة عامّة بلا عنوان أو ترقيم فرديّ',
         'source_en': 'Qatar Ministry of Justice data (CC BY 4.0) — public aggregate, no address or per-record id',
+    }
+
+
+def _keystone_neighbours(accepted_areas, cap=8):
+    """Sprint 2.22.0b.41 (DEF-UX1.1b) — the location-adjusted NEIGHBOUR rows of the
+    geo-widened pool, the b39 sibling. On a GEO-LED villa the headline median pools the
+    subject's PRIMARY-area rows (b39, weight 1.0) PLUS accepted-neighbour rows that are
+    location-adjusted into the subject's area; b39 surfaced only the primary subset +
+    disclosed the pool size. b41 surfaces the neighbour rows themselves, each tagged with
+    its source-area NAME + the location-adjustment multiplier.
+
+    DISPLAY-ONLY / VALUE-INVARIANT by construction: the per-row adjusted ppm² is DERIVED
+    here (raw price_m2 × location_adjustment), never re-running any median — the engine's
+    own `all_adjusted_prices` (geo_reference_v2 Step 5) is a throwaway local discarded
+    after the weighted median, and is NOT read here. E12-safe: a row carries the source
+    AREA NAME (a public GIS aggregate label) + a ratio only — never PIN / address / coords.
+    Shows BOTH the raw sale ppm² AND the location-adjusted ppm² (never implies the neighbour
+    sold for the adjusted figure — both are rates, ر.ق/م²). Returns None when there are no
+    usable neighbour rows; never raises into the caller.
+    """
+    if not accepted_areas or not isinstance(accepted_areas, (list, tuple)):
+        return None
+    flat = []
+    areas_n = 0
+    for area in accepted_areas:
+        if not isinstance(area, dict):
+            continue
+        src = area.get('name')
+        adj = area.get('location_adjustment')
+        txns = area.get('transactions')
+        if not (src and adj and isinstance(txns, (list, tuple)) and txns):
+            continue
+        areas_n += 1
+        for t in txns:
+            if not isinstance(t, dict):
+                continue
+            tot = t.get('total_price')
+            ar = t.get('area_m2')
+            ppm = t.get('price_m2')              # geo row keys ppm² as price_m2
+            if not (tot and ar):
+                continue
+            _ppm_disp = round(ppm) if ppm else None
+            _adj_disp = round(adj, 4)            # match the engine's stored location_adjustment precision
+            # adjusted = round(DISPLAYED raw × DISPLAYED factor) → the panel's arithmetic is
+            # self-consistent (a reader can verify raw × ×factor = adjusted; b14 display-coherence).
+            # Purely illustrative of the location adjustment — never feeds the value → value-invariant.
+            flat.append({
+                'date': (t.get('date') or '')[:10],
+                'area_m2': round(ar),
+                'total_price': round(tot),
+                'price_per_m2_raw': _ppm_disp,
+                'price_per_m2_adjusted': (round(_ppm_disp * _adj_disp) if _ppm_disp is not None else None),
+                'source_area': src,
+                'adjustment_factor': _adj_disp,
+            })
+    if not flat:
+        return None
+    try:
+        flat = sorted(flat, key=lambda r: r.get('date') or '', reverse=True)   # newest-first
+    except Exception:
+        pass
+    out = flat[:cap]
+    return {
+        'areas_n': areas_n,        # number of accepted neighbour areas with rows
+        'total_n': len(flat),      # total neighbour transactions across those areas
+        'shown': len(out),
+        'rows': out,
     }
 
 
@@ -5135,6 +5202,21 @@ def evaluate_thammen(
                                     pool_n=output['valuation'].get('n_transactions'))
                                 if _kc:
                                     output['valuation']['comparables'] = _kc
+                                    # ── Sprint 2.22.0b.41 (DEF-UX1.1b): geo neighbour rows ──
+                                    # The geo-led median pools the subject's PRIMARY-area rows (the
+                                    # b39 panel) PLUS location-adjusted NEIGHBOUR rows. b39 disclosed
+                                    # only the pool SIZE; b41 surfaces the neighbour rows themselves —
+                                    # each with its source-area NAME + ×adjustment + the DERIVED
+                                    # location-adjusted ppm² (raw × factor) — nested on the geo block as
+                                    # `comparables.neighbours`. From geo_v2['accepted_areas'] (retained
+                                    # in-engine; the all_adjusted_prices local is NOT read). geo only —
+                                    # matched_bracket (b38) has no neighbours. DISPLAY-ONLY / value-
+                                    # invariant; None when no accepted neighbours (→ b39 behaviour).
+                                    if _kc_basis == 'geo_widened':
+                                        _kn = _keystone_neighbours(
+                                            (geo_v2_result or {}).get('accepted_areas'))
+                                        if _kn:
+                                            _kc['neighbours'] = _kn
                             # ── Sprint 2.22.0b.40 (DEF-UX1.2a): cost-led «considered» comparables ──
                             # When the COST leads (rule=='cost_led'), the market pool was CONSIDERED but
                             # did NOT lead the number — it failed its reliability bar (the geo-full
