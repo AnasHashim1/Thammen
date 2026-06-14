@@ -78,6 +78,24 @@ def _ltr(s) -> str:
     return f'<span dir="ltr">{s}</span>'
 
 
+def _age_str(age):
+    """A clean one-line age from the property_basis `building_age_estimate` — which
+    is a DICT in the real engine result (b9 shape), NOT a string. Renders the
+    floor years, never the raw dict dump."""
+    if isinstance(age, dict):
+        yrs = age.get("age_floor_years")
+        return f"العمر ≥ {yrs} سنة (تقديري)" if yrs else age.get("note_ar")
+    return str(age) if age else None
+
+
+def _asset_label(result: dict) -> str:
+    """Arabic asset label, preferring the human label over the engine slug:
+    top-level asset_type_ar → service_scope.label_ar → the raw asset_type."""
+    return (result.get("asset_type_ar")
+            or (result.get("service_scope") or {}).get("label_ar")
+            or result.get("asset_type") or "—")
+
+
 def _summary_fields(result: dict, inputs: dict) -> dict:
     """The salient record drawn from the engine `result` — what the human body
     and the subject are built from. Pure (no I/O, no mutation)."""
@@ -96,7 +114,7 @@ def _summary_fields(result: dict, inputs: dict) -> dict:
         "report_ref": result.get("report_ref") or "—",
         "report_fp": result.get("report_fp"),                 # None when dormant key
         "address": addr,
-        "asset_type": result.get("asset_type_ar") or result.get("asset_type") or "—",
+        "asset_type": _asset_label(result),
         "amount": v.get("amount"),
         "low": v.get("low"),
         "high": v.get("high"),
@@ -106,7 +124,7 @@ def _summary_fields(result: dict, inputs: dict) -> dict:
         "muc": muc.get("level") or "—",
         "pin": pb.get("pin"),
         "electricity_no": pb.get("electricity_no"),
-        "age": pb.get("building_age_estimate"),
+        "age": _age_str(pb.get("building_age_estimate")),
         "date": result.get("valuation_date") or "—",
         "engine": result.get("engine_version") or "—",
     }

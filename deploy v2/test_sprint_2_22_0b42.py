@@ -46,7 +46,9 @@ def _set(**kw):
 SAMPLE = {
     "address": "54/541/6",
     "asset_type": "standalone_villa",
-    "asset_type_ar": "فيلا منفردة",
+    # NOTE: the real engine result has NO top-level asset_type_ar; the Arabic label
+    # lives in service_scope.label_ar (E14 — match production shape).
+    "service_scope": {"label_ar": "فيلا منفردة"},
     "valuation_date": "2026-06-14",
     "engine_version": "thammen-sprint2p22p0b42-report-copy-email",
     "report_ref": "TH-20260614-54541006",
@@ -57,8 +59,13 @@ SAMPLE = {
         "leadership": {"rule": "cost_led", "note_ar": "قاد التقديرَ منهجُ الكلفة (DRC)"},
     },
     "material_uncertainty": {"level": "high"},
+    # building_age_estimate is a DICT in the real result (b9 shape), NOT a string.
     "property_basis": {"pin": "54360025", "electricity_no": "140502",
-                       "building_age_estimate": "≥17 سنة"},
+                       "building_age_estimate": {
+                           "surveyed_year": 2009, "age_floor_years": 17,
+                           "basis": "qars_survey", "age_basis": "vintage_capped",
+                           "note_ar": "عمر تقديري (حدّ أدنى من تاريخ مسح GIS سنة 2009): ≥ 17 سنة",
+                           "note_en": "Indicative age (floor, from GIS survey 2009): >= 17 years"}},
 }
 
 REFUSAL = {
@@ -103,8 +110,13 @@ def t_build():
     check("build: subject carries grouped value", "2,400,000" in p["subject"])
     check("build: html carries address", "54/541/6" in p["html"])
     check("build: html carries report_ref", "TH-20260614-54541006" in p["html"])
-    check("build: html carries asset_type_ar", "فيلا منفردة" in p["html"])
+    check("build: html carries the Arabic asset label (via service_scope.label_ar)",
+          "فيلا منفردة" in p["html"] and "standalone_villa" not in p["html"])
     check("build: html carries leadership note", "منهجُ الكلفة" in p["html"])
+    # b42.2 (E14 fix): age must render CLEAN, never the raw building_age_estimate dict
+    check("build: age renders clean — no raw dict dump",
+          "{'surveyed_year'" not in p["html"] and "age_floor_years" not in p["html"])
+    check("build: age renders the floor years", "العمر ≥ 17 سنة" in p["html"])
     check("build: html rtl + ltr number islands", 'dir="rtl"' in p["html"] and 'dir="ltr"' in p["html"])
     # attachment = base64 of the FULL result JSON
     att = p["attachments"][0]
