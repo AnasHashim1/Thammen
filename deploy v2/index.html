@@ -4,19 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ثمّن — تقييم العقارات في قطر</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#FAFAF7;--surface:#FFF;--alt:#F3F0EB;--border:#E2DDD5;--primary:#12344D;--bronze:#A68252;--bronze-h:#B8935F;--bronze-g:rgba(166,130,82,.15);--maroon:#8B1D35;--text:#1A1A1A;--muted:#6B7280;--light:#9CA3AF;--ok:#047857;--ok-bg:rgba(4,120,87,.08);--warn:#B45309;--warn-bg:rgba(180,83,9,.08);--bad:#B91C1C;--bad-bg:rgba(185,28,28,.08);--r:12px;--sh:0 1px 3px rgba(0,0,0,.06)}
+:root{--bg:#FBF8F2;--surface:#FFF;--alt:#F3F0EB;--border:#E2DDD5;--primary:#16324F;--bronze:#A4814A;--bronze-h:#BB955A;--bronze-g:rgba(164,129,74,.15);--maroon:#8B1D35;--text:#1A1A1A;--muted:#6B7280;--light:#9CA3AF;--ok:#047857;--ok-bg:rgba(4,120,87,.08);--warn:#B45309;--warn-bg:rgba(180,83,9,.08);--bad:#B91C1C;--bad-bg:rgba(185,28,28,.08);--r:12px;--sh:0 1px 3px rgba(0,0,0,.06)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl;-webkit-font-smoothing:antialiased}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl;-webkit-font-smoothing:antialiased}
 .screen{display:none;min-height:100vh}.screen.active{display:block}
 .home{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;text-align:center;position:relative;overflow:hidden}
 .home.active{display:flex}
 .home::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 25% 30%,rgba(18,52,77,.03) 0%,transparent 50%),radial-gradient(circle at 75% 70%,rgba(166,130,82,.04) 0%,transparent 50%);pointer-events:none}
 .hlogo{position:relative;z-index:1;margin-bottom:24px}.hlogo img{max-width:340px;width:90%;height:auto}
 .htag{font-size:1.1rem;color:var(--muted);margin-bottom:44px;font-weight:400;line-height:1.8;max-width:420px;position:relative;z-index:1}
-.hbtn{background:var(--bronze);color:#fff;border:none;padding:18px 64px;font-family:'Tajawal';font-weight:700;font-size:1.2rem;border-radius:50px;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(166,130,82,.3);position:relative;z-index:1}
+.hbtn{background:var(--bronze);color:#fff;border:none;padding:18px 64px;font-family:'IBM Plex Sans Arabic';font-weight:700;font-size:1.2rem;border-radius:50px;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(166,130,82,.3);position:relative;z-index:1}
 .hbtn:hover{background:var(--bronze-h);box-shadow:0 6px 25px rgba(166,130,82,.4);transform:translateY(-2px)}
 .hfoot{position:absolute;bottom:24px;font-size:.8rem;color:var(--muted)}
 /* Sprint 2.7: Data freshness banner + result caveat */
@@ -25,7 +23,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
    of overlapping it. Resolves mobile header congestion where the long
    Arabic banner text wrapped 2-3 lines and visually clipped the THAMMEN
    logo + "متصل" indicator. */
-.dfb{position:sticky;top:0;left:0;right:0;z-index:50;padding:8px 16px;font-size:.78rem;text-align:center;direction:rtl;border-bottom:1px solid rgba(0,0,0,.08);font-family:'Tajawal',sans-serif;line-height:1.5}
+.dfb{position:sticky;top:0;left:0;right:0;z-index:50;padding:8px 16px;font-size:.78rem;text-align:center;direction:rtl;border-bottom:1px solid rgba(0,0,0,.08);font-family:'IBM Plex Sans Arabic',sans-serif;line-height:1.5}
 .dfb.s-info{background:var(--alt);color:var(--primary)}
 .dfb.s-warning{background:var(--warn-bg);color:var(--warn)}
 .dfb.s-alert{background:var(--bad-bg);color:var(--bad);font-weight:500}
@@ -55,14 +53,14 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 .fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
 .fg{display:flex;flex-direction:column}
 label{font-size:.82rem;color:var(--muted);margin-bottom:5px;font-weight:500}
-input,select{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'Tajawal';font-size:1rem;transition:border-color .2s,box-shadow .2s;direction:ltr;text-align:right}
+input,select{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'IBM Plex Sans Arabic';font-size:1rem;transition:border-color .2s,box-shadow .2s;direction:ltr;text-align:right}
 input:focus,select:focus{outline:none;border-color:var(--bronze);box-shadow:0 0 0 3px var(--bronze-g)}
 input::placeholder{color:#C4C0B8}
 /* Sprint 2.16.2: shrink placeholder on narrow viewports so long Arabic+Latin strings don't truncate mid-word */
 @media(max-width:480px){input::placeholder{font-size:.85rem}input,select{padding:11px 10px}}
 select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:14px center;padding-left:32px}
 .aud-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.aud-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;font-family:'Tajawal';font-size:.85rem;font-weight:500;color:var(--muted)}
+.aud-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;font-family:'IBM Plex Sans Arabic';font-size:.85rem;font-weight:500;color:var(--muted)}
 .aud-btn:hover{border-color:var(--bronze);color:var(--bronze)}
 .aud-btn.sel{border-color:var(--bronze);background:var(--bronze-g);color:var(--primary);font-weight:700}
 .aud-btn .aud-icon{font-size:1.4rem;display:block;margin-bottom:4px}
@@ -81,13 +79,13 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
    Using `max-height:1500px` accommodates the worst-case full-form-on-mobile
    while preserving the open/close animation. */
 .det.open{max-height:1500px;opacity:1;padding-top:16px}
-.sbtn{width:100%;padding:15px;font-family:'Tajawal';font-weight:800;font-size:1.15rem;border:none;border-radius:var(--r);cursor:pointer;background:var(--bronze);color:#fff;box-shadow:0 4px 15px rgba(166,130,82,.3);transition:all .3s;margin-top:6px}
+.sbtn{width:100%;padding:15px;font-family:'IBM Plex Sans Arabic';font-weight:800;font-size:1.15rem;border:none;border-radius:var(--r);cursor:pointer;background:var(--bronze);color:#fff;box-shadow:0 4px 15px rgba(166,130,82,.3);transition:all .3s;margin-top:6px}
 .sbtn:hover{background:var(--bronze-h);transform:translateY(-1px)}
 .sbtn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
 .sp{display:inline-block;width:16px;height:16px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-left:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 .rwrap{max-width:580px;margin:24px auto;padding:0 20px}
-.bbtn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 18px;border-radius:8px;font-family:'Tajawal';font-size:.88rem;cursor:pointer;margin-bottom:16px;transition:all .2s}
+.bbtn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 18px;border-radius:8px;font-family:'IBM Plex Sans Arabic';font-size:.88rem;cursor:pointer;margin-bottom:16px;transition:all .2s}
 .bbtn:hover{border-color:var(--bronze);color:var(--bronze)}
 .rc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:14px;animation:fu .5s ease}
 @keyframes fu{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
@@ -203,7 +201,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .insuf-icon{font-size:2.5rem;margin-bottom:10px;color:var(--bronze)}
 .insuf h2{font-size:1.15rem;font-weight:800;color:var(--primary);margin-bottom:10px}
 .insuf p{font-size:.92rem;color:var(--text);line-height:1.7;margin-bottom:16px}
-.insuf-cta{display:inline-block;background:var(--bronze);color:#fff;padding:12px 28px;border-radius:50px;font-weight:700;font-size:1rem;cursor:pointer;border:none;font-family:'Tajawal';transition:all .3s;text-decoration:none}
+.insuf-cta{display:inline-block;background:var(--bronze);color:#fff;padding:12px 28px;border-radius:50px;font-weight:700;font-size:1rem;cursor:pointer;border:none;font-family:'IBM Plex Sans Arabic';transition:all .3s;text-decoration:none}
 .insuf-cta:hover{background:var(--bronze-h);transform:translateY(-1px)}
 /* Loading progress */
 .lprog{margin-top:14px;padding:16px;background:var(--alt);border-radius:var(--r);text-align:center;font-size:.88rem;color:var(--muted);animation:fu .3s}
@@ -213,20 +211,20 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .lprog .lbar::after{content:'';position:absolute;height:100%;background:var(--bronze);border-radius:2px;animation:lprog-anim 2s ease-in-out infinite}
 @keyframes lprog-anim{0%{width:0;right:0}50%{width:60%;right:20%}100%{width:0;right:100%}}
 /* Copy button */
-.copy-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-family:'Tajawal';font-size:.85rem;cursor:pointer;margin-bottom:14px;transition:all .2s;float:left}
+.copy-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-family:'IBM Plex Sans Arabic';font-size:.85rem;cursor:pointer;margin-bottom:14px;transition:all .2s;float:left}
 .copy-btn:hover{border-color:var(--bronze);color:var(--bronze)}
 .copy-btn.copied{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
 /* Map links — single button + popup picker (WhatsApp-style) */
 .map-links{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-.map-btn-main{display:block;width:100%;text-align:center;text-decoration:none;padding:11px 14px;background:var(--alt);border:1px solid var(--border);border-radius:10px;font-size:.9rem;color:var(--text);font-weight:700;transition:all .2s;font-family:'Tajawal';cursor:pointer}
+.map-btn-main{display:block;width:100%;text-align:center;text-decoration:none;padding:11px 14px;background:var(--alt);border:1px solid var(--border);border-radius:10px;font-size:.9rem;color:var(--text);font-weight:700;transition:all .2s;font-family:'IBM Plex Sans Arabic';cursor:pointer}
 .map-btn-main:hover{border-color:var(--bronze);color:var(--bronze);background:#fff}
 .map-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fu .2s ease}
 .map-modal-content{background:#fff;border-radius:16px;max-width:380px;width:100%;overflow:hidden;animation:fu .25s ease}
 .map-modal-header{padding:18px 20px;font-weight:800;font-size:1rem;color:var(--primary);border-bottom:1px solid var(--border);text-align:center}
-.map-modal-list a{display:block;padding:16px 20px;font-size:1rem;color:var(--text);text-decoration:none;border-bottom:1px solid var(--border);font-family:'Tajawal';transition:background .15s}
+.map-modal-list a{display:block;padding:16px 20px;font-size:1rem;color:var(--text);text-decoration:none;border-bottom:1px solid var(--border);font-family:'IBM Plex Sans Arabic';transition:background .15s}
 .map-modal-list a:hover{background:var(--alt)}
 .map-modal-list a:last-child{border-bottom:none}
-.map-modal-close{padding:14px;background:var(--alt);text-align:center;font-size:.95rem;color:var(--muted);cursor:pointer;border:none;width:100%;font-family:'Tajawal';font-weight:600}
+.map-modal-close{padding:14px;background:var(--alt);text-align:center;font-size:.95rem;color:var(--muted);cursor:pointer;border:none;width:100%;font-family:'IBM Plex Sans Arabic';font-weight:600}
 .map-modal-close:hover{color:var(--bad)}
 .sanity-warn{background:#FFF7E6;border:1.5px solid #F4B400;border-radius:var(--r);padding:18px 20px;margin-bottom:14px;animation:fu .5s}
 .sanity-warn h3{font-size:1rem;font-weight:800;color:#7A4F00;margin-bottom:10px;display:flex;align-items:center;gap:8px}
@@ -248,7 +246,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .ev1lbl{font-size:.8rem;color:var(--muted);font-weight:600}
 .ev1item{font-size:.74rem;color:#555;display:inline-flex;align-items:center;gap:4px}
 .t3block{margin:16px 0 6px}
-.t3block .t3btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-weight:700;font-size:.95rem;font-family:'Tajawal';cursor:pointer;margin-bottom:10px}
+.t3block .t3btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-weight:700;font-size:.95rem;font-family:'IBM Plex Sans Arabic';cursor:pointer;margin-bottom:10px}
 .t3block .t3-primary{background:var(--bronze);color:#fff}
 .t3block .t3-secondary{background:#fff;color:var(--primary);border:1.5px solid var(--bronze)}
 /* Sprint 2.22.0b.17 — screen-5 report (cover, DEF-12 two-values, footer) */

@@ -53,12 +53,12 @@ check('tokens live on the .thmr scope (D7 — reports only)',
 check('IBM Plex Sans Arabic @font-face x4 (400/500/600/700)',
       all(f"url('fonts/IBMPlexSansArabic-{w}.woff2')" in HTML
           for w in ('Regular', 'Medium', 'SemiBold', 'Bold')))
-check('font applied INSIDE .thmr only (no global swap)',
+# Sprint 2.22.0b.45 (brand unify) PROMOTED IBM Plex to the GLOBAL app font (it was .thmr-only in م2/D7),
+# kept it self-hosted/local, and DROPPED the Tajawal Google-Fonts CDN link (closing the pre-consent request).
+check('IBM Plex is the unified app font — .thmr + global body (b45)',
       re.search(r"\.thmr\{[^}]*IBM Plex Sans Arabic", HTML) is not None
-      and re.search(r"^body\{[^}]*IBM Plex", HTML, re.M) is None)
-# The plan's no-CDN rule (D7) covers the THM-REPORT assets: IBM Plex + the QR lib.
-# (The pre-existing app-shell Tajawal Google-Fonts link predates م2 and is out of
-# its scope — touching the global shell font is م4-adjacent, its own decision.)
+      and re.search(r"^body\{[^}]*IBM Plex", HTML, re.M) is not None)
+# The plan's no-CDN rule (D7) covers the THM-REPORT assets: IBM Plex + the QR lib (still local-only below).
 check('NO CDN for the b25 assets (IBM Plex local-only + QR local-only)',
       'IBM+Plex' not in HTML and 'ibm-plex' not in HTML.lower().replace('ibmplex', 'KEEP')
       and 'cdn.jsdelivr' not in HTML and 'unpkg.com' not in HTML and 'cdnjs' not in HTML
