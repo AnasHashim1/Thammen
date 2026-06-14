@@ -21,7 +21,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -79,6 +79,18 @@ try:
 except Exception as _instr_err:  # pragma: no cover
     _INSTR_OK = False
     log.warning(f"instrumentation module unavailable: {_instr_err}")
+
+# ── Sprint 2.22.0b.42: operator report-copy by email (the "memory of every
+#    report"). Same defensive-import + internal-guard discipline as the
+#    instrumentation above: DORMANT unless RESEND_API_KEY + REPORT_COPY_EMAIL are
+#    set → silent no-op. Sent as a BackgroundTask so it adds ZERO response
+#    latency, and never mutates/breaks the result.
+try:
+    import report_mailer as _mailer
+    _MAIL_OK = True
+except Exception as _mail_err:  # pragma: no cover
+    _MAIL_OK = False
+    log.warning(f"report_mailer module unavailable: {_mail_err}")
 
 # ── Config (via environment variables) ──
 MOJ_CSV = Path(os.getenv("MOJ_CSV_PATH", "moj_weekly.csv"))
@@ -1018,7 +1030,8 @@ async def verify_report(request: Request, ref: str = "", fp: str = "", addr: str
 
 @app.post("/api/evaluate")
 @limiter.limit(";".join(RATE_LIMIT_LIST))
-async def evaluate_quick(req: EvaluateRequest, request: Request):
+async def evaluate_quick(req: EvaluateRequest, request: Request,
+                         background_tasks: BackgroundTasks):
     """Quick evaluation — address only. Returns free-tier result."""
     # Sprint 2.22.0a.24 (§4 / DPIA §5): do NOT log the property address (zone/street/
     # building). It is personal data of the owner, and the beta privacy notice states the
@@ -1061,6 +1074,14 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
                     result, {'zone': req.zone, 'street': req.street, 'building': req.building})
                 if _cap_id:                      # active mode only -> dormant byte-identical
                     result['capture_id'] = _cap_id
+            # Sprint 2.22.0b.42 — operator report-copy by email (dormant unless
+            # RESEND_API_KEY + REPORT_COPY_EMAIL set). Runs AFTER the response →
+            # zero latency; never mutates `result`.
+            if _MAIL_OK:
+                background_tasks.add_task(
+                    _mailer.send_report_copy, result,
+                    {'zone': req.zone, 'street': req.street,
+                     'building': req.building, 'pin': req.pin})
             return _attach_freshness(result)
         # Fallback: v2 engine
         ev = evaluate_property(
@@ -1084,7 +1105,8 @@ async def evaluate_quick(req: EvaluateRequest, request: Request):
 
 @app.post("/api/evaluate/details")
 @limiter.limit(";".join(RATE_LIMIT_LIST))
-async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
+async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request,
+                                background_tasks: BackgroundTasks):
     """Improved evaluation with building details from user."""
     # Sprint 2.22.0a.24 (§4 / DPIA §5): address (zone/street/building) removed from this log
     # line — personal data, not stored per the beta privacy notice. Building attributes alone
@@ -1134,6 +1156,12 @@ async def evaluate_with_details(req: EvaluateDetailsRequest, request: Request):
                     result, {'zone': req.zone, 'street': req.street, 'building': req.building})
                 if _cap_id:                      # active mode only -> dormant byte-identical
                     result['capture_id'] = _cap_id
+            # Sprint 2.22.0b.42 — operator report-copy by email (see /api/evaluate).
+            if _MAIL_OK:
+                background_tasks.add_task(
+                    _mailer.send_report_copy, result,
+                    {'zone': req.zone, 'street': req.street,
+                     'building': req.building, 'pin': req.pin})
             return _attach_freshness(result)
 
         # Fallback: v2 engine path (original code)
