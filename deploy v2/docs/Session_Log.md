@@ -5624,6 +5624,19 @@ NOT thammen.qa-specific — it extends to ANY Cloudflare-fronted API the app POS
 Resend) → always set a browser `User-Agent` on such POSTs. The a24 notice update («العنوان لا يُخزَّن» →
 operator-copy disclosure, Rule #39) remains the gate for beta-wide use.
 
+**🆕 b42.2 (same session — Heroku v216, commit `0521871`):** Anas confirmed the email + the 41KB JSON attachment
+arrived (inbox-confirm). A cosmetic fix then cleaned two email-body fields the live render exposed: the
+«أساس العقار» row was dumping the raw `building_age_estimate` **DICT** (→ now «العمر ≥ N سنة (تقديري)»), and
+«نوع العقار» showed the slug `standalone_villa` (→ «فيلا منفردة» via `service_scope.label_ar`). **E14 lesson:**
+the isolated test SAMPLE used a *string* age + a top-level `asset_type_ar` — NEITHER matching production (the real
+result = a dict + `service_scope.label_ar`) → the fixture didn't catch it. Fixed both the helpers
+(`_age_str` / `_asset_label`) AND the fixture (matched to the real shape). Verified: isolated **42/42** (+2:
+no-raw-dict + clean-age) + DoD aggregator **392** / security **15** / surface **45** / broad **110/110**; clean
+render re-confirmed by running the fixed `build_email` over a real saved result (`.b40_marikh.json`) → no raw
+dict, «العمر ≥», «فيلا منفردة», no `standalone_villa`; live eval re-triggered → no send-failure logged. SPRINT_TAG
+→ `2.22.0b.42.2`, ENGINE `thammen-sprint2p22p0b42p2-report-copy-clean-fields`; redeployed Heroku **v216**. The
+report-copy memory is **LIVE + ACTIVE + delivering clean**.
+
 -----
 
 -----
