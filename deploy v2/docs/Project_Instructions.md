@@ -2,7 +2,7 @@
 
 > **Scope:** هذا المشروع مخصص حصرياً لتطوير وصيانة موقع تقييم العقارات القطري `thammen.qa`. أي مهمة خارج هذا النطاق (تقارير عقارية مستقلة، أبحاث سوق، تقييم عقار معين بدون لمس المنصة) **لا** تنتمي لهذا المشروع.
 
-> **هذه الوثيقة = مرجع منهجي ثابت** (version-agnostic؛ governance-consolidated، انظر `docs/BRIEF_governance_consolidated_2026-05-30.md`). **الحالة الحيّة للإنتاج (engine / sprint / Heroku vN): راجع CLAUDE.md production snapshot + `/api/health` — المصدر الوحيد (Rule #58).** أرقام النسخ/الـ Sprints/Heroku **لا تُكرَّر هنا** (تنجرف). الـ **ROADMAP المعتمد = §11 (Deferred Sprints)** أدناه. قواعد منذ الإصدار 8: Operational #50-#58 (#54 Multi-AI، #57 ground-truth handshake، #58 measured-wins؛ #55/#56 محجوزان)، Empirical E15-E20.
+> **هذه الوثيقة = مرجع منهجي ثابت** (version-agnostic؛ governance-consolidated، انظر `docs/BRIEF_governance_consolidated_2026-05-30.md`). **الحالة الحيّة للإنتاج (engine / sprint / Heroku vN): راجع CLAUDE.md production snapshot + `/api/health` — المصدر الوحيد (Rule #58).** أرقام النسخ/الـ Sprints/Heroku **لا تُكرَّر هنا** (تنجرف). الـ **ROADMAP الحيّ + الخطوة التالية = CLAUDE.md «⚡ LIVE NOW» + Session_Log §20.x** (Rule #58 — الحيّ يفوز)؛ §11 (Deferred Sprints) أدناه = **مرجع الـbacklog الاستراتيجيّ/المؤجَّل** (لا المؤشّر الحيّ لكلّ sprint؛ قد يتأخّر عن الحيّ بعدّة sprints). قواعد منذ الإصدار 8: Operational #50-#58 (#54 Multi-AI، #57 ground-truth handshake، #58 measured-wins؛ #55/#56 محجوزان)، Empirical E15-E20.
 
 -----
 
@@ -350,8 +350,14 @@ heroku run python smoke_<endpoint>.py
 
 ### Deferred Sprints
 
-> **AUTHORITATIVE ROADMAP (single source), updated 2026-06-01.** CLAUDE.md's roadmap
-> block is a convenience copy that points here; when they drift, **this table wins**.
+> **STRATEGIC / DEFERRED-BACKLOG REFERENCE** (re-sequenced 2026-06-01, strategic detail through ~b20).
+> ⚠️ **The LIVE per-sprint roadmap + the single next-step = CLAUDE.md «⚡ LIVE NOW» + Session_Log §20.x**
+> (Rule #58 — the live/measured state wins; this inverts the prior "this table wins" claim, which kept
+> drifting). §11 is the home for the **strategic + deferred + behind-beta backlog** (launch-gating,
+> deferred-indefinite items, the older priority queue); it is updated less often and **may lag the live
+> state by several sprints — do NOT read it as the per-sprint "next".** **Shipped through b40 / Heroku
+> v211 (2026-06-14)** — the "PRIORITY QUEUE" below is a 2026-06-01 strategic snapshot, partly superseded by
+> the b-arc display sprints; for the per-sprint detail see CLAUDE.md + `PRODUCT_BACKLOG.md` (the ordered index).
 
 **Launch posture (locked, 2026-06-01):** tier = **BETA-FIRST** (Anas). Beta scope = **villas + land only**
 (apartments already refuse → gracefully excluded). Full tier register: `docs/LAUNCH_READINESS_GATES_v1.md`;
