@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b39-keystone-geo'
-SPRINT_TAG = '2.22.0b.39'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b40-keystone-considered'
+SPRINT_TAG = '2.22.0b.40'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -5135,6 +5135,29 @@ def evaluate_thammen(
                                     pool_n=output['valuation'].get('n_transactions'))
                                 if _kc:
                                     output['valuation']['comparables'] = _kc
+                            # ── Sprint 2.22.0b.40 (DEF-UX1.2a): cost-led «considered» comparables ──
+                            # When the COST leads (rule=='cost_led'), the market pool was CONSIDERED but
+                            # did NOT lead the number — it failed its reliability bar (the geo-full
+                            # dispersion > 0.30 / thinness). Surface the subject's PRIMARY-AREA raw rows
+                            # that were examined, under a NEW key `considered_comparables`
+                            # (basis='cost_considered') so the frontend renders the honest «اطّلعنا عليها
+                            # ولم تقُد الرقم» frame — NEVER «هي ما قرّر رقمك» (the DRC decided the number).
+                            # The «why» scalars (geo_full_n + geo_full_dispersion) ride the block +
+                            # value_stack.market. Rows ANONYMOUS (E12, via _keystone_comparables) + CC BY
+                            # 4.0. DISPLAY-ONLY / value-invariant: amount/low/high/method/rule/leadership
+                            # were all written above; this only ADDS a sibling display key. Mutually
+                            # exclusive with the market-led keystone block above (market vs cost_led).
+                            if _gate['rule'] == 'cost_led':
+                                _cc_rows = ((geo_v2_result or {}).get('primary') or {}).get('transactions')
+                                _cc = _keystone_comparables(
+                                    _cc_rows,
+                                    len(_cc_rows) if _cc_rows else 0,
+                                    output['valuation'].get('window_used'),
+                                    basis='cost_considered',
+                                    pool_n=_gate.get('geo_full_n'))
+                                if _cc:
+                                    _cc['dispersion'] = _gate.get('geo_full_dispersion')
+                                    output['valuation']['considered_comparables'] = _cc
                     # ── Sprint 2.22.0b.18 (§A1 — AGE BASIS, signed directive) ──
                     # Every LEADING cost/retention computation uses the SYSTEM (CGIS-documented)
                     # age — TD-93317: the certified valuer led on the system age («نحو 18 سنة …

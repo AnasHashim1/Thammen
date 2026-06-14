@@ -2365,6 +2365,30 @@ function show(d){
       if(_kc.source_ar)how+='<div style="color:var(--muted);font-size:.68rem;margin-top:5px">'+_kc.source_ar+'</div>';
       how+='</div>';
     }
+    // Sprint 2.22.0b.40 (DEF-UX1.2a): cost-led «considered» comparables — on a COST-LED villa (rule=='cost_led')
+    // the market pool was CONSIDERED but did NOT lead the number (it failed its reliability bar). The engine
+    // attaches v.considered_comparables (basis='cost_considered') ONLY when the cost led — mutually exclusive
+    // with v.comparables above. Honest frame: «اطّلعنا عليها ولم تقُد الرقم» — NEVER «هي ما قرّر رقمك» (the DRC
+    // decided the number). Same anonymous rows (E12) + CC BY 4.0; muted border (vs the bronze keystone) signals
+    // «considered», not «decided». DISPLAY-ONLY → appends to `how`, value byte-identical.
+    if(v.considered_comparables&&v.considered_comparables.rows&&v.considered_comparables.rows.length){
+      var _cc=v.considered_comparables;
+      how+='<div class="rn" style="margin-top:10px;font-size:.76rem;border-right:3px solid var(--muted);background:var(--alt)">';
+      how+='<div style="font-weight:600;margin-bottom:5px">🔍 صفقات السوق في منطقتك — اطّلعنا عليها ولم تقُد الرقم</div>';
+      var _ccWhy='قاد التقديرَ منهجُ الكلفة (DRC)';
+      if(_cc.dispersion!=null&&_cc.pool_n)_ccWhy='الحوض الجغرافيّ فشل حدّ الموثوقيّة (تشتّت <span dir="ltr">'+_cc.dispersion.toFixed(3)+'</span> &gt; <span dir="ltr">0.30</span>، n='+_cc.pool_n+') — '+_ccWhy;
+      how+='<div style="color:var(--muted);font-size:.7rem;margin-bottom:4px">'+_ccWhy+'</div>';
+      _cc.rows.forEach(function(c){
+        how+='<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px solid #e6ddd0;direction:ltr">'
+           +'<span style="color:var(--muted)">'+(c.date||'').slice(0,10)+'</span>'
+           +'<span>'+fmt(c.area_m2)+' م²</span>'
+           +'<span style="font-weight:600">'+fmt(c.total_price)+' ر.ق</span>'
+           +'</div>';
+      });
+      if(_cc.shown&&_cc.n&&_cc.shown<_cc.n)how+='<div style="color:var(--muted);font-size:.7rem;margin-top:4px">عرض '+_cc.shown+' من '+_cc.n+' معاملة (الأحدث)</div>';
+      if(_cc.source_ar)how+='<div style="color:var(--muted);font-size:.68rem;margin-top:5px">'+_cc.source_ar+'</div>';
+      how+='</div>';
+    }
     // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — TIER-1 (the claimed age never moves the headline).
     if(v.age_sensitivity&&v.age_sensitivity.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem">🕰️ '+v.age_sensitivity.note_ar+'</div>';}
     // MoJ sample size (cite-n discipline) — STAYS on TIER-1.
