@@ -50,10 +50,10 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
    sticky freshness banner above. */
 @media(max-width:480px){
   .tbar{padding:8px 14px;flex-wrap:wrap;gap:6px}
-  .tbar-logo img{height:30px}
+  .tbar-wm{font-size:1.05rem}
   .tbar-st{font-size:.7rem;white-space:nowrap}
 }
-.tbar-logo{display:flex;align-items:center;gap:8px;cursor:pointer}.tbar-logo img{height:36px;width:auto}
+.tbar-logo{display:flex;align-items:center;gap:8px;cursor:pointer}.tbar-wm{font-weight:800;font-size:1.15rem;color:var(--primary);letter-spacing:.3px}/* b49: top-bar raster logo → clean text wordmark (keeps go-home; the full logo lives only on the home landing) */
 .tbar-st{font-size:.75rem;color:var(--light)}
 .sdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px;vertical-align:middle}.sdot.on{background:var(--ok)}.sdot.off{background:var(--bad)}
 .fwrap{max-width:580px;margin:28px auto;padding:0 20px}
@@ -61,6 +61,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .fcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:16px;box-shadow:var(--sh)}
 .fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.fr3 .fg,.fr2 .fg,.fr3 input,.fr2 input{min-width:0}/* b49: let each grid item shrink to its 1fr track so the number fields stay inside the .fcard (fixes the .fr3 رقم-المبنى overflow) */
 .fg{display:flex;flex-direction:column}
 label{font-size:.82rem;color:var(--muted);margin-bottom:5px;font-weight:500}
 input,select{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-family:'IBM Plex Sans Arabic';font-size:1rem;transition:border-color .2s,box-shadow .2s;direction:ltr;text-align:right}
@@ -402,7 +403,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 /* ── Sprint 2.22.0a.24 — Beta entry gate (onboarding + affirmative consent) + Terms & Privacy modal ── */
 .bgate{position:fixed;inset:0;z-index:2000;background:rgba(22,50,79,.55);display:flex;align-items:center;justify-content:center;padding:14px;direction:rtl}
 .bgate-card{background:var(--surface);max-width:640px;width:100%;max-height:92vh;overflow-y:auto;border-radius:var(--r);padding:24px 22px;box-shadow:0 10px 44px rgba(0,0,0,.28)}
-.bgate-logo{display:inline-block;background:#fff;border-radius:11px;padding:7px 16px;margin-bottom:12px}.bgate-logo img{height:32px;width:auto;display:block}
+/* b49: gate logo removed — the logo now lives only on the home landing (.hlogo); .bgate-head keeps its navy band + title */
 .bgate h2{color:var(--primary);font-size:1.12rem;text-align:center;margin-bottom:6px;line-height:1.55}
 .bg-sub{color:var(--bronze);font-size:.9rem;text-align:center;margin-bottom:16px;font-weight:500;line-height:1.6}
 /* Sprint 2.22.0b.48 — consent gate navy header (one نسق with the result hero): an inset navy band
@@ -451,7 +452,6 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <div class="bgate thmr" id="betaGate" role="dialog" aria-modal="true" aria-labelledby="bgTitle">
   <div class="bgate-card">
     <div class="bgate-head">
-      <div class="bgate-logo"><img src="logo.png" alt="ثمّن"></div>
       <h2 id="bgTitle">ثمّن — تقدير سوقي آلي للفلل والأراضي في قطر</h2>
       <div class="bg-sub">نسخة تجريبية مجانية بالدعوة — هدفها قياس دقّة التقدير قبل الإطلاق العام.</div>
     </div>
@@ -537,7 +537,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <!-- FORM -->
 <div class="screen thmr" id="formScreen">
   <div class="tbar">
-    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
+    <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
     <div class="tbar-st" id="statusBar">جاري الاتصال...</div>
   </div>
   <div class="fwrap">
@@ -594,7 +594,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <!-- REFINE — Sprint 2.22.0b.2.1: optional property details on their own screen (Stage 2). -->
 <div class="screen thmr" id="refineScreen">
   <div class="tbar">
-    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
+    <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
     <div class="tbar-st">تحسين التقدير</div>
   </div>
   <div class="fwrap">
@@ -675,7 +675,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
      review + explicit confirm (signed 5.2). Valuer + refusals skip to results (run()). -->
 <div class="screen thmr" id="confirmScreen">
   <div class="tbar">
-    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
+    <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
     <div class="tbar-st">مراجعة البيانات</div>
   </div>
   <div class="rwrap">
@@ -687,7 +687,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <!-- RESULTS -->
 <div class="screen" id="resultsScreen">
   <div class="tbar">
-    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
+    <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
     <div class="tbar-st">نتيجة التقدير السوقي</div>
   </div>
   <div class="rwrap">
@@ -712,7 +712,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
      Rendered from the SAME response (no re-fetch, the b2.3 pattern); browser print = the share path. -->
 <div class="screen" id="reportScreen">
   <div class="tbar">
-    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
+    <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
     <div class="tbar-st">التقرير الكامل</div>
   </div>
   <div class="rwrap">
@@ -729,7 +729,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
      docs/MATRIX_short_report_copy_SIGNED.md. -->
 <div class="screen" id="shortReportScreen">
   <div class="tbar">
-    <div class="tbar-logo" onclick="go('home')"><img src="logo.png" alt="ثمّن"></div>
+    <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
     <div class="tbar-st">التقرير المختصر</div>
   </div>
   <div class="rwrap">
