@@ -48,7 +48,8 @@ check('buyer/seller NOT dense (only investor+valuer are)',
 
 # ── 2. the «كيف وصلنا» accordion gets _dense as its open arg ──
 check('«كيف وصلنا» accordion passes _dense as the open arg',
-      re.search(r"_acc\('🔍 كيف وصلنا لهذا الرقم؟', how\+evidencePanelHtml\(d,acc\), *_dense\)", SHOW) is not None)
+      # b48 de-emoji: the 🔍 became an inline-SVG icon; the Arabic title + the _dense open-arg are unchanged.
+      re.search(r"كيف وصلنا لهذا الرقم؟', how\+evidencePanelHtml\(d,acc\), *_dense\)", SHOW) is not None)
 # _acc() already supports a third `open` arg (no helper change needed)
 check('_acc(title,inner,open) helper still supports the open arg',
       re.search(r"function _acc\(title,inner,open\)", HTML) is not None and "(open?' open':'')" in HTML)
@@ -58,7 +59,9 @@ check('no v.amount / low / high mutation in show()', not re.search(r'v\.(amount|
 # only the «كيف وصلنا» accordion is density-driven this sprint (single-purpose); the other
 # accordions are NOT forced open (basic-info / report / full-details stay folded for everyone).
 check('basic-info accordion NOT density-forced (single-purpose)',
-      "_acc('🏠 بيانات العقار الأساسية',_info)" in SHOW and "_acc('🏠 بيانات العقار الأساسية',_info,_dense)" not in SHOW)
+      # b48 de-emoji: the 🏠 became an inline-SVG icon; re-anchor to the stable Arabic title.
+      # basic-info passes ONLY _info (no _dense) → it stays folded for everyone (single-purpose density).
+      "بيانات العقار الأساسية',_info)" in SHOW and "بيانات العقار الأساسية',_info,_dense)" not in SHOW)
 check('engine broadcasts audience (the recon premise: no server change needed)',
       "'audience': audience" in ENG)
 check('no api.py change implied — frontend-only (engine diff = the 2 version lines; checked via git separately)', True)

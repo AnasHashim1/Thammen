@@ -23,11 +23,15 @@ def check(name, cond):
 # ── 1. the `how` buffer + the ONE «كيف وصلنا» accordion ──
 check('show() declares the `how` fold buffer', "let how='';" in HTML)
 check('ONE «كيف وصلنا لهذا الرقم؟» accordion = how + full evidence panel',
-      # b34 (DEF-UX12) added a 3rd `open` arg (role-driven density) — match without the trailing `);`
-      "t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML)
+      # b34 (DEF-UX12) added a 3rd `open` arg (role-driven density) — match without the trailing `);`.
+      # b48 (de-emoji): the 🔍 emoji became an inline-SVG icon; the Arabic text is unchanged → re-anchor
+      # on the stable text fragment that ends the summary string.
+      "كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML)
 # the «كيف وصلنا» accordion is built FIRST (right after the figure+MVU), before basic-info.
+# b48 (de-emoji): the 🔍/🏠 emojis became inline-SVG icons; re-anchor the ORDER check on the stable
+# Arabic-text + `,_info)` fragments that still uniquely identify each `t2+=_acc(...)` call.
 check('«كيف وصلنا» accordion is the FIRST t2 accordion (before basic-info)',
-      HTML.index("t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟'") < HTML.index("t2+=_acc('🏠 بيانات العقار الأساسية',_info);"))
+      HTML.index("كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)") < HTML.index("بيانات العقار الأساسية',_info);"))
 # the standalone «جودة الأدلّة (تفصيل)» accordion is GONE (folded into «كيف وصلنا»).
 check('standalone «جودة الأدلّة (تفصيل)» accordion REMOVED (folded)',
       "_acc('📊 جودة الأدلّة (تفصيل)',evidencePanelHtml(d,acc))" not in HTML)
@@ -40,10 +44,12 @@ check('note 4/9 cost-triangulation → how', 'v.cost_triangulation.note_ar){how+
 check('note 5/9 leadership → how', 'v.leadership.note_ar){how+=' in HTML)
 check('note 6/9 age-honesty → how', 'v.leadership.age_honesty_note_ar){how+=' in HTML)
 check('note 7/9 resurvey → how', 'v.leadership.resurvey_note_ar){how+=' in HTML)
-# R6/Lesson-2 re-point (b37/DEF-UX9): the cost-value line moved into a {const _vc=…; how+='…🏗️…'} block
-# (the cost-mechanics BUA/RCN/retention sibling was added beside it). The cost-value note still lives in
-# `how` (the «كيف وصلنا» accordion), not t1 — proven by the 🏗️ label line appending to `how`.
-check('note 8/9 cost-value-line → how', '🏗️ \'+_vc.label_ar' in HTML and 'const _vc=v.value_stack.cost;' in HTML)
+# R6/Lesson-2 re-point (b37/DEF-UX9): the cost-value line moved into a {const _vc=…; how+='…label_ar…'}
+# block (the cost-mechanics BUA/RCN/retention sibling was added beside it). The cost-value note still lives
+# in `how` (the «كيف وصلنا» accordion), not t1 — proven by the cost label_ar line appending to `how`.
+# b48 (de-emoji): the 🏗️ emoji became an inline-SVG icon (ic-tool); the behaviour (label_ar → how) is the
+# stable pin — re-anchored on the icon-close + `'+_vc.label_ar` fragment.
+check('note 8/9 cost-value-line → how', '</use></svg> \'+_vc.label_ar' in HTML and 'const _vc=v.value_stack.cost;' in HTML)
 check('note 9/9 market-dispersion → how', 'v.value_stack.market.dispersion_36!=null){how+=' in HTML)
 
 # ── 3. the 9 notes are GONE from t1 (no double-render) ──
@@ -55,11 +61,18 @@ check('cost-value-line no longer on t1', 'v.value_stack.cost.value){t1+=' not in
 
 # ── 4. the 5-element CORE stays on TIER-1 (the figure) ──
 check('core 1 — range headline retained (t1, range-as-lead b3)', 'النطاق التقديري السوقي' in HTML)
-check('core 2 — median muted marker retained (t1)', 'الوسيط (التقدير المركزي) ≈ <strong>' in HTML)
+# b47/b48 (result-screen HERO): the muted «الوسيط (التقدير المركزي) ≈ <strong>» marker line was
+# SUPERSEDED by the navy hero band — the central estimate (median = v.amount) now LEADS as the confident
+# figure (`<div class="rhero"><span class="lbl">التقدير السوقي</span><div class="num">…fmt(v.amount)…`),
+# with the range in `.rng` below it. The b3 range-as-lead is KEPT-but-evolved (lead-figure + slim range
+# bar). Re-point to the NEW TRUTH: the central-figure hero is present on TIER-1.
+check('core 2 — central-estimate hero (median=v.amount) leads on TIER-1',
+      'class="rhero"' in HTML and 'التقدير السوقي' in HTML and "'<div class=\"num\">'+fmt(v.amount)" in HTML)
 check('core 3 — «ليس تقييماً معتمداً» stays t1 (compliance)',
       'ليس تقييماً معتمداً' in HTML and "color:#8a6d3b;background:#fcf8e3" in HTML)
 check('core 4 — evidence ONE-ROW pill stays t1', 't1+=_evOneRow(d);' in HTML)
-check('core 5 — the accordion «button» summary present', '🔍 كيف وصلنا لهذا الرقم؟' in HTML)
+# b48 (de-emoji): the 🔍 emoji became an inline-SVG icon; the accordion «button» summary text is unchanged.
+check('core 5 — the accordion «button» summary present', 'كيف وصلنا لهذا الرقم؟' in HTML)
 
 # ── 5. boundary: NOT in the named-9 → STAY on t1 (decision-relevant / conditional) ──
 check('condition note STAYS t1', 'if(v.condition_note_ar){t1+=' in HTML)

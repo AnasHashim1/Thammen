@@ -107,8 +107,13 @@ def test_index_html_mvu_banner_lrm_wrap():
     src = _read('index.html')
     # We assert the exact LRM-wrapped header is present in the rendered banner.
     # Note: the JS line embeds it inside a string literal; we check substring.
+    # Sprint 2.22.0b.48 de-emoji: the ⚠️ prefix became an inline-SVG icon
+    # (<svg class=ic …><use href=#ic-alert></use></svg>). The Arabic text +
+    # LRM-wrapping (the bidi behaviour this test guards) are unchanged, so the
+    # needle is re-pointed to drop the volatile emoji prefix, keeping the
+    # LRM-wrapped Latin run intact.
     needles = [
-        f'⚠️ تحفظ مادي وفق {LRM}RICS Red Book Global Standards{LRM}',
+        f'تحفظ مادي وفق {LRM}RICS Red Book Global Standards{LRM}',
         f'({LRM}effective 31 January 2025{LRM})',
         f'{LRM}VPGA 10{LRM}',
         f'{LRM}VPS 6{LRM}',

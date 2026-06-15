@@ -87,8 +87,12 @@ for fn in ('showShortReport', 'openShortReport', 'printShortReport',
     check(f'{fn}() defined once', HTML.count(f'function {fn}(') == 1)
 check('openShortReport renders from window._lastResult (b2.3 pattern, no re-fetch)',
       "function openShortReport(){const d=window._lastResult; if(!d)return; showShortReport(d); go('shortReport');}" in HTML)
+# Sprint 2.22.0b.48 (de-emoji) re-point: the 📄 emoji became an inline-SVG icon
+# (<svg class=ic …><use href=#ic-file></use></svg>); the D6 behaviour (the TIER-3
+# CTA → the SHORT report, labelled «التقرير المختصر») is unchanged — pin the
+# stable onclick + Arabic label, not the volatile leading glyph.
 check('D6 — TIER-3 CTA opens the SHORT report first',
-      'onclick="openShortReport()">📄 التقرير المختصر' in HTML)
+      re.search(r'onclick="openShortReport\(\)">.*?التقرير المختصر', HTML) is not None)
 check('D6 — the FULL report one click away inside the short report',
       'onclick="openReport()">التقرير الكامل</button>' in HTML)
 check('the b23 verify link now shares _verifyUrl (one builder, no drift)',

@@ -45,7 +45,9 @@ check('no pill substitute injected on confirm (study §3 «لا لوحة أدل�
 check('evidencePanelHtml() function still defined', 'function evidencePanelHtml(d,acc){' in HTML)
 check('evidence panel still on the RESULT (b31 «كيف وصلنا» accordion)',
       # b34 (DEF-UX12) added a 3rd `open` arg (role density) — match without the trailing `);`
-      "t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML)
+      # b48 (de-emoji) turned the 🔍 prefix into an inline-SVG icon — pin the stable
+      # accordion title + the nested evidence panel, NOT the volatile emoji.
+      "كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML)
 check('evidence panel still in the full REPORT (numbered annex)',
       '_axWrap(evidencePanelHtml(d,acc))' in HTML)
 

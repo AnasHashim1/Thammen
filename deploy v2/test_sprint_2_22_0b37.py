@@ -45,7 +45,9 @@ check('reads the cost block once via _vc = v.value_stack.cost (DRY)',
       "const _vc=v.value_stack.cost;" in SHOW)
 
 # ── 2. the line composes the three mechanics + depreciated building + land, from broadcast fields ──
-check('line header «🔧 آليّة الكلفة (نهج DRC)»', '🔧 آليّة الكلفة (نهج DRC):' in B37)
+# R6/Lesson-2 (re-pointed at b48 «one نسق» de-emoji): the 🔧 emoji is now an inline-SVG icon
+# (<svg class=ic …><use href=#ic-tool></use></svg>); the Arabic header TEXT is unchanged → pin the text.
+check('line header «آليّة الكلفة (نهج DRC)»', 'آليّة الكلفة (نهج DRC):' in B37)
 check('surfaces BUA (مساحة البناء BUA … _vc.bua_m2)', 'مساحة البناء BUA' in B37 and "'+_vc.bua_m2+'" in B37)
 check('surfaces RCN (كلفة الإحلال … fmt(_vc.rcn_qar_per_m2))', 'كلفة الإحلال' in B37 and "fmt(_vc.rcn_qar_per_m2)" in B37)
 check('surfaces retention (معامل الاحتفاظ … _vc.retention)', 'معامل الاحتفاظ' in B37 and "'+_vc.retention+'" in B37)
@@ -61,11 +63,16 @@ check('retention in a dir=ltr island (the 0.5 decimal that bidi-reverses)',
       re.search(r'<span dir="ltr">\'\+_vc\.retention\+\'</span>', B37) is not None)
 
 # ── 4. placement — inside the «كيف وصلنا» accordion (the `how` buffer), NOT TIER-1 ──
+# R6/Lesson-2 (re-pointed at b48 de-emoji): the asserted substring is split by the new inline-SVG icon
+# (>...<svg…> آليّة). Pin BOTH the load-bearing `how+=` + the exact b37 div opening (proves it lands in
+# `how`, the «كيف وصلنا» accordion, NOT t1) AND the Arabic header text (proves it is the cost-mechanics line).
 check('the new line appends to the `how` buffer (the «كيف وصلنا» accordion), not t1',
-      "how+='<div class=\"rn\" style=\"margin-top:4px;font-size:.72rem;color:var(--muted)\">🔧 آليّة الكلفة" in SHOW)
-# the cost-VALUE line that precedes it is preserved (the 🏗️ label line)
-check('the original cost-value 🏗️ line is preserved',
-      "🏗️ '+_vc.label_ar+': '+fmt(_vc.value)+' ر.ق — '+_vc.sub_ar" in SHOW)
+      "how+='<div class=\"rn\" style=\"margin-top:4px;font-size:.72rem;color:var(--muted)\">" in SHOW
+      and "آليّة الكلفة (نهج DRC): مساحة البناء BUA" in SHOW)
+# the cost-VALUE line that precedes it is preserved (R6/Lesson-2 — re-pointed at b48 de-emoji: the
+# 🏗️ emoji is now an inline-SVG icon; the load-bearing JS composition is unchanged → pin it WITHOUT the emoji)
+check('the original cost-value label line is preserved',
+      "'+_vc.label_ar+': '+fmt(_vc.value)+' ر.ق — '+_vc.sub_ar" in SHOW)
 # the unavailable-reason else-branch still chains
 check('the cost-unavailable else-branch still chains (else if … unavailable_reason_ar)',
       "else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar)" in SHOW)

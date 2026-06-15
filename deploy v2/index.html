@@ -5,17 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ثمّن — تقييم العقارات في قطر</title>
 <style>
-:root{--bg:#FBF8F2;--surface:#FFF;--alt:#F3F0EB;--border:#E2DDD5;--primary:#16324F;--bronze:#A4814A;--bronze-h:#BB955A;--bronze-g:rgba(164,129,74,.15);--maroon:#8B1D35;--text:#1A1A1A;--muted:#6B7280;--light:#9CA3AF;--ok:#047857;--ok-bg:rgba(4,120,87,.08);--warn:#B45309;--warn-bg:rgba(180,83,9,.08);--bad:#B91C1C;--bad-bg:rgba(185,28,28,.08);--r:12px;--sh:0 1px 3px rgba(0,0,0,.06)}
+:root{--bg:#FBF8F2;--surface:#FFF;--alt:#F3F0EB;--border:#E2DDD5;--primary:#16324F;--bronze:#A4814A;--bronze-h:#BB955A;--bronze-g:rgba(164,129,74,.15);--gold:#E8C99A;--text:#1A1A1A;--muted:#6B7280;--light:#9CA3AF;--ok:#047857;--ok-bg:rgba(4,120,87,.08);--warn:#B45309;--warn-bg:rgba(180,83,9,.08);--bad:#B91C1C;--bad-bg:rgba(185,28,28,.08);--r:12px;--sh:0 2px 10px rgba(22,50,79,.07)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl;-webkit-font-smoothing:antialiased}
 .screen{display:none;min-height:100vh}.screen.active{display:block}
 .home{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;text-align:center;position:relative;overflow:hidden}
 .home.active{display:flex}
-.home::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 25% 30%,rgba(18,52,77,.03) 0%,transparent 50%),radial-gradient(circle at 75% 70%,rgba(166,130,82,.04) 0%,transparent 50%);pointer-events:none}
+.home::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 25% 30%,rgba(22,50,79,.03) 0%,transparent 50%),radial-gradient(circle at 75% 70%,rgba(164,129,74,.04) 0%,transparent 50%);pointer-events:none}
 .hlogo{position:relative;z-index:1;margin-bottom:24px}.hlogo img{max-width:340px;width:90%;height:auto}
-.htag{font-size:1.1rem;color:var(--muted);margin-bottom:44px;font-weight:400;line-height:1.8;max-width:420px;position:relative;z-index:1}
-.hbtn{background:var(--bronze);color:#fff;border:none;padding:18px 64px;font-family:'IBM Plex Sans Arabic';font-weight:700;font-size:1.2rem;border-radius:50px;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(166,130,82,.3);position:relative;z-index:1}
-.hbtn:hover{background:var(--bronze-h);box-shadow:0 6px 25px rgba(166,130,82,.4);transform:translateY(-2px)}
+.htag{font-size:1.5rem;color:var(--primary);margin-bottom:4px;font-weight:700;line-height:1.4;max-width:420px;position:relative;z-index:1}
+/* Sprint 2.22.0b.48 — elevated home (interface elevation): confident navy title + bronze rule
+   + a navy 3-step trust band (Sprint C slice 3 — the missing «dark field» depth) + credibility line. */
+.hsub{font-size:.95rem;color:var(--bronze);font-weight:500;line-height:1.6;max-width:420px;position:relative;z-index:1}
+.hrule{width:64px;height:3px;background:var(--bronze);border-radius:99px;margin:16px 0 22px;position:relative;z-index:1}
+.htrust{position:relative;z-index:1;width:100%;max-width:360px;background:var(--primary);border-radius:14px;padding:15px 12px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:4px;box-shadow:0 6px 22px rgba(22,50,79,.18)}
+.htrust .hstep{flex:1;text-align:center}
+.htrust .hstep .n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:0 auto 7px;border-radius:50%;background:rgba(232,201,154,.16);color:var(--gold);font-size:.85rem;font-weight:700}
+.htrust .hstep .t{display:block;font-size:.78rem;color:#fff;line-height:1.4}
+.htrust .hsep{color:#6E8198;font-size:.95rem;flex:0 0 auto}
+.hcred{position:relative;z-index:1;font-size:.82rem;color:var(--muted);max-width:360px;line-height:1.6}
+.hbtn{background:var(--bronze);color:#fff;border:none;padding:18px 64px;font-family:'IBM Plex Sans Arabic';font-weight:700;font-size:1.2rem;border-radius:50px;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(164,129,74,.3);position:relative;z-index:1}
+.hbtn:hover{background:var(--bronze-h);box-shadow:0 6px 25px rgba(164,129,74,.4);transform:translateY(-2px)}
 .hfoot{position:absolute;bottom:24px;font-size:.8rem;color:var(--muted)}
 /* Sprint 2.7: Data freshness banner + result caveat */
 /* Sprint 2.16.3: changed dfb from position:fixed → position:sticky so it
@@ -79,7 +89,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
    Using `max-height:1500px` accommodates the worst-case full-form-on-mobile
    while preserving the open/close animation. */
 .det.open{max-height:1500px;opacity:1;padding-top:16px}
-.sbtn{width:100%;padding:15px;font-family:'IBM Plex Sans Arabic';font-weight:800;font-size:1.15rem;border:none;border-radius:var(--r);cursor:pointer;background:var(--bronze);color:#fff;box-shadow:0 4px 15px rgba(166,130,82,.3);transition:all .3s;margin-top:6px}
+.sbtn{width:100%;padding:15px;font-family:'IBM Plex Sans Arabic';font-weight:800;font-size:1.15rem;border:none;border-radius:var(--r);cursor:pointer;background:var(--bronze);color:#fff;box-shadow:0 4px 15px rgba(164,129,74,.3);transition:all .3s;margin-top:6px}
 .sbtn:hover{background:var(--bronze-h);transform:translateY(-1px)}
 .sbtn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
 .sp{display:inline-block;width:16px;height:16px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-left:8px;vertical-align:middle}
@@ -138,6 +148,23 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .calc-block .rv{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace;font-feature-settings:"tnum" 1;font-variant-numeric:tabular-nums}
 .calc-block .ri{background:var(--surface)} /* invert inner card bg for contrast vs --alt outer */
 @media(max-width:480px){.calc-block{padding:18px}.calc-block .rv{font-size:1.05rem}.calc-block .rv.hl{font-size:1.35rem}}
+/* Sprint 2.22.0b.47 — result-screen HERO (<svg class=ic aria-hidden=true><use href=#ic-star></use></svg>1): the navy figure band that supersedes the a8
+   calc-block worksheet look on the RESULT screen (the short report keeps its own .thmr-hero).
+   Evolves b3 range-as-lead: leads with a confident central figure (the median = v.amount) on a
+   navy band + a slim low↔high range bar marking the median, KEEPING the range + the RICS clause
+   below. VALUE-INVARIANT — presents amount/low/high, never recomputes. Unified b45 tokens. */
+.rhero{text-align:center;background:var(--primary);border-radius:14px;padding:20px 16px 16px;margin-bottom:14px;box-shadow:0 6px 22px rgba(22,50,79,.18)}
+.rhero .lbl{display:block;font-size:.85rem;font-weight:700;color:var(--gold);margin-bottom:6px}
+.rhero .num{font-size:2.1rem;font-weight:700;color:#fff;line-height:1.15;font-feature-settings:"tnum" 1;font-variant-numeric:tabular-nums}
+.rhero .num small{font-size:.95rem;font-weight:600;opacity:.85}
+.rhero .rng{font-size:.84rem;color:#EAF0F6;margin-top:9px}
+.rhero .rng b{color:#fff;font-weight:700}
+.rbar{margin-top:13px}
+.rbar .track{position:relative;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--bronze),rgba(255,255,255,.32))}
+.rbar .dot{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;border:2.5px solid var(--primary);box-shadow:0 0 0 1.5px rgba(255,255,255,.55);transform:translate(50%,-50%)}
+.rbar .dot.c{background:var(--gold)}
+.rbar .lbls{display:flex;justify-content:space-between;font-size:.68rem;color:#C7D2DE;margin-top:8px}
+@media(max-width:480px){.rhero .num{font-size:1.85rem}}
 /* Sprint 2.22.0a/8 — adjustment_ledger_directional placeholder badge (Q4 α + Anas refinement) */
 .alg-placeholder-badge{display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px;font-weight:600}
 .alg-placeholder-note{font-size:.86rem;color:var(--muted);line-height:1.8;padding:12px 14px;background:var(--alt);border-radius:8px}
@@ -228,7 +255,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .map-modal-close:hover{color:var(--bad)}
 .sanity-warn{background:#FFF7E6;border:1.5px solid #F4B400;border-radius:var(--r);padding:18px 20px;margin-bottom:14px;animation:fu .5s}
 .sanity-warn h3{font-size:1rem;font-weight:800;color:#7A4F00;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.sanity-warn h3::before{content:'⚠️';font-size:1.15rem}
+.sanity-warn h3::before{content:'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>';font-size:1.15rem}
 .sanity-warn ul{list-style:none;padding:0;margin:0}
 .sanity-warn li{padding:8px 0;border-bottom:1px dashed #F4D88A;font-size:.9rem;color:#5C3A00;line-height:1.7}
 .sanity-warn li:last-child{border-bottom:none}
@@ -373,11 +400,16 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   .aud-btn { display: none !important; }
 }
 /* ── Sprint 2.22.0a.24 — Beta entry gate (onboarding + affirmative consent) + Terms & Privacy modal ── */
-.bgate{position:fixed;inset:0;z-index:2000;background:rgba(18,52,77,.55);display:flex;align-items:center;justify-content:center;padding:14px;direction:rtl}
+.bgate{position:fixed;inset:0;z-index:2000;background:rgba(22,50,79,.55);display:flex;align-items:center;justify-content:center;padding:14px;direction:rtl}
 .bgate-card{background:var(--surface);max-width:640px;width:100%;max-height:92vh;overflow-y:auto;border-radius:var(--r);padding:24px 22px;box-shadow:0 10px 44px rgba(0,0,0,.28)}
-.bgate-logo{text-align:center;margin-bottom:12px}.bgate-logo img{height:40px;width:auto}
+.bgate-logo{display:inline-block;background:#fff;border-radius:11px;padding:7px 16px;margin-bottom:12px}.bgate-logo img{height:32px;width:auto;display:block}
 .bgate h2{color:var(--primary);font-size:1.12rem;text-align:center;margin-bottom:6px;line-height:1.55}
 .bg-sub{color:var(--bronze);font-size:.9rem;text-align:center;margin-bottom:16px;font-weight:500;line-height:1.6}
+/* Sprint 2.22.0b.48 — consent gate navy header (one نسق with the result hero): an inset navy band
+   carrying the logo (on a white light-chip bridge), a white title and a gold sub. b46 fold + consent unchanged. */
+.bgate-head{background:var(--primary);border-radius:14px;padding:20px 16px 18px;margin-bottom:18px;text-align:center;box-shadow:0 6px 22px rgba(22,50,79,.18)}
+.bgate-head h2{color:#fff;margin-bottom:6px}
+.bgate-head .bg-sub{color:var(--gold);margin-bottom:0}
 .bgate ul{list-style:none;margin:0 0 12px;padding:0}
 .bgate li{font-size:.85rem;line-height:1.7;color:var(--text);padding:9px 12px;background:var(--alt);border-radius:8px;margin-bottom:7px;border-right:3px solid var(--bronze)}
 .bgate li strong{color:var(--primary)}
@@ -388,7 +420,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .bg-more[open]>summary{margin-bottom:8px}
 .bg-note{font-size:.84rem;line-height:1.7;color:var(--muted);text-align:center;margin:4px 0 14px}
 .bg-ack{font-size:.86rem;line-height:1.7;color:var(--text);background:var(--bronze-g);border-radius:8px;padding:12px 14px;margin:0 0 16px}
-.bgate .hbtn{display:block;width:100%;padding:15px;font-size:1.1rem;box-shadow:0 4px 15px rgba(166,130,82,.3)}
+.bgate .hbtn{display:block;width:100%;padding:15px;font-size:1.1rem;box-shadow:0 4px 15px rgba(164,129,74,.3)}
 .bg-links{text-align:center;margin-top:14px;font-size:.84rem}
 .bg-links a{color:var(--muted);text-decoration:underline;cursor:pointer}
 .bg-en{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
@@ -407,9 +439,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .src-credit{margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:.72rem;line-height:1.75;color:var(--muted);text-align:right;direction:rtl}
 .src-credit a{color:var(--muted);text-decoration:underline}
 .src-credit .en{display:block;margin-top:8px;direction:ltr;text-align:left;font-size:.7rem;color:var(--muted)}
-</style>
+.ic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.16em;flex:0 0 auto;stroke-width:1.7}</style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="ic-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 2.5 17.5A1.6 1.6 0 0 0 3.9 20h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/><line x1="12" y1="9" x2="12" y2="13.5"/><line x1="12" y1="16.6" x2="12.01" y2="16.6"/></symbol><symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9 17 19.5 6.5"/></symbol><symbol id="ic-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></symbol><symbol id="ic-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="20.5" y1="20.5" x2="15.2" y2="15.2"/></symbol><symbol id="ic-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="20.5" x2="21" y2="20.5"/><line x1="6.5" y1="20.5" x2="6.5" y2="13"/><line x1="12" y1="20.5" x2="12" y2="6.5"/><line x1="17.5" y1="20.5" x2="17.5" y2="10"/></symbol><symbol id="ic-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4.5" width="12" height="16" rx="2"/><rect x="9" y="2.5" width="6" height="4" rx="1.3"/></symbol><symbol id="ic-tool" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"/></symbol><symbol id="ic-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="4" x2="12" y2="20.5"/><line x1="5.5" y1="7.5" x2="18.5" y2="7.5"/><path d="M5.5 7.5 2.8 13.5h5.4Z"/><path d="M18.5 7.5 15.8 13.5h5.4Z"/><line x1="8" y1="20.5" x2="16" y2="20.5"/></symbol><symbol id="ic-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2 12 4.5l8 6.7"/><path d="M6 9.7V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.7"/></symbol><symbol id="ic-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6-5.4 6-10.2A6 6 0 0 0 6 10.8C6 15.6 12 21 12 21Z"/><circle cx="12" cy="10.6" r="2.2"/></symbol><symbol id="ic-gem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12l3 5.5L12 21 3 9.5Z"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><path d="M9 4 7.5 9.5 12 21M15 4l1.5 5.5L12 21"/></symbol><symbol id="ic-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 7.5V12l3 1.8"/></symbol><symbol id="ic-ruler" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="8.5" width="18.8" height="7" rx="1" transform="rotate(-45 12 12)"/><path d="M9.7 6.6l1.6 1.6M7 9.3l1.6 1.6M12.4 3.9 14 5.5"/></symbol><symbol id="ic-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 17.6 6.6 20l1.2-6-4.5-4.2 6.1-.7Z"/></symbol><symbol id="ic-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.2"/><path d="M11 11l9.2 9.2M17.6 17.6l1.8-1.8M14.4 14.4l1.8-1.8"/></symbol><symbol id="ic-coins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6.2" rx="7" ry="3"/><path d="M5 6.2v5.6c0 1.7 3.1 3 7 3s7-1.3 7-3V6.2"/><path d="M5 11.8v5.6c0 1.7 3.1 3 7 3s7-1.3 7-3v-5.6"/></symbol><symbol id="ic-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5V3.5h11v6"/><path d="M6.5 17.5h-2a1.5 1.5 0 0 1-1.5-1.5v-4a1.5 1.5 0 0 1 1.5-1.5h15a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5h-2"/><rect x="6.5" y="14.5" width="11" height="6" rx="1"/></symbol><symbol id="ic-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 18.5h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.8.7 1.3 1.4 1.3 2.4h5c0-1 .5-1.7 1.3-2.4A6 6 0 0 0 12 3Z"/></symbol><symbol id="ic-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l5 5V19a1.5 1.5 0 0 1-1.5 1.5h-9.5A1.5 1.5 0 0 1 6.5 19V5A1.5 1.5 0 0 1 7 3.5Z"/><path d="M13.5 3.5v5.5H19"/></symbol><symbol id="ic-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2Z"/><line x1="5" y1="16.5" x2="15.5" y2="16.5"/></symbol><symbol id="ic-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M9.7 9.6a2.4 2.4 0 1 1 3.4 2.3c-.8.4-1.1 1-1.1 1.8"/><line x1="12" y1="16.8" x2="12.01" y2="16.8"/></symbol><symbol id="ic-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol><symbol id="ic-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><line x1="3.8" y1="12" x2="20.2" y2="12"/><path d="M12 3.8c2.4 2 2.4 14.4 0 16.4M12 3.8c-2.4 2-2.4 14.4 0 16.4"/></symbol><symbol id="ic-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="5"/><path d="M6 11l6-6 6 6"/></symbol><symbol id="ic-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16Z"/><line x1="13.5" y1="6.5" x2="17.5" y2="10.5"/></symbol></defs></svg>
 
 <!-- ── Sprint 2.22.0a.24 — Beta entry gate: onboarding framing + single affirmative consent.
      Session-only (sessionStorage, in-memory fallback). No cookie, no server write, stores nothing.
@@ -417,9 +450,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
      result-surface disclaimers + MUC banner + B-1 land-floor — does not duplicate them. ── -->
 <div class="bgate thmr" id="betaGate" role="dialog" aria-modal="true" aria-labelledby="bgTitle">
   <div class="bgate-card">
-    <div class="bgate-logo"><img src="logo.png" alt="ثمّن"></div>
-    <h2 id="bgTitle">ثمّن — تقدير سوقي آلي للفلل والأراضي في قطر</h2>
-    <div class="bg-sub">نسخة تجريبية مجانية بالدعوة — هدفها قياس دقّة التقدير قبل الإطلاق العام.</div>
+    <div class="bgate-head">
+      <div class="bgate-logo"><img src="logo.png" alt="ثمّن"></div>
+      <h2 id="bgTitle">ثمّن — تقدير سوقي آلي للفلل والأراضي في قطر</h2>
+      <div class="bg-sub">نسخة تجريبية مجانية بالدعوة — هدفها قياس دقّة التقدير قبل الإطلاق العام.</div>
+    </div>
     <details class="bg-more">
       <summary>اعرف المزيد عن النسخة التجريبية ↓</summary>
     <ul>
@@ -459,11 +494,22 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <!-- HOME -->
 <div class="home screen active thmr" id="homeScreen">
   <div class="hlogo"><img src="logo.png" alt="ثمّن"></div>
-  <!-- Sprint 2.22.0b.24 (R13 text bundle, م0): تقدير not تقييم on the home surface +
-       the data-recency line as the static default (the /api/freshness subtitle_ar
-       refresh keeps the same صيغة and self-heals when MoJ updates). -->
-  <div class="htag">تقدير عقارك في قطر<br>مبني على بيانات وزارة العدل الفعلية</div>
+  <!-- Sprint 2.22.0b.24 (R13 text bundle, م0): تقدير not تقييم + the data-recency default.
+       Sprint 2.22.0b.48 — elevated home: confident navy title + bronze rule + a navy 3-step
+       trust band (Sprint C slice 3) + a registered-transactions credibility line. The b24 copy
+       (title + recency) is PRESERVED verbatim; presentation only, value-invariant. -->
+  <div class="htag">تقدير عقارك في قطر</div>
+  <div class="hsub">مبني على بيانات وزارة العدل الفعلية</div>
+  <div class="hrule"></div>
+  <div class="htrust">
+    <div class="hstep"><span class="n">١</span><span class="t">أدخل العنوان</span></div>
+    <span class="hsep">←</span>
+    <div class="hstep"><span class="n">٢</span><span class="t">نحلّل صفقات العدل</span></div>
+    <span class="hsep">←</span>
+    <div class="hstep"><span class="n">٣</span><span class="t">نتيجتك فوراً</span></div>
+  </div>
   <button class="hbtn" onclick="go('form')">ابدأ التقدير</button>
+  <div class="hcred">من صفقات وزارة العدل المسجّلة — لا أسعار إعلانات.</div>
   <div class="hfoot" id="dfSubtitle">بيانات وزارة العدل حتى ديسمبر 2025</div>
   <!-- Sprint 2.14.0 — RICS VPS 1 Scope link -->
   <div style="margin-top:14px;font-size:.85rem;color:var(--muted);position:relative;z-index:1">
@@ -495,7 +541,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     <div class="tbar-st" id="statusBar">جاري الاتصال...</div>
   </div>
   <div class="fwrap">
-    <div class="ftitle">📍 إدخال العقار <a id="clrIdent" onclick="clearIdentity()" style="display:none;font-weight:400;font-size:.78rem;color:var(--bronze);cursor:pointer;margin-right:10px">مسح ✕</a></div>
+    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> إدخال العقار <a id="clrIdent" onclick="clearIdentity()" style="display:none;font-weight:400;font-size:.78rem;color:var(--bronze);cursor:pointer;margin-right:10px">مسح <svg class=ic aria-hidden=true><use href=#ic-x></use></svg></a></div>
     <div class="fcard">
       <!-- Sprint 2.21.0: input mode tabs — address (villa/building) OR land PIN -->
       <div class="aud-row" style="margin-bottom:12px">
@@ -527,14 +573,14 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
          one number for everyone (signed label). «مالك» restored as the DEFAULT first
          option; the engine normalizes owner→buyer (default view), so the value axis
          is untouched. valuer keeps its v4 skip-to-results routing. -->
-    <div class="ftitle">👤 من أنت؟ <span style="font-weight:400;font-size:.82rem;color:var(--muted)">(يحدّد طريقة العرض فقط — الرقم واحد للجميع)</span></div>
+    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-user></use></svg> من أنت؟ <span style="font-weight:400;font-size:.82rem;color:var(--muted)">(يحدّد طريقة العرض فقط — الرقم واحد للجميع)</span></div>
     <div class="fcard">
       <div class="aud-row">
-        <div class="aud-btn sel" onclick="selAud(this,'owner')"><span class="aud-icon">🔑</span>مالك</div>
-        <div class="aud-btn" onclick="selAud(this,'buyer')"><span class="aud-icon">🏠</span>مشتري</div>
-        <div class="aud-btn" onclick="selAud(this,'seller')"><span class="aud-icon">💰</span>بائع</div>
-        <div class="aud-btn" onclick="selAud(this,'investor')"><span class="aud-icon">📊</span>مستثمر</div>
-        <div class="aud-btn" onclick="selAud(this,'valuer')"><span class="aud-icon">📋</span>مثمّن</div>
+        <div class="aud-btn sel" onclick="selAud(this,'owner')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-key></use></svg></span>مالك</div>
+        <div class="aud-btn" onclick="selAud(this,'buyer')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-home></use></svg></span>مشتري</div>
+        <div class="aud-btn" onclick="selAud(this,'seller')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-coins></use></svg></span>بائع</div>
+        <div class="aud-btn" onclick="selAud(this,'investor')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg></span>مستثمر</div>
+        <div class="aud-btn" onclick="selAud(this,'valuer')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg></span>مثمّن</div>
       </div>
     </div>
     <!-- Sprint 2.22.0b.2.1 — optional property details relocated to a separate
@@ -553,7 +599,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   </div>
   <div class="fwrap">
     <button class="bbtn" onclick="go('results')">→ رجوع للنتيجة</button>
-    <div class="ftitle">📐 تفاصيل العقار (المرحلة 2)</div>
+    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg> تفاصيل العقار (المرحلة 2)</div>
     <!-- Sprint 2.22.0b.27 (م4 — signed): the refine fields regrouped into the THREE
          v3-contract groups, each TAGGED by its real effect (يحرّك التقدير / يدقّق
          مرتكز التكلفة / اختياري للإثراء). Every field id is UNCHANGED (the re-eval
@@ -793,11 +839,11 @@ function openScope(){
   if(c.dataset.loaded)return;
   fetch('/api/scope').then(r=>r.json()).then(d=>{
     let h='<div style="background:var(--alt);padding:12px;border-radius:6px;font-size:.9rem;line-height:1.7;margin-bottom:18px;color:var(--primary)">'+(d.service_level_ar||'')+'</div>';
-    h+='<div style="margin-bottom:18px"><div style="font-weight:700;color:var(--ok);margin-bottom:8px">✅ مدعوم بالكامل</div>';
+    h+='<div style="margin-bottom:18px"><div style="font-weight:700;color:var(--ok);margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg> مدعوم بالكامل</div>';
     (d.supported||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--ok);background:var(--ok-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+s.label_ar+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">'+s.reason_ar+'</div></div>'});
-    h+='</div><div style="margin-bottom:18px"><div style="font-weight:700;color:var(--warn);margin-bottom:8px">⚠️ مدعوم بشروط (يحتاج إفادة منك)</div>';
+    h+='</div><div style="margin-bottom:18px"><div style="font-weight:700;color:var(--warn);margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> مدعوم بشروط (يحتاج إفادة منك)</div>';
     (d.limited||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--warn);background:var(--warn-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+s.label_ar+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">يتطلب: '+(s.requires||'')+'</div></div>'});
-    h+='</div><div><div style="font-weight:700;color:var(--bad);margin-bottom:8px">❌ خارج النطاق</div>';
+    h+='</div><div><div style="font-weight:700;color:var(--bad);margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-x></use></svg> خارج النطاق</div>';
     (d.unsupported||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--bad);background:var(--bad-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+s.label_ar+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">'+s.reason_ar+'</div></div>'});
     h+='</div>';
     c.innerHTML=h;c.dataset.loaded='1';
@@ -917,7 +963,7 @@ function _evPill(rt){
 }
 function evidencePanelHtml(d,acc){
   var rows=_evidenceRatings(d);
-  var h='<div class="rc"><div class="rt" style="margin-bottom:4px">📊 جودة الأدلّة</div>';
+  var h='<div class="rc"><div class="rt" style="margin-bottom:4px"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> جودة الأدلّة</div>';
   h+='<div class="rn" style="font-size:.78rem;color:#999;margin-bottom:6px">قوّة البيانات خلف التقدير على أربعة محاور — تتحسّن بمدخلات حقيقية تخصّ كل محور، لا بالشرح.</div>';
   rows.forEach(function(row){
     h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid #f2f2f2;font-size:.85rem"><span>'+row[0]+'</span>'+_evPill(row[1])+'</div>';
@@ -1016,7 +1062,7 @@ function showConfirm(d){
   }
   h+='<div class="cg-sub">تقدير أوّليّ قابل للتغيّر بعد التأكيد والتحسين.</div></div>';
   // (2) review card — READ-ONLY (signed 5.2: no edit pencils, no correction CTA); existing AR labels.
-  h+='<div class="rc"><div class="rh"><div class="rt">📋 راجِع بيانات العقار</div></div>';
+  h+='<div class="rc"><div class="rh"><div class="rt"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> راجِع بيانات العقار</div></div>';
   h+='<div style="font-size:.8rem;color:var(--muted);margin:0 0 10px;line-height:1.6">هذه البيانات مجلوبة من نظام المعلومات الجغرافية (GIS). راجِعها قبل المتابعة.</div>';
   h+='<div class="rg">';
   if(d.address)h+=ri('العنوان',d.address,0,1);
@@ -1050,7 +1096,7 @@ function showConfirm(d){
   }
   h+='</div></div>';
   // (3) Sprint 2.22.0b.32 (DEF-UX13): the full evidence panel is DROPPED from the confirm
-  // screen — it lives on the RESULT, inside the «🔍 كيف وصلنا لهذا الرقم؟» accordion (b31).
+  // screen — it lives on the RESULT, inside the «<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> كيف وصلنا لهذا الرقم؟» accordion (b31).
   // The owner's confirm screen = basis review + muted preliminary range + confirm + escape;
   // no evidence panel, no formula (study §3 «لا لوحة أدلّة، لا معادلات»).
   // (4) explicit confirm (no auto-advance) + permanent full-report escape.
@@ -1111,7 +1157,7 @@ async function run(){
     if(audience!=='valuer'&&_cgv.amount!=null&&_cgv.amount>0){showConfirm(data);go('confirm');}
     else{go('results');}
   }catch(e){
-    fRes.innerHTML='<div class="err" style="margin-top:14px">⚠️ '+(e.message||'حدث خطأ')+'<br><span style="font-size:.78rem;color:var(--muted);display:block;margin-top:8px">لو استمرت المشكلة، تأكد من الاتصال أو حاول بعد دقيقة.</span></div>';
+    fRes.innerHTML='<div class="err" style="margin-top:14px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||'حدث خطأ')+'<br><span style="font-size:.78rem;color:var(--muted);display:block;margin-top:8px">لو استمرت المشكلة، تأكد من الاتصال أو حاول بعد دقيقة.</span></div>';
   }finally{
     clearInterval(stepTimer);clearInterval(elapsedTimer);
     btn.disabled=false;btn.innerHTML='ثمّن';
@@ -1147,8 +1193,8 @@ async function thammenReEvalOverride(area){
     show(data);
     window.scrollTo({top:0, behavior:'smooth'});
   }catch(e){
-    if(fRes)fRes.innerHTML='<div class="err" style="margin-top:14px">⚠️ '+(e.message||'حدث خطأ')+'</div>';
-    else alert('⚠️ '+(e.message||'حدث خطأ'));
+    if(fRes)fRes.innerHTML='<div class="err" style="margin-top:14px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||'حدث خطأ')+'</div>';
+    else alert('<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||'حدث خطأ'));
   }finally{
     const b=document.getElementById('_mqReevalBanner');
     if(b)b.remove();
@@ -1224,8 +1270,8 @@ async function thammenReEvalGeometry(){
     else{go('results');}
   }catch(e){
     const rr=document.getElementById('refineRes');
-    if(rr)rr.innerHTML='<div class="err" style="margin-top:14px">⚠️ '+(e.message||'حدث خطأ')+'</div>';
-    else alert('⚠️ '+(e.message||'حدث خطأ'));
+    if(rr)rr.innerHTML='<div class="err" style="margin-top:14px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||'حدث خطأ')+'</div>';
+    else alert('<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||'حدث خطأ'));
   }finally{
     const b=document.getElementById('_mqReevalBanner');
     if(b)b.remove();
@@ -1286,8 +1332,8 @@ function copyResult(){
   lines.push('');lines.push('— مُولَّد من ثمّن (thammen.qa)');
   navigator.clipboard.writeText(lines.join('\n')).then(()=>{
     const btn=document.getElementById('copyBtn');
-    btn.innerHTML='✓ نُسخ';btn.classList.add('copied');
-    setTimeout(()=>{btn.innerHTML='📋 نسخ النتيجة';btn.classList.remove('copied')},2000);
+    btn.innerHTML='<svg class=ic aria-hidden=true><use href=#ic-check></use></svg> نُسخ';btn.classList.add('copied');
+    setTimeout(()=>{btn.innerHTML='<svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> نسخ النتيجة';btn.classList.remove('copied')},2000);
   });
 }
 
@@ -1317,8 +1363,8 @@ function _mucCardHtml(muc_ar,muc_basis,muc_review){
   if(!muc_ar)return '';
   let out='<div style="background:var(--bad-bg);border:2px solid var(--bad);border-radius:8px;padding:16px;margin-bottom:14px">';
   // Sprint 2.22.0a.2 Pattern A: LRM-wrap Latin tokens to prevent bidi reversal (Operational_Rules #25).
-  out+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem">⚠️ تحفظ مادي وفق ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ و ‎VPS 6‎ — و ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎</div>';
-  out+='<div style="white-space:pre-line;line-height:1.7;font-size:.92rem">'+muc_ar.replace(/^⚠️[^\n]*\n+/,'')+'</div>';
+  out+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> تحفظ مادي وفق ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ و ‎VPS 6‎ — و ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎</div>';
+  out+='<div style="white-space:pre-line;line-height:1.7;font-size:.92rem">'+muc_ar.replace(/^\u26A0\uFE0F?[^\n]*\n+/,'')+'</div>';
   if(muc_basis)out+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--bad);font-size:.85rem;color:var(--muted)"><strong>الأساس:</strong> '+muc_basis+'</div>';
   if(muc_review)out+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+muc_review+'</div>';
   out+='</div>';
@@ -1348,19 +1394,19 @@ function _decompHtml(d,v,hasValuation){
       'normal':'#0c7d41',
       'building_dominant':'#1f4d8a'
     }[bd.status]||'#444';
-    out+='<div class="rc"><div class="rt" style="margin-bottom:10px">💎 تفكيك القيمة (أرض + بناء)</div>';
+    out+='<div class="rc"><div class="rt" style="margin-bottom:10px"><svg class=ic aria-hidden=true><use href=#ic-gem></use></svg> تفكيك القيمة (أرض + بناء)</div>';
     // Bar visualization
     out+='<div style="display:flex;height:36px;border-radius:8px;overflow:hidden;margin-bottom:14px;border:1px solid #ddd">';
-    out+='<div style="flex:'+landPct+';background:linear-gradient(135deg,#a68252,#8b6e44);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700">🏞️ أرض '+landPct+'%</div>';
+    out+='<div style="flex:'+landPct+';background:linear-gradient(135deg,var(--bronze),#8b6e44);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700"><svg class=ic aria-hidden=true><use href=#ic-home></use></svg> أرض '+landPct+'%</div>';
     if(bldPct>0){
-      out+='<div style="flex:'+bldPct+';background:linear-gradient(135deg,#5a7a52,#456040);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700">🏠 بناء '+bldPct+'%</div>';
+      out+='<div style="flex:'+bldPct+';background:linear-gradient(135deg,#5a7a52,#456040);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700"><svg class=ic aria-hidden=true><use href=#ic-home></use></svg> بناء '+bldPct+'%</div>';
     }
     out+='</div>';
     // Rows
     out+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">';
-    out+='<div style="padding:10px;background:#faf7f1;border-radius:6px"><div style="font-size:.78rem;color:#666;margin-bottom:4px">🏞️ قيمة الأرض</div><div style="font-size:1.05rem;font-weight:700;color:#8b6e44">'+fmt(ld.estimated_qar)+' ر.ق</div><div style="font-size:.72rem;color:#888;margin-top:3px">'+fmt(ld.per_m2_qar)+' ر.ق/م² × '+ld.plot_area_m2+' م²</div><div style="font-size:.7rem;color:#999;margin-top:2px">n='+ld.n_transactions+' · '+ld.confidence_ar+'</div></div>';
+    out+='<div style="padding:10px;background:#faf7f1;border-radius:6px"><div style="font-size:.78rem;color:#666;margin-bottom:4px"><svg class=ic aria-hidden=true><use href=#ic-home></use></svg> قيمة الأرض</div><div style="font-size:1.05rem;font-weight:700;color:#8b6e44">'+fmt(ld.estimated_qar)+' ر.ق</div><div style="font-size:.72rem;color:#888;margin-top:3px">'+fmt(ld.per_m2_qar)+' ر.ق/م² × '+ld.plot_area_m2+' م²</div><div style="font-size:.7rem;color:#999;margin-top:2px">n='+ld.n_transactions+' · '+ld.confidence_ar+'</div></div>';
     if(bd.qar!=null){
-      out+='<div style="padding:10px;background:#f5f8f3;border-radius:6px"><div style="font-size:.78rem;color:#666;margin-bottom:4px">🏠 قيمة البناء الضمنية</div><div style="font-size:1.05rem;font-weight:700;color:#456040">'+(bd.qar<0?'−':'')+fmt(Math.abs(bd.qar))+' ر.ق</div>';
+      out+='<div style="padding:10px;background:#f5f8f3;border-radius:6px"><div style="font-size:.78rem;color:#666;margin-bottom:4px"><svg class=ic aria-hidden=true><use href=#ic-home></use></svg> قيمة البناء الضمنية</div><div style="font-size:1.05rem;font-weight:700;color:#456040">'+(bd.qar<0?'−':'')+fmt(Math.abs(bd.qar))+' ر.ق</div>';
       if(bd.qar_per_m2_bua)out+='<div style="font-size:.72rem;color:#888;margin-top:3px">'+fmt(bd.qar_per_m2_bua)+' ر.ق/م² BUA × '+bd.bua_m2+' م²</div>';
       out+='<div style="font-size:.7rem;color:#999;margin-top:2px">'+bd.as_pct_of_total+'% من القيمة الكلية</div></div>';
     }
@@ -1384,15 +1430,15 @@ function _substHtml(d,v,hasValuation){
     const age=bs.building_age_years;
 
     // Determine card color/icon by regime
-    let bgCol='#e6f7ed', textCol='#0c7d41', icon='🏗️', titleTxt='';
+    let bgCol='#e6f7ed', textCol='#0c7d41', icon='<svg class=ic aria-hidden=true><use href=#ic-tool></use></svg>', titleTxt='';
     if(regime==='qatar_10_year_rule'){
       bgCol='#fff4e6'; textCol='#a05a00'; icon='⏳';
       titleTxt='قاعدة الـ 10 سنوات (السوق القطري)';
     } else if(regime==='old_luxury_building'){
-      bgCol='#f5e8ff'; textCol='#6b00a0'; icon='💎';
+      bgCol='#f5e8ff'; textCol='#6b00a0'; icon='<svg class=ic aria-hidden=true><use href=#ic-gem></use></svg>';
       titleTxt='بناء قديم فاخر — تعديل جزئي ('+adj.toFixed(1)+'%)';
     } else if(regime==='mid_age_building'){
-      icon='🏠'; titleTxt='بناء متوسط العمر — تعديل '+adj.toFixed(1)+'%';
+      icon='<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>'; titleTxt='بناء متوسط العمر — تعديل '+adj.toFixed(1)+'%';
     } else if(regime==='new_building'){
       titleTxt='بناء جديد — تعديل +'+adj.toFixed(1)+'%';
     } else {
@@ -1404,11 +1450,11 @@ function _substHtml(d,v,hasValuation){
       out+='<div class="rc"><div class="rt" style="margin-bottom:8px">'+icon+' '+titleTxt+'</div>';
       if(age!==null && age!==undefined){
         out+='<div class="rn" style="font-size:.82rem;margin-bottom:6px;color:#555">عمر البناء: <strong>'+age+' سنة</strong>';
-        if(bs.is_luxury===true) out+=' · <span style="color:#6b00a0">تشطيب فاخر ✓</span>';
+        if(bs.is_luxury===true) out+=' · <span style="color:#6b00a0">تشطيب فاخر <svg class=ic aria-hidden=true><use href=#ic-check></use></svg></span>';
         // Sprint 2.5: show source badge when age was auto-detected from GIS imagery
         if(bs.age_source==='gis_imagery'){
           const confTxt = bs.age_confidence_years ? ' (±'+bs.age_confidence_years+' سنة)' : '';
-          out+=' · <span style="color:#0066b8;background:#e8f3fc;padding:2px 8px;border-radius:10px;font-size:.75rem">📡 مكتشف من صور الأقمار الصناعية'+confTxt+'</span>';
+          out+=' · <span style="color:#0066b8;background:#e8f3fc;padding:2px 8px;border-radius:10px;font-size:.75rem"><svg class=ic aria-hidden=true><use href=#ic-globe></use></svg> مكتشف من صور الأقمار الصناعية'+confTxt+'</span>';
         }
         out+='</div>';
       }
@@ -1432,19 +1478,19 @@ function _strataHtml(d){
   if(stockStrata && stockStrata.applied && stockStrata.strata){
     const STRATA_ORDER=['land_priced','aging_stock','modern_stock','luxury_new'];
     const STRATA_COLORS={
-      'land_priced':  {bg:'var(--warn-bg)', fg:'var(--warn)', icon:'🏚️'},
-      'aging_stock':  {bg:'var(--alt)',     fg:'var(--muted)', icon:'🏠'},
-      'modern_stock': {bg:'var(--ok-bg)',   fg:'var(--ok)',   icon:'🏡'},
-      'luxury_new':   {bg:'#F5EFE7',        fg:'var(--bronze)', icon:'🌟'},
+      'land_priced':  {bg:'var(--warn-bg)', fg:'var(--warn)', icon:'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>'},
+      'aging_stock':  {bg:'var(--alt)',     fg:'var(--muted)', icon:'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>'},
+      'modern_stock': {bg:'var(--ok-bg)',   fg:'var(--ok)',   icon:'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>'},
+      'luxury_new':   {bg:'#F5EFE7',        fg:'var(--bronze)', icon:'<svg class=ic aria-hidden=true><use href=#ic-star></use></svg>'},
     };
-    out+='<div class="rc"><div class="rt" style="margin-bottom:6px">📊 تصنيف المخزون (Stock Stratification)</div>';
+    out+='<div class="rc"><div class="rt" style="margin-bottom:6px"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> تصنيف المخزون (Stock Stratification)</div>';
     out+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">'+(stockStrata.methodology_ar||'')+'</div>';
 
     // Land reference card
     const lr=stockStrata.land_reference;
     if(lr){
       out+='<div class="rn" style="font-size:.82rem;padding:8px 10px;background:var(--alt);border-radius:6px;margin-bottom:12px">';
-      out+='📏 <strong>مرجع الأرض:</strong> '+fmt(lr.median_per_m2)+' ر.ق/م² ';
+      out+='<svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg> <strong>مرجع الأرض:</strong> '+fmt(lr.median_per_m2)+' ر.ق/م² ';
       out+='(n='+lr.n+' معاملة، نافذة '+lr.window_months+' شهر، ';
       out+='شريحة: '+(lr.bracket||'—')+')';
       out+='</div>';
@@ -1550,7 +1596,7 @@ function showReport(d){
   let _axN=0; const _ax=()=>{_axN++;return '<div style="color:var(--thmr-bronze,#A4814A);font-weight:700;font-size:.72rem;margin:2px 0 4px">ملحق '+_axN+'</div>';};
   const _axWrap=(html)=>html?(_ax()+html):'';
   let h='';
-  h+='<button class="copy-btn print-btn no-print" onclick="printReportA4()">🖨️ طباعة / حفظ PDF (A4)</button><div style="clear:both"></div>';
+  h+='<button class="copy-btn print-btn no-print" onclick="printReportA4()"><svg class=ic aria-hidden=true><use href=#ic-printer></use></svg> طباعة / حفظ PDF (A4)</button><div style="clear:both"></div>';
   // (1) cover: brand + address/PIN + date + engine version + the staleness banner.
   h+='<div class="rc rep-cover">';
   h+='<div class="rep-brand">ثمّن<span> — تقدير سوقي آليّ للعقار</span></div>';
@@ -1591,28 +1637,28 @@ function showReport(d){
     // م3/D8: the «حالة أفضل/أدنى» prose is FOLDED when the scenarios table answers it
     // with numbers (the a17/a19 disclosure stays verbatim wherever no scenarios exist).
     if(v.condition_note_ar&&!(v.scenarios&&v.scenarios.items&&v.scenarios.items.length>1))h+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.condition_note_ar+'</div>';
-    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';
+    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.old_stock_reanchor.note_ar+'</div>';
     if(v.cost_triangulation&&v.cost_triangulation.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.cost_triangulation.note_ar+'</div>';
     // Sprint 2.22.0b.20 — EVIDENCE-CONDITIONAL LEADERSHIP (Gate-2 SIGNED 2026-06-11):
     // the leadership verdict + the three-value stack lines (cost line = the b19-signed label;
     // dispersion shown = G2 auditability). Cost-led/E25 notes are warn-styled like the OSR note was.
-    if(v.leadership&&v.leadership.note_ar){h+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'">⚖️ '+v.leadership.note_ar+'</div>';}
-    if(v.leadership&&v.leadership.age_honesty_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem">🕰️ '+v.leadership.age_honesty_note_ar+'</div>';}
-    if(v.leadership&&v.leadership.resurvey_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem">📋 '+v.leadership.resurvey_note_ar+'</div>';}
-    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){h+='<div class="rn" style="margin-top:8px;font-size:.76rem">🏗️ '+v.value_stack.cost.label_ar+': '+fmt(v.value_stack.cost.value)+' ر.ق — '+v.value_stack.cost.sub_ar+'</div>';}
-    else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){h+='<div class="rn" style="margin-top:8px;font-size:.74rem">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
+    if(v.leadership&&v.leadership.note_ar){h+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.leadership.note_ar+'</div>';}
+    if(v.leadership&&v.leadership.age_honesty_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.leadership.age_honesty_note_ar+'</div>';}
+    if(v.leadership&&v.leadership.resurvey_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '+v.leadership.resurvey_note_ar+'</div>';}
+    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){h+='<div class="rn" style="margin-top:8px;font-size:.76rem"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.value_stack.cost.label_ar+': '+fmt(v.value_stack.cost.value)+' ر.ق — '+v.value_stack.cost.sub_ar+'</div>';}
+    else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){h+='<div class="rn" style="margin-top:8px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
     // م3 (the PDF-audit mixed-pool fix): on cost leadership the pool line becomes the
     // SIGNED dual-evidence line (matched n vs geo n/dispersion — the b20 format); on a
     // market lead the bracket dispersion renders WITH ITS OWN n (no more n=3-beside-0.165).
     if(_ldR&&_ldR.leader==='cost'){
       const _tR=_ldR.thresholds||{};
       const _gdR=(_ldR.geo_full_dispersion!=null)?_ldR.geo_full_dispersion:'—';
-      h+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 شواهد السوق: مطابق <span dir="ltr">n='+(_ldR.matched_n!=null?_ldR.matched_n:'—')+' (&lt;'+(_tR.matched_min_n!=null?_tR.matched_min_n:10)+')</span> · جغرافي <span dir="ltr">'+(_ldR.geo_full_n!=null?_ldR.geo_full_n:'—')+'/'+_gdR+((_gdR!=='—'&&_gdR>=(_tR.dispersion_t!=null?_tR.dispersion_t:0.30))?' (&gt;'+(_tR.dispersion_t!=null?_tR.dispersion_t:0.30)+')':'')+'</span></div>';
+      h+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> شواهد السوق: مطابق <span dir="ltr">n='+(_ldR.matched_n!=null?_ldR.matched_n:'—')+' (&lt;'+(_tR.matched_min_n!=null?_tR.matched_min_n:10)+')</span> · جغرافي <span dir="ltr">'+(_ldR.geo_full_n!=null?_ldR.geo_full_n:'—')+'/'+_gdR+((_gdR!=='—'&&_gdR>=(_tR.dispersion_t!=null?_tR.dispersion_t:0.30))?' (&gt;'+(_tR.dispersion_t!=null?_tR.dispersion_t:0.30)+')':'')+'</span></div>';
     }else if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){
-      h+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span>'+((v.value_stack.market.bracket_n_36!=null)?' <span dir="ltr">(n='+v.value_stack.market.bracket_n_36+')</span>':'')+'</div>';
+      h+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span>'+((v.value_stack.market.bracket_n_36!=null)?' <span dir="ltr">(n='+v.value_stack.market.bracket_n_36+')</span>':'')+'</div>';
     }
     // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — the claimed age never moves the headline.
-    if(v.age_sensitivity&&v.age_sensitivity.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">🕰️ '+v.age_sensitivity.note_ar+'</div>';
+    if(v.age_sensitivity&&v.age_sensitivity.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.age_sensitivity.note_ar+'</div>';
     if(v.value_floor){
       const vfR=v.value_floor;
       h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+(vfR.land_floor_note_ar||'');
@@ -1636,9 +1682,9 @@ function showReport(d){
       h+='<div class="rep-def12-row"><span>'+v.value_stack.cost.label_ar+'</span><strong>'+fmt(v.value_stack.cost.value)+' ر.ق</strong></div>';
       h+='<div class="rn" style="font-size:.72rem;margin-top:2px">'+v.value_stack.cost.sub_ar+'</div>';
     }else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){
-      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.value_stack.cost.unavailable_reason_ar+'</div>';
     }else if(v.cost_note_ar){
-      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">🏗️ '+v.cost_note_ar+'</div>';
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.cost_note_ar+'</div>';
     }
     h+='<div class="rep-def12-row"><span>قيمة البيع الجبري الإرشادية (×<span dir="ltr">0.90</span>)</span><strong>'+fmt(_fs)+' ر.ق</strong></div>';
     h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً. الأساس: القيمة التقديرية المركزية × <span dir="ltr">0.90</span>.</div>';
@@ -1698,7 +1744,7 @@ function showReport(d){
     if(_piR.zoning)h+=ri('التصنيف',_piR.zoning);
     h+=pbRows(d.property_basis);
     const _gR=v.geometry||{};
-    if(_gR.footprint_basis==='confirmed'&&_gR.effective_footprint_m2)h+=ri('مساحة البناء المعتمدة','✓ '+fmt(_gR.effective_footprint_m2)+' م²');
+    if(_gR.footprint_basis==='confirmed'&&_gR.effective_footprint_m2)h+=ri('مساحة البناء المعتمدة','<svg class=ic aria-hidden=true><use href=#ic-check></use></svg> '+fmt(_gR.effective_footprint_m2)+' م²');
     else if(_gR.max_buildable_footprint_m2)h+=ri('مساحة البناء الأرضي (تقدير أقصى)','≈ '+fmt(_gR.max_buildable_footprint_m2)+' م²');
     h+='</div></div>';
   }else{
@@ -1715,7 +1761,7 @@ function showReport(d){
   const _methSecR=(_brR&&_brR.sections||[]).find(s=>s&&s.id==='methodology');
   if(_methSecR)h+=renderSection(_methSecR);
   if(d.rics_methodology_note_ar){
-    h+='<div style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-top:8px"><div style="font-weight:600;font-size:.9rem;margin-bottom:4px">ℹ️ معايير &lrm;RICS / IVS&lrm;</div>'+d.rics_methodology_note_ar+'</div>';
+    h+='<div style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-top:8px"><div style="font-weight:600;font-size:.9rem;margin-bottom:4px">ℹ معايير &lrm;RICS / IVS&lrm;</div>'+d.rics_methodology_note_ar+'</div>';
   }
   h+='</div>';
   const _srcNode=document.querySelector('.src-credit');
@@ -1738,7 +1784,7 @@ function showReport(d){
   // (9) footer: not-certified (a20 status appended) + engine version + timestamp + the GT hook
   // (the Terms' OWN signed channel — PHASE0_b17 §3; feeds the D-3 GT kit).
   h+='<div class="rep-foot">';
-  h+='<div>📌 تقدير سوقي آلي وليس تقييماً معتمداً'+((d.material_uncertainty||{}).rics_compliant_status_ar?(' ('+d.material_uncertainty.rics_compliant_status_ar+')'):'')+'.</div>';
+  h+='<div><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> تقدير سوقي آلي وليس تقييماً معتمداً'+((d.material_uncertainty||{}).rics_compliant_status_ar?(' ('+d.material_uncertainty.rics_compliant_status_ar+')'):'')+'.</div>';
   h+='<div style="margin-top:6px" dir="ltr">'+(d.engine_version||'')+' · '+now.toISOString().replace('T',' ').slice(0,16)+' UTC</div>';
   // Sprint 2.22.0b.23 — report id + tamper-evident verify link (when the server has the key).
   if(d.report_ref){
@@ -1746,7 +1792,7 @@ function showReport(d){
     // Sprint 2.22.0b.25 (م2): the URL builder is shared with the short-report QR (_verifyUrl).
     const _vu=_verifyUrl(d);
     if(_vu){
-      h+=' · <a href="'+_vu+'" target="_blank" rel="noopener" style="color:var(--bronze)">تحقّق من صحّة التقرير ✓</a>';
+      h+=' · <a href="'+_vu+'" target="_blank" rel="noopener" style="color:var(--bronze)">تحقّق من صحّة التقرير <svg class=ic aria-hidden=true><use href=#ic-check></use></svg></a>';
     }
     h+='</div>';
   }
@@ -1873,7 +1919,7 @@ function showShortReport(d){
   h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b><br>'):'')+'<span dir="ltr">'+(d.engine_version||'')+'</span></div></div>';
   // the property strip (the PDF header row).
   h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:10px"><span class="k">'+(ASSET_AR[d.asset_type]||'عقار')+' <b dir="ltr">'+(d.address||'')+'</b>'+(d.district?(' · '+d.district):'')+'</span><span class="v" style="font-weight:400">'+(d.plot_area_m2?('مساحة الأرض: <b>'+fmt(d.plot_area_m2)+' م²</b>'):'')+(_ageY?(' · عمر البناء: <b>فوق '+_ageY+' سنة</b> (سجل رسمي)'):'')+' · التاريخ: <span dir="ltr">'+today+'</span></span></div>';
-  h+='<div class="thmr-hero" style="background:var(--thmr-navy);border:none"><span class="lbl" style="color:#E8C99A">قيمة بيتك التقديرية اليوم</span>';
+  h+='<div class="thmr-hero" style="background:var(--thmr-navy);border:none"><span class="lbl" style="color:var(--gold)">قيمة بيتك التقديرية اليوم</span>';
   h+='<div class="num" style="color:#fff">'+fmt(v.amount)+' <small>ريال</small></div>';
   h+='<div style="display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:2px 14px;margin-top:7px;font-size:.74rem;color:#EAF0F6">تقدير استرشادي — وليس تقييماً معتمداً</div>';
   h+='<div class="basis" style="color:#C9D4DF">'+basisLn+'</div>';
@@ -2030,7 +2076,7 @@ function show(d){
         var _ctx=(_g.footprint_method==='coverage_cap_shared')
           ? ('(حصة الوحدة في قطعة مشتركة'+(_g.n_share?' بين '+_g.n_share+' وحدات':'')+') ≈ ')
           : (_dims&&_dims.length===2?('من أبعاد قطعتك (<span dir="ltr">'+_dims[0]+' × '+_dims[1]+'</span> م)'+(_g.footprint_method==='setback_envelope'?' بعد الارتدادات القانونية (أمامي 5 · جانبي 3 · خلفي 3) وضمن سقف تغطية 60%':'')+' ≈ '):'≈ ');
-        _fph.innerHTML='💡 الحدّ الأقصى المُقدَّر '+_ctx+
+        _fph.innerHTML='<svg class=ic aria-hidden=true><use href=#ic-bulb></use></svg> الحدّ الأقصى المُقدَّر '+_ctx+
           '<strong>'+fmt(_mb)+' م²</strong> — عدّله لواقع مبناك (الفعلي عادةً أصغر).';
       }else{_fph.textContent='';}
     }
@@ -2053,8 +2099,8 @@ function show(d){
   let foot='';    // ALWAYS-VISIBLE compliance foot (freshness / disclaimer / verification)
 
   // ── Copy button (top, floats right) ──
-  head+='<button id="copyBtn" class="copy-btn" onclick="copyResult()">📋 نسخ النتيجة</button>';
-  head+='<button class="copy-btn print-btn" onclick="printReport()" style="margin-right:8px">🖨️ طباعة / حفظ PDF</button>';
+  head+='<button id="copyBtn" class="copy-btn" onclick="copyResult()"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> نسخ النتيجة</button>';
+  head+='<button class="copy-btn print-btn" onclick="printReport()" style="margin-right:8px"><svg class=ic aria-hidden=true><use href=#ic-printer></use></svg> طباعة / حفظ PDF</button>';
   head+='<div style="clear:both"></div>';
 
   // ── Sprint 2.14.0 + 2.16.9 + 2.22.0a/9+/12: Material Valuation Uncertainty (MVU) Clause ──
@@ -2082,7 +2128,7 @@ function show(d){
   // in the backend string (Operational_Rules #25); Latin in the summary uses &lrm;.
   if(d.rics_methodology_note_ar){
     a8acc+='<details style="margin-bottom:14px;border:1px solid var(--light);border-radius:8px;padding:10px 12px;background:var(--alt)">';
-    a8acc+='<summary style="cursor:pointer;font-weight:600;font-size:.9rem;color:var(--primary)">ℹ️ المنهجية ومعايير &lrm;RICS / IVS&lrm;</summary>';
+    a8acc+='<summary style="cursor:pointer;font-weight:600;font-size:.9rem;color:var(--primary)">ℹ المنهجية ومعايير &lrm;RICS / IVS&lrm;</summary>';
     a8acc+='<div style="margin-top:8px;line-height:1.7;font-size:.88rem;color:var(--muted)">'+d.rics_methodology_note_ar+'</div>';
     a8acc+='</details>';
   }
@@ -2098,7 +2144,7 @@ function show(d){
   const szm=d.subtype_zoning_mismatch;
   if(szm&&szm.message_ar){
     alerts+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
-    alerts+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem">⚠️ تناقض في تصنيف العقار</div>';
+    alerts+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> تناقض في تصنيف العقار</div>';
     alerts+='<div style="line-height:1.7;font-size:.92rem">'+szm.message_ar+'</div>';
     if(szm.data_age_note_ar){
       alerts+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--warn);font-size:.85rem;color:var(--muted)"><strong>ملاحظة:</strong> '+szm.data_age_note_ar+'</div>';
@@ -2119,7 +2165,7 @@ function show(d){
     const isWarn=atr.action==='warn';
     const bdr=isWarn?'var(--warn)':'var(--bad)';
     const bg=isWarn?'var(--warn-bg)':'var(--bad-bg)';
-    const ttl=isWarn?'⚠️ تنبيه على تصنيف الأرض':(atr.reason==='building_present'?'⚠️ القطعة عليها مبنى':'❌ خارج نطاق التقييم');
+    const ttl=isWarn?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> تنبيه على تصنيف الأرض':(atr.reason==='building_present'?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> القطعة عليها مبنى':'<svg class=ic aria-hidden=true><use href=#ic-x></use></svg> خارج نطاق التقييم');
     alerts+='<div style="background:'+bg+';border:2px solid '+bdr+';border-radius:8px;padding:16px;margin-bottom:14px">';
     alerts+='<div style="font-weight:700;color:'+bdr+';margin-bottom:8px;font-size:1.02rem">'+ttl+'</div>';
     alerts+='<div style="line-height:1.8;font-size:.92rem;white-space:pre-line">'+atr.message_ar+'</div>';
@@ -2140,13 +2186,13 @@ function show(d){
     const eff=mqr.effective_per_villa;
     const coh=(mqr.cohabiting_buildings||[]).filter(x=>x!=null);
     alerts+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
-    alerts+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem">⚠️ قطعة مشتركة ('+ n +' فلل على نفس القطعة)</div>';
+    alerts+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> قطعة مشتركة ('+ n +' فلل على نفس القطعة)</div>';
     alerts+='<div style="line-height:1.7;font-size:.92rem">تقييم مبدئي بقسمة الأرض بالتساوي ('+ (cad!=null?cad:'?') +' ÷ '+ n +' = '+ eff +' م²). لو حصة الأرض الفعلية مختلفة، عدّل المساحة يدوياً.</div>';
     if(coh.length){
       alerts+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted)">الفيلات الأخرى على نفس الـ PIN: '+ coh.join(', ') +'</div>';
     }
     if(mqr.user_override_applied){
-      alerts+='<div style="margin-top:10px;padding:8px 12px;background:var(--ok-bg);color:var(--ok);border-radius:6px;font-size:.88rem">✓ تم استخدام المساحة التي حدّدتها يدوياً ('+ eff +' م²)</div>';
+      alerts+='<div style="margin-top:10px;padding:8px 12px;background:var(--ok-bg);color:var(--ok);border-radius:6px;font-size:.88rem"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg> تم استخدام المساحة التي حدّدتها يدوياً ('+ eff +' م²)</div>';
     }
     // Stage-1 transparency: surface stage + confidence so the broker
     // understands this is the first-pass estimate, not the final word.
@@ -2172,10 +2218,10 @@ function show(d){
   const ss=d.service_scope;
   if(ss){
     let scopeBg,scopeColor,scopeIcon,scopeLabel;
-    if(_ux3NotReady){scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='🚧';scopeLabel='غير مدعوم بعد';}
-    else if(ss.tier==='supported'){scopeBg='var(--ok-bg)';scopeColor='var(--ok)';scopeIcon='✅';scopeLabel='تحليل آلي';}
-    else if(ss.tier==='limited'){scopeBg='var(--warn-bg)';scopeColor='var(--warn)';scopeIcon='⚠️';scopeLabel='تقييم مشروط';}
-    else{scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='❌';scopeLabel='خارج النطاق';}
+    if(_ux3NotReady){scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>';scopeLabel='غير مدعوم بعد';}
+    else if(ss.tier==='supported'){scopeBg='var(--alt)';scopeColor='var(--muted)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-check></use></svg>';scopeLabel='تحليل آلي';}  /* Sprint 2.22.0b.47: demote the loud green — the navy hero is the result-screen focal point */
+    else if(ss.tier==='limited'){scopeBg='var(--warn-bg)';scopeColor='var(--warn)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>';scopeLabel='تقييم مشروط';}
+    else{scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-x></use></svg>';scopeLabel='خارج النطاق';}
     alerts+='<div style="background:'+scopeBg+';border-right:4px solid '+scopeColor+';padding:12px 14px;margin-bottom:14px;border-radius:0 6px 6px 0">';
     alerts+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
     alerts+='<div><strong style="color:'+scopeColor+'">'+scopeIcon+' '+scopeLabel+'</strong> — '+ss.label_ar+'</div>';
@@ -2197,7 +2243,7 @@ function show(d){
 
   // ── Sprint 2.22.0b.22: ignored tower pair — disclosure chip (qualifier, ABOVE the number) ──
   if(d.tower_pair_ignored&&d.tower_pair_ignored.note_ar){
-    alerts+='<div style="background:var(--warn-bg);border-right:4px solid var(--warn);padding:10px 14px;margin-bottom:14px;border-radius:0 6px 6px 0;font-size:.88rem">⚠️ '+d.tower_pair_ignored.note_ar+'</div>';
+    alerts+='<div style="background:var(--warn-bg);border-right:4px solid var(--warn);padding:10px 14px;margin-bottom:14px;border-radius:0 6px 6px 0;font-size:.88rem"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+d.tower_pair_ignored.note_ar+'</div>';
   }
 
   // ── Sprint A.3: Sanity warnings — prominent yellow card (qualifier, ABOVE the number) ──
@@ -2213,7 +2259,7 @@ function show(d){
     const reason=v.reason_ar||'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً.';
     const assetAr=(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type||'هذا العقار');
     flat+='<div class="insuf">';
-    flat+='<div class="insuf-icon">'+(_ux3NotReady?'🚧':'ⓘ')+'</div>';
+    flat+='<div class="insuf-icon">'+(_ux3NotReady?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>':'ⓘ')+'</div>';
     // Sprint 2.22.0b.36 (DEF-UX3): apartment/tower → honest «not supported yet»,
     // not «add data and we'll value it». The «why» (no MoJ per-unit comparables).
     flat+='<h2>'+(_ux3NotReady?(_ux3Noun+' غير مدعومة بعد — للفلل والأراضي فقط'):'التقييم يحتاج بيانات إضافية')+'</h2>';
@@ -2229,7 +2275,7 @@ function show(d){
       if(d.gps&&d.gps.lat&&d.gps.lon){
         const lat=d.gps.lat,lon=d.gps.lon;
         flat+='<div class="map-links" style="margin-top:10px;padding-top:10px">';
-        flat+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')">📍 افتح موقع العقار في الخريطة</button>';
+        flat+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> افتح موقع العقار في الخريطة</button>';
         flat+='</div>';
       }
       flat+='</div>';
@@ -2269,37 +2315,45 @@ function show(d){
     if(d.gps&&d.gps.lat&&d.gps.lon){
       const lat=d.gps.lat,lon=d.gps.lon;
       _info+='<div class="map-links">';
-      _info+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')">📍 افتح موقع العقار في الخريطة</button>';
+      _info+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> افتح موقع العقار في الخريطة</button>';
       _info+='</div>';
     }
     _info+='</div>';
 
-    // ── TIER-1: the figure (range-as-lead b3) — calc-block visual preserved ──
-    t1+='<div class="rc calc-block"><div class="rt" style="margin-bottom:14px">التقدير السوقي</div>';
-    // tier_label TYPE badge (defensive read; empty if absent/unknown).
+    // ── TIER-1: the figure — Sprint 2.22.0b.47 result-screen HERO (<svg class=ic aria-hidden=true><use href=#ic-star></use></svg>1). Evolves the signed b3
+    // range-as-lead: leads with a CONFIDENT CENTRAL FIGURE (the median = v.amount) on a navy band
+    // + a slim low↔high range bar marking where the median sits, KEEPING the range AND the RICS
+    // «ليس تقييماً معتمداً» clause (rendered below, unchanged). Supersedes the a8 calc-block
+    // worksheet look on the RESULT screen (the .rc drops .calc-block; the short report keeps
+    // .thmr-hero). VALUE-INVARIANT — amount/low/high are PRESENTED, never recomputed (b24).
+    t1+='<div class="rc">';
+    t1+='<div class="rhero"><span class="lbl">التقدير السوقي</span>';
+    t1+='<div class="num">'+fmt(v.amount)+' <small>ر.ق</small></div>';
+    if(v.low!=null&&v.high!=null){
+      // central-estimate (median) position within [low,high] — DISPLAY-only, clamped to [0,100].
+      var _hpct=(v.high>v.low)?Math.max(0,Math.min(100,Math.round((v.amount-v.low)/(v.high-v.low)*100))):50;
+      t1+='<div class="rng">النطاق التقديري السوقي <b>'+fmt(v.low)+' – '+fmt(v.high)+'</b> ر.ق</div>';
+      t1+='<div class="rbar"><div class="track"><span class="dot c" style="right:'+_hpct+'%"></span></div>';
+      t1+='<div class="lbls"><span>الأدنى '+fmt(v.low)+'</span><span>الأعلى '+fmt(v.high)+'</span></div></div>';
+    }
+    t1+='</div>'; // .rhero
+    // TYPE tier badge — quiet, below the hero.
     const _tierAr=TIER_LABEL_AR[d.tier_label]||'';
     if(_tierAr){
-      t1+='<div style="display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px;margin-left:6px">'+_tierAr+'</div>';
+      t1+='<div style="display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin:2px 0 8px 6px">'+_tierAr+'</div>';
     }
-    // Sprint 2.22.0b.15 — MUC level CHIP in TIER-1 (first-glance compliance signpost). The FULL RICS
+    // Sprint 2.22.0b.15 — MUC level CHIP (first-glance compliance signpost). Sprint 2.22.0b.47:
+    // red→AMBER (--bad→--warn) — material uncertainty is a CAUTION, not an error. The FULL RICS
     // clause (`muc` buffer) stays always-visible immediately below TIER-1 — never collapsed.
     if(muc_ar&&MUC_LEVEL_AR[(mu||{}).level]){
-      t1+='<div style="display:inline-block;padding:3px 10px;background:var(--bad-bg);color:var(--bad);border-radius:12px;font-size:.74rem;margin-bottom:10px">⚠️ تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';
-    }
-    // Sprint 2.22.0b.3 (range-as-lead, §2b authority/finality dial-down): TRUE (possibly-asymmetric)
-    // low/high headline; median = muted central-estimate marker. Point fallback when no range present.
-    if(v.low!=null&&v.high!=null){
-      t1+='<div class="ri full" style="margin-bottom:8px"><div class="rl">النطاق التقديري السوقي</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.low)+' – '+fmt(v.high)+' ر.ق</div></div>';
-      t1+='<div class="rn" style="margin-bottom:10px;font-size:.84rem">الوسيط (التقدير المركزي) ≈ <strong>'+fmt(v.amount)+'</strong> ر.ق</div>';
-    }else{
-      t1+='<div class="ri full" style="margin-bottom:10px"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.5rem">'+fmt(v.amount)+' ر.ق</div></div>';
+      t1+='<div style="display:inline-block;padding:3px 10px;background:var(--warn-bg);color:var(--warn);border-radius:12px;font-size:.74rem;margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';
     }
     // Sprint 2.22.0b.31 (DEF-UX11): condition / teardown / luxury are DECISION-RELEVANT, user-input-driven
     // headline qualifiers (conditional) → STAY on TIER-1. The 9-note methodology «parade» below folds into
     // the «كيف وصلنا لهذا الرقم؟» accordion (the `how` buffer) so the simple owner sees a 5-element core.
     if(v.condition_note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.8rem">'+v.condition_note_ar+'</div>';}
-    if(v.teardown&&v.teardown.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--warn);background:var(--warn-bg)">🏚️ '+v.teardown.note_ar+'</div>';}
-    if(v.luxury_new_premium&&v.luxury_new_premium.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--ok);background:var(--ok-bg)">💎 '+v.luxury_new_premium.note_ar+'</div>';}
+    if(v.teardown&&v.teardown.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-home></use></svg> '+v.teardown.note_ar+'</div>';}
+    if(v.luxury_new_premium&&v.luxury_new_premium.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--ok);background:var(--ok-bg)"><svg class=ic aria-hidden=true><use href=#ic-gem></use></svg> '+v.luxury_new_premium.note_ar+'</div>';}
     // ── Sprint 2.22.0b.35 (DEF-UX16): buyer financing calculator — display-only, under the figure,
     // ONLY for audience=buyer (study §2 «المشترية: حاسبة تمويل»). Reuses _srPayment (b25 D3 amortization,
     // DRY). VALUE-INVARIANT — an illustrative monthly payment derived FROM v.amount; the engine, amount,
@@ -2307,12 +2361,12 @@ function show(d){
     // contract (b28). Separate ids (bc*) → no collision with the short-report calculator (sr*). ──
     if(d.audience==='buyer'&&v.amount){
       const _bcInit=_srPayment(v.amount,20,25,4.5);
-      t1+='<div class="rn" style="margin-top:12px;font-size:.82rem;line-height:2;border-right:3px solid var(--bronze);background:var(--alt)">🏦 حاسبة التمويل التقريبية: <span dir="ltr"><input id="bcDown" type="number" value="20" min="0" max="90" oninput="bcRecalc()" style="width:46px;padding:2px 4px"></span>% دفعة أولى · <input id="bcYears" type="number" value="25" min="1" max="35" oninput="bcRecalc()" style="width:46px;padding:2px 4px"> سنة · <input id="bcRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="bcRecalc()" style="width:52px;padding:2px 4px">% فائدة → القسط الشهريّ ≈ <b id="bcPay">'+(_bcInit?(fmt(_bcInit)+' ر.ق/شهر'):'—')+'</b> <span style="color:var(--muted);font-size:.76rem">— تقديريّ، استشر بنكك</span></div>';
+      t1+='<div class="rn" style="margin-top:12px;font-size:.82rem;line-height:2;border-right:3px solid var(--bronze);background:var(--alt)"><svg class=ic aria-hidden=true><use href=#ic-coins></use></svg> حاسبة التمويل التقريبية: <span dir="ltr"><input id="bcDown" type="number" value="20" min="0" max="90" oninput="bcRecalc()" style="width:46px;padding:2px 4px"></span>% دفعة أولى · <input id="bcYears" type="number" value="25" min="1" max="35" oninput="bcRecalc()" style="width:46px;padding:2px 4px"> سنة · <input id="bcRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="bcRecalc()" style="width:52px;padding:2px 4px">% فائدة → القسط الشهريّ ≈ <b id="bcPay">'+(_bcInit?(fmt(_bcInit)+' ر.ق/شهر'):'—')+'</b> <span style="color:var(--muted);font-size:.76rem">— تقديريّ، استشر بنكك</span></div>';
     }
     // ── DEF-UX11: the «9-note parade» (value-floor · HBU · old-stock · cost-triangulation · leadership ·
     // age-honesty · resurvey · cost-value-line · market-dispersion) → `how`, NOT `t1`. Every condition +
     // HTML string is VERBATIM (only the buffer prefix changed) → value byte-identical (b24). The `how`
-    // buffer becomes the body of ONE collapsed «🔍 كيف وصلنا لهذا الرقم؟» accordion (built below). ──
+    // buffer becomes the body of ONE collapsed «<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> كيف وصلنا لهذا الرقم؟» accordion (built below). ──
     let how='';
     if(v.value_floor){
       const vf=v.value_floor;
@@ -2325,29 +2379,29 @@ function show(d){
     if(v.hbu_note_ar){how+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.hbu_note_ar+'</div>';}
     // Sprint 2.22.0b.16 — old-stock re-anchor disclosure (§4: the raw thin median stays VISIBLE muted)
     // + the b11/b13 cost-triangulation notes (previously JSON-only; same honest surface, signed copy).
-    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar){how+='<div class="rn" style="margin-top:10px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)">⚖️ '+v.old_stock_reanchor.note_ar+'</div>';}
+    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar){how+='<div class="rn" style="margin-top:10px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.old_stock_reanchor.note_ar+'</div>';}
     if(v.cost_triangulation&&v.cost_triangulation.note_ar){how+='<div class="rn" style="margin-top:10px;font-size:.78rem">'+v.cost_triangulation.note_ar+'</div>';}
     // Sprint 2.22.0b.20 — EVIDENCE-CONDITIONAL LEADERSHIP (Gate-2 SIGNED 2026-06-11):
     // the leadership verdict + the three-value stack lines (cost line = the b19-signed label;
     // dispersion shown = G2 auditability). Cost-led/E25 notes are warn-styled like the OSR note was.
-    if(v.leadership&&v.leadership.note_ar){how+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'">⚖️ '+v.leadership.note_ar+'</div>';}
-    if(v.leadership&&v.leadership.age_honesty_note_ar){how+='<div class="rn" style="margin-top:6px;font-size:.74rem">🕰️ '+v.leadership.age_honesty_note_ar+'</div>';}
-    if(v.leadership&&v.leadership.resurvey_note_ar){how+='<div class="rn" style="margin-top:6px;font-size:.74rem">📋 '+v.leadership.resurvey_note_ar+'</div>';}
+    if(v.leadership&&v.leadership.note_ar){how+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.leadership.note_ar+'</div>';}
+    if(v.leadership&&v.leadership.age_honesty_note_ar){how+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.leadership.age_honesty_note_ar+'</div>';}
+    if(v.leadership&&v.leadership.resurvey_note_ar){how+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '+v.leadership.resurvey_note_ar+'</div>';}
     if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
       const _vc=v.value_stack.cost;
-      how+='<div class="rn" style="margin-top:8px;font-size:.76rem">🏗️ '+_vc.label_ar+': '+fmt(_vc.value)+' ر.ق — '+_vc.sub_ar+'</div>';
+      how+='<div class="rn" style="margin-top:8px;font-size:.76rem"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+_vc.label_ar+': '+fmt(_vc.value)+' ر.ق — '+_vc.sub_ar+'</div>';
       // Sprint 2.22.0b.37 (DEF-UX9): surface the DRC cost MECHANICS (BUA × كلفة الإحلال × معامل الاحتفاظ →
       // depreciated building + land) for the المهندس/المثمّن — all BROADCAST in value_stack.cost, previously
       // visible ONLY on the full/short report (showReport :1672 / showShortReport :1904), not on the result
       // screen. Lands inside «كيف وصلنا» (the appraiser-detail accordion, b34 density-open for investor/valuer).
       // Display-only / value-invariant. Numbers in dir=ltr islands (Rule #25).
       if(_vc.bua_m2&&_vc.rcn_qar_per_m2&&_vc.retention!=null){
-        how+='<div class="rn" style="margin-top:4px;font-size:.72rem;color:var(--muted)">🔧 آليّة الكلفة (نهج DRC): مساحة البناء BUA ≈ <span dir="ltr">'+_vc.bua_m2+'</span> م² · كلفة الإحلال '+fmt(_vc.rcn_qar_per_m2)+' ر.ق/م² · معامل الاحتفاظ <span dir="ltr">'+_vc.retention+'</span> ← البناء المُهلَك ≈ '+fmt(_vc.building_value)+' ر.ق + الأرض '+fmt(_vc.land_floor)+' ر.ق</div>';
+        how+='<div class="rn" style="margin-top:4px;font-size:.72rem;color:var(--muted)"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> آليّة الكلفة (نهج DRC): مساحة البناء BUA ≈ <span dir="ltr">'+_vc.bua_m2+'</span> م² · كلفة الإحلال '+fmt(_vc.rcn_qar_per_m2)+' ر.ق/م² · معامل الاحتفاظ <span dir="ltr">'+_vc.retention+'</span> ← البناء المُهلَك ≈ '+fmt(_vc.building_value)+' ر.ق + الأرض '+fmt(_vc.land_floor)+' ر.ق</div>';
         if(_vc.assumptions_ar)how+='<div class="rn" style="font-size:.7rem;color:var(--muted);margin-top:2px">'+_vc.assumptions_ar+'</div>';
       }
     }
-    else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){how+='<div class="rn" style="margin-top:8px;font-size:.74rem">🏗️ '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
-    if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){how+='<div class="rn" style="margin-top:6px;font-size:.74rem">📊 حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span></div>';}
+    else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){how+='<div class="rn" style="margin-top:8px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
+    if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){how+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span></div>';}
     // Sprint 2.22.0b.38 (DEF-UX1) + b39 (DEF-UX1.1): keystone comparables — the MoJ transactions behind
     // the displayed median. The engine attaches v.comparables ONLY when the MARKET led: basis='matched_bracket'
     // (b38 — the subject-bracket rows that PRODUCED the median, «هذه قرّرت رقمك») OR basis='geo_widened'
@@ -2358,7 +2412,7 @@ function show(d){
     if(v.comparables&&v.comparables.rows&&v.comparables.rows.length){
       var _kc=v.comparables, _kcGeo=(_kc.basis==='geo_widened');
       how+='<div class="rn" style="margin-top:10px;font-size:.76rem;border-right:3px solid var(--bronze);background:var(--alt)">';
-      how+='<div style="font-weight:600;margin-bottom:5px">🔑 '+(_kcGeo?'صفقات في منطقتك ضمن حوض المقارنة الموسَّع جغرافياً':((_kc.n||_kc.rows.length)+' صفقة في شريحتك ومنطقتك — هي ما قرّر رقمك'))+(_kc.window_label?(' <span style="color:var(--muted);font-weight:400;font-size:.9em">('+_kc.window_label+')</span>'):'')+'</div>';
+      how+='<div style="font-weight:600;margin-bottom:5px"><svg class=ic aria-hidden=true><use href=#ic-key></use></svg> '+(_kcGeo?'صفقات في منطقتك ضمن حوض المقارنة الموسَّع جغرافياً':((_kc.n||_kc.rows.length)+' صفقة في شريحتك ومنطقتك — هي ما قرّر رقمك'))+(_kc.window_label?(' <span style="color:var(--muted);font-weight:400;font-size:.9em">('+_kc.window_label+')</span>'):'')+'</div>';
       _kc.rows.forEach(function(c){
         how+='<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px solid #e6ddd0;direction:ltr">'
            +'<span style="color:var(--muted)">'+(c.date||'').slice(0,10)+'</span>'
@@ -2370,7 +2424,7 @@ function show(d){
       else if(_kc.shown&&_kc.n&&_kc.shown<_kc.n)how+='<div style="color:var(--muted);font-size:.7rem;margin-top:4px">عرض '+_kc.shown+' من '+_kc.n+' معاملة (الأحدث)</div>';
       // Sprint 2.22.0b.41 (DEF-UX1.1b): the geo NEIGHBOUR rows that were location-adjusted into the
       // subject's area (the b39 sibling — b39 disclosed only the pool size). Geo-led only (_kcGeo).
-      // 2-line row: «📍 area · ×factor» (RTL name + LTR factor island) over «date · م² · raw→adjusted ر.ق/م²»
+      // 2-line row: «<svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> area · ×factor» (RTL name + LTR factor island) over «date · م² · raw→adjusted ر.ق/م²»
       // (dir=ltr). Shows BOTH the raw sale ppm² and the DERIVED location-adjusted ppm² (rates, never a
       // "sold-for" price). E12: area name + ratio only. DISPLAY-ONLY → value byte-identical.
       if(_kcGeo&&_kc.neighbours&&_kc.neighbours.rows&&_kc.neighbours.rows.length){
@@ -2379,7 +2433,7 @@ function show(d){
         how+='<div style="font-weight:600;font-size:.72rem;margin-bottom:4px">الصفقات المجاورة المُعدَّلة الموقع (دخلت الحوض)</div>';
         _kn.rows.forEach(function(g){
           how+='<div style="padding:4px 0;border-top:1px solid #e6ddd0">'
-             +'<div style="display:flex;justify-content:space-between;gap:8px;font-size:.72rem"><span>📍 '+g.source_area+'</span><span dir="ltr" style="color:var(--muted)">×'+(g.adjustment_factor!=null?g.adjustment_factor:'—')+'</span></div>'
+             +'<div style="display:flex;justify-content:space-between;gap:8px;font-size:.72rem"><span><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> '+g.source_area+'</span><span dir="ltr" style="color:var(--muted)">×'+(g.adjustment_factor!=null?g.adjustment_factor:'—')+'</span></div>'
              +'<div style="display:flex;justify-content:space-between;gap:8px;direction:ltr;font-size:.7rem;color:var(--muted);margin-top:1px"><span>'+(g.date||'').slice(0,10)+'</span><span>'+fmt(g.area_m2)+' م²</span><span>'+(g.price_per_m2_raw!=null?fmt(g.price_per_m2_raw):'—')+' → <span style="color:var(--primary);font-weight:600">'+(g.price_per_m2_adjusted!=null?fmt(g.price_per_m2_adjusted):'—')+'</span> ر.ق/م²</span></div>'
              +'</div>';
         });
@@ -2399,7 +2453,7 @@ function show(d){
     if(v.considered_comparables&&v.considered_comparables.rows&&v.considered_comparables.rows.length){
       var _cc=v.considered_comparables;
       how+='<div class="rn" style="margin-top:10px;font-size:.76rem;border-right:3px solid var(--muted);background:var(--alt)">';
-      how+='<div style="font-weight:600;margin-bottom:5px">🔍 صفقات السوق في منطقتك — اطّلعنا عليها ولم تقُد الرقم</div>';
+      how+='<div style="font-weight:600;margin-bottom:5px"><svg class=ic aria-hidden=true><use href=#ic-search></use></svg> صفقات السوق في منطقتك — اطّلعنا عليها ولم تقُد الرقم</div>';
       var _ccWhy='قاد التقديرَ منهجُ الكلفة (DRC)';
       if(_cc.dispersion!=null&&_cc.pool_n)_ccWhy='الحوض الجغرافيّ فشل حدّ الموثوقيّة (تشتّت <span dir="ltr">'+_cc.dispersion.toFixed(3)+'</span> &gt; <span dir="ltr">0.30</span>، n='+_cc.pool_n+') — '+_ccWhy;
       how+='<div style="color:var(--muted);font-size:.7rem;margin-bottom:4px">'+_ccWhy+'</div>';
@@ -2415,14 +2469,14 @@ function show(d){
       how+='</div>';
     }
     // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — TIER-1 (the claimed age never moves the headline).
-    if(v.age_sensitivity&&v.age_sensitivity.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem">🕰️ '+v.age_sensitivity.note_ar+'</div>';}
+    if(v.age_sensitivity&&v.age_sensitivity.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.age_sensitivity.note_ar+'</div>';}
     // MoJ sample size (cite-n discipline) — STAYS on TIER-1.
     if(d.moj_sample_size){
       t1+='<div class="ri" style="margin-bottom:10px"><div class="rl">صفقات البيع المسجلة لعقارات مشابهة</div><div class="rv">'+d.moj_sample_size+' صفقة</div></div>';
     }
     // Sprint 2.22.0b.15 — «ليس تقييماً معتمداً» line (compliance — TIER-1, always visible). a20 status appended when present.
     var _statusAr=(d.material_uncertainty||{}).rics_compliant_status_ar;
-    t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;color:#8a6d3b;background:#fcf8e3;border-radius:6px;padding:7px 10px">📌 تقدير سوقيّ آليّ — ليس تقييماً معتمداً'+(_statusAr?(' ('+_statusAr+')'):'')+'.</div>';
+    t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;color:#8a6d3b;background:#fcf8e3;border-radius:6px;padding:7px 10px"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> تقدير سوقيّ آليّ — ليس تقييماً معتمداً'+(_statusAr?(' ('+_statusAr+')'):'')+'.</div>';
     // Evidence one-row summary (drama on evidence, not the figure §2c). The FULL b2.2 panel → TIER-2 accordion.
     t1+=_evOneRow(d);
     // Methodology bare line (a4 honesty surface) — kept visible directly under TIER-1.
@@ -2431,20 +2485,20 @@ function show(d){
     }
     t1+='</div>';
 
-    // ── Sprint 2.22.0b.31 (DEF-UX11): ONE «🔍 كيف وصلنا لهذا الرقم؟» accordion (FIRST, right after the
+    // ── Sprint 2.22.0b.31 (DEF-UX11): ONE «<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> كيف وصلنا لهذا الرقم؟» accordion (FIRST, right after the
     // figure + MVU clause) = the folded 9-note parade (`how`) + the full evidence panel (which was its own
     // «جودة الأدلّة (تفصيل)» accordion). Collapsed by default → its <summary> IS the 5th core element (the
     // «button»). The TIER-1 evidence one-row pill stays the summary; the full panel lives here. No panel
     // lost — every note + the panel stay fully reachable. ──
-    t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc), _dense);  // DEF-UX12: OPEN for investor/valuer
-    t2+=_acc('🏠 بيانات العقار الأساسية',_info);
+    t2+=_acc('<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc), _dense);  // DEF-UX12: OPEN for investor/valuer
+    t2+=_acc('<svg class=ic aria-hidden=true><use href=#ic-home></use></svg> بيانات العقار الأساسية',_info);
   }
 
   // ── BRIEF SECTIONS (Sprint D — was missing entirely) ── valued→TIER-2 accordion; refusal→flat (verbatim) ──
   const br=d.brief;
   if(br&&br.sections&&br.sections.length>0){
     let _secs=''; br.sections.forEach(sec=>{_secs+=renderSection(sec)});
-    if(hasValuation){ t2+=_acc('📄 '+(br.title_ar||'تفاصيل التقرير'),_secs); }
+    if(hasValuation){ t2+=_acc('<svg class=ic aria-hidden=true><use href=#ic-file></use></svg> '+(br.title_ar||'تفاصيل التقرير'),_secs); }
     else {
       flat+='<div class="rc" style="background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px"><div class="rt" style="font-size:1.15rem;margin-bottom:0">'+(br.title_ar||'التقرير')+'</div></div>';
       flat+=_secs;
@@ -2470,7 +2524,7 @@ function show(d){
     const eff=g.effective_footprint_m2;                 // value the engine actually used (post-cap)
     const capFired=confirmed&&eff&&rawFp&&eff<rawFp;    // brief F3: disclose ONLY when the zone cap bit
     h+='<div class="rc" style="border-color:#d9c7a8;background:#faf7f1">';
-    h+='<div class="rt" style="margin-bottom:6px;color:#8b6e44">📐 '+(confirmed?'مساحة البناء الأرضي (مؤكَّد ✓)':'حسّن التقدير (المرحلة 2)')+'</div>';
+    h+='<div class="rt" style="margin-bottom:6px;color:#8b6e44"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg> '+(confirmed?'مساحة البناء الأرضي (مؤكَّد <svg class=ic aria-hidden=true><use href=#ic-check></use></svg>)':'حسّن التقدير (المرحلة 2)')+'</div>';
     if(confirmed){
       h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">اعتُمدت مساحة البناء الأرضية: <strong>'+fmt(eff)+' م²</strong></div>';
       if(capFired) h+='<div class="rn" style="font-size:.8rem;color:#8b6e44;margin-top:6px">حُدِّدت مساحة البناء إلى '+fmt(eff)+'م² — أقصى تغطية أرضية مسموحة للقسيمة وفق اشتراطات المنطقة'+(g.zoning_code?(' ('+g.zoning_code+' '+g.zone_max_coverage_pct+'%)'):'')+'.</div>';
@@ -2502,7 +2556,7 @@ function show(d){
     const noDetails=!ui.floors&&!ui.basement&&!ui.footprint_m2&&!ui.external_majlis&&!ui.annexes;
     if(noDetails){
       h+='<div class="rc" style="border-color:#f4d03f;background:#fffdf3">';
-      h+='<div class="rt" style="margin-bottom:6px;color:#a87000">ℹ️ التقييم يفترض بناءً نموذجياً</div>';
+      h+='<div class="rt" style="margin-bottom:6px;color:#a87000">ℹ التقييم يفترض بناءً نموذجياً</div>';
       h+='<div class="rn" style="font-size:.85rem;color:#666">قد يؤدي إدخال التفاصيل الفعلية للعقار — كالحالة والمساحة الدقيقة والتشطيبات — إلى تعديل جوهري في التقدير.</div>';
       h+='</div>';
     }
@@ -2569,26 +2623,26 @@ function show(d){
     const hbu=gf.hbu_analysis;
     if(hbu){
       const cls=hbu.industrial_adjacency?'loc-neg':'loc-pos';
-      const icon=hbu.industrial_adjacency?'⚠':'⬆';
+      const icon=hbu.industrial_adjacency?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>':'<svg class=ic aria-hidden=true><use href=#ic-arrow></use></svg>';
       items.push({icon:icon,label:hbu.evidence_ar,cls:cls});
     }
     const nl=gf.named_landmarks;
     if(nl){
       (nl.malls||[]).forEach(m=>{
         const tag=m.walkable?' (يُمشى)':'';
-        items.push({icon:m.walkable?'🏬':'⊙',label:m.name_ar+' — '+m.distance_m+'م'+tag,cls:'loc-pos'});
+        items.push({icon:m.walkable?'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>':'⊙',label:m.name_ar+' — '+m.distance_m+'م'+tag,cls:'loc-pos'});
       });
       (nl.mixed_use_venues||[]).forEach(m=>{
         const tag=m.walkable?' (يُمشى)':'';
-        items.push({icon:m.walkable?'🏨':'◇',label:m.name_ar+' (مختلط) — '+m.distance_m+'م'+tag,cls:'loc-pos'});
+        items.push({icon:m.walkable?'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>':'◇',label:m.name_ar+' (مختلط) — '+m.distance_m+'م'+tag,cls:'loc-pos'});
       });
       (nl.metros||[]).forEach(m=>{
         const tag=m.walkable?' (يُمشى)':'';
-        items.push({icon:'🚇',label:m.name_ar+' — '+m.distance_m+'م'+tag,cls:m.walkable?'loc-pos':'loc-neu'});
+        items.push({icon:'<svg class=ic aria-hidden=true><use href=#ic-pin></use></svg>',label:m.name_ar+' — '+m.distance_m+'م'+tag,cls:m.walkable?'loc-pos':'loc-neu'});
       });
     }
     if(items.length>0){
-      h+='<div class="rc"><div class="rt" style="margin-bottom:8px">⚙ ما اكتشفه النظام آلياً</div>';
+      h+='<div class="rc"><div class="rt" style="margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> ما اكتشفه النظام آلياً</div>';
       h+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">معلومات اكتُشفت من تحليل polygon القطعة + قاعدة المعالم — بدون إدخال من المستخدم.</div>';
       items.forEach(it=>{h+='<span class="loc-tag '+it.cls+'">'+it.icon+' '+it.label+'</span>'});
       if(gf.plot_area_m2_verified){h+='<div style="margin-top:10px;font-size:.78rem;color:#888">مساحة محقّقة من Cadastre: '+fmt(gf.plot_area_m2_verified)+' م²'+(gf.pd_no?' (PD: '+gf.pd_no+')':'')+'</div>'}
@@ -2601,7 +2655,7 @@ function show(d){
   if(lf&&lf.length>0){
     h+='<div class="rc"><div class="rt" style="margin-bottom:10px">مميزات الموقع</div>';
     lf.forEach(f=>{const cls=f.positive===true?'loc-pos':f.positive===false?'loc-neg':'loc-neu';
-      const icon=f.positive===true?'✓':f.positive===false?'✗':'—';
+      const icon=f.positive===true?'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg>':f.positive===false?'<svg class=ic aria-hidden=true><use href=#ic-x></use></svg>':'—';
       h+='<span class="loc-tag '+cls+'">'+icon+' '+f.label+'</span>'});
     h+='</div>';
   }
@@ -2620,17 +2674,17 @@ function show(d){
   // ── Sprint 2.22.0b.15 — the detail blocks above accumulated into the scratch `h`. Valued path:
   // collapse them into ONE TIER-2 «التفاصيل الكاملة» accordion (the a8 RICS/IVS note nested at top);
   // refusal: keep them FLAT (byte-equivalent to pre-b15). No panel is lost — all stay reachable. ──
-  if(hasValuation){ t2+=_acc('🔎 التفاصيل الكاملة (التحليل والمقارنات)', a8acc+h); }
+  if(hasValuation){ t2+=_acc('<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> التفاصيل الكاملة (التحليل والمقارنات)', a8acc+h); }
   else { flat+=h; }
   h='';  // scratch consumed → reused for the final assembly below
 
   // ── TIER-3 actions (valued path): refine (b13 age nudge) + full report (b17 rewires to screen 5) ──
   if(hasValuation){
     t3+='<div class="t3block">';
-    t3+='<button class="t3btn t3-primary" onclick="go(\'refine\')">✏️ حسّن التقدير — أضف تفاصيل مبناك</button>';
+    t3+='<button class="t3btn t3-primary" onclick="go(\'refine\')"><svg class=ic aria-hidden=true><use href=#ic-edit></use></svg> حسّن التقدير — أضف تفاصيل مبناك</button>';
     // Sprint 2.22.0b.25 (م2/D6): the SHORT report opens FIRST; the full report is one
     // click away inside it (its «التقرير الكامل» button → openReport, the b17 screen).
-    t3+='<button class="t3btn t3-secondary" onclick="openShortReport()">📄 التقرير المختصر / حفظ PDF</button>';
+    t3+='<button class="t3btn t3-secondary" onclick="openShortReport()"><svg class=ic aria-hidden=true><use href=#ic-file></use></svg> التقرير المختصر / حفظ PDF</button>';
     t3+='</div>';
   }
 
@@ -2660,7 +2714,7 @@ function show(d){
 }
 
 // Sprint D: Section renderer for brief.sections
-const SEC_ICONS={'yield':'📈','income_value':'💰','sensitivity':'⚖️','rent_reference':'📊','market_context':'🌐','next_steps':'→','negotiation':'🤝','risks':'⚠️','questions':'❓','price_strategy':'💲','selling_tips':'📝','methodology':'📐','data_sources':'📚','material_uncertainty':'⚠️','reasoning':'🔍','data_gaps':'❔','verdict':'⚖️','flags':'🚩','due_diligence':'🔎','valuation':'💎','pricing':'💲','trend':'📈','tips':'💡','sources':'📚','reasoning_trace':'🔍','gaps':'❔','implied_rent':'🔬','out_of_scope':'⊘','cap_rate_provenance':'💹','comparable_grid':'🧮','tier_breakdown':'📊','use_case_banner':'⚖️','refusal_reason':'🛑','adjustment_ledger_directional':'📋'};
+const SEC_ICONS={'yield':'<svg class=ic aria-hidden=true><use href=#ic-chart></use></svg>','income_value':'<svg class=ic aria-hidden=true><use href=#ic-coins></use></svg>','sensitivity':'<svg class=ic aria-hidden=true><use href=#ic-scale></use></svg>','rent_reference':'<svg class=ic aria-hidden=true><use href=#ic-chart></use></svg>','market_context':'<svg class=ic aria-hidden=true><use href=#ic-globe></use></svg>','next_steps':'→','negotiation':'<svg class=ic aria-hidden=true><use href=#ic-scale></use></svg>','risks':'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>','questions':'<svg class=ic aria-hidden=true><use href=#ic-help></use></svg>','price_strategy':'<svg class=ic aria-hidden=true><use href=#ic-coins></use></svg>','selling_tips':'<svg class=ic aria-hidden=true><use href=#ic-edit></use></svg>','methodology':'<svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg>','data_sources':'<svg class=ic aria-hidden=true><use href=#ic-book></use></svg>','material_uncertainty':'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>','reasoning':'<svg class=ic aria-hidden=true><use href=#ic-search></use></svg>','data_gaps':'<svg class=ic aria-hidden=true><use href=#ic-help></use></svg>','verdict':'<svg class=ic aria-hidden=true><use href=#ic-scale></use></svg>','flags':'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>','due_diligence':'<svg class=ic aria-hidden=true><use href=#ic-search></use></svg>','valuation':'<svg class=ic aria-hidden=true><use href=#ic-gem></use></svg>','pricing':'<svg class=ic aria-hidden=true><use href=#ic-coins></use></svg>','trend':'<svg class=ic aria-hidden=true><use href=#ic-chart></use></svg>','tips':'<svg class=ic aria-hidden=true><use href=#ic-bulb></use></svg>','sources':'<svg class=ic aria-hidden=true><use href=#ic-book></use></svg>','reasoning_trace':'<svg class=ic aria-hidden=true><use href=#ic-search></use></svg>','gaps':'<svg class=ic aria-hidden=true><use href=#ic-help></use></svg>','implied_rent':'<svg class=ic aria-hidden=true><use href=#ic-search></use></svg>','out_of_scope':'⊘','cap_rate_provenance':'<svg class=ic aria-hidden=true><use href=#ic-chart></use></svg>','comparable_grid':'<svg class=ic aria-hidden=true><use href=#ic-chart></use></svg>','tier_breakdown':'<svg class=ic aria-hidden=true><use href=#ic-chart></use></svg>','use_case_banner':'<svg class=ic aria-hidden=true><use href=#ic-scale></use></svg>','refusal_reason':'<svg class=ic aria-hidden=true><use href=#ic-x></use></svg>','adjustment_ledger_directional':'<svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg>'};
 
 // Sprint 2.22.0a/3 — Arabic display maps for tier_breakdown T3 sources detail
 // (UI-side mapping per Anas Q1 Option (b) — backend stays in English machine values).
@@ -2723,8 +2777,8 @@ function renderSection(sec){
       break;
     case 'market_context':
       if(c.qatar_benchmark)body+=row('المرجع القطري',c.qatar_benchmark);
-      if(c.above_6_net)body+='<div class="br-note" style="background:var(--ok-bg);color:var(--ok);margin-top:8px">✓ '+c.above_6_net+'</div>';
-      if(c.below_4_net)body+='<div class="br-note" style="background:var(--bad-bg);color:var(--bad);margin-top:8px">✗ '+c.below_4_net+'</div>';
+      if(c.above_6_net)body+='<div class="br-note" style="background:var(--ok-bg);color:var(--ok);margin-top:8px"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg> '+c.above_6_net+'</div>';
+      if(c.below_4_net)body+='<div class="br-note" style="background:var(--bad-bg);color:var(--bad);margin-top:8px"><svg class=ic aria-hidden=true><use href=#ic-x></use></svg> '+c.below_4_net+'</div>';
       break;
     case 'next_steps':
       if(c.note_ar)body+='<div class="br-note">'+c.note_ar+'</div>';
@@ -2786,7 +2840,7 @@ function renderSection(sec){
       break;
     case 'negotiation':
       if(c.is_stratum_aware){
-        body+='<div style="margin-bottom:10px;padding:8px 10px;background:var(--ok-bg);border-right:3px solid var(--ok);border-radius:4px;font-size:.82rem"><strong style="color:var(--ok)">📊 نطاق مُحدَّث حسب فئة عقارك</strong></div>';
+        body+='<div style="margin-bottom:10px;padding:8px 10px;background:var(--ok-bg);border-right:3px solid var(--ok);border-radius:4px;font-size:.82rem"><strong style="color:var(--ok)"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> نطاق مُحدَّث حسب فئة عقارك</strong></div>';
       }
       if(c.opening_offer)body+=row('عرض الفتح المقترح',qarFmt(c.opening_offer),'hl');
       if(c.floor)body+=row('السقف الأدنى',qarFmt(c.floor));
@@ -2802,14 +2856,14 @@ function renderSection(sec){
       }else{
         if(hr.length){
           body+='<div style="margin-bottom:8px;font-weight:600;color:var(--bad)">العلامات الحمراء:</div>';
-          hr.forEach(f=>{body+='<span class="loc-tag loc-neg">⚠ '+(typeof f==='string'?f:JSON.stringify(f))+'</span>'});
+          hr.forEach(f=>{body+='<span class="loc-tag loc-neg"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(typeof f==='string'?f:JSON.stringify(f))+'</span>'});
         }
         if(hg.length){
           body+='<div style="margin:10px 0 6px;font-weight:600;color:var(--ok)">العلامات الخضراء:</div>';
-          hg.forEach(f=>{body+='<span class="loc-tag loc-pos">✓ '+(typeof f==='string'?f:JSON.stringify(f))+'</span>'});
+          hg.forEach(f=>{body+='<span class="loc-tag loc-pos"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg> '+(typeof f==='string'?f:JSON.stringify(f))+'</span>'});
         }
       }
-      if(c.has_excluding)body+='<div class="br-note" style="background:var(--bad-bg);color:var(--bad);margin-top:10px">⚠ يحتوي على شارة استبعاد حرجة</div>';
+      if(c.has_excluding)body+='<div class="br-note" style="background:var(--bad-bg);color:var(--bad);margin-top:10px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> يحتوي على شارة استبعاد حرجة</div>';
       break;
     case 'due_diligence':
       // Sprint 2.4c: backend sends content as array directly, not c.questions_ar
@@ -3037,17 +3091,17 @@ function renderSection(sec){
       const _notsuit= Array.isArray(c.not_suitable_for)    ? c.not_suitable_for    : [];
       const _stage5 = Array.isArray(c.stage5_required_for) ? c.stage5_required_for : [];
       if(_suit.length){
-        body += '<div class="ucb-group ucb-suit"><div class="ucb-head"><span class="ucb-mark">✓</span> مناسب لـ:</div><ul class="br-opts ucb-list">';
+        body += '<div class="ucb-group ucb-suit"><div class="ucb-head"><span class="ucb-mark"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg></span> مناسب لـ:</div><ul class="br-opts ucb-list">';
         _suit.forEach(it => { body += '<li>' + it + '</li>'; });
         body += '</ul></div>';
       }
       if(_notsuit.length){
-        body += '<div class="ucb-group ucb-notsuit"><div class="ucb-head"><span class="ucb-mark">✗</span> غير مناسب لـ:</div><ul class="br-opts ucb-list">';
+        body += '<div class="ucb-group ucb-notsuit"><div class="ucb-head"><span class="ucb-mark"><svg class=ic aria-hidden=true><use href=#ic-x></use></svg></span> غير مناسب لـ:</div><ul class="br-opts ucb-list">';
         _notsuit.forEach(it => { body += '<li>' + it + '</li>'; });
         body += '</ul></div>';
       }
       if(_stage5.length){
-        body += '<div class="ucb-group ucb-stage5"><div class="ucb-head"><span class="ucb-mark">⭐</span> يتطلّب تقييم Stage 5:</div><ul class="br-opts ucb-list">';
+        body += '<div class="ucb-group ucb-stage5"><div class="ucb-head"><span class="ucb-mark"><svg class=ic aria-hidden=true><use href=#ic-star></use></svg></span> يتطلّب تقييم Stage 5:</div><ul class="br-opts ucb-list">';
         _stage5.forEach(it => { body += '<li>' + it + '</li>'; });
         body += '</ul></div>';
       }

@@ -228,18 +228,32 @@ for audience, brief_fn in (('buyer', _buyer_brief), ('seller', _seller_brief),
           'refusal_reason' in ids)
 
 # ──────────────────────────────────────────────────────────────────────
-# [8] Frontend grep — `.calc-block` class applied to valuation card
+# [8] Frontend grep — result-screen hero supersedes the calc-block figure
+#     (Sprint 2.22.0b.48 — the TIER-1 `class="rc calc-block"` figure was
+#      replaced by the navy `.rhero` band; the a8 "calc-block exactly once"
+#      contract is superseded by the hero. R6/Lesson-2 re-point: pin the
+#      NEW truth — application count now 0, `.rhero` present — while KEEPING
+#      the `.calc-block` CSS-rule checks (the rules still exist, dead but
+#      present). VALUE-INVARIANT: range + RICS clause both still present.)
 # ──────────────────────────────────────────────────────────────────────
-print('\n[8] Frontend grep — calc-block class on valuation card')
+print('\n[8] Frontend grep — result hero supersedes the calc-block figure')
 index_html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html')
 with open(index_html_path, 'r', encoding='utf-8') as f:
     html = f.read()
 
-# Count distinct application sites (the class string in CSS selectors doesn't count)
-# We look for the JS template string `class="rc calc-block"` — this is the application.
+# The result figure no longer carries calc-block — the hero superseded it.
+# Application count is now 0; the new `class="rhero"` band is present instead.
 applications = html.count('class="rc calc-block"')
-check('"class=\\"rc calc-block\\"" appears exactly once (valuation card only)',
-      applications == 1)
+check('"class=\\"rc calc-block\\"" no longer applied (hero superseded it, count 0)',
+      applications == 0)
+check('"class=\\"rhero\\"" present (the result-screen hero band replaced the figure)',
+      'class="rhero"' in html)
+# b3 range-as-lead SEMANTICS kept (evolved): the market range + the RICS
+# "not a certified valuation" clause both still render on the result figure.
+check('range-as-lead kept — "النطاق التقديري السوقي" present',
+      'النطاق التقديري السوقي' in html)
+check('RICS clause kept — "ليس تقييماً معتمداً" present',
+      'ليس تقييماً معتمداً' in html)
 check('"calc-block" CSS selector present', '.calc-block{' in html)
 check('".calc-block .rv" CSS selector present (monospace scoped to numeric values)',
       '.calc-block .rv{' in html)

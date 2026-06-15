@@ -50,10 +50,15 @@ check('calculator carries the bc* inputs + live oninput=bcRecalc',
 # defaults match the signed short-report contract (b28): 20% down · 25y · 4.5%
 check('defaults 20% / 25y / 4.5% (match the b28 short-report contract)',
       re.search(r"_srPayment\(v\.amount,20,25,4\.5\)", SHOW) is not None)
-# placement: after the figure (range/median), before the «كيف وصلنا» how-accordion
+# placement: after the figure (range), before the «كيف وصلنا» how-accordion.
+# R6/Lesson-2 re-point (b48 de-emoji): the «🔍» emoji became an inline-SVG icon, so the
+# how-accordion _acc anchor lost its emoji prefix — re-anchored to the emoji-free SVG marker
+# that uniquely identifies the SAME how-accordion _acc CALL (the bare Arabic text also appears
+# in an earlier comment, so we pin the _acc call, not the text). «النطاق التقديري السوقي» is
+# now the b3-evolved hero range line (.rng) — the range-as-lead behaviour is unchanged.
 check('calculator placed UNDER the figure (after the range, before the how-accordion _acc call)',
       SHOW.index("القسط الشهريّ") > SHOW.index("النطاق التقديري السوقي") and
-      SHOW.index("القسط الشهريّ") < SHOW.index("t2+=_acc('🔍 كيف وصلنا"))
+      SHOW.index("القسط الشهريّ") < SHOW.index("_acc('<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> كيف وصلنا"))
 check('the «استشر بنكك» disclosure is present (not a binding offer)', 'استشر بنكك' in SHOW)
 
 # ── 3. value-invariance + scope guards ──

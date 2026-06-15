@@ -23,19 +23,31 @@ def check(name, cond):
 check('range headline label «النطاق التقديري السوقي»', 'النطاق التقديري السوقي' in HTML)
 # 2. headline shows the TRUE low–high ending in ' ر.ق' (distinct from showConfirm's cg-unit span).
 check("headline = fmt(v.low) – fmt(v.high) ر.ق", "+fmt(v.low)+' – '+fmt(v.high)+' ر.ق" in HTML)
-# 3. range headline uses the big .rv hl 1.5rem class (unique pairing with the new label).
-check('range in .rv hl 1.5rem',
-      'النطاق التقديري السوقي</div><div class="rv hl" style="font-size:1.5rem">' in HTML)
-# 4. median is a MUTED .rn marker, labelled as the central estimate.
-check('median muted .rn marker «الوسيط (التقدير المركزي)»',
-      'font-size:.84rem">الوسيط (التقدير المركزي) ≈ <strong>' in HTML)
+# 3. range-as-lead semantics KEPT-but-evolved (Sprint 2.22.0b.47 result-screen HERO): the
+# market RANGE is presented as the lead range line on the navy hero band (the old big
+# .rv hl 1.5rem result-screen headline was superseded by the hero — the report keeps its own).
+check('range presented on the result HERO (.rng low–high)',
+      "النطاق التقديري السوقي <b>'+fmt(v.low)+' – '+fmt(v.high)+'</b> ر.ق" in HTML
+      and 'class="rhero"' in HTML)
+# 4. the central estimate (median = v.amount) is the CONFIDENT LEAD FIGURE in the hero .num
+# band (b47 evolves the muted-marker form of b3 → a lead figure; the SHORT/FULL report keeps
+# the «الوسيط (التقدير المركزي)» marker, asserted unchanged below).
+check('central figure leads the result HERO (.num = fmt(v.amount))',
+      '<div class="num">\'+fmt(v.amount)+\' <small>ر.ق</small></div>' in HTML
+      and 'الوسيط (التقدير المركزي)' in HTML)
 # 5. asymmetry-safe gate (low!=null && high!=null) — matches the showConfirm prototype.
 check('gate v.low!=null&&v.high!=null', 'if(v.low!=null&&v.high!=null){' in HTML)
-# 6. point FALLBACK retained (else branch keeps «القيمة التقديرية» as the point headline).
-check('point fallback «القيمة التقديرية» + fmt(v.amount)',
-      "القيمة التقديرية</div><div class=\"rv hl\" style=\"font-size:1.5rem\">'+fmt(v.amount)+' ر.ق</div></div>'" in HTML)
-# 7. reference comment present (confirms the swap block landed as a unit).
-check('b3 reference comment present', 'Sprint 2.22.0b.3 (range-as-lead' in HTML)
+# 6. point FALLBACK retained: the hero figure (.num) is ALWAYS present (b47 — fmt(v.amount)
+# leads unconditionally), and the range line is the conditional part (gate v.low!=null). So a
+# no-range result still shows the figure as the headline. (The report's «القيمة التقديرية»
+# point-fallback line persists in showReport, asserted via the leadership-aware _def12R below.)
+check('point fallback — figure always leads the hero, range conditional',
+      '<div class="num">\'+fmt(v.amount)+\' <small>ر.ق</small></div>' in HTML
+      and 'if(v.low!=null&&v.high!=null){' in HTML)
+# 7. the b3 range-as-lead intent landed and is documented as KEPT-but-evolved (b47 superseded
+# the original b3 comment when it restructured the result figure into the hero — R6/Lesson-2:
+# pin the evolved-b3 semantics, not the volatile original comment literal).
+check('b3 range-as-lead semantics present (kept-but-evolved by b47)', 'Evolves the signed b3' in HTML)
 # 8. the OLD two-box .rg headline range is GONE. «الحد الأدنى» was UNIQUE to that block
 # (grep count 0 now); «الحد الأعلى» is NOT checked here — it legitimately persists in the
 # range_expansion card («الحد الأعلى يَتسع…»), unrelated to the removed headline two-box.

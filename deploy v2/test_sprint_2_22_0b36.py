@@ -59,8 +59,11 @@ check('predicate names exactly apartment_building + tower (2 types)',
       SHOW.count("_ux3NotReady=(d.asset_type==='apartment_building'||d.asset_type==='tower')") == 1)
 
 # ── 2. surface 1 — scope badge reframed honest, «يتطلب» dropped, methodology dropped ──
-check('badge: _ux3NotReady → 🚧 «غير مدعوم بعد» (bad styling, not ⚠️ تقييم مشروط)',
-      re.search(r"if\(_ux3NotReady\)\{scopeBg='var\(--bad-bg\)';scopeColor='var\(--bad\)';scopeIcon='🚧';scopeLabel='غير مدعوم بعد';\}", BADGE) is not None)
+# b48 de-emoji (R6/Lesson-2): the 🚧 emoji became an inline-SVG icon (<use href=#ic-alert>).
+# Pin the BEHAVIOUR (not-ready → bad styling + «غير مدعوم بعد» label, NOT «تقييم مشروط»), with the
+# icon as an inline svg <use> rather than the literal emoji.
+check('badge: _ux3NotReady → svg-icon «غير مدعوم بعد» (bad styling, not «تقييم مشروط»)',
+      re.search(r"if\(_ux3NotReady\)\{scopeBg='var\(--bad-bg\)';scopeColor='var\(--bad\)';scopeIcon='<svg [^']*?<use href=#ic-[^>]*></use></svg>';scopeLabel='غير مدعوم بعد';\}", BADGE) is not None)
 check('badge: methodology line («منهج الدخل») gated OFF for not-ready',
       "if(!_ux3NotReady)alerts+='<div style=\"font-size:.82rem;color:var(--muted)\">'+ss.methodology_ar+'</div>'" in BADGE)
 check('badge: honest sub «ثمّن يدعم الفلل والأراضي فقط حالياً»',
@@ -75,8 +78,10 @@ check('badge: the original disclaimer (ss.disclaimer_ar) only renders in the els
       BADGE.index('ss.disclaimer_ar') > _else_idx)
 
 # ── 3. surface 2 — insufficient-data box: honest header/why + CTA suppressed ──
-check('insuf icon type-aware (🚧 for not-ready, ⓘ otherwise)',
-      "<div class=\"insuf-icon\">'+(_ux3NotReady?'🚧':'ⓘ')+'</div>" in INSUF)
+# b48 de-emoji (R6/Lesson-2): the 🚧 emoji became an inline-SVG icon (<use href=#ic-alert>);
+# the ⓘ (U+24D8) is unchanged. Pin the type-aware BEHAVIOUR (not-ready → svg-icon, else ⓘ).
+check('insuf icon type-aware (svg-icon for not-ready, ⓘ otherwise)',
+      re.search(r'<div class="insuf-icon">\'\+\(_ux3NotReady\?\'<svg [^\']*?<use href=#ic-[^>]*></use></svg>\':\'ⓘ\'\)\+\'</div>', INSUF) is not None)
 check('insuf header: «{الشقق|الأبراج} غير مدعومة بعد — للفلل والأراضي فقط»',
       "_ux3Noun+' غير مدعومة بعد — للفلل والأراضي فقط'" in INSUF and 'التقييم يحتاج بيانات إضافية' in INSUF)
 check('insuf why: «وزارة العدل لا تسجّل وحدات … فردياً … نعمل على دعم هذا النوع لاحقاً»',

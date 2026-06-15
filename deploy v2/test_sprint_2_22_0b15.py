@@ -39,8 +39,12 @@ check('refusal assembly head+muc+a8acc+alerts+flat+foot', 'h=head+muc+a8acc+aler
 
 # ── DISCLOSURE STAYS TIER-1 / always-visible (the §4 HALT compliance set) ──
 # 7. MUC level CHIP rendered in TIER-1 (first-glance compliance signpost).
+# b48 re-point (R6/Lesson-2): the chip recolored red→amber (--bad→--warn) + the ⚠️ emoji became
+# an inline-SVG icon. Pin the BEHAVIOUR — the chip is built into t1 (TIER-1), uses the amber token,
+# and renders «تحفظ مادي: '+MUC_LEVEL_AR[mu.level]» — not the volatile emoji/exact margin.
 check('MUC chip in TIER-1 (t1+=… تحفظ مادي: +MUC_LEVEL_AR)',
-      "t1+='<div style=\"display:inline-block;padding:3px 10px;background:var(--bad-bg);color:var(--bad);border-radius:12px;font-size:.74rem;margin-bottom:10px\">⚠️ تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';" in HTML)
+      "t1+='<div style=\"display:inline-block;padding:3px 10px;background:var(--warn-bg);color:var(--warn);" in HTML
+      and " تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';" in HTML)
 # 8. the FULL MVU clause routes to the always-visible `muc` buffer (NOT an accordion).
 # (b17 refactored the inline build into the shared _mucCardHtml builder — same clause, same buffer.)
 check('full MVU clause → muc buffer (always-visible)',
@@ -58,31 +62,38 @@ check('data-freshness caveat → foot', "foot+='<div class=\"dfc s-'+sev+'\">'+d
 check('disclaimer card → foot', "foot+='<div class=\"rc\" style=\"border-color:var(--warn-bg)\"><div class=\"rn\" style=\"font-size:.8rem\">'+d.disclaimer+'</div></div>';" in HTML)
 check('verification footer → foot', "foot+='<div class=\"verification-footer\">';" in HTML)
 # 12. alert panels (A11 / reality / multi-QARS / scope / sanity) route ABOVE the number (alerts buffer).
-check('A11 mismatch → alerts (above number)', "alerts+='<div style=\"background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px\">';\n    alerts+='<div style=\"font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem\">⚠️ تناقض في تصنيف العقار</div>';" in HTML)
+# b48 re-point (R6/Lesson-2): the ⚠️ emoji became an inline-SVG icon — keep the Arabic + the alerts wrapper.
+check('A11 mismatch → alerts (above number)', "alerts+='<div style=\"background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px\">';\n    alerts+='<div style=\"font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem\">" in HTML and 'تناقض في تصنيف العقار' in HTML)
 check('sanity warnings → alerts (above number)', "alerts+='<div class=\"sanity-warn\">" in HTML)
 check('service-scope badge → alerts', "alerts+='<div style=\"background:'+scopeBg+';border-right:4px solid '+scopeColor+';" in HTML)
 
 # ── NO PANEL LOST (detail blocks accumulate, then wrap) ──
 # 13. the scratch `h` is collapsed into ONE TIER-2 «التفاصيل الكاملة» accordion (valued) / flat (refusal).
-check('detail scratch → TIER-2 accordion (valued)', "if(hasValuation){ t2+=_acc('🔎 التفاصيل الكاملة (التحليل والمقارنات)', a8acc+h); }" in HTML)
+# b48 re-point: the 🔎 emoji in the accordion title became an inline-SVG icon — pin the title text + wiring.
+check('detail scratch → TIER-2 accordion (valued)', "التفاصيل الكاملة (التحليل والمقارنات)', a8acc+h); }" in HTML and 'if(hasValuation){ t2+=_acc(' in HTML)
 check('detail scratch → flat (refusal)', 'else { flat+=h; }' in HTML)
 check('scratch consumed before assembly', "h='';  // scratch consumed" in HTML)
 # 14. basic-info → its own TIER-2 accordion. (b31/DEF-UX11 re-point: the full evidence panel is no
 #     longer a standalone «جودة الأدلّة (تفصيل)» accordion — it now folds INTO the «كيف وصلنا لهذا الرقم؟»
 #     accordion alongside the 9-note parade; assertion below + test_sprint_2_22_0b31.py own the new shape.)
-check('basic-info → TIER-2 accordion', "t2+=_acc('🏠 بيانات العقار الأساسية',_info);" in HTML)
-check('full evidence panel → «كيف وصلنا» accordion (b31 fold)', "t2+=_acc('🔍 كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML)  # b34: 3rd open arg → drop trailing );
+# b48 re-point: the 🏠 emoji became an inline-SVG icon — pin the title text + wiring.
+check('basic-info → TIER-2 accordion', " بيانات العقار الأساسية',_info);" in HTML and 't2+=_acc(' in HTML)
+# b48 re-point: the 🔍 emoji became an inline-SVG icon — pin the title text + the how+evidencePanel wiring.
+check('full evidence panel → «كيف وصلنا» accordion (b31 fold)', " كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML and 't2+=_acc(' in HTML)  # b34: 3rd open arg → drop trailing );
 # 15. brief sections: valued → accordion; refusal → flat (verbatim title card).
-check('brief sections → TIER-2 accordion (valued)', "t2+=_acc('📄 '+(br.title_ar||'تفاصيل التقرير'),_secs);" in HTML)
+# b48 re-point: the 📄 emoji became an inline-SVG icon — pin the title expression + wiring.
+check('brief sections → TIER-2 accordion (valued)', "'+(br.title_ar||'تفاصيل التقرير'),_secs);" in HTML and 't2+=_acc(' in HTML)
 check('brief sections → flat (refusal verbatim)', "flat+='<div class=\"rc\" style=\"background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px\"><div class=\"rt\" style=\"font-size:1.15rem;margin-bottom:0\">'+(br.title_ar||'التقرير')+'</div></div>';" in HTML)
 
 # ── TIER-3 actions ──
 # 16. TIER-3 refine + report CTAs (valued path).
-check('TIER-3 refine CTA → go(refine)', "t3+='<button class=\"t3btn t3-primary\" onclick=\"go(\\'refine\\')\">✏️ حسّن التقدير" in HTML)
+# b48 re-point: the ✏️ emoji became an inline-SVG icon — pin the t3-primary class + go('refine') + the CTA text.
+check('TIER-3 refine CTA → go(refine)', "t3+='<button class=\"t3btn t3-primary\" onclick=\"go(\\'refine\\')\">" in HTML and ' حسّن التقدير' in HTML)
 # b17 landed: the report CTA opened screen 5 (openReport); Sprint 2.22.0b.25 (م2/D6)
 # then made the SHORT report the first stop (full report one click away inside it) —
 # the b15 invariant is that the TIER-3 secondary CTA leads to a REPORT surface.
-check('TIER-3 report CTA → report surface (b17→b25/D6 chain)', "t3+='<button class=\"t3btn t3-secondary\" onclick=\"openShortReport()\">📄 التقرير المختصر" in HTML)
+# b48 re-point: the 📄 emoji became an inline-SVG icon — pin the t3-secondary class + openShortReport() + the CTA text.
+check('TIER-3 report CTA → report surface (b17→b25/D6 chain)', "t3+='<button class=\"t3btn t3-secondary\" onclick=\"openShortReport()\">" in HTML and ' التقرير المختصر' in HTML)
 
 # ── Print parity (F1) ──
 # 17. printReport force-opens the accordions before print + restores after.
@@ -96,7 +107,16 @@ check('.t3block CSS present', '.t3block{' in HTML and '.t3block .t3-primary{' in
 
 # ── VALUE-INVARIANCE (show() does not touch the figure; range-as-lead b3 retained) ──
 check('range headline label retained (range-as-lead)', 'النطاق التقديري السوقي' in HTML)
-check('median muted marker retained', 'الوسيط (التقدير المركزي) ≈ <strong>' in HTML)
+# b48 re-point (R6/Lesson-2): the RESULT-screen hero superseded the old muted marker line
+# («الوسيط (التقدير المركزي) ≈ <strong>» is gone from the result). b3 «range-as-lead» is KEPT-but-evolved:
+# the lead figure (rhero) + a slim range bar whose .dot.c marks where the central estimate (v.amount)
+# sits within [low,high] — so the median POSITION is still surfaced, just visually not as a text line.
+# The SHORT/FULL report KEEPS its «الوسيط (التقدير المركزي)» marker (report-only, _midR). Pin both.
+check('central-estimate position surfaced in result hero + report median marker retained',
+      'class="rhero"' in HTML
+      and 'class="rng"' in HTML
+      and '<span class="dot c"' in HTML
+      and 'الوسيط (التقدير المركزي)' in HTML)
 # b31/DEF-UX11 re-point: condition note STAYS on TIER-1 (decision-relevant); value_floor + hbu
 # FOLD into the «كيف وصلنا» accordion (the `how` buffer). Strings still present — buffer changed.
 check('condition note STAYS on TIER-1 (b31)', "if(v.condition_note_ar){t1+=" in HTML)

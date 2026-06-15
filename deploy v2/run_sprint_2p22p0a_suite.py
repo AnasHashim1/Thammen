@@ -43,7 +43,9 @@ import time
 # Pattern B (commit 3328926, "classifier_failure refusal trigger") added
 # 6 assertions to test_sprint_2p22p0a_refusal_reason.py (109 → 115) but
 # did not bump the gate. 386 → 392.
-EXPECTED_TOTAL = 392  # /2:32 + /3:43 + /4:64 + /5:115 + /7:64 + /8:62 + /11:12
+# Sprint 2.22.0b.48 (interface elevation): the result-screen hero superseded the a8
+# calc-block contract, so calc_visual was re-pointed (+3: assert .rhero / count==0). 392 → 395.
+EXPECTED_TOTAL = 395  # /2:32 + /3:43 + /4:64 + /5:115 + /7:64 + /8:65 + /11:12
 
 PER_FILE_EXPECTED = {
     'test_sprint_2p22p0a_tier_labels.py':              32,   # /2
@@ -53,7 +55,7 @@ PER_FILE_EXPECTED = {
     # 2.22.0a.2 Pattern B, classifier_failure 7th template).
     'test_sprint_2p22p0a_refusal_reason.py':          115,   # /5
     'test_sprint_2p22p0a_verification_url.py':         64,   # /7
-    'test_sprint_2p22p0a_calc_visual_and_ledger.py':   62,   # /8
+    'test_sprint_2p22p0a_calc_visual_and_ledger.py':   65,   # /8 (b48: +3, .rhero superseded a8 calc-block)
     'test_sprint_2p22p0a_a2_documentation.py':         12,   # /11
 }
 

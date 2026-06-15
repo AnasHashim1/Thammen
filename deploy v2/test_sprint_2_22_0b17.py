@@ -23,8 +23,12 @@ check('openReport() renders from window._lastResult (no re-fetch)',
 # (openShortReport); the full report stays one click away INSIDE it (its «التقرير
 # الكامل» button → openReport). The b17 invariant becomes: openReport remains wired
 # and reachable, and the dead printReport CTA never returns.
+# Sprint 2.22.0b.48 (de-emoji) re-point (Lesson-2/R6): the 📄 emoji on the short-report
+# CTA became an inline-SVG icon (<svg class=ic …>) — the Arabic label «التقرير المختصر»
+# is unchanged. Pin the BEHAVIOUR (the CTA is wired to openShortReport() and carries
+# that label), not the volatile emoji/icon glyph.
 check('TIER-3 report CTA → short-first (D6), full report one click away (b17 path intact)',
-      'onclick="openShortReport()">📄 التقرير المختصر' in HTML
+      'onclick="openShortReport()"' in HTML and 'التقرير المختصر' in HTML
       and 'onclick="openReport()">التقرير الكامل' in HTML
       and 't3-secondary" onclick="printReport()"' not in HTML)
 
