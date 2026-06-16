@@ -149,8 +149,8 @@ check('D3 — «استشر بنكك» line', 'استشر بنكك' in SR)
 check('ref + fp + QR on the surface',
       'd.report_ref' in SR and 'd.report_fp' in SR and 'srQr1' in SR and 'srQr2' in SR
       and "new QRCode(" in SR)
-check('the GT hook (the D-3 WhatsApp channel — the PDF wording)',
-      'شاركه يصير تقديرنا أدق للجميع' in SR and '+974 70177761' in SR)
+check('the GT hook (the D-3 channel — email, b50)',
+      'شاركه (اختياريّ)' in SR and 'info@thammen.qa' in SR and '70177761' not in SR)
 check('the legal block = the PDF FULL text incl. IFRS 13',
       'تقدير آلي استرشادي' in SR and 'ليس تقييماً عقارياً معتمداً' in SR
       and 'IFRS 13' in SR and 'حجةً قضائية أو مصرفية' in SR)

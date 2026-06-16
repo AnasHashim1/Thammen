@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b49-logo-form-chrome'
-SPRINT_TAG = '2.22.0b.49'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b50-copy-honesty-source-contact'
+SPRINT_TAG = '2.22.0b.50'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -6500,7 +6500,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'عدم اليقين الجوهري (‎VPGA 10‎) في التقرير '
             '(‎VPS 6‎ / ‎IVS 106‎). النموذج الآلي '
             '(‎AVM‎) أداة مساعدة ولا يُنتج بمفرده تقييماً نهائياً '
-            'مطابقاً للمعايير دون مراجعة مُقيِّم مُرخّص (المرحلة الخامسة).'
+            'مطابقاً للمعايير دون مراجعة مُقيِّم مُرخّص.'
         ),
         'rics_methodology_note_en': (
             'This estimate uses the Sales Comparison approach (VPS 3 / IVS 103), '
@@ -6509,8 +6509,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'material valuation uncertainty disclosed (VPGA 10) in the report '
             '(VPS 6 / IVS 106). An automated valuation model (AVM) is a '
             'supplementary tool and does not by itself produce a final '
-            'standards-compliant valuation without review by a licensed valuer '
-            '(Stage 5).'
+            'standards-compliant valuation without review by a licensed valuer.'
         ),
         'address': getattr(ev, 'address', None),
         'valuation_date': getattr(ev, 'valuation_date', None),

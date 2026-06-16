@@ -72,7 +72,7 @@ check('report clones the a25 attribution at runtime (no copy duplication)',
 check('report footer: not-certified + a20 status appended', 'تقدير سوقي آلي وليس تقييماً معتمداً' in rep
       and 'rics_compliant_status_ar' in rep)
 check('report footer: engine version + timestamp', "d.engine_version||''" in rep and 'toISOString()' in rep)
-check('GT hook line + the Terms WhatsApp channel', 'شاركه لتحسين الدقّة' in rep and '+974 70177761' in rep)
+check('GT hook line — email channel (b50)', 'شاركنا سعر بيع' in rep and 'info@thammen.qa' in rep and '70177761' not in rep)
 check('staleness banner on the cover', 'data_freshness' in rep and 'dfc s-' in rep)
 check('b16 OSR + cost notes carried into the report', 'old_stock_reanchor' in rep and 'cost_triangulation' in rep)
 check('refusal path: honest reason, no value report', 'لا يصدر تقرير قيمة' in rep)

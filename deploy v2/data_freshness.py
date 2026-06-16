@@ -257,15 +257,15 @@ def _severity_for_tier(tier: str) -> str:
 
 def _render_banner(month_ar: str, days_old: int, tier: str) -> str:
     if tier == "fresh":
-        return f"📅 آخر تحديث لبيانات وزارة العدل: {month_ar}"
+        return f"آخر تحديث لبيانات وزارة العدل: {month_ar}"
     if tier == "mild":
-        return (f"📅 آخر تحديث لبيانات وزارة العدل: {month_ar} "
+        return (f"آخر تحديث لبيانات وزارة العدل: {month_ar} "
                 f"(قبل {days_old} يوماً)")
     if tier == "stale":
-        return (f"⚠️ آخر تحديث لبيانات وزارة العدل: {month_ar} "
+        return (f"آخر تحديث لبيانات وزارة العدل: {month_ar} "
                 f"(قبل {days_old} يوماً) — قد لا تعكس آخر تحركات السوق")
     # very_stale
-    return (f"⚠️ تنبيه: بيانات وزارة العدل لم تُحدَّث منذ {month_ar} "
+    return (f"تنبيه: بيانات وزارة العدل لم تُحدَّث منذ {month_ar} "
             f"({days_old} يوماً) — استخدم النتائج كمرجع إرشادي فقط")
 
 
@@ -276,7 +276,7 @@ def _render_caveat(latest_ar: str, tier: str) -> str:
         return (f"المرجع مبني على بيانات حتى {latest_ar}. "
                 f"للحالات الحساسة، تحقق من السوق الحالي قبل اتخاذ القرار.")
     # very_stale
-    return (f"⚠️ المرجع مبني على بيانات وزارة العدل المتاحة حتى {latest_ar}. "
+    return (f"المرجع مبني على بيانات وزارة العدل المتاحة حتى {latest_ar}. "
             f"الحكومة لم تنشر بيانات أحدث. النتائج إرشادية ولا تعكس "
             f"بالضرورة الأسعار الحالية.")
 

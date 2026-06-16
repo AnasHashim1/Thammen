@@ -24,8 +24,8 @@ from material_uncertainty import (
 
 # Signed copy (Claude.ai, Sprint A7) — asserted verbatim so a future edit that
 # drifts the wording fails loudly.
-SIGNED_AR = 'بانتظار مراجعة مُقيِّم مُرخّص (المرحلة الخامسة)'
-SIGNED_EN = 'Pending licensed-valuer review (Stage 5)'
+SIGNED_AR = 'بانتظار مراجعة مُقيِّم مُرخّص'
+SIGNED_EN = 'Pending licensed-valuer review'
 
 _passed = 0
 _failed = 0

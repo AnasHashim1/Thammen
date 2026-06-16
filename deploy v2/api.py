@@ -819,7 +819,7 @@ async def freshness():
         # Graceful fallback — frontend hides the banner if banner_ar is empty
         return {
             "banner_ar": "",
-            "subtitle_ar": "بيانات وزارة العدل القطرية الرسمية",
+            "subtitle_ar": "بيانات وزارة العدل المفتوحة (CC BY 4.0)",
             "tier": "unknown",
             "severity": "info",
             "days_old": None,

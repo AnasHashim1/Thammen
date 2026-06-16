@@ -70,7 +70,7 @@ check("rics_methodology_note_en field present", 'rics_methodology_note_en' in EU
 check("note cites VPS 5", 'VPS 5' in EU)
 check("note cites IVS 105", 'IVS 105' in EU)
 check("AVM-not-standalone disclosure (ar)",
-      ('النموذج الآلي' in EU and 'مُقيِّم مُرخّص' in EU and 'المرحلة الخامسة' in EU))
+      ('النموذج الآلي' in EU and 'مُقيِّم مُرخّص' in EU))
 check("AVM-not-standalone disclosure (en)",
       'does not by itself produce a final' in EU and 'licensed valuer' in EU)
 check("frontend renders the note on a collapsible surface",

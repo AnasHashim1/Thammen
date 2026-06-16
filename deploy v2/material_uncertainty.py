@@ -73,10 +73,11 @@ class UncertaintyLevel:
 # sign-off (Stage 5, per IVS 105) that turns an AVM output into a formally compliant
 # valuation. This status string makes every JSON surface read "review pending," not
 # "non-compliant." Copy is SIGNED verbatim (Claude.ai, Sprint A7) and matches the
-# live rics_methodology_note phrasing «… مراجعة مُقيِّم مُرخّص (المرحلة الخامسة)».
+# live rics_methodology_note phrasing «… مراجعة مُقيِّم مُرخّص» (Sprint b50: the internal
+# "(المرحلة الخامسة)" roadmap tag dropped from user-facing copy — meaningless to users).
 # DISPLAY/LABEL ONLY — never changes the `rics_compliant` bool or any value.
-RICS_COMPLIANT_STATUS_PENDING_AR = 'بانتظار مراجعة مُقيِّم مُرخّص (المرحلة الخامسة)'
-RICS_COMPLIANT_STATUS_PENDING_EN = 'Pending licensed-valuer review (Stage 5)'
+RICS_COMPLIANT_STATUS_PENDING_AR = 'بانتظار مراجعة مُقيِّم مُرخّص'
+RICS_COMPLIANT_STATUS_PENDING_EN = 'Pending licensed-valuer review'
 
 
 def rics_compliant_status_fields(is_compliant) -> dict:
