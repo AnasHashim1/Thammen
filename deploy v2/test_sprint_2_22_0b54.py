@@ -24,9 +24,9 @@ def check(name, cond):
 check('gate title flipped → تقييم سوقيّ آليّ (old absent)',
       'ثمّن — تقييم سوقيّ آليّ للفلل والأراضي في قطر' in HTML
       and 'ثمّن — تقدير سوقي آلي للفلل والأراضي في قطر' not in HTML)
-check('«ما هذا؟» reframe → تقييم سوقيّ آليّ (old absent)',
-      'ما هذا؟</strong> تقييم سوقيّ آليّ مبني على' in HTML
-      and 'ما هذا؟</strong> تقدير سوقي آلي مبني على' not in HTML)
+check('«ما هذا؟» gate card removed (b56 gate trim) — old «تقدير سوقي آلي» identity still absent',
+      'ما هذا؟</strong> تقييم سوقيّ آليّ مبني على' not in HTML  # b56: the bg-more fold removed
+      and 'ما هذا؟</strong> تقدير سوقي آلي مبني على' not in HTML)  # b54 lock holds
 check('consent affirmation → ثمّن تقييم سوقيّ آليّ للدعم (old absent)',
       'أن ثمّن تقييم سوقيّ آليّ للدعم وليس تقييماً معتمداً' in HTML
       and 'أن ثمّن تقدير سوقي آلي للدعم' not in HTML)
@@ -91,11 +91,11 @@ check('refine-feature name → حسّن التقييم (rendered, old rendered a
       and 'حسّن التقدير (المرحلة 2)' not in HTML)
 
 # ── 1b. consent gate + Terms modal — the 5 product/process spots (adversarial-verify catch) ──
-check('gate «حدود» bullet → والتقييم لا يأخذ (old absent)',
-      'والتقييم لا يأخذ بعد حالة العقار الداخلية' in HTML
-      and 'والتقدير لا يأخذ بعد حالة العقار الداخلية' not in HTML)
-check('gate «دورك» bullet → جرّب التقييم (old absent)',
-      'جرّب التقييم، وشاركنا' in HTML and 'جرّب التقدير، وشاركنا' not in HTML)
+check('condition-limit moved gate→Terms (b56) — «تقييم» wording, old «تقدير» absent',
+      'لا يأخذ بعدُ حالة العقار الداخلية' in HTML  # b56: gate «حدود» bullet relocated to Terms §2
+      and 'والتقدير لا يأخذ بعد حالة العقار الداخلية' not in HTML)  # b54 lock holds
+check('gate «دورك» bullet removed (b56 gate trim) — old «جرّب التقدير» still absent',
+      'جرّب التقييم، وشاركنا' not in HTML and 'جرّب التقدير، وشاركنا' not in HTML)
 check('Terms §1 → لقياس دقّة التقييم (old absent)',
       'بالدعوة لقياس دقّة التقييم. باستخدامك' in HTML
       and 'بالدعوة لقياس دقّة التقدير. باستخدامك' not in HTML)

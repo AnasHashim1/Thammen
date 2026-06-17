@@ -65,7 +65,7 @@ check('the median marker renders the decision, not the literal',
 check('DEF-12 row 1 renders the decision', "'+_def12R+'</span><strong>" in REP)
 check('neutral fallback «التقدير المركزي» + the income guard',
       "_midR='التقدير المركزي'" in REP and "income_triangulation||{}).mode==='income_led'" in REP)
-check('forced-sale basis line de-blinded', 'الأساس: القيمة التقديرية المركزية ×' in REP
+check('forced-sale basis line de-blinded', 'الأساس: القيمة التقديريّة المركزيّة ×' in REP  # b56 R6: تشكيل
       and 'القيمة السوقية المركزية (الوسيط)' not in REP)
 
 print('\n[3] D8 — ONE MUC block AFTER the number (+ refusal keeps its clause)')

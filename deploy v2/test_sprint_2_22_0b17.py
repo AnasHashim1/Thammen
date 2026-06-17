@@ -61,8 +61,8 @@ check('report §3 structure order correct (D8: MUC after the number)',
 # ── DEF-12 (report-only; display math ×0.90; verbatim label) ──
 check('DEF-12 math = Math.round(amount*0.90)', 'Math.round((v.amount||0)*0.90)' in rep)
 check('DEF-12 two rows (MV + forced-sale)', 'القيمة السوقية (الوسيط)' in rep
-      and 'قيمة البيع الجبري الإرشادية' in rep)
-check('DEF-12 verbatim convention label', 'قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً.' in rep)
+      and 'قيمة البيع الجبريّ الإرشاديّة' in rep)  # b56 R6: تشكيل + ×٠٫٩٠ + guarded label
+check('DEF-12 verbatim convention label', 'قيمة بيعٍ جبريٍّ إرشاديّة (عُرفٌ سوقيٌّ ×٠٫٩٠) — ليست تقييم تصفية معتمداً.' in rep)  # b56 R6: Arabic-Indic ٠٫٩٠ + تشكيل
 check('DEF-12 is REPORT-ONLY (not in show())',
       'البيع الجبري' not in HTML[HTML.index('function show(d){'):HTML.index('// Sprint D: Section renderer')])
 

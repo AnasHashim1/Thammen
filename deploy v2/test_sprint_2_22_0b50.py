@@ -47,9 +47,9 @@ check("GT hook reframed «اختياريّ» (report)", "اختياريّ: لت�
 
 # [2] Source honesty: no implied official/affiliation; open-data framed
 print("\n[2] MoJ source — open-data framing, no implied affiliation")
-check("home sub now «وزارة العدل المفتوحة»", "بيانات وزارة العدل المفتوحة" in HTML)
+check("open-data source framing present (b56: moved off the home sub → disc credit + hcred)", "بيانات وزارة العدل المفتوحة" in HTML)
 check("home officialness «العدل الفعلية» gone", "بيانات وزارة العدل الفعلية" not in HTML)
-check("no-affiliation clause present in gate", "غير منتسبة لوزارة العدل" in HTML)
+check("no-affiliation clause present (b56: moved gate→Terms §2)", "غير منتسبة لوزارة العدل" in HTML)
 check("disc credit now «يستخدم بيانات وزارة العدل المفتوحة»", "يستخدم بيانات وزارة العدل المفتوحة" in HTML)
 check("disc bare «بيانات وزارة العدل القطرية» credit gone", "ثمّن</span> — بيانات وزارة العدل القطرية" not in HTML)
 check("api subtitle officialness «القطرية الرسمية» gone", "القطرية الرسمية" not in API)
@@ -64,7 +64,7 @@ check("contradiction «هذا التقييم إرشادي» gone", "هذا ال�
 print("\n[4] Gate framing")
 check("gate note «معلومة استرشاديّة لدعم القرار»", "معلومة استرشاديّة لدعم القرار" in HTML)
 check("gate note «نتيجة بحثية» gone", "نتيجة بحثية" not in HTML)
-check("gate sub «نطوّرها بملاحظاتك»", "نطوّرها بملاحظاتك" in HTML)
+check("gate beta sub-line removed (b56 gate trim)", "نطوّرها بملاحظاتك" not in HTML and "نسخة تجريبية مجّانيّة بالدعوة" not in HTML)
 check("gate sub «هدفها قياس دقّة التقدير قبل الإطلاق» gone", "هدفها قياس دقّة التقدير قبل الإطلاق" not in HTML)
 
 # [5] De-jargon: internal roadmap tag «(المرحلة الخامسة)» / «(Stage 5)» dropped from user copy

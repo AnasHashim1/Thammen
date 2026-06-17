@@ -117,7 +117,7 @@ check('land basis keeps the matrix label «قيمة الأرض»', 'قيمة ا�
 print('\n[5] the PDF/matrix stories + evidence (broadcast-bound)')
 check('cost neighbor = the PDF story, share/market/age-bound',
       'أغلب ما بيع غالياً في منطقتك' in SR and 'فللاً جديدة فاخرة' in SR
-      and '_domShare' in SR and 'مقارنةٌ غير عادلة — لك وعليك' in SR)
+      and '_domShare' in SR and 'مقارنةٌ غير منصِفة' in SR)  # b56 R6: «لك وعليك» dropped + «غير عادلة»→«غير منصِفة» (formal register)
 check('market neighbor (matrix verbatim core)',
       'صفقات مثل بيتك كافية وواضحة' in SR and 'وسيطها مرجعك' in SR)
 check('income neighbor (matrix verbatim core)',
@@ -128,7 +128,7 @@ check('the PDF §٢ three-numbers row (fair / quick-sale / the other-class card)
       'الأرقام الثلاثة التي تهمّك' in SR and 'لو احتجت بيعاً سريعاً' in SR
       and 'فئة أخرى، ليست فئة بيتك' in SR)
 check('the PDF §٣ practical-essence advice (the SIGNED hard-ceiling bars, disclosed)',
-      'الزبدة العملية' in SR and 'إن كنت بائعاً' in SR and 'إن كنت مشترياً' in SR
+      'الخلاصة العملية' in SR and 'إن كنت بائعاً' in SR and 'إن كنت مشترياً' in SR  # b56 R6: الزبدة→الخلاصة (formal register)
       and 'v.amount*1.10' in SR and 'v.amount*1.30' in SR
       and 'هامش تفاوض +10%' in SR and 'سقف +30%' in SR)
 check('the PDF §٤ sources (no-listings disclosure)',
@@ -156,15 +156,15 @@ check('the legal block = the PDF FULL text incl. IFRS 13',
       and 'IFRS 13' in SR and 'حجةً قضائية أو مصرفية' in SR)
 check('the D-3 calibration hook (the PDF §٨ wording; generic for land)',
       'معايرة الكلفة' in SR and 'V001 ±1%' in SR and 'شاركنا تقييمك' in SR
-      and 'كل شيت جديد يدقّقها' in SR)
+      and 'كلّ كشفٍ جديد يدقّقها' in SR)  # b56 R6: شيت→كشف تقييم (formal register)
 check('the PDF §٥ raise-invitations bound to the scenarios broadcast (no sweep figures)',
       'أشياء قد ترفع الرقم — أخبرنا بها' in SR and 'الإيجار أقوى معلومة' in SR
       and 'حسّن التقييم' in SR and '1.9M' not in SR and '4.7M' not in SR)  # b54 R6: تقدير→تقييم (identity lock)
 check('the §٦ scenarios table bound to the b23 broadcast (scn.items + the idea column)',
       'v.scenarios' in SR and 'scn.items.forEach' in SR and 'it.label_ar' in SR
-      and 'وش لو؟' in SR and 'الفكرة' in SR)
+      and 'ماذا لو؟' in SR and 'الفكرة' in SR)  # b56 R6: وش لو→ماذا لو (formal register)
 check('the tamper line (the PDF §٩)', 'ليست النسخة الصادرة بهذا التاريخ' in SR)
-check('the FULL PDF legal block (التركات + المنصة + الزبدة العملية caveat)',
+check('the FULL PDF legal block (التركات + المنصة + الخلاصة العملية caveat)',  # b56 R6: الزبدة→الخلاصة
       'لقسمة التركات دون تراضي الأطراف' in SR
       and 'ولا ينشئ أي التزام أو مسؤولية على المنصة' in SR
       and 'إرشادٌ تفاوضي عام لا توصية فردية' in SR)

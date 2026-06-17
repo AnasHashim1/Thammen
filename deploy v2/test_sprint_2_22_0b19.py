@@ -33,7 +33,7 @@ print('— §1 the three-value rows (order + sources) —')
 # the label-decision branches (in showReport, outside this block regex).
 i_mv = blk.find("'+_def12R+'")
 i_cost = blk.find('v.value_stack.cost.label_ar')
-i_fs = blk.find('قيمة البيع الجبري الإرشادية')
+i_fs = blk.find('قيمة البيع الجبريّ الإرشاديّة')  # b56 R6: تشكيل + ×٠٫٩٠ guarded label
 check('MV row present (leader-aware _def12R)', i_mv >= 0)
 check('the median label survives for true-median leads',
       'القيمة السوقية (الوسيط)' in HTML)
@@ -58,7 +58,7 @@ check('no arithmetic on the cost value (display verbatim)',
 # م3 re-point: the basis line drops the blind «(الوسيط)» qualifier (the central may
 # be cost-led) — the ×0.90 disclosure itself stays verbatim.
 check('forced-sale basis line discloses the central x0.90',
-      'الأساس: القيمة التقديرية المركزية ×' in blk)
+      'الأساس: القيمة التقديريّة المركزيّة ×' in blk)  # b56 R6: تشكيل
 check('forced-sale convention line intact (b17 verbatim)',
       'ليست تقييم تصفية معتمداً' in blk)
 check('a8 contract: no calc-block in the report block', 'calc-block' not in blk)

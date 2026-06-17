@@ -457,19 +457,8 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   <div class="bgate-card">
     <div class="bgate-head">
       <h2 id="bgTitle">ثمّن — تقييم سوقيّ آليّ للفلل والأراضي في قطر</h2>
-      <div class="bg-sub">نسخة تجريبية مجّانيّة بالدعوة — نطوّرها بملاحظاتك قبل الإطلاق العام.</div>
     </div>
-    <details class="bg-more">
-      <summary>اعرف المزيد عن النسخة التجريبية ↓</summary>
-    <ul>
-      <li><strong>ما هذا؟</strong> تقييم سوقيّ آليّ مبني على بيانات معاملات وزارة العدل ومصادر السوق، غرضه دعم القرار بمعلومة سريعة.</li>
-      <li><strong>ما ليس هذا؟</strong> ليس تقييماً رسمياً ولا تقريراً معتمداً صادراً عن مُقيِّم مُرخّص وفق معايير &lrm;RICS/IVS&lrm;. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد. وثمّن خدمة مستقلّة غير منتسبة لوزارة العدل؛ تستخدم بياناتها المفتوحة فقط.</li>
-      <li><strong>ماذا يغطّي؟</strong> الفلل والأراضي فقط في هذه المرحلة — الشقق والأبراج غير مشمولة بعد.</li>
-      <li><strong>حدود نعرضها بصراحة:</strong> البيانات الحكومية لم تُحدَّث منذ نهاية ديسمبر &lrm;2025&lrm; (يظهر تنبيه بذلك)؛ والتقييم لا يأخذ بعد حالة العقار الداخلية وتشطيباته — لذلك قد ينخفض السعر الفعلي نحو قيمة الأرض (عقار قديم/بسيط) أو يتجاوز التقدير (جديد/فاخر).</li>
-      <li><strong>دورك:</strong> جرّب التقييم، وشاركنا أي سعر فعلي تعرفه — ملاحظاتك تُحسّن الدقّة.</li>
-    </ul>
-    </details>
-    <div class="bg-note">بالمتابعة تُقرّ بأن هذه معلومة استرشاديّة لدعم القرار، وليست تقييماً معتمداً.</div>
+    <div class="bg-note">بالمتابعة تُقرّ بأن هذه معلومة استرشاديّة لدعم القرار، وليست تقييماً معتمداً. التفاصيل الكاملة وحدود الخدمة في «الشروط وإشعار الخصوصية» أدناه.</div>
     <div class="bg-ack">أُقرّ بأنني فهمت أن ثمّن تقييم سوقيّ آليّ للدعم وليس تقييماً معتمداً، وأوافق على المشاركة في النسخة التجريبية على الأساس الموضّح في الشروط وإشعار الخصوصية.</div>
     <button class="hbtn" onclick="ackBeta()">أوافق وأكمل</button>
     <div class="bg-links"><a onclick="openTerms();return false;">الشروط وإشعار الخصوصية الكاملة ↓</a></div>
@@ -503,12 +492,12 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
        trust band (Sprint C slice 3) + a registered-transactions credibility line. The b24 copy
        (title + recency) is PRESERVED verbatim; presentation only, value-invariant. -->
   <div class="htag">تقييم عقارك في قطر</div>
-  <div class="hsub">مبنيّ على بيانات وزارة العدل المفتوحة</div>
+  <div class="hsub">تقييم سوقيّ آليّ للفلل والأراضي في قطر</div>
   <div class="hrule"></div>
   <div class="htrust">
     <div class="hstep"><span class="n">١</span><span class="t">أدخل العنوان</span></div>
     <span class="hsep">←</span>
-    <div class="hstep"><span class="n">٢</span><span class="t">نحلّل صفقات العدل</span></div>
+    <div class="hstep"><span class="n">٢</span><span class="t">نحلّل الصفقات المسجّلة</span></div>
     <span class="hsep">←</span>
     <div class="hstep"><span class="n">٣</span><span class="t">نتيجتك فوراً</span></div>
   </div>
@@ -1659,8 +1648,8 @@ function showReport(d){
     }else if(v.cost_note_ar){
       h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.cost_note_ar+'</div>';
     }
-    h+='<div class="rep-def12-row"><span>قيمة البيع الجبري الإرشادية (×<span dir="ltr">0.90</span>)</span><strong>'+fmt(_fs)+' ر.ق</strong></div>';
-    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً. الأساس: القيمة التقديرية المركزية × <span dir="ltr">0.90</span>.</div>';
+    h+='<div class="rep-def12-row"><span>قيمة البيع الجبريّ الإرشاديّة (×٠٫٩٠ — ليست تصفية معتمدة)</span><strong>'+fmt(_fs)+' ر.ق</strong></div>';
+    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيعٍ جبريٍّ إرشاديّة (عُرفٌ سوقيٌّ ×٠٫٩٠) — ليست تقييم تصفية معتمداً. الأساس: القيمة التقديريّة المركزيّة × ٠٫٩٠.</div>';
     h+='<div class="rn" style="font-size:.7rem;margin-top:4px">الأرقام كما يبثّها المحرك — تدوير موحَّد من المصدر، لا تقريب إضافي في العرض.</div>';
     h+='</div>';
     // ════ Sprint 2.22.0b.55 «رشاقة التقرير الكامل» — the fine-print notes that used to stack as a
@@ -1911,8 +1900,8 @@ function showShortReport(d){
   if(cs==='cost'){
     neigh='أغلب ما بيع غالياً في منطقتك خلال آخر فترة كان فللاً جديدة فاخرة'+(_domShare!=null?(' — نحو '+_domShare+'% من الصفقات —'):' —')
       +((ld&&ld.market_value)?(' ووصلت أسعارها إلى '+fmt(ld.market_value)+'.'):'.')
-      +(_ageY?(' بيتك عمره فوق '+_ageY+' سنة، ومثل أغلب الفلل في قطر بعد سن العاشرة، قيمته العادلة تقترب من قيمة أرضه مضافاً إليها بناء أخذ نصيبه من العمر.'):'')
-      +' مقارنة بيتك بأسعار الفلل الجديدة مقارنةٌ غير عادلة — لك وعليك.';
+      +(_ageY?(' بيتك عمره فوق '+_ageY+' سنة، ومثل أغلب الفلل في قطر بعد سن العاشرة، تقترب قيمته العادلة من قيمة أرضه مضافاً إليها بناءٌ مُهلَكٌ بحسب عمره.'):'')
+      +' ومقارنة بيتك بأسعار الفلل الجديدة مقارنةٌ غير منصِفة.';
   }else if(cs==='market'){
     neigh='صفقات مثل بيتك كافية وواضحة: '+(_mn!=null?_mn:(_n!=null?_n:'—'))+' مطابقة خلال 24 شهراً — وسيطها مرجعك.';
   }else if(cs==='income'){
@@ -1924,9 +1913,9 @@ function showShortReport(d){
   // the SIGNED hard-ceiling negotiation bars (project doctrine: buyer MoJ+10% /
   // seller +30%) — DISCLOSED convention multipliers, the same class as ×0.90.
   const _bar10=Math.round(v.amount*1.10), _bar30=Math.round(v.amount*1.30);
-  // ════ Page 1 — الزبدة في صفحة واحدة (the PDF contract) ════
+  // ════ Page 1 — الخلاصة في صفحة واحدة (the PDF contract) ════
   h+='<div class="thmr-page" id="srPage1">';
-  h+='<div class="thmr-head"><div class="b1">ثمّن — التقرير المختصر<small>الزبدة في صفحة واحدة</small></div>';
+  h+='<div class="thmr-head"><div class="b1">ثمّن — التقرير المختصر<small>الخلاصة في صفحة واحدة</small></div>';
   h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b><br>'):'')+'<span dir="ltr">'+(d.engine_version||'')+'</span></div></div>';
   // the property strip (the PDF header row).
   h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:10px"><span class="k">'+(ASSET_AR[d.asset_type]||'عقار')+' <b dir="ltr">'+(d.address||'')+'</b>'+(d.district?(' · '+d.district):'')+'</span><span class="v" style="font-weight:400">'+(d.plot_area_m2?('مساحة الأرض: <b>'+fmt(d.plot_area_m2)+' م²</b>'):'')+(_ageY?(' · عمر البناء: <b>فوق '+_ageY+' سنة</b> (سجل رسمي)'):'')+' · التاريخ: <span dir="ltr">'+today+'</span></span></div>';
@@ -1946,7 +1935,7 @@ function showShortReport(d){
   h+='<div class="thmr-lay" style="margin-bottom:0;border:none;padding:2px 0 0">'+neigh+'</div></div>';
   // §٢ — الأرقام الثلاثة التي تهمّك (the PDF three-card row).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٢</span>الأرقام الثلاثة التي تهمّك</div>';
-  h+='<div class="thmr-row"><span class="k">سعر عادل لبيتك اليوم — تقديرنا المركزي'+(d.plot_area_m2?(' · ≈ <span dir="ltr">'+fmt(Math.round(v.amount/d.plot_area_m2))+'</span> ر.ق/م² أرض'):'')+'</span><span class="v">'+fmt(v.amount)+'</span></div>';
+  h+='<div class="thmr-row"><span class="k">التقدير المركزي لبيتك اليوم'+(d.plot_area_m2?(' · ≈ <span dir="ltr">'+fmt(Math.round(v.amount/d.plot_area_m2))+'</span> ر.ق/م² أرض'):'')+'</span><span class="v">'+fmt(v.amount)+'</span></div>';
   h+='<div class="thmr-row"><span class="k">لو احتجت بيعاً سريعاً (تقدير البنوك عادةً) — خصم 10% المتعارف عليه (×0.90، ليست تقييم تصفية)</span><span class="v">≈ '+fmt(Math.round(v.amount*0.90))+'</span></div>';
   if(cs==='cost'&&ld&&ld.market_value){
     h+='<div class="thmr-row"><span class="k">ما تبيعه الفلل الجديدة الفاخرة حولك — فئة أخرى، ليست فئة بيتك</span><span class="v">حتى '+fmt(ld.market_value)+'</span></div>';
@@ -1954,9 +1943,9 @@ function showShortReport(d){
     h+='<div class="thmr-row"><span class="k">النطاق التقديري حول الرقم</span><span class="v"><span dir="ltr">'+fmt(v.low)+' – '+fmt(v.high)+'</span></span></div>';
   }
   h+='</div>';
-  // §٣ — الزبدة العملية (the PDF seller/buyer advice; the bars = the SIGNED hard ceilings).
+  // §٣ — الخلاصة العملية (the PDF seller/buyer advice; the bars = the SIGNED hard ceilings).
   if(hasVal){
-    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٣</span>الزبدة العملية <span style="font-weight:400;font-size:.7rem;color:var(--thmr-ink2)">(إرشادية — والقرار قرارك)</span></div>';
+    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٣</span>الخلاصة العملية <span style="font-weight:400;font-size:.7rem;color:var(--thmr-ink2)">(إرشادية — والقرار قرارك)</span></div>';
     h+='<div class="thmr-micro" style="font-size:.8rem"><b>◆ إن كنت بائعاً:</b> اعرض حول ≈ '+fmt(_bar10)+' (هامش تفاوض +10% — عُرف السوق) واترك مجالاً للتفاوض؛ الإقفال الواقعي قرب '+fmt(v.amount)+' ما لم يكن في البيت ما يميّزه فعلاً. التمسك طويلاً فوق سقف +30% (≈ '+fmt(_bar30)+') يعني غالباً انتظاراً بلا مشترٍ جاد.</div>';
     h+='<div class="thmr-micro" style="font-size:.8rem"><b>◆ إن كنت مشترياً:</b> ما فوق ≈ '+fmt(_bar10)+' يحتاج سبباً واضحاً تتحقق منه بعينك: تجديد كامل، إضافات موثقة، أو دخل إيجار حقيقي. اطلب بيان وزارة العدل، واسأل عن عمر البناء الحقيقي لا ما يقوله البائع.</div></div>';
   }
@@ -2005,11 +1994,11 @@ function showShortReport(d){
   h+='<div class="thmr-page" id="srPage2">';
   h+='<div class="thmr-head"><div class="b1">ثمّن — ملحق المختصّين<small>للمستثمر · البنك · المحامي · المثمّن</small></div>';
   h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b><br>'):'')+(d.report_fp?('بصمة المحتوى: <b dir="ltr">'+d.report_fp+'</b>'):'')+'</div></div>';
-  // §٦ — جدول السيناريوهات «وش لو؟» (the b23 broadcast + the PDF idea column).
+  // §٦ — جدول السيناريوهات «ماذا لو؟» (the b23 broadcast + the PDF idea column).
   if(scn&&scn.items&&scn.items.length){
     const _idea={as_is:'بيع عادل بحالته الحالية',renovated_excellent:'التجديد يستردّ جزءاً من عمر البناء',
       luxury_finish:'سقف واقعي لفئة بيتك دون هدم',teardown_land:'نقطة الانطلاق بعد الهدم — والبناء الجديد استثمار مستقل'};
-    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٦</span>جدول السيناريوهات — «وش لو؟»</div>';
+    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٦</span>جدول السيناريوهات — «ماذا لو؟»</div>';
     h+='<table class="thmr-sctab"><tr><th>السيناريو</th><th class="l">القيمة التقريبية</th><th>الفكرة</th></tr>';
     scn.items.forEach(it=>{h+='<tr><td>'+it.label_ar+'</td><td class="num">'+(it.key==='as_is'?'':'≈ ')+fmt(it.value)+'</td><td style="font-size:.74rem;color:var(--thmr-ink2)">'+(_idea[it.key]||'')+'</td></tr>';});
     h+='</table>';
@@ -2035,12 +2024,12 @@ function showShortReport(d){
   }else{
     h+='<div class="thmr-row"><span class="k">صفقات الأرض</span><span class="v">'+(vf.land_n_transactions!=null?vf.land_n_transactions:(_n!=null?_n:'—'))+' صفقة'+(vf.window_months?('، نافذة '+vf.window_months+' شهراً'):'')+'</span></div>';
   }
-  if(cs==='land')h+='<div class="thmr-row"><span class="k">المعايرة</span><span class="v">شيتات موثَّقة محدودة — <b>كل شيت جديد يدقّقها</b></span></div>';
+  if(cs==='land')h+='<div class="thmr-row"><span class="k">المعايرة</span><span class="v">كشوف تقييم موثَّقة محدودة — <b>كلّ كشفٍ جديد يدقّقها</b></span></div>';
   else h+='<div class="thmr-row"><span class="k">معايرة الكلفة: <b>تقييم معتمد واحد</b> حتى الآن (V001 ±1%)</span><span class="v" style="font-weight:400">وتتدقّق مع كل تقييم حقيقي يصلنا — <b>شاركنا تقييمك</b></span></div>';
   h+='</div>';
   // §٩ — الإطار القانوني والمحاسبي (the PDF FULL legal block + the tamper line).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٩</span>الإطار القانوني والمحاسبي</div>';
-  h+='<div class="thmr-legal" style="margin-top:0">هذا <b>تقدير آلي استرشادي</b> صادر بتاريخه وفق البيانات المتاحة حينه، و<b>ليس تقييماً عقارياً معتمداً</b> وفق التنظيم القطري لمزاولة التقييم. لا يصلح حجةً قضائية أو مصرفية، ولا لأغراض التقارير المالية (<span dir="ltr">IFRS 13</span>)، ولا لقسمة التركات دون تراضي الأطراف، <b>ولا ينشئ أي التزام أو مسؤولية على المنصة</b>. ما ورد في «الزبدة العملية» إرشادٌ تفاوضي عام لا توصية فردية — والقرار وتبعته لصاحبه. للقرارات الرسمية: معاينة ميدانية ومقيّم مرخّص.</div>';
+  h+='<div class="thmr-legal" style="margin-top:0">هذا <b>تقدير آلي استرشادي</b> صادر بتاريخه وفق البيانات المتاحة حينه، و<b>ليس تقييماً عقارياً معتمداً</b> وفق التنظيم القطري لمزاولة التقييم. لا يصلح حجةً قضائية أو مصرفية، ولا لأغراض التقارير المالية (<span dir="ltr">IFRS 13</span>)، ولا لقسمة التركات دون تراضي الأطراف، <b>ولا ينشئ أي التزام أو مسؤولية على المنصة</b>. ما ورد في «الخلاصة العملية» إرشادٌ تفاوضي عام لا توصية فردية — والقرار وتبعته لصاحبه. للقرارات الرسمية: معاينة ميدانية ومقيّم مرخّص.</div>';
   h+='<div class="thmr-micro" style="margin-top:8px">أي نسخة من هذا الملف بمرجعٍ أو بصمةٍ مختلفَين ليست النسخة الصادرة بهذا التاريخ.</div></div>';
   h+='<div class="thmr-fpline">'+(vUrl?'<span class="thmr-qr" id="srQr2"></span>':'')
     +'<span>تحقق من سلامة هذا التقرير: '+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a>'):'<span>التحقّق غير مُفعَّل</span>')+(d.report_fp?(' · البصمة <span class="fp" dir="ltr">'+d.report_fp+'</span>'):'')+(d.report_ref?(' · المرجع <span dir="ltr">'+d.report_ref+'</span>'):'')+'</span></div>';
@@ -3172,7 +3161,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
       <h3>1) الموافقة على المشاركة</h3>
       <p>هذه نسخة تجريبية مجانية بالدعوة لقياس دقّة التقييم. باستخدامك للأداة تُقرّ بفهمك لما ورد أدناه وتوافق طوعاً على المشاركة. المشاركة اختيارية ويمكنك التوقف في أي وقت.</p>
       <h3>2) ما هي الخدمة وما حدودها</h3>
-      <p>ثمّن تقييم سوقيّ آليّ للفلل والأراضي مبني على بيانات معاملات وزارة العدل ومصادر السوق. هذا تحليل معلوماتي للقرار، وليس تقييماً رسمياً ولا تقريراً معتمداً صادراً عن مُقيِّم مُرخّص وفق معايير &lrm;RICS/IVS&lrm;. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.</p>
+      <p>ثمّن تقييم سوقيّ آليّ للفلل والأراضي مبني على بيانات معاملات وزارة العدل ومصادر السوق. هذا تحليل معلوماتي للقرار، وليس تقييماً رسمياً ولا تقريراً معتمداً صادراً عن مُقيِّم مُرخّص وفق معايير &lrm;RICS/IVS&lrm;. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد. وثمّن خدمة مستقلّة غير منتسبة لوزارة العدل؛ تستخدم بياناتها المفتوحة فقط. ويغطّي الفلل والأراضي فقط في هذه المرحلة (الشقق والأبراج غير مشمولة بعد)، ولا يأخذ بعدُ حالة العقار الداخلية وتشطيباته — لذلك قد ينخفض السعر الفعليّ نحو قيمة الأرض (عقار قديم/بسيط) أو يتجاوز التقدير (جديد/فاخر).</p>
       <h3>3) بياناتك في هذه النسخة</h3>
       <p>• الأداة لا تُخزّن أي بيانات: استعلامك (المنطقة/الشارع/المبنى) يُعالَج آنياً ثم يُهمَل. لا حساب، ولا تسجيل دخول، ولا ملفات تتبّع أو تحليلات.</p>
       <p>• الاستضافة: تعمل الخدمة على بنية تحتية خارج قطر (الولايات المتحدة/أوروبا عبر <span dir="ltr">Heroku وCloudflare</span>)؛ تُعالَج استعلاماتك هناك مؤقتاً ولا تُحفَظ.</p>
@@ -3192,7 +3181,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
         <h4>1) Consent to participate</h4>
         <p>Free, invite-only beta to validate estimate accuracy. By using the tool you acknowledge the points below and voluntarily agree to participate. Participation is optional; you may stop at any time.</p>
         <h4>2) What the service is, and its limits</h4>
-        <p>Thammen is an automated market valuation for villas and land, built on Ministry of Justice transaction data and market sources. It is an informational decision analysis — NOT an official or certified valuation by a licensed valuer under RICS/IVS. Official purposes (loans, courts, accounting) require an accredited valuer.</p>
+        <p>Thammen is an automated market valuation for villas and land, built on Ministry of Justice transaction data and market sources. It is an informational decision analysis — NOT an official or certified valuation by a licensed valuer under RICS/IVS. Official purposes (loans, courts, accounting) require an accredited valuer. Thammen is an independent service, not affiliated with the Ministry of Justice; it uses its open data only. It covers villas and land only for now (apartments and towers are not yet included), and does not yet account for interior condition/finishes — so the actual price may fall toward the land value (older/basic) or exceed the estimate (newer/luxury).</p>
         <h4>3) Your data in this beta</h4>
         <p>• The tool stores nothing: your query (zone/street/building) is processed in-memory and discarded. No account, no login, no tracking or analytics cookies.</p>
         <p>• Hosting: the service runs on infrastructure outside Qatar (US/EU, via Heroku and Cloudflare); your queries are processed there transiently and are not retained.</p>
