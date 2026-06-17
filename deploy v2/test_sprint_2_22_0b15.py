@@ -32,8 +32,9 @@ for b in ['let head=', 'let alerts=', 'let muc=', 'let a8acc=', 'let t1=', 'let 
     check('buffer declared once: %s' % b, HTML.count(b) == 1)
 
 # ── TIER ordering (the assembly contract) ──
-# 5. valued assembly: alerts (qualifiers) → TIER-1 figure → full MVU clause → TIER-2 → TIER-3 → foot.
-check('valued assembly order head+alerts+t1+muc+t2+t3+foot', 'h=head+alerts+t1+muc+t2+t3+foot;' in HTML)
+# 5. valued assembly: alerts (qualifiers) → TIER-1 figure → folded MVU clause (_mucFold) → TIER-2 → TIER-3 → foot.
+# b52 re-point (R6/Lesson-2): the result-screen lean folds the full MVU clause behind its chip via _mucFold.
+check('valued assembly head+alerts+t1+_mucFold+t2+t3+foot (b52)', 'h=head+alerts+t1+_mucFold+t2+t3+foot;' in HTML)
 # 6. refusal assembly preserves pre-b15 flat order (compliance still shown).
 check('refusal assembly head+muc+a8acc+alerts+flat+foot', 'h=head+muc+a8acc+alerts+flat+foot;' in HTML)
 
@@ -45,13 +46,14 @@ check('refusal assembly head+muc+a8acc+alerts+flat+foot', 'h=head+muc+a8acc+aler
 check('MUC chip in TIER-1 (t1+=… تحفظ مادي: +MUC_LEVEL_AR)',
       "t1+='<div style=\"display:inline-block;padding:3px 10px;background:var(--warn-bg);color:var(--warn);" in HTML
       and " تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';" in HTML)
-# 8. the FULL MVU clause routes to the always-visible `muc` buffer (NOT an accordion).
-# (b17 refactored the inline build into the shared _mucCardHtml builder — same clause, same buffer.)
-check('full MVU clause → muc buffer (always-visible)',
+# 8. the FULL MVU clause is still BUILT via the shared _mucCardHtml builder (same clause, same red styling).
+# b52 re-point (R6/Lesson-2): the lean pass folds the clause behind its chip (_mucFold) instead of
+# always-visible — the chip + «ليس معتمداً» stay always-visible in TIER-1 (checks 7 + 9), the full clause one click away.
+check('full MVU clause still built via _mucCardHtml (same red styling)',
       'muc+=_mucCardHtml(muc_ar,muc_basis,muc_review);' in HTML
       and 'background:var(--bad-bg);border:2px solid var(--bad)' in HTML)
-check('full MVU clause is NOT wrapped in _acc (assembly keeps t1+muc+t2)',
-      'h=head+alerts+t1+muc+t2+t3+foot;' in HTML and '_acc(muc' not in HTML)
+check('full MVU clause folds behind its chip via _mucFold (b52 lean)',
+      'h=head+alerts+t1+_mucFold+t2+t3+foot;' in HTML and '_mucFold = muc ?' in HTML)
 # 9. «ليس تقييماً معتمداً» line is in TIER-1 (always visible), a20 status appended when present.
 check('not-certified line in TIER-1', "t1+='<div class=\"rn\" style=\"margin-top:10px;font-size:.82rem;color:#8a6d3b;background:#fcf8e3" in HTML and 'ليس تقييماً معتمداً' in HTML)
 check('a20 rics_compliant_status appended to not-certified line', 'rics_compliant_status_ar' in HTML and '_statusAr' in HTML)
@@ -122,7 +124,7 @@ check('central-estimate position surfaced in result hero + report median marker 
 check('condition note STAYS on TIER-1 (b31)', "if(v.condition_note_ar){t1+=" in HTML)
 check('value_floor + hbu FOLD into «كيف وصلنا» (how buffer, b31)',
       'if(v.value_floor){' in HTML and 'how+=' in HTML and 'if(v.hbu_note_ar){how+=' in HTML)
-check('moj sample-size (cite-n) still on TIER-1', 'صفقات البيع المسجلة لعقارات مشابهة' in HTML)
+check('moj sample-size (cite-n) rendered (b52: folded into «كيف وصلنا»)', 'صفقات البيع المسجلة لعقارات مشابهة' in HTML)
 # show() does NOT mutate v.amount/v.low/v.high (no assignment to those fields anywhere).
 check('no mutation of v.amount/v.low/v.high in show()', not re.search(r'\bv\.(amount|low|high)\s*=[^=]', HTML))
 

@@ -2475,20 +2475,22 @@ function show(d){
       how+='</div>';
     }
     // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — TIER-1 (the claimed age never moves the headline).
-    if(v.age_sensitivity&&v.age_sensitivity.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.78rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.age_sensitivity.note_ar+'</div>';}
-    // MoJ sample size (cite-n discipline) — STAYS on TIER-1.
+    // Sprint 2.22.0b.52 (result-screen lean, PO-signed A+B): age-sensitivity · moj sample-size · the
+    // methodology bare line move OFF always-visible TIER-1 → into the «كيف وصلنا» fold (appraiser /
+    // methodology detail — lean AND methodological: the method is still disclosed, one click away).
+    // TIER-1 keeps: figure + range + condition/teardown/luxury + the «ليس معتمداً» line + the evidence pill.
+    if(v.age_sensitivity&&v.age_sensitivity.note_ar){how+='<div class="rn" style="margin-top:10px;font-size:.78rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.age_sensitivity.note_ar+'</div>';}
     if(d.moj_sample_size){
-      t1+='<div class="ri" style="margin-bottom:10px"><div class="rl">صفقات البيع المسجلة لعقارات مشابهة</div><div class="rv">'+d.moj_sample_size+' صفقة</div></div>';
+      how+='<div class="rn" style="margin-top:8px;font-size:.78rem">صفقات البيع المسجلة لعقارات مشابهة: '+d.moj_sample_size+' صفقة</div>';
+    }
+    if(d.methodology_ar){
+      how+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin:10px 0 0;font-size:.78rem;color:#666;line-height:1.5">'+d.methodology_ar+'</div>';
     }
     // Sprint 2.22.0b.15 — «ليس تقييماً معتمداً» line (compliance — TIER-1, always visible). a20 status appended when present.
     var _statusAr=(d.material_uncertainty||{}).rics_compliant_status_ar;
     t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;color:#8a6d3b;background:#fcf8e3;border-radius:6px;padding:7px 10px"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> تقدير سوقيّ آليّ — ليس تقييماً معتمداً'+(_statusAr?(' ('+_statusAr+')'):'')+'.</div>';
     // Evidence one-row summary (drama on evidence, not the figure §2c). The FULL b2.2 panel → TIER-2 accordion.
     t1+=_evOneRow(d);
-    // Methodology bare line (a4 honesty surface) — kept visible directly under TIER-1.
-    if(d.methodology_ar){
-      t1+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin:12px 0 0;font-size:.78rem;color:#666;line-height:1.5">'+d.methodology_ar+'</div>';
-    }
     t1+='</div>';
 
     // ── Sprint 2.22.0b.31 (DEF-UX11): ONE «<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> كيف وصلنا لهذا الرقم؟» accordion (FIRST, right after the
@@ -2712,7 +2714,12 @@ function show(d){
   // ── Assemble in tier order. Valued: alerts (qualifiers) → TIER-1 figure → full MVU clause →
   // TIER-2 accordions → TIER-3 actions → compliance foot. Refusal: pre-b15 flat order preserved. ──
   if(hasValuation){
-    h=head+alerts+t1+muc+t2+t3+foot;
+    // Sprint 2.22.0b.52 (result-screen lean, PO-signed): the full MUC clause folds behind its chip.
+    // The «تحفّظ مادي: {level}» chip + the «ليس تقييماً معتمداً» line stay always-visible in t1 (the user
+    // is warned at a glance); the full VPGA-10 clause is one click away. Placed first among the folds.
+    // Value-invariant — display reorganization only; the clause text is unchanged and still reachable.
+    const _mucFold = muc ? _acc('<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> التحفّظ المادي والمعايير (RICS / IVS)', muc, false) : '';
+    h=head+alerts+t1+_mucFold+t2+t3+foot;
   }else{
     h=head+muc+a8acc+alerts+flat+foot;
   }

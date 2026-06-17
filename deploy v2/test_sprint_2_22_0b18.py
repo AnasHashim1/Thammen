@@ -105,8 +105,8 @@ chk('21. 10-Year disclosure re-worded',
 chk('22. b4 new+luxury lever wiring intact', "luxury_new_premium" in SRC and 'teardown' in SRC)
 
 # 23-24: index.html renders the sensitivity line on screen 4 (TIER-1) + the report
-chk('23. screen-4 TIER-1 renders age_sensitivity.note_ar',
-    "v.age_sensitivity&&v.age_sensitivity.note_ar){t1+=" in HTML)
+chk('23. screen-4 renders age_sensitivity.note_ar (b52: in the «كيف وصلنا» fold, was TIER-1)',
+    "v.age_sensitivity&&v.age_sensitivity.note_ar){how+=" in HTML)
 chk('24. the report renders age_sensitivity.note_ar',
     "v.age_sensitivity&&v.age_sensitivity.note_ar)h+=" in HTML)
 

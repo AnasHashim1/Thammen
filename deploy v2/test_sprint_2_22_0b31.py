@@ -78,8 +78,10 @@ check('core 5 — the accordion «button» summary present', 'كيف وصلنا 
 check('condition note STAYS t1', 'if(v.condition_note_ar){t1+=' in HTML)
 check('teardown note STAYS t1', 'v.teardown.note_ar){t1+=' in HTML)
 check('luxury-new premium STAYS t1', 'v.luxury_new_premium.note_ar){t1+=' in HTML)
-check('age-sensitivity STAYS t1 (b18 §A1 — NOT in the named-9)', 'v.age_sensitivity.note_ar){t1+=' in HTML)
-check('moj sample-size (cite-n) STAYS t1', 'صفقات البيع المسجلة لعقارات مشابهة' in HTML)
+# Re-pointed for b52 (R6/Lesson-2): the result-screen lean pass moved age-sensitivity + moj sample-size
+# OFF always-visible TIER-1 into the «كيف وصلنا» fold (still rendered + disclosed, one click away).
+check('age-sensitivity → «كيف وصلنا» fold (b52 lean; was TIER-1)', 'v.age_sensitivity.note_ar){how+=' in HTML)
+check('moj sample-size (cite-n) rendered (b52: in «كيف وصلنا» fold)', 'صفقات البيع المسجلة لعقارات مشابهة' in HTML)
 
 # ── 6. evidence panel renderer is reused, NOT deleted (folded on result + still in showReport) ──
 check('evidencePanelHtml still defined', 'function evidencePanelHtml(d,acc){' in HTML)
@@ -91,8 +93,9 @@ check('evidencePanelHtml still in showReport', '_axWrap(evidencePanelHtml(d,acc)
 
 # ── 7. VALUE-INVARIANCE — show() does NOT mutate v.amount/v.low/v.high (b24) ──
 check('no mutation of v.amount/v.low/v.high', not re.search(r'\bv\.(amount|low|high)\s*=[^=]', HTML))
-# assembly order unchanged (head+alerts+t1+muc+t2+t3+foot) — the accordion rides t2.
-check('valued assembly order unchanged', 'h=head+alerts+t1+muc+t2+t3+foot;' in HTML)
+# Re-pointed for b52 (R6/Lesson-2): the result-screen lean folds the full MUC clause into a collapsed
+# accordion (_mucFold) placed before t2 — the chip + «ليس معتمداً» stay always-visible in t1.
+check('valued assembly (b52: MUC folds into _mucFold before t2)', 'h=head+alerts+t1+_mucFold+t2+t3+foot;' in HTML)
 
 # ── 8. engine version (format only — R6 / Lesson-2: no exact pin) ──
 check('ENGINE_VERSION format (thammen-sprint…)', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)
