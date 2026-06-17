@@ -1634,6 +1634,31 @@ function showReport(d){
     }else{
       h+='<div class="ri full"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.4rem">'+fmt(v.amount)+' ر.ق</div></div>';
     }
+    // Sprint 2.22.0b.51 (reorder): DEF-12 three-value block leads here — right under the headline
+    // range — so the reader meets the KEY numbers (سوقية/كلفة/جبري) BEFORE the fine-print evidence
+    // notes. Moved up from below the note-stack; value-invariant (same content + same ×0.90 math).
+    // DEF-12 (§11 Q4 multi-AI «ship»): MV + the forced-sale INDICATION = MV × 0.90 — convention
+    // disclosed verbatim; report-only (NOT screen 4); display math on the existing amount.
+    // Sprint 2.22.0b.19 — the THREE-VALUE display («نذكر هذا وذاك في التقرير», signed):
+    // the cost row composes from the b20 valuation.value_stack — the SOLE source, display-only,
+    // zero new math. Villa/house: the b19-verbatim labeled value (or the unavailable reason);
+    // raw_land: the unified «DRC ≡ قيمة الأرض» line (v.cost_note_ar). Refusal/hybrid never
+    // reach this block (hasValuation-gated). + the forced-sale BASIS disclosure line.
+    const _fs=Math.round((v.amount||0)*0.90);
+    h+='<div class="rep-def12">';
+    h+='<div class="rep-def12-row"><span>'+_def12R+'</span><strong>'+fmt(v.amount)+' ر.ق</strong></div>';
+    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
+      h+='<div class="rep-def12-row"><span>'+v.value_stack.cost.label_ar+'</span><strong>'+fmt(v.value_stack.cost.value)+' ر.ق</strong></div>';
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">'+v.value_stack.cost.sub_ar+'</div>';
+    }else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.value_stack.cost.unavailable_reason_ar+'</div>';
+    }else if(v.cost_note_ar){
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.cost_note_ar+'</div>';
+    }
+    h+='<div class="rep-def12-row"><span>قيمة البيع الجبري الإرشادية (×<span dir="ltr">0.90</span>)</span><strong>'+fmt(_fs)+' ر.ق</strong></div>';
+    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً. الأساس: القيمة التقديرية المركزية × <span dir="ltr">0.90</span>.</div>';
+    h+='<div class="rn" style="font-size:.7rem;margin-top:4px">الأرقام كما يبثّها المحرك — تدوير موحَّد من المصدر، لا تقريب إضافي في العرض.</div>';
+    h+='</div>';
     // م3/D8: the «حالة أفضل/أدنى» prose is FOLDED when the scenarios table answers it
     // with numbers (the a17/a19 disclosure stays verbatim wherever no scenarios exist).
     if(v.condition_note_ar&&!(v.scenarios&&v.scenarios.items&&v.scenarios.items.length>1))h+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.condition_note_ar+'</div>';
@@ -1645,8 +1670,10 @@ function showReport(d){
     if(v.leadership&&v.leadership.note_ar){h+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.leadership.note_ar+'</div>';}
     if(v.leadership&&v.leadership.age_honesty_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.leadership.age_honesty_note_ar+'</div>';}
     if(v.leadership&&v.leadership.resurvey_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '+v.leadership.resurvey_note_ar+'</div>';}
-    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){h+='<div class="rn" style="margin-top:8px;font-size:.76rem"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.value_stack.cost.label_ar+': '+fmt(v.value_stack.cost.value)+' ر.ق — '+v.value_stack.cost.sub_ar+'</div>';}
-    else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){h+='<div class="rn" style="margin-top:8px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.value_stack.cost.unavailable_reason_ar+'</div>';}
+    // Sprint 2.22.0b.51 (de-dup): the standalone cost-value note was REMOVED here — the cost
+    // value already renders once below in the DEF-12 three-value block (+ «تفكيك المرتكز» on
+    // cost-led). It was a b20 leftover that became redundant when b19 added the DEF-12 cost row.
+    // Value-invariant: the cost value + sub_ar + unavailable_reason still render in DEF-12.
     // م3 (the PDF-audit mixed-pool fix): on cost leadership the pool line becomes the
     // SIGNED dual-evidence line (matched n vs geo n/dispersion — the b20 format); on a
     // market lead the bracket dispersion renders WITH ITS OWN n (no more n=3-beside-0.165).
@@ -1668,30 +1695,9 @@ function showReport(d){
     }
     if(v.hbu_note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.hbu_note_ar+'</div>';
     if(d.moj_sample_size)h+='<div class="rn" style="margin-top:8px;font-size:.78rem">صفقات البيع المسجلة لعقارات مشابهة: '+d.moj_sample_size+' صفقة</div>';
-    // DEF-12 (§11 Q4 multi-AI «ship»): MV + the forced-sale INDICATION = MV × 0.90 — convention
-    // disclosed verbatim; report-only (NOT screen 4); display math on the existing amount.
-    // Sprint 2.22.0b.19 — the THREE-VALUE display («نذكر هذا وذاك في التقرير», signed):
-    // the cost row composes from the b20 valuation.value_stack — the SOLE source, display-only,
-    // zero new math. Villa/house: the b19-verbatim labeled value (or the unavailable reason);
-    // raw_land: the unified «DRC ≡ قيمة الأرض» line (v.cost_note_ar). Refusal/hybrid never
-    // reach this block (hasValuation-gated). + the forced-sale BASIS disclosure line.
-    const _fs=Math.round((v.amount||0)*0.90);
-    h+='<div class="rep-def12">';
-    h+='<div class="rep-def12-row"><span>'+_def12R+'</span><strong>'+fmt(v.amount)+' ر.ق</strong></div>';
-    if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
-      h+='<div class="rep-def12-row"><span>'+v.value_stack.cost.label_ar+'</span><strong>'+fmt(v.value_stack.cost.value)+' ر.ق</strong></div>';
-      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">'+v.value_stack.cost.sub_ar+'</div>';
-    }else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){
-      h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.value_stack.cost.unavailable_reason_ar+'</div>';
-    }else if(v.cost_note_ar){
-      h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.cost_note_ar+'</div>';
-    }
-    h+='<div class="rep-def12-row"><span>قيمة البيع الجبري الإرشادية (×<span dir="ltr">0.90</span>)</span><strong>'+fmt(_fs)+' ر.ق</strong></div>';
-    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً. الأساس: القيمة التقديرية المركزية × <span dir="ltr">0.90</span>.</div>';
-    // م3/D8 — ONE DECLARED rounding (the triple-rounding fold): the engine's broadcast
-    // figures render AS-IS; the only display derivation is the disclosed ×0.90.
-    h+='<div class="rn" style="font-size:.7rem;margin-top:4px">الأرقام كما يبثّها المحرك — تدوير موحَّد من المصدر، لا تقريب إضافي في العرض.</div>';
-    h+='</div>';
+    // Sprint 2.22.0b.51 (reorder): the DEF-12 three-value block MOVED UP to right after the
+    // headline range (key numbers lead; the fine-print evidence notes now follow). Value-invariant —
+    // identical content + identical math (×0.90), only the display order changed.
     h+='</div>';
     // م3/D8 — the ONE MUC block, AFTER the number (ص1 + ص9 merged; the brief MU
     // section is skipped in the annex loop below).

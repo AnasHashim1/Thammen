@@ -91,8 +91,10 @@ check("caveat[very_stale] has no emoji", ("📅" not in c and "⚠" not in c))
 
 # [7] Engine version bumped
 print("\n[7] version")
-check("ENGINE_VERSION bumped to b50", "thammen-sprint2p22p0b50-copy-honesty-source-contact" in EU)
-check("SPRINT_TAG = 2.22.0b.50", "'2.22.0b.50'" in EU)
+# R6/Lesson-2: version-agnostic format checks (no exact-patch pin — relaxed at b51 when the
+# bump superseded b50; the b50 COPY checks above are what this suite actually guards).
+check("ENGINE_VERSION present (b-series format)", "thammen-sprint2p22p0b" in EU)
+check("SPRINT_TAG present (2.22.0b.* format)", "'2.22.0b." in EU)
 
 print(f"\n  {_passed} passed / {_failed} failed")
 raise SystemExit(1 if _failed else 0)
