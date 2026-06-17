@@ -50,9 +50,9 @@ check('the results screen NOT re-skinned (out of the signed 1-5 scope)',
 print('\n[2] the three tagged groups (the v3 contract)')
 check('refine block extracted', len(REF) > 500)
 check('exactly THREE thmr-grp groups', REF.count('<details class="thmr-grp"') == 3)
-check('group ١ الهندسة OPEN by default + tagged «يحرّك التقدير»',
+check('group ١ الهندسة OPEN by default + tagged «يحرّك التقييم»',  # b54 R6: تقدير→تقييم (identity lock)
       '<details class="thmr-grp" open>' in REF
-      and 'الهندسة <span class="tagfx move">يحرّك التقدير</span>' in REF)
+      and 'الهندسة <span class="tagfx move">يحرّك التقييم</span>' in REF)
 check('group ٢ العمر والحالة tagged «يدقّق مرتكز التكلفة»',
       'العمر والحالة <span class="tagfx tune">يدقّق مرتكز التكلفة</span>' in REF)
 check('group ٣ معلومات مالية tagged «اختياري للإثراء»',

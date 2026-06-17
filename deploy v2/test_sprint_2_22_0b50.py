@@ -55,9 +55,9 @@ check("disc bare «بيانات وزارة العدل القطرية» credit go
 check("api subtitle officialness «القطرية الرسمية» gone", "القطرية الرسمية" not in API)
 check("api subtitle now open-data framed", "وزارة العدل المفتوحة (CC BY 4.0)" in API)
 
-# [3] Contradiction fix: our output is «تقدير», never «تقييم»
+# [3] Contradiction fix: the VALUE stays «تقديريّ»; b54 locks the IDENTITY/PROCESS to «تقييم»  # b54 R6: تقدير→تقييم (identity lock)
 print("\n[3] Self-reference contradiction fixed")
-check("disc says «هذا التقدير إرشاديّ»", "هذا التقدير إرشاديّ" in HTML)
+check("disc says «هذا التقييم السوقيّ الآليّ إرشاديّ»", "هذا التقييم السوقيّ الآليّ إرشاديّ" in HTML)  # b54 R6: تقدير→تقييم (identity lock)
 check("contradiction «هذا التقييم إرشادي» gone", "هذا التقييم إرشادي" not in HTML)
 
 # [4] Trust-eroding framing softened (gate)

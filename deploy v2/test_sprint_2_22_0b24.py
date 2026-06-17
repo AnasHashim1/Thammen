@@ -46,11 +46,11 @@ with open('index.html', encoding='utf-8') as f:
 _m = re.search(r'function showConfirm\(d\)\{.*?function confirmProceed', HTML, re.S)
 SHOWCONFIRM = _m.group(0) if _m else ''
 
-print('\n[1] Home surface — تقدير not تقييم')
-check('hero tag = «تقدير عقارك في قطر»', 'تقدير عقارك في قطر' in HTML)
-check('old hero «تقييم عقارك في قطر» gone', 'تقييم عقارك في قطر' not in HTML)
-check('CTA = «ابدأ التقدير»', 'ابدأ التقدير' in HTML)
-check('old CTA «ابدأ التقييم» gone', 'ابدأ التقييم' not in HTML)
+print('\n[1] Home surface — تقييم (identity) not تقدير')  # b54 R6: تقدير→تقييم (identity lock)
+check('hero tag = «تقييم عقارك في قطر»', 'تقييم عقارك في قطر' in HTML)  # b54 R6: تقدير→تقييم (identity lock)
+check('old hero «تقدير عقارك في قطر» gone', 'تقدير عقارك في قطر' not in HTML)  # b54 R6: تقدير→تقييم (identity lock)
+check('CTA = «ابدأ التقييم»', 'ابدأ التقييم' in HTML)  # b54 R6: تقدير→تقييم (identity lock)
+check('old CTA «ابدأ التقدير» gone', 'ابدأ التقدير' not in HTML)  # b54 R6: تقدير→تقييم (identity lock)
 
 print('\n[2] Data-recency line (signed صيغة)')
 check('static default = «بيانات وزارة العدل حتى ديسمبر 2025»',

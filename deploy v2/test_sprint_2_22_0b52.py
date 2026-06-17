@@ -46,7 +46,7 @@ check('MUC level chip STAYS in TIER-1 (amber token + level text)',
       and " تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';" in HTML)
 check('«ليس تقييماً معتمداً» STAYS in TIER-1 (a20 status appended)',
       "t1+='<div class=\"rn\" style=\"margin-top:10px;font-size:.82rem;color:#8a6d3b;background:#fcf8e3" in HTML
-      and 'تقدير سوقيّ آليّ — ليس تقييماً معتمداً' in HTML
+      and 'تقييم سوقيّ آليّ — ليس تقييماً معتمداً' in HTML  # b54 R6: تقدير→تقييم (identity lock)
       and '_statusAr' in HTML)
 check('evidence one-row STAYS in TIER-1', 't1+=_evOneRow(d);' in HTML)
 check('condition note STAYS on TIER-1 (decision-relevant)', 'if(v.condition_note_ar){t1+=' in HTML)

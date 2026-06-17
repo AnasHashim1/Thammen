@@ -69,7 +69,7 @@ check('DEF-12 is REPORT-ONLY (not in show())',
 # ── compliance + footer ──
 check('report clones the a25 attribution at runtime (no copy duplication)',
       "document.querySelector('.src-credit')" in rep and '_srcNode.innerHTML' in rep)
-check('report footer: not-certified + a20 status appended', 'تقدير سوقي آلي وليس تقييماً معتمداً' in rep
+check('report footer: not-certified + a20 status appended', 'تقييم سوقيّ آليّ وليس تقييماً معتمداً' in rep  # b54 R6: تقدير→تقييم (identity lock)
       and 'rics_compliant_status_ar' in rep)
 check('report footer: engine version + timestamp', "d.engine_version||''" in rep and 'toISOString()' in rep)
 check('GT hook line — email channel (b50)', 'شاركنا سعر بيع' in rep and 'info@thammen.qa' in rep and '70177761' not in rep)

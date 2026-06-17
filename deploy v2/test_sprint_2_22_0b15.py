@@ -90,7 +90,7 @@ check('brief sections → flat (refusal verbatim)', "flat+='<div class=\"rc\" st
 # ── TIER-3 actions ──
 # 16. TIER-3 refine + report CTAs (valued path).
 # b48 re-point: the ✏️ emoji became an inline-SVG icon — pin the t3-primary class + go('refine') + the CTA text.
-check('TIER-3 refine CTA → go(refine)', "t3+='<button class=\"t3btn t3-primary\" onclick=\"go(\\'refine\\')\">" in HTML and ' حسّن التقدير' in HTML)
+check('TIER-3 refine CTA → go(refine)', "t3+='<button class=\"t3btn t3-primary\" onclick=\"go(\\'refine\\')\">" in HTML and ' حسّن التقييم' in HTML)  # b54 R6: تقدير→تقييم (identity lock)
 # b17 landed: the report CTA opened screen 5 (openReport); Sprint 2.22.0b.25 (م2/D6)
 # then made the SHORT report the first stop (full report one click away inside it) —
 # the b15 invariant is that the TIER-3 secondary CTA leads to a REPORT surface.

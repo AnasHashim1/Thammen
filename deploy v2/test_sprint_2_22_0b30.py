@@ -38,8 +38,8 @@ chk("emits «حداثة بيانات وزارة العدل»", "حداثة بي�
 # (2) the not-certified label — valued path only (guarded on v.amount)
 chk("not-certified label present", "وليس تقييماً معتمداً" in FN)
 chk("not-certified label guarded on v.amount (valued only)",
-    re.search(r"if\(v\.amount\)lines\.push\('تقدير سوقيّ آليّ، وليس تقييماً معتمداً", fn_ns)
-    or re.search(r"if\(v\.amount\)\s*lines\.push\('تقدير", FN.replace(" ", "")))
+    re.search(r"if\(v\.amount\)lines\.push\('تقييمسوقيّآليّ،وليستقييماًمعتمداً", fn_ns)  # b54 R6: تقدير→تقييم (identity lock); fn_ns is space-stripped
+    or re.search(r"if\(v\.amount\)\s*lines\.push\('تقييم", FN.replace(" ", "")))
 
 # (3) provenance — report_ref + verify URL via the shared _verifyUrl, guarded on report_ref
 chk("report_ref line guarded on d.report_ref", "if(d.report_ref)" in fn_ns)
@@ -48,13 +48,13 @@ chk("verify URL via _verifyUrl (shared b23/b25 builder)", "_verifyUrl(d)" in fn_
 chk("verify line guarded (only when _vu truthy)", re.search(r"if\(_vu\)", fn_ns) is not None)
 
 # (4) value-invariance: the headline copy lines are UNTOUCHED + present
-chk("headline «قيمة التقدير السوقي» still emitted", "قيمة التقدير السوقي" in FN)
+chk("headline «قيمة التقييم السوقي» still emitted", "قيمة التقييم السوقي" in FN)  # b54 R6: تقدير→تقييم (identity lock)
 chk("range line still emitted", "النطاق: " in FN)
 chk("refusal branch (v.reason_ar) preserved", "v.reason_ar" in fn_ns)
 
 # (5) the new evidence lines sit INSIDE the valued branch (not on refusal)
-#     i.e. «عدد الصفقات» appears after «قيمة التقدير السوقي» and before the else-reason.
-i_amount = FN.find("قيمة التقدير السوقي")
+#     i.e. «عدد الصفقات» appears after «قيمة التقييم السوقي» and before the else-reason.  # b54 R6: تقدير→تقييم (identity lock)
+i_amount = FN.find("قيمة التقييم السوقي")
 i_n = FN.find("عدد الصفقات المقارِنة")
 i_reason = FN.find("v.reason_ar")
 chk("evidence lines are inside the valued branch (amount < n < reason)",

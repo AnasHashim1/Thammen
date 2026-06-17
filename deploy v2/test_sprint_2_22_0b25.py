@@ -159,7 +159,7 @@ check('the D-3 calibration hook (the PDF §٨ wording; generic for land)',
       and 'كل شيت جديد يدقّقها' in SR)
 check('the PDF §٥ raise-invitations bound to the scenarios broadcast (no sweep figures)',
       'أشياء قد ترفع الرقم — أخبرنا بها' in SR and 'الإيجار أقوى معلومة' in SR
-      and 'حسّن التقدير' in SR and '1.9M' not in SR and '4.7M' not in SR)
+      and 'حسّن التقييم' in SR and '1.9M' not in SR and '4.7M' not in SR)  # b54 R6: تقدير→تقييم (identity lock)
 check('the §٦ scenarios table bound to the b23 broadcast (scn.items + the idea column)',
       'v.scenarios' in SR and 'scn.items.forEach' in SR and 'it.label_ar' in SR
       and 'وش لو؟' in SR and 'الفكرة' in SR)

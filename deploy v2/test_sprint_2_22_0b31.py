@@ -63,11 +63,11 @@ check('cost-value-line no longer on t1', 'v.value_stack.cost.value){t1+=' not in
 check('core 1 — range headline retained (t1, range-as-lead b3)', 'النطاق التقديري السوقي' in HTML)
 # b47/b48 (result-screen HERO): the muted «الوسيط (التقدير المركزي) ≈ <strong>» marker line was
 # SUPERSEDED by the navy hero band — the central estimate (median = v.amount) now LEADS as the confident
-# figure (`<div class="rhero"><span class="lbl">التقدير السوقي</span><div class="num">…fmt(v.amount)…`),
+# figure (`<div class="rhero"><span class="lbl">التقييم السوقي</span><div class="num">…fmt(v.amount)…`),  # b54 R6: تقدير→تقييم (identity lock)
 # with the range in `.rng` below it. The b3 range-as-lead is KEPT-but-evolved (lead-figure + slim range
 # bar). Re-point to the NEW TRUTH: the central-figure hero is present on TIER-1.
 check('core 2 — central-estimate hero (median=v.amount) leads on TIER-1',
-      'class="rhero"' in HTML and 'التقدير السوقي' in HTML and "'<div class=\"num\">'+fmt(v.amount)" in HTML)
+      'class="rhero"' in HTML and 'التقييم السوقي' in HTML and "'<div class=\"num\">'+fmt(v.amount)" in HTML)  # b54 R6: تقدير→تقييم (identity lock)
 check('core 3 — «ليس تقييماً معتمداً» stays t1 (compliance)',
       'ليس تقييماً معتمداً' in HTML and "color:#8a6d3b;background:#fcf8e3" in HTML)
 check('core 4 — evidence ONE-ROW pill stays t1', 't1+=_evOneRow(d);' in HTML)
