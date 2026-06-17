@@ -107,8 +107,8 @@ chk('22. b4 new+luxury lever wiring intact', "luxury_new_premium" in SRC and 'te
 # 23-24: index.html renders the sensitivity line on screen 4 (TIER-1) + the report
 chk('23. screen-4 renders age_sensitivity.note_ar (b52: in the «كيف وصلنا» fold, was TIER-1)',
     "v.age_sensitivity&&v.age_sensitivity.note_ar){how+=" in HTML)
-chk('24. the report renders age_sensitivity.note_ar',
-    "v.age_sensitivity&&v.age_sensitivity.note_ar)h+=" in HTML)
+chk('24. the report renders age_sensitivity.note_ar (b55 R6: in the «حول العقار» cluster, cProp+=)',
+    "v.age_sensitivity&&v.age_sensitivity.note_ar)cProp+=" in HTML)
 
 # 25 (SUPERSEDED by Sprint 2.22.0b.20): the OSR finish-delta emission retired with the OSR
 # branch — finish now prices THROUGH the replacement coefficient (RCN luxury) inside the

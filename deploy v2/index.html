@@ -287,6 +287,9 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .rep-def12-row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;font-size:.9rem}
 .rep-foot{font-size:.78rem;color:var(--muted);text-align:center;padding:14px 10px;border-top:1px dashed var(--light);margin-top:8px}
 .rep-gt{margin-top:10px;padding:8px 10px;background:var(--alt);border-radius:8px;color:var(--text)}
+/* Sprint 2.22.0b.55 — labeled note-clusters in the full report (حول الرقم/العقار/البيانات). */
+.rep-cl{margin-top:12px}
+.rep-cl-h{color:var(--bronze);font-weight:700;font-size:.74rem;margin-bottom:1px;padding-bottom:3px;border-bottom:1px solid var(--alt)}
 @media(max-width:600px){.hlogo img{max-width:260px}.fr3,.fr2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}.fcard{padding:18px}.aud-row{grid-template-columns:1fr 1fr}}
 
 /* ════ Sprint 2.22.0b.25 (م2) — the thm-report design system ════
@@ -372,6 +375,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   body.printing-short .thmr-page:last-child { page-break-after: auto; }
   .thmr-card, .thmr-hero, .thmr-legal, .thmr-fpline { page-break-inside: avoid; }
   .rep-def12, .rep-cover, .rep-foot { page-break-inside: avoid; }
+  .rep-cl { page-break-inside: avoid; }
   /* Hide everything not part of the report */
   .hero, .fcard, .sbtn, .bbtn, .copy-btn, .map-btn-main, .map-popup, .aud-row,
   #loading, #error, .skiph, .hbtn,
@@ -1659,45 +1663,46 @@ function showReport(d){
     h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيع جبري إرشادية (عُرف سوقي ×<span dir="ltr">0.90</span>) — ليست تقييم تصفية معتمداً. الأساس: القيمة التقديرية المركزية × <span dir="ltr">0.90</span>.</div>';
     h+='<div class="rn" style="font-size:.7rem;margin-top:4px">الأرقام كما يبثّها المحرك — تدوير موحَّد من المصدر، لا تقريب إضافي في العرض.</div>';
     h+='</div>';
-    // م3/D8: the «حالة أفضل/أدنى» prose is FOLDED when the scenarios table answers it
-    // with numbers (the a17/a19 disclosure stays verbatim wherever no scenarios exist).
-    if(v.condition_note_ar&&!(v.scenarios&&v.scenarios.items&&v.scenarios.items.length>1))h+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.condition_note_ar+'</div>';
-    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.78rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.old_stock_reanchor.note_ar+'</div>';
-    if(v.cost_triangulation&&v.cost_triangulation.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.cost_triangulation.note_ar+'</div>';
-    // Sprint 2.22.0b.20 — EVIDENCE-CONDITIONAL LEADERSHIP (Gate-2 SIGNED 2026-06-11):
-    // the leadership verdict + the three-value stack lines (cost line = the b19-signed label;
-    // dispersion shown = G2 auditability). Cost-led/E25 notes are warn-styled like the OSR note was.
-    if(v.leadership&&v.leadership.note_ar){h+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.leadership.note_ar+'</div>';}
-    if(v.leadership&&v.leadership.age_honesty_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.leadership.age_honesty_note_ar+'</div>';}
-    if(v.leadership&&v.leadership.resurvey_note_ar){h+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '+v.leadership.resurvey_note_ar+'</div>';}
-    // Sprint 2.22.0b.51 (de-dup): the standalone cost-value note was REMOVED here — the cost
-    // value already renders once below in the DEF-12 three-value block (+ «تفكيك المرتكز» on
-    // cost-led). It was a b20 leftover that became redundant when b19 added the DEF-12 cost row.
-    // Value-invariant: the cost value + sub_ar + unavailable_reason still render in DEF-12.
-    // م3 (the PDF-audit mixed-pool fix): on cost leadership the pool line becomes the
-    // SIGNED dual-evidence line (matched n vs geo n/dispersion — the b20 format); on a
-    // market lead the bracket dispersion renders WITH ITS OWN n (no more n=3-beside-0.165).
+    // ════ Sprint 2.22.0b.55 «رشاقة التقرير الكامل» — the fine-print notes that used to stack as a
+    // flat wall under the DEF-12 block are GROUPED into 3 LABELED clusters: «حول الرقم» (كيف اشتُقّت
+    // القيمة) · «حول العقار» (ما لا نعرفه عن المبنى) · «حول البيانات» (العيّنة والتشتّت خلفه). VALUE-
+    // INVARIANT: every note's condition + every HTML string is VERBATIM (a buffer-prefix swap, the
+    // b31/b52 pattern); only the grouping + ONE bronze label per cluster is added — nothing deleted,
+    // no figure touched, no compliance line removed. The condition «حالة أفضل/أدنى» prose still FOLDS
+    // when the scenarios table answers it (a17/a19 disclosure verbatim where no scenarios exist).
+    let cNum='', cProp='', cData='';
+    // ── «حول الرقم»: leadership verdict (b20) · old-stock re-anchor · cost-triangulation · land-floor decomposition ──
+    if(v.leadership&&v.leadership.note_ar){cNum+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.leadership.note_ar+'</div>';}
+    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar)cNum+='<div class="rn" style="margin-top:8px;font-size:.78rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.old_stock_reanchor.note_ar+'</div>';
+    if(v.cost_triangulation&&v.cost_triangulation.note_ar)cNum+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.cost_triangulation.note_ar+'</div>';
+    if(v.value_floor){
+      const vfR=v.value_floor;
+      cNum+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+(vfR.land_floor_note_ar||'');
+      if(vfR.land_anchored&&vfR.land_anchored_note_ar)cNum+=' '+vfR.land_anchored_note_ar;
+      else if(vfR.implied_building_note_ar)cNum+=' '+vfR.implied_building_note_ar;
+      cNum+='</div>';
+    }
+    // ── «حول العقار»: condition (not assessed, a17/a19) · building-age honesty · re-survey · user-age sensitivity (§A1) · HBU ──
+    if(v.condition_note_ar&&!(v.scenarios&&v.scenarios.items&&v.scenarios.items.length>1))cProp+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.condition_note_ar+'</div>';
+    if(v.leadership&&v.leadership.age_honesty_note_ar){cProp+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.leadership.age_honesty_note_ar+'</div>';}
+    if(v.leadership&&v.leadership.resurvey_note_ar){cProp+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '+v.leadership.resurvey_note_ar+'</div>';}
+    if(v.age_sensitivity&&v.age_sensitivity.note_ar)cProp+='<div class="rn" style="margin-top:8px;font-size:.76rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.age_sensitivity.note_ar+'</div>';
+    if(v.hbu_note_ar)cProp+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.hbu_note_ar+'</div>';
+    // ── «حول البيانات»: the evidence pool — dual-evidence (cost-led, b20/م3 mixed-pool fix) OR bracket
+    // dispersion with its own n (market-led) — + the registered-sales sample count (cite-n) ──
     if(_ldR&&_ldR.leader==='cost'){
       const _tR=_ldR.thresholds||{};
       const _gdR=(_ldR.geo_full_dispersion!=null)?_ldR.geo_full_dispersion:'—';
-      h+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> شواهد السوق: مطابق <span dir="ltr">n='+(_ldR.matched_n!=null?_ldR.matched_n:'—')+' (&lt;'+(_tR.matched_min_n!=null?_tR.matched_min_n:10)+')</span> · جغرافي <span dir="ltr">'+(_ldR.geo_full_n!=null?_ldR.geo_full_n:'—')+'/'+_gdR+((_gdR!=='—'&&_gdR>=(_tR.dispersion_t!=null?_tR.dispersion_t:0.30))?' (&gt;'+(_tR.dispersion_t!=null?_tR.dispersion_t:0.30)+')':'')+'</span></div>';
+      cData+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> شواهد السوق: مطابق <span dir="ltr">n='+(_ldR.matched_n!=null?_ldR.matched_n:'—')+' (&lt;'+(_tR.matched_min_n!=null?_tR.matched_min_n:10)+')</span> · جغرافي <span dir="ltr">'+(_ldR.geo_full_n!=null?_ldR.geo_full_n:'—')+'/'+_gdR+((_gdR!=='—'&&_gdR>=(_tR.dispersion_t!=null?_tR.dispersion_t:0.30))?' (&gt;'+(_tR.dispersion_t!=null?_tR.dispersion_t:0.30)+')':'')+'</span></div>';
     }else if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){
-      h+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span>'+((v.value_stack.market.bracket_n_36!=null)?' <span dir="ltr">(n='+v.value_stack.market.bracket_n_36+')</span>':'')+'</div>';
+      cData+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span>'+((v.value_stack.market.bracket_n_36!=null)?' <span dir="ltr">(n='+v.value_stack.market.bracket_n_36+')</span>':'')+'</div>';
     }
-    // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — the claimed age never moves the headline.
-    if(v.age_sensitivity&&v.age_sensitivity.note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.age_sensitivity.note_ar+'</div>';
-    if(v.value_floor){
-      const vfR=v.value_floor;
-      h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+(vfR.land_floor_note_ar||'');
-      if(vfR.land_anchored&&vfR.land_anchored_note_ar)h+=' '+vfR.land_anchored_note_ar;
-      else if(vfR.implied_building_note_ar)h+=' '+vfR.implied_building_note_ar;
-      h+='</div>';
-    }
-    if(v.hbu_note_ar)h+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.hbu_note_ar+'</div>';
-    if(d.moj_sample_size)h+='<div class="rn" style="margin-top:8px;font-size:.78rem">صفقات البيع المسجلة لعقارات مشابهة: '+d.moj_sample_size+' صفقة</div>';
-    // Sprint 2.22.0b.51 (reorder): the DEF-12 three-value block MOVED UP to right after the
-    // headline range (key numbers lead; the fine-print evidence notes now follow). Value-invariant —
-    // identical content + identical math (×0.90), only the display order changed.
+    if(d.moj_sample_size)cData+='<div class="rn" style="margin-top:8px;font-size:.78rem">صفقات البيع المسجلة لعقارات مشابهة: '+d.moj_sample_size+' صفقة</div>';
+    // emit non-empty clusters in order (number → property → data); each carries ONE bronze label.
+    // The DEF-12 three-value block (above, b51 reorder) still LEADS with the key numbers; these
+    // grouped clusters follow — the reader meets the value first, then «كيف/عن ماذا/من أين».
+    const _repCl=(lbl,body)=>body?('<div class="rep-cl"><div class="rep-cl-h">'+lbl+'</div>'+body+'</div>'):'';
+    h+=_repCl('حول الرقم',cNum)+_repCl('حول العقار',cProp)+_repCl('حول البيانات',cData);
     h+='</div>';
     // م3/D8 — the ONE MUC block, AFTER the number (ص1 + ص9 merged; the brief MU
     // section is skipped in the annex loop below).

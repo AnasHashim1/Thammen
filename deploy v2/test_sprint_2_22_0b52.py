@@ -52,11 +52,12 @@ check('evidence one-row STAYS in TIER-1', 't1+=_evOneRow(d);' in HTML)
 check('condition note STAYS on TIER-1 (decision-relevant)', 'if(v.condition_note_ar){t1+=' in HTML)
 check('range-as-lead headline retained', 'النطاق التقديري السوقي' in HTML)
 
-# ── 4. The DETAILED report (showReport) is untouched by the lean pass (stays detailed) ──
-check('report still renders age-sensitivity (h+=, untouched)',
-      "v.age_sensitivity&&v.age_sensitivity.note_ar)h+=" in HTML)
-check('report still renders moj sample-size (h+=, untouched)',
-      "if(d.moj_sample_size)h+='<div class=\"rn\" style=\"margin-top:8px;font-size:.78rem\">صفقات البيع المسجلة" in HTML)
+# ── 4. The DETAILED report (showReport) still renders the detail — b55 R6: the fine-print notes
+#       moved from the flat h+= wall into LABELED clusters (cProp/cData); nothing deleted, just grouped.
+check('report still renders age-sensitivity (b55: «حول العقار» cluster, cProp+=)',
+      "v.age_sensitivity&&v.age_sensitivity.note_ar)cProp+=" in HTML)
+check('report still renders moj sample-size (b55: «حول البيانات» cluster, cData+=)',
+      "if(d.moj_sample_size)cData+='<div class=\"rn\" style=\"margin-top:8px;font-size:.78rem\">صفقات البيع المسجلة" in HTML)
 
 # ── 5. VALUE-INVARIANCE — show() does not touch v.amount/v.low/v.high ──
 check('no mutation of v.amount/v.low/v.high', not re.search(r'\bv\.(amount|low|high)\s*=[^=]', HTML))
