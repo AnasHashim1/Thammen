@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b58-drop-beta-framing'
-SPRINT_TAG = '2.22.0b.58'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b59-range-inversion-guard'
+SPRINT_TAG = '2.22.0b.59'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -3368,6 +3368,9 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
             'reason': 'تقدير سريع بطريقة الدخل — لم يُجرَ بحث إعلانات',
         },
     })
+    # Sprint 2.22.0b.59: range-inversion guard on the fast (income-only) path too —
+    # low <= amount <= high before the fingerprint (no-op on the valid income band).
+    _clamp_valuation_range(_fast_result.get('valuation'))
     # Sprint 2.22.0b.23: the apartment income report is verifiable too (no scenarios —
     # those are villa/house DRC-only). Additive; never touches the income headline.
     _attach_report_identity(_fast_result, zone, street, building, None,
@@ -5408,6 +5411,11 @@ def evaluate_thammen(
         import sys
         print(f'[comparable_grid warning] {e}', file=sys.stderr)
 
+    # ── Sprint 2.22.0b.59: range-inversion guard (FINAL pass over the settled range) ──
+    # After every range-writing path; before scenarios + the report fingerprint. Enforces
+    # low <= amount <= high so a future/edge path can never serve an inverted range.
+    _clamp_valuation_range(output.get('valuation'))
+
     # ── Sprint 2.22.0b.23 «بثّ المختصر»: scenarios panel (villa/house) — ADDITIVE/DISPLAY ──
     # ZERO new GIS: reuses the SETTLED headline + the B-1 land floor + the b10 footprint +
     # the b9 system age, all already on `output`. The headline (amount/low/high/method/rule)
@@ -6006,6 +6014,38 @@ def _report_ref(zone, street, building, pin, valuation_date, refine_fp4=None):
         loc = '00000000'
     base = f'TH-{ymd}-{loc}'
     return f'{base}-{refine_fp4}' if refine_fp4 else base
+
+
+def _clamp_valuation_range(valuation):
+    """Sprint 2.22.0b.59 — belt-and-braces invariant: the SERVED range must satisfy
+    low <= amount <= high. Enforced as a FINAL pass (after every range-writing path —
+    teardown / luxury-new / income_led / leadership gate / range_expansion / a9 widened-
+    elasticity — and before the report fingerprint) so a range inversion can NEVER reach a
+    user, whichever path set the range. Closes the geo_full low-raise theoretical residual
+    (`:5157` raises low to the cost floor without checking it against `high`) + any future
+    path. PURE on the passed dict; idempotent; a NO-OP when the invariant already holds —
+    verified byte-identical on the 5 fixtures + the two documented 54/788/10 + 55/1056/60
+    cases (b20's leadership gate already routes them through the E25-safe cost_led path).
+    Acts ONLY when amount/low/high are all present + numeric; refusals (amount None) are
+    left untouched. Swallows errors → never breaks evaluate. Bool is excluded from numeric
+    (isinstance(True, int) is True in Python)."""
+    try:
+        if not isinstance(valuation, dict):
+            return
+        a = valuation.get('amount')
+        lo = valuation.get('low')
+        hi = valuation.get('high')
+        if any(v is None or isinstance(v, bool) or not isinstance(v, (int, float))
+               for v in (a, lo, hi)):
+            return
+        new_lo = min(lo, a)   # the central figure is the ceiling for `low`
+        new_hi = max(hi, a)   # ...and the floor for `high`  → low <= amount <= high (so low <= high)
+        if new_lo != lo:
+            valuation['low'] = new_lo
+        if new_hi != hi:
+            valuation['high'] = new_hi
+    except Exception:
+        pass
 
 
 def _attach_report_identity(output, zone, street, building, pin, refine_inputs):
