@@ -479,7 +479,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
     </details>
   </div>
 </div>
-<script>(function(){try{if(sessionStorage.getItem('thammen_beta_ack')==='1'){var g=document.getElementById('betaGate');if(g)g.style.display='none';}}catch(e){}})();</script>
+<script>(function(){try{if(sessionStorage.getItem('thammen_beta_ack')==='1'||window._betaAck){var g=document.getElementById('betaGate');if(g)g.style.display='none';}}catch(e){}})();</script>
 
 <!-- Sprint 2.7: Data Freshness sticky banner — populated by JS on page load -->
 <div class="dfb" id="dfBanner" role="status" aria-live="polite" hidden></div>
@@ -925,6 +925,10 @@ function clearIdentity(){
 document.addEventListener('DOMContentLoaded',_restoreIdentity);
 
 function fmt(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('ar-QA')}
+// Sprint 2.22.0b.57 — HTML-escape INSURANCE for plain-data fields (address/district/
+// asset-label/area-names) injected into innerHTML. NOT applied to the engine-authored
+// *_ar note/clause fields (those carry intended HTML markup and are trusted our-engine output).
+function esc(s){return s==null?'':(''+s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 // ── Sprint 2.22.0b.2.2 — evidence-quality diagnosis (DESIGN_2p2x §3) ──
 // Four components, each rated قوي/متوسط/محدود and DERIVED from the engine field
@@ -1058,9 +1062,9 @@ function showConfirm(d){
   h+='<div class="rc"><div class="rh"><div class="rt"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> راجِع بيانات العقار</div></div>';
   h+='<div style="font-size:.8rem;color:var(--muted);margin:0 0 10px;line-height:1.6">هذه البيانات مجلوبة من نظام المعلومات الجغرافية (GIS). راجِعها قبل المتابعة.</div>';
   h+='<div class="rg">';
-  if(d.address)h+=ri('العنوان',d.address,0,1);
-  if(d.asset_type)h+=ri('نوع العقار',(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type));
-  if(d.district)h+=ri('المنطقة',d.district);
+  if(d.address)h+=ri('العنوان',esc(d.address),0,1);
+  if(d.asset_type)h+=ri('نوع العقار',esc((d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type)));
+  if(d.district)h+=ri('المنطقة',esc(d.district));
   var pi=d.property_info||{};
   var zl=pi.zoning||(geo.zone_max_coverage_pct===60?'R1':(geo.zone_max_coverage_pct===50?'R2':null));
   if(zl)h+=ri('المنطقة التنظيمية',zl);
@@ -1593,11 +1597,11 @@ function showReport(d){
   // (1) cover: brand + address/PIN + date + engine version + the staleness banner.
   h+='<div class="rc rep-cover">';
   h+='<div class="rep-brand">ثمّن<span> — تقييم سوقيّ آليّ للعقار</span></div>';
-  if(d.address)h+='<div class="rep-addr">'+d.address+'</div>';
+  if(d.address)h+='<div class="rep-addr">'+esc(d.address)+'</div>';
   const _pbr=d.property_basis||{};
   h+='<div class="rep-meta">';
   if(_pbr.pin!=null)h+='<span>الرقم المساحي: <span dir="ltr">'+_pbr.pin+'</span></span>';
-  if(d.district)h+='<span>المنطقة: '+d.district+'</span>';
+  if(d.district)h+='<span>المنطقة: '+esc(d.district)+'</span>';
   h+='<span>التاريخ: <span dir="ltr">'+now.toISOString().slice(0,10)+'</span></span>';
   h+='</div>';
   if(d.data_freshness&&d.data_freshness.caveat_ar){h+='<div class="dfc s-'+(d.data_freshness.severity||'info')+'" style="margin-top:10px">'+d.data_freshness.caveat_ar+'</div>';}
@@ -1641,8 +1645,8 @@ function showReport(d){
     h+='<div class="rep-def12">';
     h+='<div class="rep-def12-row"><span>'+_def12R+'</span><strong>'+fmt(v.amount)+' ر.ق</strong></div>';
     if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
-      h+='<div class="rep-def12-row"><span>'+v.value_stack.cost.label_ar+'</span><strong>'+fmt(v.value_stack.cost.value)+' ر.ق</strong></div>';
-      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">'+v.value_stack.cost.sub_ar+'</div>';
+      h+='<div class="rep-def12-row"><span>'+(v.value_stack.cost.label_ar||'')+'</span><strong>'+fmt(v.value_stack.cost.value)+' ر.ق</strong></div>';
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">'+(v.value_stack.cost.sub_ar||'')+'</div>';
     }else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){
       h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.value_stack.cost.unavailable_reason_ar+'</div>';
     }else if(v.cost_note_ar){
@@ -1736,10 +1740,10 @@ function showReport(d){
     }
     // (6) property basis (b9) + footprint (b10).
     h+='<div class="rc"><div class="rh"><div class="rt">بيانات العقار الأساسية</div></div><div class="rg">';
-    if(d.address)h+=ri('العنوان',d.address,0,1);
-    if(d.district)h+=ri('المنطقة',d.district);
+    if(d.address)h+=ri('العنوان',esc(d.address),0,1);
+    if(d.district)h+=ri('المنطقة',esc(d.district));
     if(d.plot_area_m2)h+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
-    if(d.asset_type)h+=ri('نوع العقار',(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type));
+    if(d.asset_type)h+=ri('نوع العقار',esc((d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type)));
     const _piR=d.property_info||{};
     if(_piR.zoning)h+=ri('التصنيف',_piR.zoning);
     h+=pbRows(d.property_basis);
@@ -1918,7 +1922,7 @@ function showShortReport(d){
   h+='<div class="thmr-head"><div class="b1">ثمّن — التقرير المختصر<small>الخلاصة في صفحة واحدة</small></div>';
   h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b><br>'):'')+'<span dir="ltr">'+(d.engine_version||'')+'</span></div></div>';
   // the property strip (the PDF header row).
-  h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:10px"><span class="k">'+(ASSET_AR[d.asset_type]||'عقار')+' <b dir="ltr">'+(d.address||'')+'</b>'+(d.district?(' · '+d.district):'')+'</span><span class="v" style="font-weight:400">'+(d.plot_area_m2?('مساحة الأرض: <b>'+fmt(d.plot_area_m2)+' م²</b>'):'')+(_ageY?(' · عمر البناء: <b>فوق '+_ageY+' سنة</b> (سجل رسمي)'):'')+' · التاريخ: <span dir="ltr">'+today+'</span></span></div>';
+  h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:10px"><span class="k">'+(ASSET_AR[d.asset_type]||'عقار')+' <b dir="ltr">'+esc(d.address||'')+'</b>'+(d.district?(' · '+esc(d.district)):'')+'</span><span class="v" style="font-weight:400">'+(d.plot_area_m2?('مساحة الأرض: <b>'+fmt(d.plot_area_m2)+' م²</b>'):'')+(_ageY?(' · عمر البناء: <b>فوق '+_ageY+' سنة</b> (سجل رسمي)'):'')+' · التاريخ: <span dir="ltr">'+today+'</span></span></div>';
   h+='<div class="thmr-hero" style="background:var(--thmr-navy);border:none"><span class="lbl" style="color:var(--gold)">قيمة بيتك التقديرية اليوم</span>';
   h+='<div class="num" style="color:#fff">'+fmt(v.amount)+' <small>ريال</small></div>';
   h+='<div style="display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:2px 14px;margin-top:7px;font-size:.74rem;color:#EAF0F6">تقدير استرشادي — وليس تقييماً معتمداً</div>';
@@ -2020,7 +2024,7 @@ function showShortReport(d){
   }else if(cs==='market'){
     h+='<div class="thmr-row"><span class="k">المطابق لشريحتك</span><span class="v"><span dir="ltr">'+(_mn!=null?_mn:(_n!=null?_n:'—'))+'</span> مطابقة، تشتت <span dir="ltr">'+(_d36!=null?_d36:'—')+'</span></span></div>';
   }else if(cs==='income'){
-    h+='<div class="thmr-row"><span class="k">خلية الرسملة</span><span class="v">'+((d.cap_rate_provenance||{}).district_ar||(d.cap_rate_provenance||{}).district||d.district||'—')+(((d.cap_rate_provenance||{}).size_bracket)?(' / '+d.cap_rate_provenance.size_bracket):'')+'</span></div>';
+    h+='<div class="thmr-row"><span class="k">خلية الرسملة</span><span class="v">'+esc((d.cap_rate_provenance||{}).district_ar||(d.cap_rate_provenance||{}).district||d.district||'—')+(((d.cap_rate_provenance||{}).size_bracket)?(' / '+d.cap_rate_provenance.size_bracket):'')+'</span></div>';
   }else{
     h+='<div class="thmr-row"><span class="k">صفقات الأرض</span><span class="v">'+(vf.land_n_transactions!=null?vf.land_n_transactions:(_n!=null?_n:'—'))+' صفقة'+(vf.window_months?('، نافذة '+vf.window_months+' شهراً'):'')+'</span></div>';
   }
@@ -2257,7 +2261,7 @@ function show(d){
   // ── INSUFFICIENT DATA: prominent card with CTA (refusal path → flat buffer) ──
   if(!hasValuation){
     const reason=v.reason_ar||'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً.';
-    const assetAr=(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type||'هذا العقار');
+    const assetAr=esc((d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type||'هذا العقار'));
     flat+='<div class="insuf">';
     flat+='<div class="insuf-icon">'+(_ux3NotReady?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>':'ⓘ')+'</div>';
     // Sprint 2.22.0b.36 (DEF-UX3): apartment/tower → honest «not supported yet»,
@@ -2267,15 +2271,15 @@ function show(d){
     // Show classification facts (what we DO know)
     if(d.address||d.plot_area_m2){
       flat+='<div style="background:#fff;border-radius:8px;padding:14px;margin-bottom:16px;text-align:right;font-size:.88rem">';
-      if(d.address)flat+='<div style="margin-bottom:6px"><strong>العنوان:</strong> '+d.address+'</div>';
-      if(d.district)flat+='<div style="margin-bottom:6px"><strong>المنطقة:</strong> '+d.district+'</div>'; // Sprint 2.11
+      if(d.address)flat+='<div style="margin-bottom:6px"><strong>العنوان:</strong> '+esc(d.address)+'</div>';
+      if(d.district)flat+='<div style="margin-bottom:6px"><strong>المنطقة:</strong> '+esc(d.district)+'</div>'; // Sprint 2.11
       if(d.asset_type)flat+='<div style="margin-bottom:6px"><strong>نوع العقار:</strong> '+assetAr+'</div>';
       if(d.plot_area_m2)flat+='<div style="margin-bottom:6px"><strong>مساحة الأرض:</strong> '+fmt(d.plot_area_m2)+' م²</div>';
       // Map button inside insufficient card
       if(d.gps&&d.gps.lat&&d.gps.lon){
         const lat=d.gps.lat,lon=d.gps.lon;
         flat+='<div class="map-links" style="margin-top:10px;padding-top:10px">';
-        flat+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> افتح موقع العقار في الخريطة</button>';
+        flat+='<button class="map-btn-main" onclick="openMapPicker('+Number(lat)+','+Number(lon)+')"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> افتح موقع العقار في الخريطة</button>';
         flat+='</div>';
       }
       flat+='</div>';
@@ -2303,10 +2307,10 @@ function show(d){
     // Basic property data → TIER-2 accordion (b15: removed from BEFORE the number; the title now
     // lives on the accordion summary, so the inner card drops its own header). Inner HTML verbatim.
     let _info='<div class="rc"><div class="rg">';
-    if(d.address)_info+=ri('العنوان',d.address,0,1);
-    if(d.district)_info+=ri('المنطقة',d.district);
+    if(d.address)_info+=ri('العنوان',esc(d.address),0,1);
+    if(d.district)_info+=ri('المنطقة',esc(d.district));
     if(d.plot_area_m2)_info+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
-    if(d.asset_type)_info+=ri('نوع العقار',(d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type));
+    if(d.asset_type)_info+=ri('نوع العقار',esc((d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type)));
     const pi=d.property_info||{};
     if(pi.zoning)_info+=ri('التصنيف',pi.zoning);
     if(pi.permitted_height)_info+=ri('الارتفاع المسموح',pi.permitted_height);
@@ -2315,7 +2319,7 @@ function show(d){
     if(d.gps&&d.gps.lat&&d.gps.lon){
       const lat=d.gps.lat,lon=d.gps.lon;
       _info+='<div class="map-links">';
-      _info+='<button class="map-btn-main" onclick="openMapPicker('+lat+','+lon+')"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> افتح موقع العقار في الخريطة</button>';
+      _info+='<button class="map-btn-main" onclick="openMapPicker('+Number(lat)+','+Number(lon)+')"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> افتح موقع العقار في الخريطة</button>';
       _info+='</div>';
     }
     _info+='</div>';
@@ -2433,7 +2437,7 @@ function show(d){
         how+='<div style="font-weight:600;font-size:.72rem;margin-bottom:4px">الصفقات المجاورة المُعدَّلة الموقع (دخلت الحوض)</div>';
         _kn.rows.forEach(function(g){
           how+='<div style="padding:4px 0;border-top:1px solid #e6ddd0">'
-             +'<div style="display:flex;justify-content:space-between;gap:8px;font-size:.72rem"><span><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> '+g.source_area+'</span><span dir="ltr" style="color:var(--muted)">×'+(g.adjustment_factor!=null?g.adjustment_factor:'—')+'</span></div>'
+             +'<div style="display:flex;justify-content:space-between;gap:8px;font-size:.72rem"><span><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> '+esc(g.source_area)+'</span><span dir="ltr" style="color:var(--muted)">×'+(g.adjustment_factor!=null?g.adjustment_factor:'—')+'</span></div>'
              +'<div style="display:flex;justify-content:space-between;gap:8px;direction:ltr;font-size:.7rem;color:var(--muted);margin-top:1px"><span>'+(g.date||'').slice(0,10)+'</span><span>'+fmt(g.area_m2)+' م²</span><span>'+(g.price_per_m2_raw!=null?fmt(g.price_per_m2_raw):'—')+' → <span style="color:var(--primary);font-weight:600">'+(g.price_per_m2_adjusted!=null?fmt(g.price_per_m2_adjusted):'—')+'</span> ر.ق/م²</span></div>'
              +'</div>';
         });
@@ -2896,7 +2900,7 @@ function renderSection(sec){
       if(c.note)body+='<div class="br-note" style="margin-top:10px">'+c.note+'</div>';
       break;
     case 'trend':
-      if(c.area)body+=row('المنطقة',c.area);
+      if(c.area)body+=row('المنطقة',esc(c.area));
       // Sprint 2.4b backend sends slope as percentage already (e.g. -2.07).
       // Tolerate either form: if abs < 1 it's still raw decimal; otherwise it's percent.
       const slope=c.slope_annual_pct;

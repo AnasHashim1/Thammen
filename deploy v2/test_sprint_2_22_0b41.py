@@ -128,8 +128,8 @@ _seg = _html.split('if(_kcGeo&&_kc.neighbours', 1)
 check("E1 the neighbour render block exists", len(_seg) == 2)
 _seg = _seg[1].split('if(v.considered_comparables', 1)[0]
 check("E2 header «الصفقات المجاورة المُعدَّلة الموقع»", 'الصفقات المجاورة المُعدَّلة الموقع' in _seg)
-check("E3 source-area shown (ic-pin icon) + ×adjustment factor",  # b48 de-emoji: 📍 → inline SVG #ic-pin
-      '#ic-pin' in _seg and '\'+g.source_area' in _seg and '×\'+(g.adjustment_factor' in _seg)
+check("E3 source-area shown (ic-pin icon) + ×adjustment factor",  # b48 de-emoji: 📍 → #ic-pin; b57 R6: esc(g.source_area)
+      '#ic-pin' in _seg and 'esc(g.source_area)' in _seg and '×\'+(g.adjustment_factor' in _seg)
 check("E4 BOTH raw and adjusted ppm² shown (raw → adjusted)", 'g.price_per_m2_raw' in _seg and 'g.price_per_m2_adjusted' in _seg and '→' in _seg)
 check("E5 honest disclosure: the neighbour did NOT sell for the adjusted number",
       'لم تُبَع بالرقم المُعدَّل' in _seg)
