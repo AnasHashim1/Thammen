@@ -135,3 +135,27 @@ When 2.22.y computes delta, **filter to GT-1/GT-2**; GT-3/GT-4 are directional c
   calibration** yet (the −37–40% is a data point, not a coefficient). These **motivate + seed** the
   corpus; calibration waits for n≥20 GT-2.
 - **status:** open — first GT-2 anchors; grow the corpus before any calibration.
+
+---
+
+## 2026-06-18 — Ashghal government BoQ → §20.9 DRC RCN ladder cross-check (VALIDATION-only)
+- **Source:** priced Qatar government BoQ, **water tank TN-06** (Ashghal, QCS 2014; total 66.06M QAR).
+  Structural unit rates: RC concrete 700–800 QAR/m³ · rebar B500B **4,000 QAR/tonne** · formwork
+  140–225 QAR/m² · excavation 45 QAR/m³.
+- **QS build-up (villa 56/565/10, BUA ~450 m²):** structure from the BoQ rates (~870 QAR/m²) +
+  finishes/MEP/blockwork/external from **QS standards (NOT in the BoQ)** + ~15% prelims/OH&P →
+  **all-in ~2,500 QAR/m²** (band ~2,200 ordinary → ~3,500 luxury); building-only **≈ 1.1M QAR**.
+  DRC(new) ≈ land 1.71M + building 1.1–1.7M ≈ **2.9–3.4M** vs AVM market **2.5M**.
+- **Result:** the build-up falls **inside** the §20.9 RCN ladder and the structure (independent
+  Ashghal rates) lands on a ladder whose sole anchor is TD-93317 → **two independent sources
+  triangulate → CONFIRMS the ladder, does NOT change it.**
+- **Discipline (RICS valuer persona — verdict DOCUMENT_VALIDATION, IVS 104):** validation-only,
+  **effective n still = 1** (TD-93317 alone); a wrong-building-type single BoQ fails "sufficiency" for
+  recalibration. **NOT counted toward B-2 n≥20** (not a documented sale). Caveats: project-type (tank,
+  structure only) · prelims/MEP/finishes excluded + supplied from QS · escalation date unfixed ·
+  unmeasured infra→villa trade-transfer. **value-invariant — engine + RCN ladder UNTOUCHED.**
+- **E25:** DRC > market **supports** the new-stock under-anchor direction; **supporting, not
+  calibrating** (56/565/10 is an existing villa, not a documented new-stock sale → does not unlock B-2).
+- **status:** filed as a confirmatory cross-check; see `docs/VALIDATION_DRC_RCN_ashghal_boq_2026.md`.
+  No engine/methodology change. NEXT (PO): collect building-type-appropriate **villa** cost evidence
+  for a future Gate-2 RCN calibration.
