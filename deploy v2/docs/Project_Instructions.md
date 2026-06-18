@@ -392,8 +392,8 @@ CLAUDE.md #65a.**
 |**5**|**2.22.0b — 5-stage UX + Stage-2 elicitation**|Consumer value prop (staged Q&A; built-type/condition input). Gated on B.|B (#4)|
 |~~**6**~~|**Cost-triangulation (independent DRC) — §20.9 ✅ PARTLY SHIPPED**|Own from-scratch DRC as a **secondary** method (§20.9 + `METHODOLOGY_DRC_qatar_v1.md`) — **NOT** the barred Mthamen API/formula (§20.8). **SHIPPED:** the **down-re-anchor** (b11/v180) + the **convergent-TRIM** (b13/v182, user-age-gated) = the R7 **over-anchor** half (D-1 0.31 lux floor ✅). **DROPPED:** the UP-lift (E25 — premium-above-cost, not cost-reachable) → the **under-anchor** half is **B-2** (`luxury_new` stratum, PARKED n≥20). **Remaining (minor, deferred):** the report two-values display (MV + forced-sale) + the soil/geotech v2 factor.|n≥20 (B-2) for the under-anchor; rest minor|
 
-**Open mediums (backlog):** A5 (`asset_type unknown`) · ~~A15~~ (silent-HBU-drop ✅ CLOSED Sprint 2.22.0b.12 / v181, §20.46) ·
-~~A16~~ (bracket area-name under-match = **R9 ✅ CLOSED a18, §20.18** — resolved-as-pool-fix; residual فريج العسيري ~0.25% → R7). **Open mediums now = A5 only.**
+**Open mediums (backlog):** ~~A5~~ (`asset_type unknown` بلا شرح ✅ **CLOSED Sprint 2.22.0b.60 / v232, §20.89** — the result-screen refusal now surfaces the specific `refusal_reason.message_ar` WHY + a «التوصية:» action + drops the misleading rent CTA for unknown) · ~~A15~~ (silent-HBU-drop ✅ CLOSED Sprint 2.22.0b.12 / v181, §20.46) ·
+~~A16~~ (bracket area-name under-match = **R9 ✅ CLOSED a18, §20.18** — resolved-as-pool-fix; residual فريج العسيري ~0.25% → R7). **Open mediums now = NONE (A5 was the last; closed b60).**
 
 **Older detail table below — all verified UNSHIPPED (2026-06-01), kept, ordering SUPERSEDED:** behind-beta =
 2.21.5 (hybrid UI), 2.21.4.1/.2 (data expansion), 2.21.3.2 (arady), 2.21.0.11/.12 (cosmetic), 2.18.2 (GIS
@@ -559,7 +559,7 @@ for compound_small remains queued as Sprint 2.18.2 candidate.
 
 |ID|Bug|Target|
 |---|---|---|
-|A5|`asset_type: unknown` بدون شرح|backlog|
+|A5|`asset_type: unknown` بدون شرح — **✅ CLOSED 2026-06-18 (Sprint 2.22.0b.60 / v232, §20.89 / CHANGELOG_v141)**: the result-screen refusal now surfaces the specific `refusal_reason.message_ar` (the WHY) + a «التوصية:» action line + drops the misleading «أضف الإيجار» CTA for an unclassifiable address (display-only / value-invariant; lawyer+linguist personas APPROVE).|CLOSED|
 |A7|`rics_compliant` دائماً false|backlog|
 |A15|HBU silently dropped when the zoning hint is absent (reachable under QARS degradation) — `geometric_factors.py:638` + the consumer. **✅ CLOSED 2026-06-10 (Sprint 2.22.0b.12, Heroku v181, §20.46 / CHANGELOG_v95)** — `hbu_note_ar/en` discloses «HBU not evaluated» when the zoning layer is unavailable (value-invariant, villa/house, muted `.rn` near the value_floor).|CLOSED|
 |A16|MoJ-bracket matcher under-matches: `apply_moj_strategy` n=1 vs geo_v2 n=42 for the SAME area+bracket (54/541/6) — مريخ ↔ امريخ الجنوبي alias/NBSP normalization gap. **✅ CLOSED 2026-06-03 (= RISK_REGISTER R9; Sprint 2.22.0a.18 `area_match_key` sibling-aggregation + امريخ الجنوبي→مريخ override, §20.18) — residual فريج العسيري ~0.25% → R7**|CLOSED|
