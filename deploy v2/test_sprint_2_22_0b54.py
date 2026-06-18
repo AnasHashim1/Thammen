@@ -96,9 +96,9 @@ check('condition-limit moved gate→Terms (b56) — «تقييم» wording, old 
       and 'والتقدير لا يأخذ بعد حالة العقار الداخلية' not in HTML)  # b54 lock holds
 check('gate «دورك» bullet removed (b56 gate trim) — old «جرّب التقدير» still absent',
       'جرّب التقييم، وشاركنا' not in HTML and 'جرّب التقدير، وشاركنا' not in HTML)
-check('Terms §1 → لقياس دقّة التقييم (old absent)',
-      'بالدعوة لقياس دقّة التقييم. باستخدامك' in HTML
-      and 'بالدعوة لقياس دقّة التقدير. باستخدامك' not in HTML)
+check('Terms §1 reworded by b58 (beta framing dropped) — old «تقدير» still absent',
+      'هذه خدمة مجانية. باستخدامك' in HTML  # b58: «نسخة تجريبية مجانية بالدعوة لقياس دقّة التقييم» → «خدمة مجانية»
+      and 'بالدعوة لقياس دقّة التقدير. باستخدامك' not in HTML)  # b54 terminology lock holds
 check('Terms §4 → دقّة التقييم (old absent)',
       'لقياس وتحسين دقّة التقييم — لا تُباع' in HTML
       and 'لقياس وتحسين دقّة التقدير — لا تُباع' not in HTML)

@@ -459,14 +459,14 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       <h2 id="bgTitle">ثمّن — تقييم سوقيّ آليّ للفلل والأراضي في قطر</h2>
     </div>
     <div class="bg-note">بالمتابعة تُقرّ بأن هذه معلومة استرشاديّة لدعم القرار، وليست تقييماً معتمداً. التفاصيل الكاملة وحدود الخدمة في «الشروط وإشعار الخصوصية» أدناه.</div>
-    <div class="bg-ack">أُقرّ بأنني فهمت أن ثمّن تقييم سوقيّ آليّ للدعم وليس تقييماً معتمداً، وأوافق على المشاركة في النسخة التجريبية على الأساس الموضّح في الشروط وإشعار الخصوصية.</div>
+    <div class="bg-ack">أُقرّ بأنني فهمت أن ثمّن تقييم سوقيّ آليّ للدعم وليس تقييماً معتمداً، وأوافق على الاستخدام على الأساس الموضّح في الشروط وإشعار الخصوصية.</div>
     <button class="hbtn" onclick="ackBeta()">أوافق وأكمل</button>
     <div class="bg-links"><a onclick="openTerms();return false;">الشروط وإشعار الخصوصية الكاملة ↓</a></div>
     <details class="bg-en">
       <summary>English summary</summary>
       <div class="en">
         <strong>Thammen — automated market estimate for villas &amp; land in Qatar</strong><br>
-        A free, invite-only accuracy beta — to validate estimate accuracy before public launch.
+        A free automated market-estimate tool for villas &amp; land in Qatar.
         <ul>
           <li><strong>What it is:</strong> an automated market estimate built on Ministry of Justice transaction data + market sources, to support decisions with a fast figure.</li>
           <li><strong>What it is NOT:</strong> not an official or certified valuation by a licensed valuer under RICS/IVS. Official purposes (loans, courts, accounting) require an accredited valuer.</li>
@@ -510,7 +510,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
       ما يدعمه ثمّن وما لا يدعمه ↓
     </a>
   </div>
-  <!-- Sprint 2.22.0a.24 — Beta Terms & Privacy footer link -->
+  <!-- Sprint 2.22.0a.24 — Terms & Privacy footer link -->
   <div style="margin-top:8px;font-size:.8rem;color:var(--muted);position:relative;z-index:1">
     <a href="#" onclick="openTerms();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer">الشروط وإشعار الخصوصية</a>
   </div>
@@ -844,7 +844,7 @@ function openScope(){
 }
 function closeScope(){document.getElementById('scopeModal').style.display='none'}
 
-// Sprint 2.22.0a.24 — Beta Terms & Privacy modal (frontend-only, stores nothing)
+// Sprint 2.22.0a.24 — Terms & Privacy modal (frontend-only, stores nothing)
 function openTerms(){document.getElementById('termsModal').style.display='flex'}
 function closeTerms(){document.getElementById('termsModal').style.display='none'}
 // Sprint 2.22.0a.24 — Beta entry gate: a single affirmative click reveals the tool for the
@@ -3152,7 +3152,7 @@ function ri(l,v,hl,fl){return'<div class="ri'+(fl?' full':'')+'"><div class="rl"
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('formScreen').classList.contains('active'))run()});
 </script>
 
-<!-- ── Sprint 2.22.0a.24 — Beta Terms of Use & Privacy Notice (free beta). Reachable from the
+<!-- ── Sprint 2.22.0a.24 — Terms of Use & Privacy Notice (free service). Reachable from the
      entry gate + home + results footer. Frontend-only; no server route, stores nothing. ── -->
 <div id="termsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2100;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeTerms()">
   <div style="background:#fff;max-width:720px;max-height:88vh;overflow-y:auto;border-radius:12px;padding:28px;direction:rtl">
@@ -3161,12 +3161,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
       <button onclick="closeTerms()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted)">×</button>
     </div>
     <div class="tmodal-body">
-      <div style="color:var(--bronze);font-weight:500;margin-bottom:10px">النسخة التجريبية المجانية</div>
-      <h3>1) الموافقة على المشاركة</h3>
-      <p>هذه نسخة تجريبية مجانية بالدعوة لقياس دقّة التقييم. باستخدامك للأداة تُقرّ بفهمك لما ورد أدناه وتوافق طوعاً على المشاركة. المشاركة اختيارية ويمكنك التوقف في أي وقت.</p>
+      <div style="color:var(--bronze);font-weight:500;margin-bottom:10px">الخدمة المجانية</div>
+      <h3>1) الموافقة على الاستخدام</h3>
+      <p>هذه خدمة مجانية. باستخدامك للأداة تُقرّ بفهمك لما ورد أدناه وتوافق طوعاً على الاستخدام. الاستخدام اختياري ويمكنك التوقف في أي وقت.</p>
       <h3>2) ما هي الخدمة وما حدودها</h3>
       <p>ثمّن تقييم سوقيّ آليّ للفلل والأراضي مبني على بيانات معاملات وزارة العدل ومصادر السوق. هذا تحليل معلوماتي للقرار، وليس تقييماً رسمياً ولا تقريراً معتمداً صادراً عن مُقيِّم مُرخّص وفق معايير &lrm;RICS/IVS&lrm;. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد. وثمّن خدمة مستقلّة غير منتسبة لوزارة العدل؛ تستخدم بياناتها المفتوحة فقط. ويغطّي الفلل والأراضي فقط في هذه المرحلة (الشقق والأبراج غير مشمولة بعد)، ولا يأخذ بعدُ حالة العقار الداخلية وتشطيباته — لذلك قد ينخفض السعر الفعليّ نحو قيمة الأرض (عقار قديم/بسيط) أو يتجاوز التقدير (جديد/فاخر).</p>
-      <h3>3) بياناتك في هذه النسخة</h3>
+      <h3>3) بياناتك في هذه الخدمة</h3>
       <p>• الأداة لا تُخزّن أي بيانات: استعلامك (المنطقة/الشارع/المبنى) يُعالَج آنياً ثم يُهمَل. لا حساب، ولا تسجيل دخول، ولا ملفات تتبّع أو تحليلات.</p>
       <p>• الاستضافة: تعمل الخدمة على بنية تحتية خارج قطر (الولايات المتحدة/أوروبا عبر <span dir="ltr">Heroku وCloudflare</span>)؛ تُعالَج استعلاماتك هناك مؤقتاً ولا تُحفَظ.</p>
       <p>• عنوان العقار يُعدّ بياناً شخصياً لمالكه؛ لذلك لا نُخزّنه ولا نربطه بك.</p>
@@ -3177,16 +3177,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
       <h3>5) إخلاء المسؤولية</h3>
       <p>التقييم لأغراض الدعم والمعلومة فقط، ولا يُعتمد للأغراض الرسمية. أي قرار تتخذه بناءً عليه يقع على مسؤوليتك وحدك، ولا نتحمّل مسؤولية أي خسارة ناتجة عن الاعتماد عليه.</p>
       <h3>6) الأمان والإبلاغ</h3>
-      <p>بما أن الأداة لا تُخزّن بيانات شخصية في هذه النسخة، فإن سطح الخطر محدود بالمعالجة المؤقتة وقناة ملاحظاتك. في حال وقوع حادث جوهري يمسّ ما أرسلته، نلتزم بإبلاغك خلال &lrm;72&lrm; ساعة.</p>
+      <p>بما أن الأداة لا تُخزّن بيانات شخصية في هذه الخدمة، فإن سطح الخطر محدود بالمعالجة المؤقتة وقناة ملاحظاتك. في حال وقوع حادث جوهري يمسّ ما أرسلته، نلتزم بإبلاغك خلال &lrm;72&lrm; ساعة.</p>
       <h3>7) التواصل والمسؤول عن البيانات</h3>
       <p class="tm-contact">فريق ثمّن — <span dir="ltr">info@thammen.qa</span></p>
       <div class="en">
-        <strong>Thammen — Beta Terms of Use &amp; Privacy Notice (free beta)</strong>
+        <strong>Thammen — Terms of Use &amp; Privacy Notice (free service)</strong>
         <h4>1) Consent to participate</h4>
-        <p>Free, invite-only beta to validate estimate accuracy. By using the tool you acknowledge the points below and voluntarily agree to participate. Participation is optional; you may stop at any time.</p>
+        <p>A free service. By using the tool you acknowledge the points below and voluntarily agree to use it. Use is optional; you may stop at any time.</p>
         <h4>2) What the service is, and its limits</h4>
         <p>Thammen is an automated market valuation for villas and land, built on Ministry of Justice transaction data and market sources. It is an informational decision analysis — NOT an official or certified valuation by a licensed valuer under RICS/IVS. Official purposes (loans, courts, accounting) require an accredited valuer. Thammen is an independent service, not affiliated with the Ministry of Justice; it uses its open data only. It covers villas and land only for now (apartments and towers are not yet included), and does not yet account for interior condition/finishes — so the actual price may fall toward the land value (older/basic) or exceed the estimate (newer/luxury).</p>
-        <h4>3) Your data in this beta</h4>
+        <h4>3) Your data</h4>
         <p>• The tool stores nothing: your query (zone/street/building) is processed in-memory and discarded. No account, no login, no tracking or analytics cookies.</p>
         <p>• Hosting: the service runs on infrastructure outside Qatar (US/EU, via Heroku and Cloudflare); your queries are processed there transiently and are not retained.</p>
         <p>• A property address is personal data of its owner; we therefore do not store it or link it to you.</p>
@@ -3197,7 +3197,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
         <h4>5) Disclaimer</h4>
         <p>The estimate is for support and information only and must not be relied on for official purposes. Any decision you make based on it is your sole responsibility; we accept no liability for loss arising from reliance on it.</p>
         <h4>6) Security &amp; notification</h4>
-        <p>Because the tool stores no personal data in this beta, the risk surface is limited to transient processing and your feedback channel. If a material incident affecting what you sent occurs, we commit to notifying you within 72 hours.</p>
+        <p>Because the tool stores no personal data, the risk surface is limited to transient processing and your feedback channel. If a material incident affecting what you sent occurs, we commit to notifying you within 72 hours.</p>
         <h4>7) Contact / data controller</h4>
         <p>Thammen team — info@thammen.qa</p>
       </div>
