@@ -2260,13 +2260,13 @@ function show(d){
 
   // ── INSUFFICIENT DATA: prominent card with CTA (refusal path → flat buffer) ──
   if(!hasValuation){
-    const reason=v.reason_ar||'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً.';
+    const reason=v.reason_ar||(d.refusal_reason&&d.refusal_reason.message_ar)||'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً.';
     const assetAr=esc((d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type_ar||d.asset_type||'هذا العقار'));
     flat+='<div class="insuf">';
     flat+='<div class="insuf-icon">'+(_ux3NotReady?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>':'ⓘ')+'</div>';
     // Sprint 2.22.0b.36 (DEF-UX3): apartment/tower → honest «not supported yet»,
     // not «add data and we'll value it». The «why» (no MoJ per-unit comparables).
-    flat+='<h2>'+(_ux3NotReady?(_ux3Noun+' غير مدعومة بعد — للفلل والأراضي فقط'):'التقييم يحتاج بيانات إضافية')+'</h2>';
+    flat+='<h2>'+(_ux3NotReady?(_ux3Noun+' غير مدعومة بعد — للفلل والأراضي فقط'):(d.asset_type==='unknown'?'تعذّر تحديد نوع العقار':'التقييم يحتاج بيانات إضافية'))+'</h2>';
     flat+='<p>'+(_ux3NotReady?('وزارة العدل لا تسجّل وحدات '+_ux3Noun+' فردياً بشكل قابل للمقارنة، فلا نُصدر لها تقديراً موثوقاً بعد. نعمل على دعم هذا النوع لاحقاً.'):reason)+'</p>';
     // Show classification facts (what we DO know)
     if(d.address||d.plot_area_m2){
@@ -2291,7 +2291,15 @@ function show(d){
     // income types (apartment/tower) — we don't advertise the DEFERRED income
     // product. Other refusals (compound_large = the methodologically-correct
     // Income path per E20, palace = Cost) keep the dynamic input CTA.
-    if(!_ux3NotReady){
+    // ── Sprint 2.22.0b.60 (A5): an UNCLASSIFIABLE address (asset_type='unknown') gets the
+    // specific refusal_reason recommendation (verify address / contact / specialist review)
+    // and NO "add rent/price" CTA — rent or a price cannot classify an address the engine
+    // could not type (the same honesty class as b36's apartment refusal). Known-type
+    // refusals (compound needs rent, etc.) keep their input-unlock CTA unchanged.
+    if(!_ux3NotReady&&d.asset_type==='unknown'){
+      var _rrRec=(d.refusal_reason&&d.refusal_reason.recommendation_ar)||null;
+      if(_rrRec)flat+='<div class="rr-recommendation" style="display:inline-block;max-width:520px;text-align:right"><strong>التوصية:</strong> '+_rrRec+'</div>';
+    }else if(!_ux3NotReady){
       var ssReq=(d.service_scope&&d.service_scope.requires_user_input_ar)||null;
       var ctaText=ssReq?('→ أدخل: '+ssReq):'→ أضف الإيجار أو سعر الإعلان';
       var focusTarget=(d.asset_type==='tower'||d.asset_type==='compound_large'||(ssReq&&ssReq.indexOf('إيجار')>=0))?'rentalIncome':'askingPrice';

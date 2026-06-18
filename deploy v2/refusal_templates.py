@@ -135,17 +135,24 @@ REFUSAL_TEMPLATES: Dict[str, Dict[str, str]] = {
     # sparse MoJ comparables). Gemini-approved verbatim per
     # docs/MULTI_AI_VALIDATION_BATCH_2p22p0a2.md §6.
     'classifier_failure': {
+        # Sprint 2.22.0b.60 (A5 — linguist-persona review): trimmed the trailing
+        # «نوصي بالتحقّق…» ACTION sentence out of message_ar (it duplicated
+        # recommendation_ar, which the result screen now renders on its own
+        # «التوصية:» line — §20.89), and clarified the bare technical «QARS» →
+        # «سجلّ العناوين الحكوميّ (QARS)» for the ordinary user. So message_ar = the
+        # WHY only; recommendation_ar = the action. (Supersedes the 2.22.0a.2
+        # Gemini-verbatim wording per the standing lawyer+linguist persona review.)
         'message_ar': (
-            'لم نتمكّن من تحديد نوع العقار من البيانات الحكومية المتاحة. '
-            'قد يكون العنوان غير مفهرس حالياً في قاعدة QARS أو خارج نطاق '
-            'التغطية. نوصي بالتحقّق من بيانات العنوان أو التواصل معنا إذا '
-            'كانت المُدخَلات صحيحة.'
+            'لم نتمكّن من تحديد نوع العقار من البيانات الحكوميّة المتاحة. '
+            'قد يكون العنوان غير مُفهرَس حالياً في سجلّ العناوين الحكوميّ (QARS) '
+            'أو خارج نطاق التغطية.'
         ),
         'message_en': (
             'We could not classify this property from available government '
-            'data. The address may not yet be indexed in QARS, or may fall '
-            'outside current coverage. Please verify the address details, '
-            'or contact us if the entered values are correct.'
+            'data. The address may not yet be indexed in the government '
+            'address registry (QARS), or may fall outside current coverage. '
+            'Please verify the address details, or contact us if the entered '
+            'values are correct.'
         ),
         'recommendation_ar': 'تحقّق من بيانات العنوان أو تواصل معنا.',
     },
