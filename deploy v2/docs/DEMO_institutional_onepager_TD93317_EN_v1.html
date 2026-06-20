@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thammen for institutions — automated cross-check vs a certified bank valuation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16324F; --bronze:#A4814A; --gold:#E8C99A; --paper:#FBF8F2;
+    --ink:#1c2733; --muted:#5b6b7a; --line:#e3dccd; --ok:#2f7d5b; --okbg:#eaf4ee;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'IBM Plex Sans','Segoe UI',Arial,sans-serif;background:#ece7dc;color:var(--ink);line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sheet{max-width:820px;margin:24px auto;background:var(--paper);box-shadow:0 2px 18px rgba(22,50,79,.10)}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:18px 30px;border-bottom:3px solid var(--bronze)}
+  .brand{font-size:26px;font-weight:700;color:var(--navy);letter-spacing:.5px}
+  .brand small{display:block;font-size:11px;font-weight:500;color:var(--bronze);letter-spacing:1px}
+  .topright{font-size:12px;color:var(--muted);text-align:right}
+  .hero{background:var(--navy);color:#fff;padding:26px 30px}
+  .hero .kicker{color:var(--gold);font-size:13px;font-weight:600;letter-spacing:1px;margin-bottom:6px}
+  .hero h1{font-size:24px;font-weight:600;line-height:1.45}
+  .hero h1 b{color:var(--gold);font-weight:700}
+  .hero p{color:#cdd7e0;font-size:13.5px;margin-top:8px;max-width:64ch}
+  .body{padding:24px 30px 8px}
+  .h2{font-size:15px;font-weight:600;color:var(--navy);margin:0 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+  .h2 .n{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--navy);color:var(--gold);font-size:12px;font-weight:700;align-items:center;justify-content:center}
+  .case{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:22px}
+  .case div{background:var(--paper);padding:11px 14px}
+  .case .lbl{font-size:11.5px;color:var(--muted)}
+  .case .val{font-size:13.5px;font-weight:600;color:var(--navy)}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  .col{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .col .head{padding:11px 16px;font-size:13px;font-weight:600}
+  .col.bank .head{background:#eef1f4;color:var(--navy)}
+  .col.thm .head{background:var(--navy);color:#fff}
+  .col .row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 16px;border-top:1px solid var(--line)}
+  .col .row:first-of-type{border-top:0}
+  .col .row .k{font-size:12.5px;color:var(--muted)}
+  .col .row .v{font-size:18px;font-weight:700;color:var(--navy)}
+  .col .row .v.sm{font-size:14px;font-weight:600}
+  .verdict{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:var(--okbg);border:1px solid #bfe0cc;border-radius:10px;padding:14px;margin-bottom:22px}
+  .verdict .big{font-size:30px;font-weight:700;color:var(--ok)}
+  .verdict .lab{font-size:13px;color:#2c4f3e;font-weight:500}
+  .chips{display:flex;gap:18px;flex-wrap:wrap;margin-top:4px}
+  .chip{font-size:12px;color:var(--muted)}
+  .chip b{color:var(--navy);font-weight:600}
+  .props{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}
+  .prop{border:1px solid var(--line);border-radius:9px;padding:13px 15px;background:#fff}
+  .prop .t{font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:3px}
+  .prop .d{font-size:12.5px;color:var(--muted);line-height:1.55}
+  .pos{background:#fbf6ec;border:1px solid var(--gold);border-radius:10px;padding:14px 18px;margin-bottom:18px}
+  .pos .t{font-size:13.5px;font-weight:600;color:var(--navy);margin-bottom:3px}
+  .pos .d{font-size:12.5px;color:#6a5a3a}
+  .foot{border-top:3px solid var(--bronze);padding:16px 30px 24px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
+  .foot .note{font-size:11.5px;color:var(--muted);max-width:50ch;line-height:1.55}
+  .foot .contact{font-size:12.5px;color:var(--navy);text-align:right;font-weight:500}
+  .foot .contact span{display:block;color:var(--muted);font-weight:400;font-size:11.5px}
+  @media print{ body{background:#fff} .sheet{box-shadow:none;margin:0;max-width:100%} @page{size:A4;margin:10mm} }
+  @media(max-width:680px){ .case{grid-template-columns:1fr 1fr}.cmp,.props{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="top">
+    <div class="brand">Thammen<small>AUTOMATED MARKET VALUATION — FOR INSTITUTIONS</small></div>
+    <div class="topright">One-pager · validation example<br>thammen.qa</div>
+  </div>
+
+  <div class="hero">
+    <div class="kicker">AUTOMATED CROSS-CHECK VS A CERTIFIED BANK VALUATION</div>
+    <h1>Thammen matched a certified bank valuation to within <b>+0.35%</b> — in seconds, not days.</h1>
+    <p>A certified Cost-Approach (DRC) valuation, issued by a licensed valuer for a bank, reproduced
+    automatically from public data — without the long manual chain. One documented validation
+    example; the figures below are real.</p>
+  </div>
+
+  <div class="body">
+
+    <div class="h2"><span class="n">1</span> Property &amp; reference</div>
+    <div class="case">
+      <div><div class="lbl">Property</div><div class="val">Villa — Al Maamoura</div></div>
+      <div><div class="lbl">Address / cadastral PIN</div><div class="val">56 / 647 / 6 · PIN 56101583</div></div>
+      <div><div class="lbl">Land area / age</div><div class="val">652 m² · ~18 yrs · excellent</div></div>
+      <div><div class="lbl">Certified reference</div><div class="val">Al Manara Valuation — for QIIB · TD-93317</div></div>
+    </div>
+
+    <div class="h2"><span class="n">2</span> Side by side</div>
+    <div class="cmp">
+      <div class="col bank">
+        <div class="head">Licensed valuer (certified report · TD-93317)</div>
+        <div class="row"><span class="k">Fair market value</span><span class="v">3,600,145 QAR</span></div>
+        <div class="row"><span class="k">Land component</span><span class="v sm">2,456,345 QAR</span></div>
+        <div class="row"><span class="k">Forced-sale value (×0.90)</span><span class="v sm">3,240,145 QAR</span></div>
+        <div class="row"><span class="k">Turnaround</span><span class="v sm">days · manual</span></div>
+      </div>
+      <div class="col thm">
+        <div class="head">Thammen — automated (Cost-Approach / DRC)</div>
+        <div class="row"><span class="k">Estimated value</span><span class="v">3,612,845 QAR</span></div>
+        <div class="row"><span class="k">Land component (+0.016%)</span><span class="v sm">2,456,736 QAR</span></div>
+        <div class="row"><span class="k">Indicative forced-sale (×0.90)</span><span class="v sm">3,251,560 QAR</span></div>
+        <div class="row"><span class="k">Turnaround</span><span class="v sm">seconds · automated</span></div>
+      </div>
+    </div>
+
+    <div class="verdict">
+      <span class="big">+0.35%</span>
+      <span class="lab">total deviation from the certified valuation — within ±1%</span>
+      <span class="chips">
+        <span class="chip">Land component: <b>+0.016%</b></span>
+        <span class="chip">Method: <b>RICS Red Book</b></span>
+        <span class="chip">Source: <b>MoJ open transactions</b></span>
+      </span>
+    </div>
+
+    <div class="h2"><span class="n">3</span> What Thammen gives your institution</div>
+    <div class="props">
+      <div class="prop"><div class="t">Speed — seconds, not days</div><div class="d">Instant cross-check on any property, and triage of whole portfolios without the manual chain.</div></div>
+      <div class="prop"><div class="t">Auditable consistency</div><div class="d">The same methodology (cost + market) on every property, every figure disclosed and traceable — no variable judgement.</div></div>
+      <div class="prop"><div class="t">Transparency &amp; defensibility</div><div class="d">Built on Ministry of Justice open transactions (CC BY 4.0) and RICS standards — fit for credit and review environments.</div></div>
+      <div class="prop"><div class="t">Complements, doesn't replace</div><div class="d">A verification / review / triage layer alongside your licensed valuer, under human oversight.</div></div>
+    </div>
+
+    <div class="pos">
+      <div class="t">Regulatory positioning</div>
+      <div class="d">Thammen is an automated decision-support tool, not a certified valuation in itself. For uses requiring a licensed valuer's sign-off (Emiri Decision 28/2023), Thammen runs as a verification and efficiency layer <em>alongside</em> the valuer — and we are on the licensing path to offer it as a certified service.</div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <div class="note">Calibrated on one documented certified report (TD-93317) plus the Ministry of Justice transaction pool; calibration broadens with each documented valuation sheet. Figures above are the real numbers from the validation example shown.</div>
+    <div class="contact">info@thammen.qa<span>thammen.qa · MoJ open data (CC BY 4.0)</span></div>
+  </div>
+
+</div>
+</body>
+</html>
