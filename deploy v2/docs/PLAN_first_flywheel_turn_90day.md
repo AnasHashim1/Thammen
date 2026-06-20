@@ -6,6 +6,12 @@
 > **Thesis:** one motion closes the top three board-consensus gaps — *no feedback loop, no
 > distribution, no moat* — by going B2B with the ±1% bank-report proof, capturing real sale
 > outcomes from every engagement, and starting the Decision-28/2023 license now.
+>
+> **Superseding framing — `docs/BOARD_DECISION_v2_post_deliberation.md` (board vote 5/5):** the
+> channel was sharpened from "B2B" to an *asset* priority. The wedge is **licensed valuers + active
+> brokers FIRST** (the fastest, solo-reachable, free seed of proprietary outcome data); **banks /
+> enterprise are LATER** (post-license, post-data-moat, beyond this 90 days). The one number that
+> governs the whole plan is **documented outcome figures captured per week.**
 
 ## Why this and not "more accuracy sprints"
 
@@ -92,13 +98,15 @@ B-2 (the real accuracy unlock, now justified by real demand).
 
 | Metric | 30d | 60d | 90d |
 |---|---|---|---|
-| Documented ground-truth figures captured | 1–2 | 5+ | 8–10 |
+| **Documented outcome figures captured** *(the governing metric — per week cadence)* | 1–2 | 5+ | 8–10 |
 | Institutions with the engine in front of them | 0–1 | 1–3 | 1–3 (1 with intent) |
 | Aqarat licensing inquiry | filed | answered | path in writing |
 | Signed LOI / paid-pilot intent | 0 | 0 | **1** |
 
-The headline metric is **documented figures captured** — it is the single number that compounds
-(closes gap #1, unparks B-2, and is the moat competitors can't copy).
+The headline metric is **documented outcome figures captured — per week** — the single *governing*
+number per `BOARD_DECISION_v2`: every track routes through it. It compounds (closes gap #1, unparks
+B-2, and is the moat competitors can't copy). **If a week passes with zero new figures, the plan is
+off-track regardless of any other activity.**
 
 ## What to STOP doing (the honest part)
 
