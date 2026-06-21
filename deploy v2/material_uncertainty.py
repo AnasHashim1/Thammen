@@ -376,7 +376,7 @@ def assess_uncertainty(
 
         if not bua_known:
             unknowns.append('المساحة المبنية الفعلية (BUA)')
-            factors.append('المساحة المبنية غير معروفة — تقدير بنسبة من القطعة')
+            factors.append('المساحة المبنية غير معلومة — تقدير بنسبة من القطعة')
             scores.append(1)
 
         # ── Service charges ──

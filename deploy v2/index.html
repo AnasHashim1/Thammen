@@ -23,7 +23,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .htrust .hstep .n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:0 auto 7px;border-radius:50%;background:rgba(232,201,154,.16);color:var(--gold);font-size:.85rem;font-weight:700}
 .htrust .hstep .t{display:block;font-size:.78rem;color:#fff;line-height:1.4}
 .htrust .hsep{color:#6E8198;font-size:.95rem;flex:0 0 auto}
-.hcred{position:relative;z-index:1;font-size:.82rem;color:var(--muted);max-width:360px;line-height:1.6}
+.hcred{position:relative;z-index:1;margin-top:18px;font-size:.82rem;color:var(--muted);max-width:360px;line-height:1.6}
 .hbtn{background:var(--bronze);color:#fff;border:none;padding:18px 64px;font-family:'IBM Plex Sans Arabic';font-weight:700;font-size:1.2rem;border-radius:50px;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(164,129,74,.3);position:relative;z-index:1}
 .hbtn:hover{background:var(--bronze-h);box-shadow:0 6px 25px rgba(164,129,74,.4);transform:translateY(-2px)}
 .hfoot{position:absolute;bottom:24px;font-size:.8rem;color:var(--muted)}
@@ -531,7 +531,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 <div class="screen thmr" id="formScreen">
   <div class="tbar">
     <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
-    <div class="tbar-st" id="statusBar">جاري الاتصال...</div>
+    <div class="tbar-st" id="statusBar">جارٍ الاتصال...</div>
   </div>
   <div class="fwrap">
     <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> إدخال العقار <a id="clrIdent" onclick="clearIdentity()" style="display:none;font-weight:400;font-size:.78rem;color:var(--bronze);cursor:pointer;margin-right:10px">مسح <svg class=ic aria-hidden=true><use href=#ic-x></use></svg></a></div>
@@ -616,12 +616,12 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         <summary><span class="gnum">١</span>الهندسة <span class="tagfx move">يحرّك التقييم</span><span class="garrow">‹</span></summary>
         <div class="gbody">
           <div class="fr2">
-            <div class="fg"><label>عدد الطوابق فوق الأرض</label><select id="floors"><option value="">— اختر —</option><option value="1">طابق واحد (أرضي)</option><option value="2">طابقين (أرضي + أول)</option><option value="3">ثلاثة (أرضي + أول + ثاني)</option><option value="4">أربعة</option></select></div>
+            <div class="fg"><label>عدد الطوابق فوق الأرض</label><select id="floors"><option value="">— اختر —</option><option value="1">طابق واحد (أرضي)</option><option value="2">طابقان (أرضي + أول)</option><option value="3">ثلاثة (أرضي + أول + ثاني)</option><option value="4">أربعة</option></select></div>
             <div class="fg"><label>سرداب (تحت الأرض)</label><select id="basement"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد سرداب</option></select></div>
             <div class="fg"><label>بنتهاوس (نصف طابق علوي)</label><select id="penthouse"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد بنتهاوس</option></select></div>
           </div>
           <div class="fr2">
-            <div class="fg"><label>عدد الملاحق</label><select id="annexes"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">ملحق واحد</option><option value="2">ملحقين</option><option value="3">ثلاثة</option></select></div>
+            <div class="fg"><label>عدد الملاحق</label><select id="annexes"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">ملحق واحد</option><option value="2">ملحقان</option><option value="3">ثلاثة</option></select></div>
             <div class="fg"><label>مجلس خارجي منفصل</label><select id="externalMajlis"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد</option></select></div>
           </div>
           <div class="fr2">
@@ -1500,7 +1500,7 @@ function _strataHtml(d){
       out+='<div style="padding:10px 12px;background:'+cls.bg+';border-right:4px solid '+cls.fg+';border-radius:6px;margin-bottom:12px;font-size:.86rem">';
       out+='<div style="font-weight:600;color:'+cls.fg+';margin-bottom:4px">'+cls.icon+' عقارك يقع في فئة: '+sp.classification_label_ar+'</div>';
       out+='<div style="font-size:.78rem;color:#555">السعر المُدخَل: '+fmt(sp.listing_price)+' ر.ق ÷ '+sp.plot_area_m2+' م² = '+fmt(sp.implied_per_m2)+' ر.ق/م²';
-      out+=' &nbsp;|&nbsp; نسبة لـ الأرض: <strong>'+sp.implied_ratio+'×</strong></div>';
+      out+=' &nbsp;|&nbsp; نسبتها إلى الأرض: <strong>'+sp.implied_ratio+'×</strong></div>';
       if(sp.guidance_ar){
         out+='<div style="font-size:.78rem;color:#555;margin-top:6px">'+sp.guidance_ar+'</div>';
       }
@@ -2763,18 +2763,19 @@ function renderSection(sec){
       body+=row('العائد الصافي',pctFmt(c.net_yield_pct),c.net_yield_pct>=5?'pos':c.net_yield_pct<3?'neg':'');
       body+=row('صافي الدخل السنوي (NOI)',qarFmt(c.noi_annual));
       body+=row('الإيجار السنوي الإجمالي',qarFmt(c.annual_rent_gross));
-      body+=row('Cap Rate المستخدم',pctFmt(c.cap_rate_pct));
+      body+=row('معدّل الرسملة المستخدم',pctFmt(c.cap_rate_pct));
+      body+='<div class="br-note" style="margin-top:6px;font-size:.76rem;color:var(--muted)">معدّل الرسملة: نسبة صافي الدخل السنويّ إلى قيمة العقار (الطبيعيّ في قطر 5–6%).</div>';
       if(c.cap_rate_label_ar)body+='<div class="br-note" style="margin-top:8px">'+c.cap_rate_label_ar+'</div>';
       if(c.rent_source_ar)body+='<div class="br-note" style="margin-top:8px;font-size:.78rem">مصدر الإيجار: '+c.rent_source_ar+'</div>';
       break;
     case 'income_value':
       body+=row('القيمة بمنهج الدخل',qarFmt(c.income_value),'hl');
-      body+=row('Cap Rate',pctFmt(c.cap_rate_used!=null?c.cap_rate_used*100:null));
+      body+=row('معدّل الرسملة',pctFmt(c.cap_rate_used!=null?c.cap_rate_used*100:null));
       body+=row('NOI',qarFmt(c.noi));
       if(c.role_ar)body+='<div class="br-note" style="margin-top:10px">'+c.role_ar+'</div>';
       break;
     case 'sensitivity':
-      body+='<div class="br-note">'+(c.note_ar||'حساسية القيمة لتغيّر Cap Rate.')+'</div>';
+      body+='<div class="br-note">'+(c.note_ar||'حساسية القيمة لتغيّر معدّل الرسملة.')+'</div>';
       if(c.scenarios&&c.scenarios.length){
         body+='<div class="br-sens">';
         c.scenarios.forEach(sc=>{
@@ -2812,7 +2813,7 @@ function renderSection(sec){
       if(c.implied_monthly_rent)body+=row('الإيجار الشهري الضمني المطلوب',qarFmt(c.implied_monthly_rent),'hl');
       if(c.implied_annual_rent)body+=row('الإيجار السنوي الضمني',qarFmt(c.implied_annual_rent));
       if(c.implied_noi)body+=row('NOI الضمني',qarFmt(c.implied_noi));
-      if(c.cap_rate_used_pct)body+=row('Cap Rate المستخدم',c.cap_rate_used_pct.toFixed(2)+'%');
+      if(c.cap_rate_used_pct)body+=row('معدّل الرسملة المستخدم',c.cap_rate_used_pct.toFixed(2)+'%');
       if(c.rent_per_m2_year)body+=row('الإيجار/م² سنوياً',c.rent_per_m2_year.toFixed(0)+' ر.ق');
       if(c.plausibility_ar){
         const cls=c.plausibility_ar.includes('المعقول')?'pos':c.plausibility_ar.includes('مرتفع')?'neg':'';
@@ -2828,7 +2829,7 @@ function renderSection(sec){
       body+=row('NOI السنوي المُقدَّر',qarFmt(c.noi_annual_estimated));
       body+=row('العائد الإجمالي',pctFmt(c.gross_yield_pct),c.gross_yield_pct>=6?'pos':c.gross_yield_pct<4?'neg':'');
       body+=row('العائد الصافي',pctFmt(c.net_yield_pct),c.net_yield_pct>=5?'pos':c.net_yield_pct<3?'neg':'');
-      body+=row('Cap Rate',pctFmt(c.cap_rate_pct));
+      body+=row('معدّل الرسملة',pctFmt(c.cap_rate_pct));
       if(c.rent_source_ar)body+='<div class="br-note" style="margin-top:8px;font-size:.78rem">مصدر الإيجار: '+c.rent_source_ar+'</div>';
       if(c.caveat_ar)body+='<div class="br-note" style="margin-top:10px;background:var(--warn-bg);color:var(--warn)"><strong>تنبيه:</strong> '+c.caveat_ar+'</div>';
       break;

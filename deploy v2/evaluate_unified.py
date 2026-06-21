@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b60-a5-unknown-explanation'
-SPRINT_TAG = '2.22.0b.60'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b61-language-purge'
+SPRINT_TAG = '2.22.0b.61'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -2141,12 +2141,12 @@ def _build_investor_sections(income, v3_rent, primary):
                 })
         sections.append({
             'id': 'sensitivity',
-            'title_ar': 'تحليل الحساسية — Cap Rate',
+            'title_ar': 'تحليل الحساسية — معدّل الرسملة',
             'content': {
                 'base_cap_rate_pct': round(base_cap * 100, 2),
                 'base_noi': noi,
                 'scenarios': sensitivity,
-                'note_ar': 'حساسية القيمة لتغير Cap Rate ±1% — لأن المعدل يبقى تقديرياً.',
+                'note_ar': 'حساسية القيمة لتغير معدّل الرسملة ±1% — لأن المعدل يبقى تقديرياً.',
             },
         })
 
@@ -2211,7 +2211,7 @@ def _build_investor_sections_fallback(asset_type, primary, plot_area_m2, v3_rent
         annual_implied = val * cap_rate / (1 - 0.23)  # add back OPEX to get gross
         estimated_monthly = round(annual_implied / 12, -2)
         rent_source = (
-            f'تقدير من Cap Rate نموذجي ({cap_rate*100:.1f}%) — '
+            f'تقدير من معدّل الرسملة نموذجي ({cap_rate*100:.1f}%) — '
             f'لا توجد بيانات إيجار فعلية للمنطقة'
         )
 
@@ -2288,12 +2288,12 @@ def _build_investor_sections_fallback(asset_type, primary, plot_area_m2, v3_rent
     if sensitivity:
         sections.append({
             'id': 'sensitivity',
-            'title_ar': 'تحليل الحساسية — Cap Rate',
+            'title_ar': 'تحليل الحساسية — معدّل الرسملة',
             'content': {
                 'base_cap_rate_pct': round(cap_rate * 100, 2),
                 'base_noi': round(annual_net),
                 'scenarios': sensitivity,
-                'note_ar': 'القيمة الضمنية لمستويات Cap Rate مختلفة (±1%).',
+                'note_ar': 'القيمة الضمنية لمستويات معدّل الرسملة مختلفة (±1%).',
             },
         })
 
@@ -3050,7 +3050,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
         'tier_label': _tier_label_for('listing_only_implied_rent'),  # Sprint 2.22.0a/2 — 'analytical_range'
         'methodology_ar': (
             f'تحليل سعر الإعلان لـ "{asset_label_ar}" — تقدير الإيجار الضمني المطلوب '
-            'لجعل السعر منطقياً وفق Cap Rate نموذجي.'
+            'لجعل السعر منطقياً وفق معدّل الرسملة نموذجي.'
         ),
         'methodology_disclaimer_ar': (
             'هذا ليس تقييماً نهائياً، بل أداة فحص: نحسب الإيجار الذي يجب أن يُنتجه '
@@ -3122,7 +3122,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
                         'rent_per_m2_year': round(rent_per_m2_year, 1),
                         'plausibility_ar': plausibility_ar,
                         'note_ar': (
-                            f'لجعل سعر {listing_price:,.0f} ر.ق منطقياً وفق Cap Rate '
+                            f'لجعل سعر {listing_price:,.0f} ر.ق منطقياً وفق معدّل الرسملة '
                             f'نموذجي ({cap_rate*100:.1f}% لـ {asset_label_ar})، يجب أن '
                             f'يُنتج هذا العقار إيجاراً شهرياً قدره '
                             f'~{implied_monthly_rent:,.0f} ر.ق.'
@@ -3233,19 +3233,19 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         },
         {
             'id': 'sensitivity',
-            'title_ar': 'تحليل الحساسية — Cap Rate',
+            'title_ar': 'تحليل الحساسية — معدّل الرسملة',
             'content': {
                 'base_cap_rate_pct': round(cap_rate * 100, 2),
                 'base_noi': noi,
                 'scenarios': sensitivity,
-                'note_ar': 'حساسية القيمة لتغير Cap Rate ±1% — لأن المعدل تقديري ويتأثر بحالة السوق.',
+                'note_ar': 'حساسية القيمة لتغير معدّل الرسملة ±1% — لأن المعدل تقديري ويتأثر بحالة السوق.',
             },
         },
         {
             'id': 'market_context',
             'title_ar': 'السياق السوقي',
             'content': {
-                'qatar_benchmark': f'7-8% Cap Rate للكومباوندات الكبيرة في قطر = طبيعي',
+                'qatar_benchmark': f'معدّل رسملة 7-8% للكومباوندات الكبيرة في قطر = طبيعي',
                 'above_6_net': 'صافي عائد > 6% = جذاب للمستثمرين',
                 'below_4_net': 'صافي عائد < 4% = ضعيف، أعد التفاوض',
             },
@@ -3284,7 +3284,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
             'لا توجد مقارنة MoJ مباشرة لهذه الفئة في قطر — الدخل هو الطريقة المعيارية.'
         ),
         'methodology_disclaimer_ar': (
-            'تقدير آلي مبني على الإيجار المُقدَّم من العميل و Cap Rate نموذجي للفئة. '
+            'تقدير آلي مبني على الإيجار المُقدَّم من العميل و معدّل الرسملة نموذجي للفئة. '
             'للأغراض الرسمية يلزم تقييم من مُقيِّم معتمد بعد فحص ميداني وتحقق من الإيجار '
             'الفعلي عبر فترة طويلة.'
         ),
@@ -3340,13 +3340,13 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         'material_uncertainty': _enrich_material_uncertainty({
             'level': 'high',
             'banner_ar': (
-                'تحفظ مادي مرتفع: التقدير مبني على Cap Rate نموذجي + إيجار مُقدَّم من '
+                'تحفظ مادي مرتفع: التقدير مبني على معدّل الرسملة نموذجي + إيجار مُقدَّم من '
                 'العميل. للقرارات الكبيرة، يُنصح بفحص ميداني وتحقق من الإيجار التاريخي.'
             ),
             'known_unknowns_ar': [
                 'مدى استقرار الإيجار التاريخي (هل الرقم المُقدَّم ثابت أم متذبذب؟)',
                 'تكاليف التشغيل الفعلية (قد تختلف عن 23% النموذجي)',
-                'حالة المباني والإنشاءات (تؤثر على Cap Rate الفعلي)',
+                'حالة المباني والإنشاءات (تؤثر على معدّل الرسملة الفعلي)',
                 'مستوى الإشغال الفعلي',
             ],
             'rics_compliant': False,
@@ -4560,7 +4560,7 @@ def evaluate_thammen(
                     'يكون مبالغاً فيه للمباني الأقدم من 10 سنوات. أدخل العمر '
                     'التقديري لتقييم أدق.'
                 ) if raw_adj_pct > 0 else 'البناء ضمن النطاق النموذجي.'
-                regime_label_ar = 'عمر غير معروف — تطبيق افتراضي'
+                regime_label_ar = 'عمر غير معلوم — تطبيق افتراضي'
 
             # Sprint 2.5: append auto-detection note when age came from GIS
             if age_source == 'gis_imagery':
@@ -7089,7 +7089,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                     'content': {
                         'note_ar': (
                             'انظر قسم "طريقة الدخل" أعلاه — يحوي القيمة الصحيحة، '
-                            'مصدر الإيجار، Cap Rate المناسب لنوع الأصل، وصافي العائد.'
+                            'مصدر الإيجار، معدّل الرسملة المناسب لنوع الأصل، وصافي العائد.'
                         ),
                     },
                 }]

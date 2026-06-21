@@ -683,7 +683,7 @@ def _seller_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
                 'realistic_price': round(val * 1.10),
                 'quick_sale_price': round(val * 1.00),
                 'market_ceiling': round(val * 1.30),
-                'note': ('ابدأ بسعر وسيط MoJ + 10-15%. '
+                'note': ('ابدأ بسعر وسيط وزارة العدل + 10-15%. '
                          'لا تتجاوز +30% — السوق يرفض الإعلانات المبالغة. '
                          'حدّث الإعلان كل أسبوعين.'),
             },
@@ -795,7 +795,7 @@ def _investor_brief(evaluation, rent_data, adjustments, uncertainty, income_valu
             'id': 'sensitivity',
             'title_ar': 'تحليل الحساسية',
             'content': income_value['sensitivity'],
-            'note': 'ماذا لو تغيّر Cap Rate أو رسوم الخدمات؟',
+            'note': 'ماذا لو تغيّر معدّل الرسملة أو رسوم الخدمات؟',
         })
 
     # Section 4: RENT DATA
