@@ -127,10 +127,10 @@ check('land neighbor (matrix verbatim core)',
 check('the PDF §٢ three-numbers row (fair / quick-sale / the other-class card)',
       'الأرقام الثلاثة التي تهمّك' in SR and 'لو احتجت بيعاً سريعاً' in SR
       and 'فئة أخرى، ليست فئة بيتك' in SR)
-check('the PDF §٣ practical-essence advice (the SIGNED hard-ceiling bars, disclosed)',
-      'الخلاصة العملية' in SR and 'إن كنت بائعاً' in SR and 'إن كنت مشترياً' in SR  # b56 R6: الزبدة→الخلاصة (formal register)
+check('the PDF §٣ practical-essence advice (b62: compressed bars; SIGNED ceilings kept)',
+      'الخلاصة العملية' in SR and '◆ بائعاً' in SR and '◆ مشترياً' in SR  # b62 R6: contract amended — tighter §3 prose
       and 'v.amount*1.10' in SR and 'v.amount*1.30' in SR
-      and 'هامش تفاوض +10%' in SR and 'سقف +30%' in SR)
+      and 'سقف +10%' in SR and 'فوق +30%' in SR)
 check('the PDF §٤ sources (no-listings disclosure)',
       'من أين جاء الرقم؟' in SR and 'لا أسعار إعلانات ولا «كلام سوق»' in SR)
 check('cost evidence (§٨): matched-tells-the-story + geo dispersion + thresholds',
@@ -157,9 +157,9 @@ check('the legal block = the PDF FULL text incl. IFRS 13',
 check('the D-3 calibration hook (the PDF §٨ wording; generic for land)',
       'معايرة الكلفة' in SR and 'V001 ±1%' in SR and 'شاركنا تقييمك' in SR
       and 'كلّ كشفٍ جديد يدقّقها' in SR)  # b56 R6: شيت→كشف تقييم (formal register)
-check('the PDF §٥ raise-invitations bound to the scenarios broadcast (no sweep figures)',
-      'أشياء قد ترفع الرقم — أخبرنا بها' in SR and 'الإيجار أقوى معلومة' in SR
-      and 'حسّن التقييم' in SR and '1.9M' not in SR and '4.7M' not in SR)  # b54 R6: تقدير→تقييم (identity lock)
+check('the §٥ raise-the-number teaser (b62: card→one line; full table in §٦; no sweep figures)',
+      'قد يرتفع الرقم' in SR and 'الإيجار أقوى معلومة' in SR
+      and 'حسّن التقييم' in SR and '1.9M' not in SR and '4.7M' not in SR)  # b62 R6: §5 cost card→teaser (page-1 leanness)
 check('the §٦ scenarios table bound to the b23 broadcast (scn.items + the idea column)',
       'v.scenarios' in SR and 'scn.items.forEach' in SR and 'it.label_ar' in SR
       and 'ماذا لو؟' in SR and 'الفكرة' in SR)  # b56 R6: وش لو→ماذا لو (formal register)

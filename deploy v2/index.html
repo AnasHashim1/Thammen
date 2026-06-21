@@ -1950,8 +1950,8 @@ function showShortReport(d){
   // §٣ — الخلاصة العملية (the PDF seller/buyer advice; the bars = the SIGNED hard ceilings).
   if(hasVal){
     h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٣</span>الخلاصة العملية <span style="font-weight:400;font-size:.7rem;color:var(--thmr-ink2)">(إرشادية — والقرار قرارك)</span></div>';
-    h+='<div class="thmr-micro" style="font-size:.8rem"><b>◆ إن كنت بائعاً:</b> اعرض حول ≈ '+fmt(_bar10)+' (هامش تفاوض +10% — عُرف السوق) واترك مجالاً للتفاوض؛ الإقفال الواقعي قرب '+fmt(v.amount)+' ما لم يكن في البيت ما يميّزه فعلاً. التمسك طويلاً فوق سقف +30% (≈ '+fmt(_bar30)+') يعني غالباً انتظاراً بلا مشترٍ جاد.</div>';
-    h+='<div class="thmr-micro" style="font-size:.8rem"><b>◆ إن كنت مشترياً:</b> ما فوق ≈ '+fmt(_bar10)+' يحتاج سبباً واضحاً تتحقق منه بعينك: تجديد كامل، إضافات موثقة، أو دخل إيجار حقيقي. اطلب بيان وزارة العدل، واسأل عن عمر البناء الحقيقي لا ما يقوله البائع.</div></div>';
+    h+='<div class="thmr-micro" style="font-size:.8rem"><b>◆ بائعاً:</b> اعرض ≈ '+fmt(_bar10)+' (سقف +10%، عُرف السوق)؛ الإقفال الواقعيّ قرب '+fmt(v.amount)+' ما لم يتميّز بيتك فعلاً — وفوق +30% (≈ '+fmt(_bar30)+') انتظارٌ غالباً بلا مشترٍ جادّ.</div>';
+    h+='<div class="thmr-micro" style="font-size:.8rem"><b>◆ مشترياً:</b> ما فوق ≈ '+fmt(_bar10)+' يلزمه سببٌ تتحقّق منه (تجديد كامل · إضافات موثّقة · دخل إيجار)؛ اطلب بيان وزارة العدل، واسأل عن العمر الحقيقيّ لا قول البائع.</div></div>';
   }
   // §٤ — من أين جاء الرقم؟ (cost: the PDF three sources; else the broadcast decomposition).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٤</span>من أين جاء الرقم؟</div>';
@@ -1966,16 +1966,13 @@ function showShortReport(d){
   }
   h+='<div class="thmr-row"><span class="k">المصدر: وزارة العدل — صفقات مسجلة حتى ديسمبر 2025</span><span class="v" style="font-weight:400">لا أسعار إعلانات ولا «كلام سوق»</span></div>';
   h+='</div>';
-  // §٥ — أشياء قد ترفع الرقم — أخبرنا بها (from the b23 scenarios broadcast).
+  // §٥ — قد يرتفع الرقم (b62: cost = a one-line teaser → the full §٦ «ماذا لو» table; from the b23 scenarios broadcast).
   const scn=v.scenarios;
   if(cs==='cost'&&scn&&scn.items&&scn.items.length){
-    const _scnBy={}; scn.items.forEach(it=>{_scnBy[it.key]=it;});
-    h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٥</span>أشياء قد ترفع الرقم — أخبرنا بها</div>';
-    if(_scnBy.renovated_excellent)h+='<div class="thmr-row"><span class="k">مجدَّد بالكامل؟ حالة ممتازة تقرّبه من</span><span class="v">≈ '+fmt(_scnBy.renovated_excellent.value)+'</span></div>';
-    if(_scnBy.luxury_finish)h+='<div class="thmr-row"><span class="k">تشطيب فاخر؟ يقرّبه من</span><span class="v">≈ '+fmt(_scnBy.luxury_finish.value)+'</span></div>';
-    h+='<div class="thmr-row"><span class="k">مؤجَّر بعقد فعلي؟</span><span class="v" style="font-weight:400">الإيجار أقوى معلومة — قد يغيّر الصورة كلها</span></div>';
-    h+='<div class="thmr-micro">أدخلها بنفسك من زر «حسّن التقييم» في الموقع — الرقم يتحدّث مع معلوماتك، لا مع الافتراضات.</div>';
-    h+='</div>';
+    // b62 «رشاقة المختصر»: §٥ cost = a one-line teaser — the full upside table lives in
+    // §٦ (page-2 «ماذا لو»), so page-1 drops the duplicate scenario figures → real leanness.
+    // Keeps the GT invite («حسّن التقييم») + the rent-is-strongest nudge.
+    h+='<div class="thmr-micro" style="font-size:.8rem;margin-top:8px"><b>◆ قد يرتفع الرقم:</b> بالتجديد الكامل أو التشطيب الفاخر (فئة أعلى)، والإيجار أقوى معلومة قد تغيّر الصورة — التفاصيل في جدول «ماذا لو؟» بالأسفل؛ أدخلها من زر «حسّن التقييم» في الموقع.</div>';
   }else if(cs==='market'){
     h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">٥</span>مدى شريحتك</div><div class="thmr-micro" style="font-size:.82rem">مدى شريحتك المطابقة: <span dir="ltr">'+fmt(v.low)+' – '+fmt(v.high)+'</span> حول الوسيط '+fmt(v.amount)+(_d36!=null?(' — تشتت '+_d36):'')+'.</div></div>';
   }else if(cs==='income'){
