@@ -1920,7 +1920,7 @@ function showShortReport(d){
   // ════ Page 1 — الخلاصة في صفحة واحدة (the PDF contract) ════
   h+='<div class="thmr-page" id="srPage1">';
   h+='<div class="thmr-head"><div class="b1">ثمّن — التقرير المختصر<small>الخلاصة في صفحة واحدة</small></div>';
-  h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b><br>'):'')+'<span dir="ltr">'+(d.engine_version||'')+'</span></div></div>';
+  h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b>'):'')+'</div></div>';  // b63: dropped the raw engine_version dev-string from the owner's page-1 header (noise at top; ref + QR/verify prove authenticity; the page-2 meta + the full report keep it)
   // the property strip (the PDF header row).
   h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:10px"><span class="k">'+(ASSET_AR[d.asset_type]||'عقار')+' <b dir="ltr">'+esc(d.address||'')+'</b>'+(d.district?(' · '+esc(d.district)):'')+'</span><span class="v" style="font-weight:400">'+(d.plot_area_m2?('مساحة الأرض: <b>'+fmt(d.plot_area_m2)+' م²</b>'):'')+(_ageY?(' · عمر البناء: <b>فوق '+_ageY+' سنة</b> (سجل رسمي)'):'')+' · التاريخ: <span dir="ltr">'+today+'</span></span></div>';
   h+='<div class="thmr-hero" style="background:var(--thmr-navy);border:none"><span class="lbl" style="color:var(--gold)">قيمة بيتك التقديرية اليوم</span>';
@@ -1932,8 +1932,13 @@ function showShortReport(d){
     h+='<div class="lbls"><span class="a" style="color:#fff">'+fmt(v.amount)+' — المرتكز</span><span style="color:#C9D4DF">'+fmt(ld.market_value)+' — طرف سوق المنطقة (مؤشرات حذرة)</span></div></div>';
   }
   h+='</div>';
-  // the D3 financing line — the PDF wording, the three assumptions EDITABLE inline.
+  // the D3 financing line — BUYER-GATED (b63): a mortgage calculator is a BUYER tool.
+  // The OWNER default (+ seller/investor) no longer meets it under the headline (declutter
+  // the start). The buyer still gets it here AND on the result screen (b35); _srPayment +
+  // srRecalcPay stay defined (reused — DRY). The PDF wording + the 3 editable assumptions kept.
+  if((d.audience||'owner')==='buyer'){
   h+='<div class="thmr-micro thmr-pay" style="text-align:center;margin:0 0 12px">للتصوّر فقط: تمويل <span dir="ltr"><input id="srDown" type="number" value="20" min="0" max="90" oninput="srRecalcPay()"></span>% دفعة أولى على <input id="srYears" type="number" value="25" min="1" max="35" oninput="srRecalcPay()"> سنة ≈ <b id="srPay">'+(function(){const p=_srPayment(v.amount,20,25,4.5);return p?(fmt(p)+' ر.ق شهرياً'):'—';})()+'</b> (بمعدل افتراضي <input id="srRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="srRecalcPay()">% — استشر بنكك)</div>';
+  }
   // §١ — the leader story paragraph (the PDF cost-led title; matrix stories otherwise).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">١</span>'+(cs==='cost'?'لماذا أقل مما تسمعه عن بيوت حولك؟':'على ماذا يرتكز الرقم؟')+'</div>';
   h+='<div class="thmr-lay" style="margin-bottom:0;border:none;padding:2px 0 0">'+neigh+'</div></div>';
