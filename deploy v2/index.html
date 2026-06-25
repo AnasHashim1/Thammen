@@ -2362,6 +2362,17 @@ function show(d){
     if(muc_ar&&MUC_LEVEL_AR[(mu||{}).level]){
       t1+='<div style="display:inline-block;padding:3px 10px;background:var(--warn-bg);color:var(--warn);border-radius:12px;font-size:.74rem;margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';
     }
+    // DEBUG-fix #4 (cost_led hero clarity): when the COST leads (leader='cost'), the big
+    // central figure is the COST anchor — the market median is only the muted range-HIGH.
+    // The hero label is the locked product identity (b54), so instead of relabelling we
+    // surface an ALWAYS-VISIBLE one-line basis note here (the full leadership note stays in
+    // «كيف وصلنا»). Owner/buyer/seller had this folded by default → the number read as «market».
+    // Value-invariant (presentational; amount/low/high untouched). cost_led ONLY (NOT e25_capped,
+    // where the market leads). Pure additive — no locked-string mutation, no test re-point.
+    if(v.leadership&&v.leadership.leader==='cost'){
+      var _clMkt=(v.value_stack&&v.value_stack.market&&v.value_stack.market.median)||v.high;
+      t1+='<div class="rn" style="margin-top:8px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> هذا الرقم مبنيّ على الكلفة (أرض + بناء مُهلَك) لأنّ حوض المقارنات لم يجتز اختبار الموثوقيّة؛ وسيط السوق ('+fmt(_clMkt)+' ر.ق) معروض مكتوماً كحدٍّ أعلى للنطاق — التفصيل في «كيف وصلنا».</div>';
+    }
     // Sprint 2.22.0b.31 (DEF-UX11): condition / teardown / luxury are DECISION-RELEVANT, user-input-driven
     // headline qualifiers (conditional) → STAY on TIER-1. The 9-note methodology «parade» below folds into
     // the «كيف وصلنا لهذا الرقم؟» accordion (the `how` buffer) so the simple owner sees a 5-element core.
@@ -2373,7 +2384,7 @@ function show(d){
     // DRY). VALUE-INVARIANT — an illustrative monthly payment derived FROM v.amount; the engine, amount,
     // range, and tier order are untouched. Defaults (20% down · 25y · 4.5%) match the signed short-report
     // contract (b28). Separate ids (bc*) → no collision with the short-report calculator (sr*). ──
-    if(d.audience==='buyer'&&v.amount){
+    if(d.audience==='buyer'&&v.amount&&d.asset_type!=='raw_land'){
       const _bcInit=_srPayment(v.amount,20,25,4.5);
       t1+='<div class="rn" style="margin-top:12px;font-size:.82rem;line-height:2;border-right:3px solid var(--bronze);background:var(--alt)"><svg class=ic aria-hidden=true><use href=#ic-coins></use></svg> حاسبة التمويل التقريبية: <span dir="ltr"><input id="bcDown" type="number" value="20" min="0" max="90" oninput="bcRecalc()" style="width:46px;padding:2px 4px"></span>% دفعة أولى · <input id="bcYears" type="number" value="25" min="1" max="35" oninput="bcRecalc()" style="width:46px;padding:2px 4px"> سنة · <input id="bcRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="bcRecalc()" style="width:52px;padding:2px 4px">% فائدة → القسط الشهريّ ≈ <b id="bcPay">'+(_bcInit?(fmt(_bcInit)+' ر.ق/شهر'):'—')+'</b> <span style="color:var(--muted);font-size:.76rem">— تقديريّ، استشر بنكك</span></div>';
     }

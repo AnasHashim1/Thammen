@@ -44,7 +44,7 @@ check('bcRecalc reads the bc* ids (not the sr* short-report ids)',
 check('bcRecalc does NOT touch the sr* ids', "'srDown'" not in BC and "'srPay'" not in BC)
 
 # ── 2. the calculator renders ONLY for audience=buyer, under the figure ──
-check('calculator gated on audience==buyer', "d.audience==='buyer'" in SHOW and re.search(r"if\(d\.audience==='buyer'&&v\.amount\)", SHOW) is not None)
+check('calculator gated on audience==buyer (+ DEBUG-fix #7: excludes raw_land)', "d.audience==='buyer'" in SHOW and re.search(r"if\(d\.audience==='buyer'&&v\.amount&&d\.asset_type!=='raw_land'\)", SHOW) is not None)
 check('calculator carries the bc* inputs + live oninput=bcRecalc',
       'id="bcDown"' in SHOW and 'id="bcYears"' in SHOW and 'id="bcRate"' in SHOW and 'id="bcPay"' in SHOW and 'oninput="bcRecalc()"' in SHOW)
 # defaults match the signed short-report contract (b28): 20% down · 25y · 4.5%
