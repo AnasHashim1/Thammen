@@ -126,9 +126,10 @@ check('else-branch still has its own cost_led recompute (not moved/duplicated by
 check('b67 income recompute (_decompI) does NOT appear in the else-branch',
       '_decompI' not in else_block and 'Sprint 2.22.0b.67' not in else_block)
 
-# ── 6. Version bump ──
-check('ENGINE_VERSION bumped to b67',
-      re.search(r"ENGINE_VERSION\s*=\s*'thammen-sprint2p22p0b67-", src) is not None)
+# ── 6. Version format (version-agnostic — R6: no exact-version pins; the b67 landing
+#       is proven by the 'Sprint 2.22.0b.67' comment marker in the recompute block above) ──
+check('ENGINE_VERSION has the valid sprint format',
+      re.search(r"ENGINE_VERSION\s*=\s*'thammen-sprint\d+p\d+p\d+", src) is not None)
 
 print()
 print(f'Sprint 2.22.0b.67 isolated: {_passed} passed, {_failed} failed')

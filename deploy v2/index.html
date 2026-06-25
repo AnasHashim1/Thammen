@@ -3189,9 +3189,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
       <h3>2) ما هي الخدمة وما حدودها</h3>
       <p>ثمّن تقييم سوقيّ آليّ للفلل والأراضي مبني على بيانات معاملات وزارة العدل ومصادر السوق. هذا تحليل معلوماتي للقرار، وليس تقييماً رسمياً ولا تقريراً معتمداً صادراً عن مُقيِّم مُرخّص وفق معايير &lrm;RICS/IVS&lrm;. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد. وثمّن خدمة مستقلّة غير منتسبة لوزارة العدل؛ تستخدم بياناتها المفتوحة فقط. ويغطّي الفلل والأراضي فقط في هذه المرحلة (الشقق والأبراج غير مشمولة بعد)، ولا يأخذ بعدُ حالة العقار الداخلية وتشطيباته — لذلك قد ينخفض السعر الفعليّ نحو قيمة الأرض (عقار قديم/بسيط) أو يتجاوز التقدير (جديد/فاخر).</p>
       <h3>3) بياناتك في هذه الخدمة</h3>
-      <p>• الأداة لا تُخزّن أي بيانات: استعلامك (المنطقة/الشارع/المبنى) يُعالَج آنياً ثم يُهمَل. لا حساب، ولا تسجيل دخول، ولا ملفات تتبّع أو تحليلات.</p>
-      <p>• الاستضافة: تعمل الخدمة على بنية تحتية خارج قطر (الولايات المتحدة/أوروبا عبر <span dir="ltr">Heroku وCloudflare</span>)؛ تُعالَج استعلاماتك هناك مؤقتاً ولا تُحفَظ.</p>
-      <p>• عنوان العقار يُعدّ بياناً شخصياً لمالكه؛ لذلك لا نُخزّنه ولا نربطه بك.</p>
+      <p>• نحتفظ بنسخة من تقرير تقييمك (تشمل عنوان العقار وبياناته العقاريّة: الرقم المساحيّ والمنطقة والموقع والتقدير) في سجلّات فريق ثمّن، لأغراض حفظ السجلّات وتحسين دقّة التقييم. لا حساب، ولا تسجيل دخول، ولا ملفات تتبّع أو تحليلات.</p>
+      <p>• لا نجمع بيانات تواصل شخصيّة (اسم أو هاتف أو بريد أو رقم هويّة)، وتُزال أرقام حسابات الكهرباء والماء من النسخة المحفوظة.</p>
+      <p>• الاستضافة ومعالجة النسخة تتمّ على بنية تحتيّة خارج قطر (الولايات المتحدة/أوروبا عبر <span dir="ltr">Heroku وCloudflare وResend</span>).</p>
+      <p>• عنوان العقار يُعدّ بياناً شخصياً لمالكه؛ ويمكنك طلب حذف نسخة تقريرك من سجلّاتنا في أيّ وقت بمراسلة جهة التواصل أدناه.</p>
       <h3>4) الملاحظات التي تختار إرسالها</h3>
       <p>• أي سعر فعليّ أو ملاحظة ترسلها تصل إلى فريق ثمّن عبر البريد (<span dir="ltr">info@thammen.qa</span>).</p>
       <p>• تُستخدم فقط لقياس وتحسين دقّة التقييم — لا تُباع، ولا تُشارَك مع طرف ثالث، ولا تُستخدم للتسويق.</p>
@@ -3199,7 +3200,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
       <h3>5) إخلاء المسؤولية</h3>
       <p>التقييم لأغراض الدعم والمعلومة فقط، ولا يُعتمد للأغراض الرسمية. أي قرار تتخذه بناءً عليه يقع على مسؤوليتك وحدك، ولا نتحمّل مسؤولية أي خسارة ناتجة عن الاعتماد عليه.</p>
       <h3>6) الأمان والإبلاغ</h3>
-      <p>بما أن الأداة لا تُخزّن بيانات شخصية في هذه الخدمة، فإن سطح الخطر محدود بالمعالجة المؤقتة وقناة ملاحظاتك. في حال وقوع حادث جوهري يمسّ ما أرسلته، نلتزم بإبلاغك خلال &lrm;72&lrm; ساعة.</p>
+      <p>سطح الخطر محدود بنسخة التقرير المحفوظة في سجلّاتنا وقناة ملاحظاتك؛ ولا نحتفظ ببيانات تواصل شخصيّة. في حال وقوع حادث جوهري يمسّ بياناتك، نلتزم بإبلاغك خلال &lrm;72&lrm; ساعة.</p>
       <h3>7) التواصل والمسؤول عن البيانات</h3>
       <p class="tm-contact">فريق ثمّن — <span dir="ltr">info@thammen.qa</span></p>
       <div class="en">
@@ -3209,9 +3210,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
         <h4>2) What the service is, and its limits</h4>
         <p>Thammen is an automated market valuation for villas and land, built on Ministry of Justice transaction data and market sources. It is an informational decision analysis — NOT an official or certified valuation by a licensed valuer under RICS/IVS. Official purposes (loans, courts, accounting) require an accredited valuer. Thammen is an independent service, not affiliated with the Ministry of Justice; it uses its open data only. It covers villas and land only for now (apartments and towers are not yet included), and does not yet account for interior condition/finishes — so the actual price may fall toward the land value (older/basic) or exceed the estimate (newer/luxury).</p>
         <h4>3) Your data</h4>
-        <p>• The tool stores nothing: your query (zone/street/building) is processed in-memory and discarded. No account, no login, no tracking or analytics cookies.</p>
-        <p>• Hosting: the service runs on infrastructure outside Qatar (US/EU, via Heroku and Cloudflare); your queries are processed there transiently and are not retained.</p>
-        <p>• A property address is personal data of its owner; we therefore do not store it or link it to you.</p>
+        <p>• We keep a copy of your valuation report (including the property address and its parcel data: cadastral PIN, district, location, and the estimate) in the Thammen team's records, for record-keeping and to improve estimate accuracy. No account, no login, no tracking or analytics cookies.</p>
+        <p>• We do not collect personal contact data (no name, phone, email, or national ID), and the electricity/water account numbers are removed from the retained copy.</p>
+        <p>• Hosting and processing of the copy take place on infrastructure outside Qatar (US/EU, via Heroku, Cloudflare and Resend).</p>
+        <p>• A property address is personal data of its owner; you may ask to delete your report copy from our records at any time via the contact below.</p>
         <h4>4) Feedback you choose to send</h4>
         <p>• Any real sale price or note you send reaches the Thammen team by email (info@thammen.qa).</p>
         <p>• It is used only to measure and improve estimate accuracy — never sold, shared, or used for marketing.</p>
@@ -3219,7 +3221,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
         <h4>5) Disclaimer</h4>
         <p>The estimate is for support and information only and must not be relied on for official purposes. Any decision you make based on it is your sole responsibility; we accept no liability for loss arising from reliance on it.</p>
         <h4>6) Security &amp; notification</h4>
-        <p>Because the tool stores no personal data, the risk surface is limited to transient processing and your feedback channel. If a material incident affecting what you sent occurs, we commit to notifying you within 72 hours.</p>
+        <p>The risk surface is limited to the report copy retained in our records and your feedback channel; we retain no personal contact data. If a material incident affecting your data occurs, we commit to notifying you within 72 hours.</p>
         <h4>7) Contact / data controller</h4>
         <p>Thammen team — info@thammen.qa</p>
       </div>
