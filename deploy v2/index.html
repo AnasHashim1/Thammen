@@ -517,7 +517,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 </div>
 
 <!-- Sprint 2.14.0 — Scope modal -->
-<div id="scopeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeScope()">
+<div id="scopeModal" role="dialog" aria-modal="true" aria-label="نطاق خدمة ثمّن" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeScope()">
   <div style="background:#fff;max-width:680px;max-height:85vh;overflow-y:auto;border-radius:12px;padding:28px;direction:rtl">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--alt);padding-bottom:12px">
       <h2 style="margin:0;color:var(--primary)">نطاق خدمة ثمّن</h2>
@@ -847,6 +847,14 @@ function closeScope(){document.getElementById('scopeModal').style.display='none'
 // Sprint 2.22.0a.24 — Terms & Privacy modal (frontend-only, stores nothing)
 function openTerms(){document.getElementById('termsModal').style.display='flex'}
 function closeTerms(){document.getElementById('termsModal').style.display='none'}
+// Sprint 2.22.0b.70 (a11y): Escape closes the two DISMISSABLE modals (scope + terms). The betaGate
+// consent dialog is intentionally NOT Escape-closable (affirmative consent is required).
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape')return;
+  var sm=document.getElementById('scopeModal'), tm=document.getElementById('termsModal');
+  if(sm&&getComputedStyle(sm).display!=='none')closeScope();
+  if(tm&&getComputedStyle(tm).display!=='none')closeTerms();
+});
 // Sprint 2.22.0a.24 — Beta entry gate: a single affirmative click reveals the tool for the
 // session. Session-only (sessionStorage; in-memory fallback if blocked). No cookie, no server
 // write — the gate persists nothing beyond a per-session client flag (returning within the
@@ -3176,7 +3184,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
 
 <!-- ── Sprint 2.22.0a.24 — Terms of Use & Privacy Notice (free service). Reachable from the
      entry gate + home + results footer. Frontend-only; no server route, stores nothing. ── -->
-<div id="termsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2100;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeTerms()">
+<div id="termsModal" role="dialog" aria-modal="true" aria-label="شروط الاستخدام وإشعار الخصوصية" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2100;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeTerms()">
   <div style="background:#fff;max-width:720px;max-height:88vh;overflow-y:auto;border-radius:12px;padding:28px;direction:rtl">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--alt);padding-bottom:12px">
       <h2 style="margin:0;color:var(--primary);font-size:1.1rem">ثمّن — شروط الاستخدام وإشعار الخصوصية</h2>
