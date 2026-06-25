@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b66-api-hardening'
-SPRINT_TAG = '2.22.0b.66'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b67-income-led-coherence'
+SPRINT_TAG = '2.22.0b.67'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -5038,6 +5038,32 @@ def evaluate_thammen(
                         _mu_tri = output.get('material_uncertainty')
                         if isinstance(_mu_tri, dict):
                             _mu_tri['level'] = _tri['muc_level']
+                        # ── Sprint 2.22.0b.67 (T0-2): ISS-A07 coherence on income_led ──
+                        # income LEADS — line 5006 overrode the central with the income
+                        # figure via a NON-comparison method, so the value_decomposition +
+                        # B-1 value_floor built earlier (4797-4822) on the PRE-income
+                        # COMPARISON amount are now STALE (they'd render a land/building split
+                        # summing to the discarded comparison figure under the income headline
+                        # — internal incoherence). Recompute BOTH on the income amount. This is
+                        # the VERBATIM proven cost_led recompute (5138-5153, the b16 ISS-A07
+                        # pattern); same helpers + `bua`/`moj_ref`/`ev.plot_area_m2` in scope.
+                        # Value-invariant on amount/low/high (already set above; additive).
+                        try:
+                            _decompI = _decompose_value(
+                                valuation_amount=output['valuation']['amount'],
+                                plot_area_m2=ev.plot_area_m2, bua_m2=bua,
+                                moj_ref_dict=moj_ref)
+                            if _decompI:
+                                output['valuation']['value_decomposition'] = _decompI
+                                _reconcile_decomposition_narrative(output)
+                            _vfI = _villa_value_floor(
+                                output['valuation']['amount'],
+                                getattr(ev, 'plot_area_m2', None), moj_ref, _decompI)
+                            if _vfI:
+                                output['valuation']['value_floor'] = _vfI
+                                _inject_value_floor_into_brief(output.get('brief'), _vfI)
+                        except Exception:
+                            pass
                     else:
                         # ── Sprint 2.22.0b.20: EVIDENCE-CONDITIONAL LEADERSHIP application ──
                         # Replaces the retired b11 cost_reanchor_down / b16 OSR / b6 widen_down
