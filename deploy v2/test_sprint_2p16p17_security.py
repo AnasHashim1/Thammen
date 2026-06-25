@@ -165,6 +165,39 @@ def test_slowapi_list_form_is_rejected():
          "switch api.py back to RATE_LIMIT_LIST. Captured: %r" % captured)
 
 
+def test_get_routes_are_rate_limited():
+    """Sprint 2.22.0b.66 (DEBUG T0-3): the 6 read GET endpoints must each
+    carry @limiter.limit + a `request: Request` param (DoS / khazna-depletion
+    hardening, defense-in-depth behind Cloudflare). Source-level structural
+    check — deterministic, no network, no shared limiter-state pollution
+    (matches the offline character of this suite). Static routes (/, /logo.png,
+    /qrcode.local.js, /fonts) stay intentionally unrated and are NOT asserted."""
+    from pathlib import Path
+    src = (Path(__file__).parent / "api.py").read_text(encoding="utf-8")
+    lines = src.splitlines()
+    GET_ROUTES = ["/api/health", "/api/freshness", "/api/calibration",
+                  "/api/disclaimer", "/api/about", "/api/scope"]
+    for path in GET_ROUTES:
+        idx = None
+        for i, ln in enumerate(lines):
+            if "@app.get(" in ln and (f'"{path}"' in ln or f"'{path}'" in ln):
+                idx = i
+                break
+        assert idx is not None, f"GET route {path} not found in api.py"
+        deco_block, def_line = [], None
+        for j in range(idx + 1, min(idx + 8, len(lines))):
+            s = lines[j].strip()
+            if s.startswith("async def ") or s.startswith("def "):
+                def_line = lines[j]
+                break
+            deco_block.append(lines[j])
+        assert def_line is not None, f"no def after @app.get for {path}"
+        assert any("@limiter.limit" in d for d in deco_block), \
+            f"GET route {path} is NOT rate-limited (no @limiter.limit before its handler)"
+        assert "request: Request" in def_line, \
+            f"GET route {path} handler needs `request: Request` for slowapi; got {def_line.strip()!r}"
+
+
 # ════════════════════════════════════════════════════════════════════
 # Section 3 — RATE_LIMIT env-var parsing
 # ════════════════════════════════════════════════════════════════════
@@ -305,6 +338,7 @@ TESTS = [
     test_cf_remote_address_cf_wins_over_xff,
     test_slowapi_semicolon_form_parses,
     test_slowapi_list_form_is_rejected,
+    test_get_routes_are_rate_limited,
     test_rate_limit_default_triplet,
     test_rate_limit_env_override,
     test_docs_locked_when_env_unset,

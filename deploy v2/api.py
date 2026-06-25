@@ -656,7 +656,8 @@ def _round100k(n):
 # ── Endpoints ──
 
 @app.get("/api/health")
-async def health():
+@limiter.limit(";".join(RATE_LIMIT_LIST))
+async def health(request: Request):
     """Health check endpoint — basic status without sensitive details."""
     db_exists = MOJ_DB.exists()
     db_size_mb = round(MOJ_DB.stat().st_size / 1024 / 1024, 1) if db_exists else 0
@@ -807,7 +808,8 @@ def _probe_qars_endpoint() -> dict:
 
 
 @app.get("/api/freshness")
-async def freshness():
+@limiter.limit(";".join(RATE_LIMIT_LIST))
+async def freshness(request: Request):
     """Sprint 2.7: public freshness state for the home-page banner.
 
     Returns banner_ar (sticky banner text), subtitle_ar (hero replacement
@@ -829,7 +831,8 @@ async def freshness():
 
 
 @app.get("/api/calibration")
-async def calibration():
+@limiter.limit(";".join(RATE_LIMIT_LIST))
+async def calibration(request: Request):
     """Sprint 2.19: read-only view of the cap-rate calibration snapshot.
 
     Returns the freshness summary plus up to 200 calibrated cells (reliable
@@ -859,7 +862,8 @@ async def calibration():
 
 
 @app.get("/api/disclaimer")
-async def disclaimer():
+@limiter.limit(";".join(RATE_LIMIT_LIST))
+async def disclaimer(request: Request):
     """إخلاء المسؤولية الموحَّد لثمّن. يُعرض في الـ frontend بشكل دائم."""
     return {
         # Sprint 2.22.0a.2 C4: reframe defensive negation ("ليس تقييماً
@@ -900,7 +904,8 @@ async def disclaimer():
 
 
 @app.get("/api/about")
-async def about():
+@limiter.limit(";".join(RATE_LIMIT_LIST))
+async def about(request: Request):
     """معلومات عن النظام والمصادر التي يعتمدها."""
     return {
         "name": "Thammen — ثمّن",
@@ -943,7 +948,8 @@ async def about():
 
 
 @app.get("/api/scope")
-async def scope():
+@limiter.limit(";".join(RATE_LIMIT_LIST))
+async def scope(request: Request):
     """Sprint 2.14.0 — RICS VPS 2 Scope of Service declaration.
 
     Returns the formal scope statement: which asset types Thammen supports

@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b65-trend-dispersion-label'
-SPRINT_TAG = '2.22.0b.65'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b66-api-hardening'
+SPRINT_TAG = '2.22.0b.66'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1944,7 +1944,13 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
         opex_ratio = _CALIB_OPEX_BY_ASSET.get((asset_type or '').lower(),
                                               OPEX_RATIO_RESIDENTIAL)
     noi = annual_rent * (1 - opex_ratio)
-    income_value = noi / cap_rate
+    # Sprint 2.22.0b.66 (DEBUG T0-4): DEFENSIVE /0 guard. The live cap_rates.sqlite
+    # audit confirms every usable (reliable/indicative) cell has cap_rate>0 (the 82
+    # zero/NULL rows are all confidence='fallback' and never reach a usable lookup),
+    # so this is not live-reachable today — it hardens the path against a future
+    # bad row / hand-set rate. None flows gracefully (the income cross-check shows
+    # no value; _income_triangulation gates on income.get('value') truthiness).
+    income_value = (noi / cap_rate) if (cap_rate and cap_rate > 0) else None
 
     # Yields (descriptive)
     gross_yield = annual_rent / primary_value if primary_value else None
@@ -1958,7 +1964,7 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
             yield_flag = 'العائد الصافي مرتفع (>7%) — مؤشر استثماري قوي'
 
     return {
-        'value': round(income_value),
+        'value': round(income_value) if income_value else None,
         'annual_rent': annual_rent,
         'monthly_rent': round(annual_rent / 12),
         'rent_source': rent_source,
