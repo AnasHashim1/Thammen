@@ -40,7 +40,7 @@ The recompute is wrapped in `try/except: pass`. If it ever raised on an income_l
 - `py_compile` OK.
 - Isolated `test_sprint_2_22_0b67.py` **21/21**: the REAL `_villa_value_floor` + `_decompose_value` are AMOUNT-anchored (income 2.8M → implied = 2.8M − land_floor; comparison 5.4M → 5.4M − land_floor; the two DIFFER → the recompute is not a no-op; the income split SUMS to the income amount) + Patch-C F1 (income < land → floor still surfaces, land_anchored) + STRUCTURAL: the recompute is wired into the REAL income_led block, AFTER the amount-set, reading `output['valuation']['amount']` (the income figure), and does NOT leak into the else-branch (income-branch-local; the else keeps its own `_decomp20`/`_vf20` cost_led recompute unchanged).
 - DoD: aggregator **395/395 MATCH** · security **16/16** · surface **45/45** · broad walk **123/123 ALL GREEN** (122→123, +b67) — **ZERO sibling re-points** (b6 23/23 · b7 22/22 · b8 19/19 · b16 38/38 · b20 69/69 stay green; the edit is purely additive inside income_led).
-- Post-deploy live smoke + R14 (see §20.96).
+- **Live-verified (browser-UA #61) — Released Heroku v239:** POST 54/541/6 + rental_income 15000 → **income_led 2,800,000**; `value_decomposition` land **1,851,260** + building **948,740** = **2,800,000** (was the stale **5,400,000** comparison split with building 3,548,740 under a 2.8M headline) + `value_floor` coherent. **5-fixture value byte-gate identical to v238** (value-invariant). **R14 390×844** on the live income_led capture: FULL report renders the coherent split (stale 5.4M/3.5M ABSENT), DEF-12 central ٢٬٨٠٠٬٠٠٠ + forced-sale ٢٬٥٢٠٬٠٠٠ (×0.90), no overflow, **0 console errors**. Rule #52 closed MEASURED.
 
 ## 7. Deployment
 ```
