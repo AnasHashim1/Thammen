@@ -24,8 +24,8 @@ The launch-readiness DEBUG plan flagged two security/crash-safety items for the 
 - `py_compile` on `api.py` + `evaluate_unified.py` — clean.
 - `import api` — app builds; **14 routes**; `app.state.limiter` present.
 - `test_sprint_2p16p17_security.py` — **16/16** (15 prior + the new `test_get_routes_are_rate_limited` source-structural check: every one of the 6 GET routes carries `@limiter.limit` + `request: Request`; static routes not asserted).
-- DoD: aggregator ALL-MATCH · surface 45/45 · broad walk all-green (see Session_Log §20.95).
-- Live smoke (browser-UA #61): `/api/health` → engine `…b66-api-hardening`, still **200**; a >30-in-a-minute GET burst returns **429** (rate-limit live); the 5-fixture value byte-gate identical to v237.
+- DoD: aggregator **395/395 MATCH** · surface **45/45** · broad walk **122/122 ALL GREEN** (see Session_Log §20.95).
+- **Live-verified (browser-UA #61) — Released Heroku v238:** `/api/health` → engine `…b66-api-hardening`, **200**, qars healthy. **T0-3 PROVEN** — a 40-burst on `/api/about` (unrated before b66) → **30×200 then 10×429** (the `30/minute` cap fires at #31; heroku router log confirms a stable client key `fwd="212.70.111.33,…"`, 1 uvicorn worker, `Cf-Cache-Status: DYNAMIC` → enforces at origin). The 5-fixture value byte-gate **identical to v237** (54/541/6 2.4M cost_led · 56/647/6 3.8M geo_full · 55/296/13 2.6M e25_capped · 56/565/21 2.4M matched · 52/903/90 refusal). Rule #52 closed MEASURED.
 
 ## 6. Deployment
 ```
