@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b68-privacy-notice-truthful'
-SPRINT_TAG = '2.22.0b.68'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b69-income-led-completeness'
+SPRINT_TAG = '2.22.0b.69'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -5062,6 +5062,61 @@ def evaluate_thammen(
                             if _vfI:
                                 output['valuation']['value_floor'] = _vfI
                                 _inject_value_floor_into_brief(output.get('brief'), _vfI)
+                        except Exception:
+                            pass
+                        # ── Sprint 2.22.0b.69 (T0-2 completeness): income leadership + value_stack ──
+                        # The COMPLETENESS half of T0-2 (b67 closed the COHERENCE half). Emit a minimal
+                        # leadership{leader='income'} + value_stack so the FULL report renders the leader
+                        # verdict note + the DEF-12 cost row on income_led (previously OMITTED — weaker
+                        # than every other leader path). leader='income' keeps b64 #4's cost-basis hero
+                        # line OFF (it keys on 'cost'); note_ar/_en REUSE the already-built income note
+                        # (5012-5023) → zero new copy + value-invariant text; market.median = the demoted
+                        # comparison (NOT the headline). The leadership object OMITS the market-evidence
+                        # fields (matched_n/dispersion/band/geo_full/thresholds) — those justify a MARKET
+                        # verdict, not an income one. The DEF-12 central stays v.amount (income headline).
+                        # ADDITIVE only — amount/low/high/method/rule untouched (value-invariant headline).
+                        try:
+                            if _cost_av:
+                                _stack_cost_i = {
+                                    'label_ar': COST_STACK_LABEL_AR,
+                                    'label_en': COST_STACK_LABEL_EN,
+                                    'sub_ar': COST_STACK_SUB_AR,
+                                    'sub_en': COST_STACK_SUB_EN,
+                                    'value': _cost_av['value'],
+                                    'land_floor': _cost_av['land_floor'],
+                                    'building_value': _cost_av['building_value'],
+                                    'bua_m2': _cost_av['bua_m2'],
+                                    'rcn_qar_per_m2': _cost_av['rcn_qar_per_m2'],
+                                    'retention': _cost_av['retention'],
+                                    'effective_age': _cost_av['effective_age'],
+                                    'finish': _cost_av['finish'],
+                                    'assumptions_ar': ('افتراضات: تشطيب {f} · معامل احتفاظ {r} · '
+                                                       'عمر النظام (CGIS) أساس الاحتساب (E26)'
+                                                       ).format(f=_cost_av['finish'],
+                                                                r=_cost_av['retention']),
+                                }
+                            else:
+                                _stack_cost_i = {'unavailable_reason_ar': None}
+                            output['valuation']['value_stack'] = {
+                                'market': {
+                                    'median': _tri['comparison_value'],
+                                    'n': output['valuation'].get('n_transactions'),
+                                },
+                                'cost': _stack_cost_i,
+                                'income_available': True,
+                            }
+                            output['valuation']['leadership'] = {
+                                'leader': 'income', 'rule': 'income_led',
+                                'income_value': _tri['amount'],
+                                'market_value': _tri['comparison_value'],
+                                'cost_value': (_cost_av['value'] if _cost_av else None),
+                                'cap_rate': _tri['cap_rate'],
+                                'net_yield_pct': _tri['net_yield_pct'],
+                                'sample_size': _tri['sample_size'],
+                                'confidence': _tri['confidence'],
+                                'note_ar': _note_ar,
+                                'note_en': _note_en,
+                            }
                         except Exception:
                             pass
                     else:
