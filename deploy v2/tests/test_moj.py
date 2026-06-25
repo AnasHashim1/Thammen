@@ -136,7 +136,7 @@ class TestTrendComputation:
         """Trend label must be one of the three valid values."""
         trend = compute_trend(mini_rows, 'المعمورة 56',
                               datetime(2025, 12, 31), category='all')
-        assert trend['label'] in ('ارتفاع', 'استقرار', 'انخفاض')
+        assert trend['label'] in ('ارتفاع', 'استقرار', 'متذبذب', 'انخفاض')
 
     def test_trend_nonexistent_area(self, mini_rows):
         """Trend for nonexistent area returns None."""

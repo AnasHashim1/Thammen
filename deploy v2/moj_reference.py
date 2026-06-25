@@ -233,7 +233,7 @@ def compute_trend(rows, area, max_d, category='all'):
             ...
           ],
           'slope_annual_pct': float,   # linear regression slope as annual %
-          'label': str,               # 'ارتفاع' | 'استقرار' | 'انخفاض'
+          'label': str,               # 'ارتفاع' | 'استقرار' | 'متذبذب' | 'انخفاض'
           'latest_vs_peak_pct': float, # how far current is from peak
         }
     """
@@ -300,7 +300,15 @@ def compute_trend(rows, area, max_d, category='all'):
     elif slope_pct < -0.03:
         label = 'انخفاض'
     else:
-        label = 'استقرار'
+        # Sprint 2.22.0b.65 (DEBUG #5): a flat regression slope on DISPERSED yearly
+        # medians is "volatile", NOT "stable" (Rule E23 — a near-zero DIRECTION is not
+        # the same as low SPREAD). Apply the project's 0.30 dispersion convention to the
+        # peak-to-trough range of the yearly medians. Value-invariant: descriptive label
+        # only — never feeds amount/range/method (the trend panel is presentation).
+        _med = sorted(y['median_ft'] for y in years_data)
+        _mid = _med[len(_med) // 2]
+        _spread = (_med[-1] - _med[0]) / _mid if _mid else 0
+        label = 'متذبذب' if _spread > 0.30 else 'استقرار'
 
     # Latest vs peak
     peak = max(y['median_ft'] for y in years_data)

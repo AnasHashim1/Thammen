@@ -569,7 +569,12 @@ def query_trend(conn: sqlite3.Connection, area: str,
     elif slope_pct < -0.03:
         label = 'انخفاض'
     else:
-        label = 'استقرار'
+        # Sprint 2.22.0b.65 (DEBUG #5): flat slope on dispersed yearly medians = volatile,
+        # not stable (E23). Mirrors moj_reference.compute_trend (the live path) for parity.
+        _med = sorted(y['median_ft'] for y in years_data)
+        _mid = _med[len(_med) // 2]
+        _spread = (_med[-1] - _med[0]) / _mid if _mid else 0
+        label = 'متذبذب' if _spread > 0.30 else 'استقرار'
 
     peak = max(y['median_ft'] for y in years_data)
     latest = years_data[-1]['median_ft']
