@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b71-condition-axis-infra'
-SPRINT_TAG = '2.22.0b.71'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b72-value-clarity-divergence'
+SPRINT_TAG = '2.22.0b.72'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -6507,9 +6507,9 @@ COST_STACK_LABEL_AR = 'قيمة التكلفة (أرض + بناء مُهلَك) 
 COST_STACK_SUB_AR = 'استرشادي، مُعايَر على تقييم معتمد واحد (V001)'
 COST_STACK_LABEL_EN = 'Cost value (land + depreciated building) — DRC approach'
 COST_STACK_SUB_EN = 'Indicative — calibrated on a single certified appraisal (V001)'
-LEAD_COST_NOTE_AR = ('قيادة كلفة استرشادية — حوض المقارنات لم يجتز اختبار الموثوقية '
-                     '(n={n}، تشتت={d}). النطاق من قيمة التكلفة {cost} ر.ق إلى وسيط السوق '
-                     '{comp} ر.ق (مكتوماً) — لا رقم مركزيّ مُخترَع.')
+LEAD_COST_NOTE_AR = ('اعتمدنا كلفةَ البناء (استرشاديّة) لقلّة الصفقات المماثلة القريبة '
+                     '(عددها {n}، وتشتّتها {d}). النطاق من قيمة الكلفة {cost} ر.ق إلى وسيط '
+                     'السوق {comp} ر.ق (معروضاً) — لا رقم مركزيّ مُخترَع.')
 LEAD_COST_NOTE_EN = ('Indicative cost leadership — the comparison pool failed the '
                      'reliability test (n={n}, dispersion={d}). The range spans the cost '
                      'value {cost} QAR up to the muted market median {comp} QAR — no '
@@ -6526,9 +6526,9 @@ LEAD_GEO_FULL_NOTE_EN = ('The market leads via a geographically-pooled, stratum-
                          'sample (n={n}, dispersion={d} — passes the reliability bar); '
                          'material uncertainty raised one notch and the cost value applied '
                          'as the range floor.')
-LEAD_E25_NOTE_AR = ('تباعد المنهجين: قيمة التكلفة ({cost} ر.ق) أعلى من وسيط السوق '
-                    '({comp} ر.ق) — يقود السوقُ سقفاً مضاداً للتضخيم (الكلفة أرضية لا بديل '
-                    'سوق)، مع أن حوض المقارنات لم يجتز اختبار الموثوقية؛ عدم اليقين مرتفع.')
+LEAD_E25_NOTE_AR = ('كلفةُ البناء ({cost} ر.ق) أعلى من وسيط بيع السوق ({comp} ر.ق)؛ '
+                    'والمباني تُباع بسعر السوق لا بكلفة بنائها، فاعتمدنا سعر السوق '
+                    '(والكلفةُ أرضيةٌ لا سقفٌ للقيمة). عدم اليقين مرتفع لقلّة الصفقات المماثلة.')
 LEAD_E25_NOTE_EN = ('Approach divergence: the cost value ({cost} QAR) sits ABOVE the market '
                     'median ({comp} QAR) — the market figure keeps the lead as the '
                     'anti-inflation cap (cost is a floor, never a market proxy), although '

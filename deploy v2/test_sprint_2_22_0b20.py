@@ -151,8 +151,13 @@ check('cost sub V001 verbatim', COST_STACK_SUB_AR == 'استرشادي، مُع�
 check('resurvey F2=B verbatim', LEAD_RESURVEY_NOTE_AR == 'عمر مُعاد تسجيله — غير موثوق')
 check('age-honesty verbatim core', 'تقدير الإهلاك يزداد ذاتيةً مع التقادم' in LEAD_COST_AGE_HONESTY_AR
       and 'معايرتنا على شيت مثمّن وأرضية السوق تخففه' in LEAD_COST_AGE_HONESTY_AR)
-check('cost-led note carries n/تشتت placeholders', '{n}' in LEAD_COST_NOTE_AR and 'تشتت={d}' in LEAD_COST_NOTE_AR)
-check('E25 note names the anti-inflation cap', 'سقفاً مضاداً للتضخيم' in LEAD_E25_NOTE_AR)
+# b72 (R6/Lesson-2 re-point): the notes were de-jargoned (value-clarity) — the METHODOLOGY is intact
+# (the cost-led note still carries n + dispersion + the no-invented-central line; the E25 note still
+# states cost is a FLOOR not a ceiling = the anti-inflation rail), only the wording is plainer.
+check('cost-led note carries n + dispersion placeholders + the no-invented-central line',
+      '{n}' in LEAD_COST_NOTE_AR and '{d}' in LEAD_COST_NOTE_AR and 'لا رقم مركزيّ مُخترَع' in LEAD_COST_NOTE_AR)
+check('E25 note states cost is a FLOOR not a ceiling (the anti-inflation rail, plain wording)',
+      'أرضيةٌ لا سقفٌ' in LEAD_E25_NOTE_AR and '{cost}' in LEAD_E25_NOTE_AR and '{comp}' in LEAD_E25_NOTE_AR)
 _b20_consts = ''.join(v for k, v in vars(EU).items()
                       if k.startswith(('LEAD_', 'COST_STACK')) and isinstance(v, str))
 check('terminology: «معامل الإحلال» reserved (absent from b20 copy)', 'معامل الإحلال' not in _b20_consts)

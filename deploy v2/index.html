@@ -1650,6 +1650,9 @@ function showReport(d){
     // raw_land: the unified «DRC ≡ قيمة الأرض» line (v.cost_note_ar). Refusal/hybrid never
     // reach this block (hasValuation-gated). + the forced-sale BASIS disclosure line.
     const _fs=Math.round((v.amount||0)*0.90);
+    // Sprint 2.22.0b.72 (value-clarity): one plain-language bridge so the three figures aren't read as
+    // competing/co-equal numbers — they are (our estimate · rebuild cost · quick-sale). Value-invariant.
+    h+='<div class="rn" style="font-size:.8rem;margin-bottom:8px;color:var(--muted)">ثلاثة أرقام: تقديرُنا لقيمة بيتك · كلفةُ إعادة بنائه · وتقديرٌ عند البيع السريع.</div>';
     h+='<div class="rep-def12">';
     h+='<div class="rep-def12-row"><span>'+_def12R+'</span><strong>'+fmt(v.amount)+' ر.ق</strong></div>';
     if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
@@ -2379,7 +2382,14 @@ function show(d){
     // where the market leads). Pure additive — no locked-string mutation, no test re-point.
     if(v.leadership&&v.leadership.leader==='cost'){
       var _clMkt=(v.value_stack&&v.value_stack.market&&v.value_stack.market.median)||v.high;
-      t1+='<div class="rn" style="margin-top:8px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> هذا الرقم مبنيّ على الكلفة (أرض + بناء مُهلَك) لأنّ حوض المقارنات لم يجتز اختبار الموثوقيّة؛ وسيط السوق ('+fmt(_clMkt)+' ر.ق) معروض مكتوماً كحدٍّ أعلى للنطاق — التفصيل في «كيف وصلنا».</div>';
+      t1+='<div class="rn" style="margin-top:8px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> اعتمدنا كلفةَ البناء (الأرض + المبنى بعد خصم الإهلاك) لأنّ الصفقات المماثلة القريبة كانت قليلة؛ وقد بِيعت بيوتٌ في منطقتك بنحو '+fmt(_clMkt)+' ر.ق، وهو معروضٌ كحدٍّ أعلى للنطاق. التفصيل في «كيف وصلنا».</div>';
+    }
+    // Sprint 2.22.0b.72 (value-clarity): on an e25_capped villa the COST diverges HIGH (cost > market;
+    // the market leads as the value, cost is a FLOOR not a ceiling). That divergence used to live only in
+    // the collapsed «كيف وصلنا» → surface it ON-SCREEN in plain owner language. Value-invariant (reads the
+    // broadcast value_stack.cost; amount/low/high/leader untouched).
+    if(v.leadership&&v.leadership.leader==='market'&&v.leadership.rule==='e25_capped'&&v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
+      t1+='<div class="rn" style="margin-top:8px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> كلفةُ إعادة بناء بيتك ('+fmt(v.value_stack.cost.value)+' ر.ق) أعلى من سعر بيعه الحاليّ في السوق؛ والمباني تُباع بسعر السوق لا بكلفة بنائها. التفصيل في «كيف وصلنا».</div>';
     }
     // Sprint 2.22.0b.31 (DEF-UX11): condition / teardown / luxury are DECISION-RELEVANT, user-input-driven
     // headline qualifiers (conditional) → STAY on TIER-1. The 9-note methodology «parade» below folds into
