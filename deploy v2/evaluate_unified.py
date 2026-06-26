@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b73-a11y-contrast-age-clarity'
-SPRINT_TAG = '2.22.0b.73'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b74-engine-emoji-sweep'
+SPRINT_TAG = '2.22.0b.74'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -2402,7 +2402,7 @@ def _analyze_reconciliation(primary, cost, income) -> dict:
     if spread_pct < 15:
         return {
             'status': 'strong_convergence',
-            'label_ar': 'تقارب قوي بين الطرق ✓',
+            'label_ar': 'تقارب قوي بين الطرق',
             'message_ar': 'الطرق الثلاث تتقارب — ثقة عالية في القيمة',
             'spread_pct': round(spread_pct, 1),
             'gaps_pct': gaps,
@@ -2417,7 +2417,7 @@ def _analyze_reconciliation(primary, cost, income) -> dict:
         }
     return {
         'status': 'divergence',
-        'label_ar': 'تباين كبير ⚠️',
+        'label_ar': 'تباين كبير',
         'message_ar': 'تباين جوهري بين الطرق — يلزم فحص ميداني أو إعادة تقييم البيانات',
         'spread_pct': round(spread_pct, 1),
         'gaps_pct': gaps,
@@ -2739,7 +2739,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         },
         'accuracy': {
             'score': 0,
-            'label': '⚠️ بيانات غير كافية',
+            'label': 'بيانات غير كافية',
         },
         'trend': None,
         'location_features': None,
@@ -2870,7 +2870,7 @@ def _t2_band_copy(band: str, n: int, muc_range_pct: float) -> dict:
             ),
             'level':          'medium',
             'accuracy_score': 1,
-            'accuracy_label': '🟡 شواهد محدودة عند الحد الأدنى للعينة (T2, n<10)',
+            'accuracy_label': 'شواهد محدودة عند الحد الأدنى للعينة (T2, n<10)',
         }
     if band == 'indicative':
         return {
@@ -2886,7 +2886,7 @@ def _t2_band_copy(band: str, n: int, muc_range_pct: float) -> dict:
             ),
             'level':          'medium',
             'accuracy_score': 2,
-            'accuracy_label': '🟡 شواهد محدودة — مبنية على إعلانات (T2)',
+            'accuracy_label': 'شواهد محدودة — مبنية على إعلانات (T2)',
         }
     # strong_indicative — n >= 20
     # Sprint 2.22.0a.2 C3: tier badge ceiling stays at "شواهد محدودة" even
@@ -2903,7 +2903,7 @@ def _t2_band_copy(band: str, n: int, muc_range_pct: float) -> dict:
         ),
         'level':          'low',
         'accuracy_score': 3,
-        'accuracy_label': '🟢 شواهد محدودة — عينة قوية (T2 n≥20)',
+        'accuracy_label': 'شواهد محدودة — عينة قوية (T2 n≥20)',
     }
 
 
@@ -3163,7 +3163,7 @@ def _build_fast_listing_only_response(zone, street, building, loc, plot, asset_t
         },
         'accuracy': {
             'score': 30,
-            'label': '⚠️ فحص ضمني فقط',
+            'label': 'فحص ضمني فقط',
         },
         'trend': None,
         'location_features': None,
@@ -3404,7 +3404,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         },
         'accuracy': {
             'score': 55,
-            'label': '⚠️ تقدير بطريقة واحدة',
+            'label': 'تقدير بطريقة واحدة',
         },
         'trend': None,
         'location_features': None,
@@ -4641,7 +4641,7 @@ def evaluate_thammen(
                     if age_confidence_years else ''
                 )
                 method_note += (
-                    f'\n\n📡 ملاحظة: عمر البناء ({building_age_years} سنة) تم استخراجه '
+                    f'\n\nملاحظة: عمر البناء ({building_age_years} سنة) تم استخراجه '
                     f'تلقائياً من تحليل صور الأقمار الصناعية التاريخية{conf_part}. '
                     f'لو كنت تعرف العمر الفعلي، أدخله يدوياً للحصول على دقة أعلى.'
                 )
@@ -6827,7 +6827,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     if primary and primary['method'] == 'comparison_bracket' and n >= 20:
         output['accuracy'] = {
             'score': 85,
-            'label': '🟢 شواهد كافية',
+            'label': 'شواهد كافية',
             'tier': 'high',
             # Sprint 2.22.0a.2 §9 precision pass: reframed old wording
             # to honest comparable scope (district + bracket match, not
@@ -6837,7 +6837,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     elif primary and primary['method'] in ('comparison_bracket', 'comparison_widened') and n >= 20:
         output['accuracy'] = {
             'score': 78,
-            'label': '🟢 شواهد كافية',
+            'label': 'شواهد كافية',
             'tier': 'high',
             # Sprint 2.22.0a.2 §9 precision pass.
             'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة (مع توسيع النطاق الجغرافي للعثور على عدد كافٍ من الصفقات القريبة في النوع والمساحة).',
@@ -6845,21 +6845,21 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     elif primary and n >= 10:
         output['accuracy'] = {
             'score': 60,
-            'label': '🟡 شواهد محدودة',
+            'label': 'شواهد محدودة',
             'tier': 'medium',
             'explanation_ar': f'مبني على {n} صفقة فقط — أقل من المعدل الإحصائي المثالي (20). النتيجة قد تنحرف ±10-15% عن السعر الفعلي. يُفضّل التحقق ميدانياً.',
         }
     elif primary:
         output['accuracy'] = {
             'score': 35,
-            'label': '🟠 تقدير تقريبي',
+            'label': 'تقدير تقريبي',
             'tier': 'low',
             'explanation_ar': f'مبني على {n} صفقة فقط — عينة صغيرة جداً. النتيجة تقريبية، لا تعتمد عليها لقرار شراء/بيع بدون فحص ميداني أو مُقيِّم معتمد.',
         }
     else:
         output['accuracy'] = {
             'score': 0,
-            'label': '❌ بيانات غير كافية',
+            'label': 'بيانات غير كافية',
             'tier': 'none',
             # Sprint 2.22.0a.2 §9 precision pass.
             'explanation_ar': 'لا توجد صفقات بيع كافية لعقارات قريبة في النوع والمساحة ضمن نفس المنطقة في وزارة العدل. لم يتم إنتاج تقييم.',
@@ -6949,7 +6949,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 output['trend']['slope_pct'] = round(slope_pct, 1)
                 if abs(slope_pct) > 8:
                     output['trend']['warning'] = (
-                        f'⚠️ اتجاه استثنائي ({slope_pct:+.1f}%/سنة) — '
+                        f'اتجاه استثنائي ({slope_pct:+.1f}%/سنة) — '
                         f'لا يُستخدم للاستقراء. النمو المستدام في قطر 2-4%/سنة.'
                     )
             else:
@@ -7192,12 +7192,12 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             if mu.get('level') == 'high':
                 mu['level'] = 'moderate'
                 mu['banner_ar'] = (
-                    '⚠️ تحفّظ مادي متوسط — عينة المقارنات معقولة (n=' + str(effective_n)
+                    'تحفّظ مادي متوسط — عينة المقارنات معقولة (n=' + str(effective_n)
                     + ') لكن لا يوجد فحص ميداني أو بيانات بناء كاملة. '
                     + 'يبقى الفحص الميداني موصى به للقرارات الكبرى.'
                 )
                 mu['banner_en'] = (
-                    '⚠️ MODERATE Material Uncertainty — Reasonable comparable sample '
+                    'MODERATE Material Uncertainty — Reasonable comparable sample '
                     '(n=' + str(effective_n) + ') but no field inspection or full building data. '
                     'Field inspection recommended for major decisions.'
                 )
@@ -7361,7 +7361,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             # (2) tier → indicative (lowest qualitative tier in the شواهد taxonomy)
             output['accuracy'] = {
                 'score': 50,
-                'label': '🟡 شواهد محدودة',
+                'label': 'شواهد محدودة',
                 'tier': 'medium',
                 'explanation_ar': (
                     'تقدير إرشادي بنطاق واسع: المقارنات المتاحة تختلف في نوع البناء والحالة، '
@@ -7373,11 +7373,11 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             _mu = dict(output.get('material_uncertainty') or {})
             _mu['level'] = 'high'
             _mu['banner_ar'] = (
-                '⚠️ تحفّظ مادي مرتفع — النطاق واسع لأن الصفقات المقارنة المتاحة تختلف في نوع '
+                'تحفّظ مادي مرتفع — النطاق واسع لأن الصفقات المقارنة المتاحة تختلف في نوع '
                 'البناء والحالة، ولم يُؤكَّد نوع بناء العقار وحالته. النتيجة إرشادية حتى التحقق الميداني.'
             )
             _mu['banner_en'] = (
-                '⚠️ HIGH material uncertainty — the range is wide because the available '
+                'HIGH material uncertainty — the range is wide because the available '
                 'comparable sales differ in built type and condition, and the subject’s built '
                 'type and condition are unconfirmed. Indicative pending field verification.'
             )

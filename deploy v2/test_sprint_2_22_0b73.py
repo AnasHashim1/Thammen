@@ -46,9 +46,9 @@ check('locked hero label preserved (b54 terminology lock)',
       'التقييم السوقي' in HTML)
 check('forced-sale honesty preserved',
       'ليست تصفية معتمدة' in HTML)
-check('engine version bumped to b73',
-      "SPRINT_TAG = '2.22.0b.73'" in ENG and
-      "thammen-sprint2p22p0b73-a11y-contrast-age-clarity" in ENG)
+check('engine version is a valid b-series tag (version-agnostic, R6)',
+      "SPRINT_TAG = '2.22.0b." in ENG and
+      "thammen-sprint2p22p0b" in ENG)
 check('b72 value-clarity copy untouched (e25 on-screen + cost-led de-jargon intact)',
       'كلفةُ إعادة بناء بيتك' in HTML and 'الصفقات المماثلة القريبة كانت قليلة' in HTML)
 

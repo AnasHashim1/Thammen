@@ -112,8 +112,8 @@ def test_evaluate_unified_land_conf_ar_relabeled():
 def test_evaluate_unified_accuracy_label_relabeled():
     """accuracy.label (lines ~4095-4109) emits شواهد taxonomy badges."""
     src = (REPO_ROOT / 'evaluate_unified.py').read_text(encoding='utf-8')
-    assert "'label': '🟢 شواهد كافية'" in src, "accuracy.label high tier"
-    assert "'label': '🟡 شواهد محدودة'" in src, "accuracy.label medium tier"
+    assert "'label': 'شواهد كافية'" in src, "accuracy.label high tier"
+    assert "'label': 'شواهد محدودة'" in src, "accuracy.label medium tier"
     # Forbidden pre-patch
     assert "'label': '🟢 تقدير موثوق'" not in src
     assert "'label': '🟡 تقدير إرشادي'" not in src
@@ -123,9 +123,9 @@ def test_evaluate_unified_accuracy_label_relabeled():
 def test_evaluate_unified_t2_hybrid_badges_relabeled():
     """T2 hybrid accuracy_label (lines ~2049-2079) emits شواهد taxonomy."""
     src = (REPO_ROOT / 'evaluate_unified.py').read_text(encoding='utf-8')
-    assert "'🟡 شواهد محدودة عند الحد الأدنى للعينة (T2, n<10)'" in src
-    assert "'🟡 شواهد محدودة — مبنية على إعلانات (T2)'" in src
-    assert "'🟢 شواهد محدودة — عينة قوية (T2 n≥20)'" in src
+    assert "'شواهد محدودة عند الحد الأدنى للعينة (T2, n<10)'" in src
+    assert "'شواهد محدودة — مبنية على إعلانات (T2)'" in src
+    assert "'شواهد محدودة — عينة قوية (T2 n≥20)'" in src
     # Forbidden pre-patch
     assert "'🟡 إرشادي عند الحد الأدنى للعينة (T2, n<10)'" not in src
     assert "'🟢 إرشادي قوي — عينة كبيرة (T2 n≥20)'" not in src
