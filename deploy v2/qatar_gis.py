@@ -1049,14 +1049,14 @@ def classify_asset(plot: PlotInfo, location_metadata=None,
                 f'- المساحة: {area:,.0f} م²\n'
                 f'- التصنيف: {_rid_ar}\n'
                 f'- الارتفاع المسموح: {_bheight or "غير متاح"}\n'
-                f'- البناء: موجود ✓'
+                f'- البناء: موجود'
             )
             _nonres_confirmed = (_ruleid in RULEID_REJECT or _ruleid in RULEID_WARN
                                  or _ruleid in RULEID_MIXED_USE or _ruleid in RULEID_AGRICULTURAL)
             if _nonres_confirmed:
                 _cat = _nonres_category_ar(_ruleid)
                 _msg = (
-                    f'⚠ هذه القطعة (PIN {plot.pin}) عليها مبنى + مصنّفة {_rid_ar} '
+                    f'هذه القطعة (PIN {plot.pin}) عليها مبنى + مصنّفة {_rid_ar} '
                     f'(RULEID={_ruleid}).\n'
                     f'العقارات {_rid_ar} خارج نطاق Thammen حالياً.\n'
                     f'استشر مُقيِّم متخصّص للعقارات {_cat}.'
@@ -1074,7 +1074,7 @@ def classify_asset(plot: PlotInfo, location_metadata=None,
             # (these are NOT confirmed non-residential — the building may be a
             # villa/apartment the address flow can value).
             _msg = (
-                f'⚠ هذه القطعة (PIN {plot.pin}) عليها مبنى — ليست أرض فضاء.'
+                f'هذه القطعة (PIN {plot.pin}) عليها مبنى — ليست أرض فضاء.'
                 + _disc
                 + f"\n\nلتقييم العقار المبني عليها:\n"
                   f"استخدم تبويب 'العنوان' مع Zone/Street/Building.\n\n"
@@ -1122,7 +1122,7 @@ def classify_asset(plot: PlotInfo, location_metadata=None,
             # Tradable land value exists but residential comparables are a rough
             # proxy → value WITH a bold disclaimer (DECISION 1, "accept with
             # warning"). RULEID overrode the geometric guard, so return raw_land.
-            _msg = (f'⚠ هذه الأرض مصنّفة {_rid_ar}. التقدير يستخدم مقارنات عامة. '
+            _msg = (f'هذه الأرض مصنّفة {_rid_ar}. التقدير يستخدم مقارنات عامة. '
                     f'السعر الفعلي قد يختلف 2-5 أضعاف حسب: الموقع على الشارع، '
                     f'مسافة الواجهة، التطوير المسموح. '
                     f'يُنصح بـ مُقيِّم متخصّص للقرارات النهائية.')

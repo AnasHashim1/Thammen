@@ -214,7 +214,7 @@ def regime_muc(regime=None) -> dict:
     # transactions) instead of geopolitical narration. Gemini-approved
     # verbatim per docs/MULTI_AI_VALIDATION_BATCH_2p22p0a2.md §1.
     muc_clause_ar = (
-        f'⚠️ تحفظ مادي وفق ‎RICS Red Book Global Standards‎ '
+        f'تحفظ مادي وفق ‎RICS Red Book Global Standards‎ '
         f'(‎effective 31 January 2025‎) — ‎VPGA 10‎ '
         f'(‎Material Valuation Uncertainty‎) و ‎VPS 6‎ '
         f'(‎Valuation Reports‎) — و ‎IVS‎ '
@@ -238,7 +238,7 @@ def regime_muc(regime=None) -> dict:
     )
 
     muc_clause_en = (
-        f'⚠️ Material Valuation Uncertainty per RICS Red Book Global '
+        f'Material Valuation Uncertainty per RICS Red Book Global '
         f'Standards (effective 31 January 2025) — VPGA 10 (Material '
         f'Valuation Uncertainty) and VPS 6 (Valuation Reports) — and '
         f'IVS (effective 31 January 2025) — IVS 106 (Documentation '
@@ -398,34 +398,34 @@ def assess_uncertainty(
 
     if max_score >= 4:
         level = 'critical'
-        banner_ar = ('⛔ تحفظ مادي جوهري — '
+        banner_ar = ('تحفظ مادي جوهري — '
                      'البيانات المتاحة غير كافية لإنتاج تقييم موثوق. '
                      'النتائج للاسترشاد الأوّلي فقط ولا تصلح لاتخاذ قرار.')
-        banner_en = ('⛔ CRITICAL Material Uncertainty — '
+        banner_en = ('CRITICAL Material Uncertainty — '
                      'Insufficient data for a reliable valuation. '
                      'Results are for preliminary guidance only.')
     elif max_score >= 3:
         level = 'high'
-        banner_ar = ('⚠️ تحفظ مادي عالٍ — '
+        banner_ar = ('تحفظ مادي عالٍ — '
                      'عينة المقارنات صغيرة جداً و/أو معلومات أساسية مفقودة. '
                      'يُنصح باستشارة مُقيِّم معتمد.')
-        banner_en = ('⚠️ HIGH Material Uncertainty — '
+        banner_en = ('HIGH Material Uncertainty — '
                      'Very small comparable sample and/or critical information gaps. '
                      'Certified valuer consultation recommended.')
     elif max_score >= 2:
         level = 'moderate'
-        banner_ar = ('ℹ️ تحفظ مادي متوسط — '
+        banner_ar = ('تحفظ مادي متوسط — '
                      'تقييم مكتبي بدون فحص ميداني. '
                      'النتائج معقولة لكنها لا تحل محل معاينة ميدانية.')
-        banner_en = ('ℹ️ MODERATE Material Uncertainty — '
+        banner_en = ('MODERATE Material Uncertainty — '
                      'Desktop valuation without physical inspection. '
                      'Results are reasonable but do not replace site inspection.')
     else:
         level = 'low'
-        banner_ar = ('✅ مستوى اليقين جيد — '
+        banner_ar = ('مستوى اليقين جيد — '
                      'عينة كافية من الصفقات الفعلية. '
                      'التقييم مبني على بيانات موثوقة مع التحفظات المذكورة.')
-        banner_en = ('✅ LOW Material Uncertainty — '
+        banner_en = ('LOW Material Uncertainty — '
                      'Sufficient comparable transactions. '
                      'Valuation based on reliable data with noted caveats.')
 

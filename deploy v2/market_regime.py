@@ -314,7 +314,7 @@ def regime_recommendation(
     if regime.moj_data_predates_regime:
         lag_days = (regime.active_since - regime.moj_last_known_date).days
         lag_warning = (
-            f'⚠️ آخر معاملة في وزارة العدل: '
+            f'آخر معاملة في وزارة العدل: '
             f'{regime.moj_last_known_date.isoformat()}. '
             f'مرّ على هذا التاريخ {lag_days} يوماً. '
             f'البيانات الأساسية لا تعكس تطوّرات السوق منذ آخر تحديث منشور.'

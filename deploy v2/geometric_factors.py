@@ -420,7 +420,7 @@ def analyze_adjacent_zoning(centroid_lat: float, centroid_lon: float,
             'hbu_potential': False,
             'industrial_adjacency': True,
             'potential_pct': -0.10,
-            'evidence_ar': f'⚠ تصنيف صناعي مجاور ({", ".join(c for c in adjacent_codes if c in INDUSTRIAL_CODES)}) — قد يَخفض القيمة',
+            'evidence_ar': f'تصنيف صناعي مجاور ({", ".join(c for c in adjacent_codes if c in INDUSTRIAL_CODES)}) — قد يَخفض القيمة',
             'adjacent_zones': sorted(adjacent_codes),
         }
 
@@ -444,7 +444,7 @@ def analyze_adjacent_zoning(centroid_lat: float, centroid_lon: float,
         flag = 'تصنيف كثافة أعلى مجاور'
 
     evidence = (
-        f'⚠ إمكانية تعديل رخصة: {flag} ({", ".join(sorted(adjacent_codes))}). '
+        f'إمكانية تعديل رخصة: {flag} ({", ".join(sorted(adjacent_codes))}). '
         f'القيمة قد ترتفع بـ +{int(potential_pct*100)}% '
         f'إذا تم اعتماد التعديل (‎RICS HBU — VPS 2 / IVS 102‎).'
     )
