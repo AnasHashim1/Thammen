@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b74-engine-emoji-sweep'
-SPRINT_TAG = '2.22.0b.74'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b75-tariqa-to-manhaj'
+SPRINT_TAG = '2.22.0b.75'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1936,7 +1936,7 @@ def _build_cost_crosscheck(ev) -> Optional[dict]:
         'depreciation_rate_pct': dep_pct_val,
         'bua_m2': getattr(rc, 'bua_m2', None),
         'tier': getattr(rc, 'construction_tier', None),
-        'method_label_ar': 'طريقة التكلفة الإحلالية (RICS Cost Approach)',
+        'method_label_ar': 'منهج التكلفة الإحلالية (RICS Cost Approach)',
         'role_ar': 'تأكيد منهجي — لا تدخل في القيمة النهائية لعقار سكني',
     }
 
@@ -1969,7 +1969,7 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
             reason_ar = (
                 'الفيلات السكنية سكن مالكي، عائدها الإيجاري منخفض لأن الموقع ونمط '
                 'الحياة يغلبان على الإيجار في تسعيرها — لذا يُستخدم معدل رسملة '
-                'افتراضي منخفض (4%). طريقة الدخل هنا تأكيد منهجي ولا تدخل القيمة '
+                'افتراضي منخفض (4%). منهج الدخل هنا للتأكيد فقط، ولا يدخل في القيمة '
                 'النهائية لعقار سكني.'
             )
         else:
@@ -2049,7 +2049,7 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
         'net_yield':   round(net_yield, 4) if net_yield else None,
         'yield_flag_ar': yield_flag,
         'caveats': rent_caveats,
-        'method_label_ar': 'طريقة الدخل (RICS Income Approach)',
+        'method_label_ar': 'منهج الدخل (RICS Income Approach)',
         'role_ar': 'تأكيد منهجي — لا تدخل في القيمة النهائية لعقار سكني',
     }
 
@@ -2703,7 +2703,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
             f'مباشرة لفئة "{asset_label_ar}" في قطر'
         ),
         'methodology_disclaimer_ar': (
-            'تقدير الأصول من هذه الفئة يحتاج طريقة الدخل (Income Approach) أو سعر '
+            'تقدير الأصول من هذه الفئة يحتاج منهج الدخل (Income Approach) أو سعر '
             'إعلان قابل للمقارنة. يرجى إعادة الطلب مع إفادة بالإيجار الشهري أو سعر '
             'الإعلان للحصول على تحليل آلي.'
         ),
@@ -2767,7 +2767,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
                         f'مُصنَّف كـ "{asset_label_ar}". لتحليل آلي يرجى تزويدنا بأحد التاليين:'
                     ),
                     'options_ar': [
-                        'إفادة الإيجار الشهري الفعلي (لتقييم بطريقة الدخل)',
+                        'إفادة الإيجار الشهري الفعلي (لتقييم بمنهج الدخل)',
                         'سعر الإعلان أو سعر المالك (لمقارنة سوقية)',
                     ],
                 },
@@ -3297,10 +3297,10 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
                 'cap_rate_used': cap_rate,
                 'noi': noi,
                 'role_ar': (
-                    f'القيمة الأساسية المعتمدة لـ "{asset_label_ar}" (طريقة الدخل '
-                    'هي الطريقة الأنسب لهذه الفئة وفق RICS Income Approach)'
+                    f'القيمة الأساسية المعتمدة لـ "{asset_label_ar}" (منهج الدخل '
+                    'هو المنهج الأنسب لهذه الفئة وفق RICS Income Approach)'
                 ),
-                'method_label_ar': 'طريقة الدخل (RICS Income Approach)',
+                'method_label_ar': 'منهج الدخل (RICS Income Approach)',
             },
         },
         {
@@ -3340,7 +3340,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
                 'benchmark': income_value,
                 'gap_pct': listing_gap_pct,
                 'position': 'above_market' if gap_pct > 5 else 'below_market' if gap_pct < -5 else 'at_market',
-                'description_ar': f'السعر {position_ar} بـ {abs(gap_pct):.1f}%. القيمة محسوبة من الإيجار المُقدَّم بطريقة الدخل.',
+                'description_ar': f'السعر {position_ar} بـ {abs(gap_pct):.1f}%. القيمة محسوبة من الإيجار المُقدَّم بمنهج الدخل.',
             },
         })
 
@@ -3352,8 +3352,8 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         'engine_version': ENGINE_VERSION,
         'tier_label': _tier_label_for('income_approach_only'),  # Sprint 2.22.0a/2 — 'analytical_range'
         'methodology_ar': (
-            f'تقدير سريع بطريقة الدخل (RICS Income Approach) لـ "{asset_label_ar}". '
-            'لا توجد مقارنة MoJ مباشرة لهذه الفئة في قطر — الدخل هو الطريقة المعيارية.'
+            f'تقدير سريع بمنهج الدخل (RICS Income Approach) لـ "{asset_label_ar}". '
+            'لا توجد مقارنة MoJ مباشرة لهذه الفئة في قطر — الدخل هو المنهج المعياريّ.'
         ),
         'methodology_disclaimer_ar': (
             'تقدير آلي مبني على الإيجار المُقدَّم من العميل و معدّل الرسملة نموذجي للفئة. '
@@ -3377,7 +3377,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
             'low': value_low,
             'high': value_high,
             'method': 'income_approach_only',
-            'method_ar': 'طريقة الدخل (الطريقة المعيارية لهذه الفئة)',
+            'method_ar': 'منهج الدخل (المنهج المعياريّ لهذه الفئة)',
         },
         'moj_sample_size': 0,
         'cost_approach': None,
@@ -3392,19 +3392,19 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
             'cap_rate_label_ar': f'معدل رسملة {cap_rate*100:.1f}% (نموذجي لـ {asset_label_ar})',
             'gross_yield': gross_yield,
             'net_yield': net_yield,
-            'method_label_ar': 'طريقة الدخل (RICS Income Approach)',
+            'method_label_ar': 'منهج الدخل (RICS Income Approach)',
             'role_ar': 'القيمة الأساسية المعتمدة',
         },
         'reconciliation': {
             'status': 'income_only',
             'message_ar': (
-                f'طريقة واحدة معتمدة: الدخل. للأصول من فئة "{asset_label_ar}" '
+                f'منهج واحد معتمد: الدخل. للأصول من فئة "{asset_label_ar}" '
                 'لا توجد مقارنة MoJ كافية، ومنهج التكلفة لا يعكس قيمة الاستثمار.'
             ),
         },
         'accuracy': {
             'score': 55,
-            'label': 'تقدير بطريقة واحدة',
+            'label': 'تقدير بمنهج واحد',
         },
         'trend': None,
         'location_features': None,
@@ -3427,7 +3427,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
             'audience': audience,
             'title_ar': (
                 f'تقرير المستثمر — {asset_label_ar}' if audience == 'investor'
-                else f'تقدير {asset_label_ar} بطريقة الدخل'
+                else f'تقدير {asset_label_ar} بمنهج الدخل'
             ),
             'sections': sections,
         },
@@ -3437,7 +3437,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         ),
         'active_listings': {
             'available': False,
-            'reason': 'تقدير سريع بطريقة الدخل — لم يُجرَ بحث إعلانات',
+            'reason': 'تقدير سريع بمنهج الدخل — لم يُجرَ بحث إعلانات',
         },
     })
     # Sprint 2.22.0b.59: range-inversion guard on the fast (income-only) path too —
@@ -7247,7 +7247,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                     'title_ar': 'تحليل الدخل والعائد',
                     'content': {
                         'note_ar': (
-                            'انظر قسم "طريقة الدخل" أعلاه — يحوي القيمة الصحيحة، '
+                            'انظر قسم "منهج الدخل" أعلاه — يحوي القيمة الصحيحة، '
                             'مصدر الإيجار، معدّل الرسملة المناسب لنوع الأصل، وصافي العائد.'
                         ),
                     },

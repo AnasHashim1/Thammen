@@ -141,7 +141,7 @@ def test_t28_other_five_A_sites_preserved():
     # These 5 per-path methodology caveats are NOT duplicates of D and must
     # survive the A→D fold (premise-check correction).
     preserved = [
-        'تقدير الأصول من هذه الفئة يحتاج طريقة الدخل',          # @1932 unsupported
+        'تقدير الأصول من هذه الفئة يحتاج منهج الدخل',          # @1932 unsupported (b75: طريقة→منهج)
         "base['methodology_disclaimer_ar'] = copy['disclaimer_ar']",  # @2251 hybrid T2
         'هذا ليس تقييماً نهائياً، بل أداة فحص',                 # @2354 asking-price tool
         'تقدير آلي مبني على الإيجار المُقدَّم من العميل',        # @2585 income path
