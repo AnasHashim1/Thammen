@@ -625,7 +625,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
             <div class="fg"><label>مجلس خارجي منفصل</label><select id="externalMajlis"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد</option></select></div>
           </div>
           <div class="fr2">
-            <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من أبعاد القطعة" min="0"><div id="fpHint" class="rn" style="font-size:.75rem;color:#8b6e44;margin-top:5px;line-height:1.5"></div></div>
+            <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من أبعاد القطعة" min="0"><div id="fpHint" class="rn" style="font-size:.75rem;color:var(--muted);margin-top:5px;line-height:1.5"></div></div>
             <div class="fg"></div>
           </div>
         </div>
@@ -647,7 +647,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
         <summary><span class="gnum">٣</span>معلومات مالية <span class="tagfx opt">اختياري للإثراء</span><span class="garrow">‹</span></summary>
         <div class="gbody">
           <div class="fr2">
-            <div class="fg"><label id="rentalIncomeLabel">الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"><div class="rn" style="font-size:.72rem;color:#8b6e44;margin-top:3px">إيجار فعلي + معدّل رسملة معايَر لمنطقتك ⇒ قد يقود الدخلُ التقدير.</div></div>
+            <div class="fg"><label id="rentalIncomeLabel">الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"><div class="rn" style="font-size:.72rem;color:var(--muted);margin-top:3px">إيجار فعلي + معدّل رسملة معايَر لمنطقتك ⇒ قد يقود الدخلُ التقدير.</div></div>
             <div class="fg"><label>الإيجار الشهري المتوقع (ر.ق)</label><input type="number" id="potentialRental" placeholder="تقدير" min="0"></div>
           </div>
           <div class="fr2">
@@ -1933,7 +1933,7 @@ function showShortReport(d){
   h+='<div class="thmr-head"><div class="b1">ثمّن — التقرير المختصر<small>الخلاصة في صفحة واحدة</small></div>';
   h+='<div class="meta">'+(d.report_ref?('المرجع <b dir="ltr">'+d.report_ref+'</b>'):'')+'</div></div>';  // b63: dropped the raw engine_version dev-string from the owner's page-1 header (noise at top; ref + QR/verify prove authenticity; the page-2 meta + the full report keep it)
   // the property strip (the PDF header row).
-  h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:10px"><span class="k">'+(ASSET_AR[d.asset_type]||'عقار')+' <b dir="ltr">'+esc(d.address||'')+'</b>'+(d.district?(' · '+esc(d.district)):'')+'</span><span class="v" style="font-weight:400">'+(d.plot_area_m2?('مساحة الأرض: <b>'+fmt(d.plot_area_m2)+' م²</b>'):'')+(_ageY?(' · عمر البناء: <b>فوق '+_ageY+' سنة</b> (سجل رسمي)'):'')+' · التاريخ: <span dir="ltr">'+today+'</span></span></div>';
+  h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:10px"><span class="k">'+(ASSET_AR[d.asset_type]||'عقار')+' <b dir="ltr">'+esc(d.address||'')+'</b>'+(d.district?(' · '+esc(d.district)):'')+'</span><span class="v" style="font-weight:400">'+(d.plot_area_m2?('مساحة الأرض: <b>'+fmt(d.plot_area_m2)+' م²</b>'):'')+(_ageY?(' · عمر البناء: <b>فوق '+_ageY+' سنة</b> (سجل رسميّ — قد يكون أقدم)'):'')+' · التاريخ: <span dir="ltr">'+today+'</span></span></div>';
   h+='<div class="thmr-hero" style="background:var(--thmr-navy);border:none"><span class="lbl" style="color:var(--gold)">قيمة بيتك التقديرية اليوم</span>';
   h+='<div class="num" style="color:#fff">'+fmt(v.amount)+' <small>ريال</small></div>';
   h+='<div style="display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:2px 14px;margin-top:7px;font-size:.74rem;color:#EAF0F6">تقدير استرشادي — وليس تقييماً معتمداً</div>';
@@ -2569,10 +2569,10 @@ function show(d){
     const eff=g.effective_footprint_m2;                 // value the engine actually used (post-cap)
     const capFired=confirmed&&eff&&rawFp&&eff<rawFp;    // brief F3: disclose ONLY when the zone cap bit
     h+='<div class="rc" style="border-color:#d9c7a8;background:#faf7f1">';
-    h+='<div class="rt" style="margin-bottom:6px;color:#8b6e44"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg> '+(confirmed?'مساحة البناء الأرضي (مؤكَّد <svg class=ic aria-hidden=true><use href=#ic-check></use></svg>)':'حسّن التقييم (المرحلة 2)')+'</div>';
+    h+='<div class="rt" style="margin-bottom:6px;color:var(--primary)"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg> '+(confirmed?'مساحة البناء الأرضي (مؤكَّد <svg class=ic aria-hidden=true><use href=#ic-check></use></svg>)':'حسّن التقييم (المرحلة 2)')+'</div>';
     if(confirmed){
       h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">اعتُمدت مساحة البناء الأرضية: <strong>'+fmt(eff)+' م²</strong></div>';
-      if(capFired) h+='<div class="rn" style="font-size:.8rem;color:#8b6e44;margin-top:6px">حُدِّدت مساحة البناء إلى '+fmt(eff)+'م² — أقصى تغطية أرضية مسموحة للقسيمة وفق اشتراطات المنطقة'+(g.zoning_code?(' ('+g.zoning_code+' '+g.zone_max_coverage_pct+'%)'):'')+'.</div>';
+      if(capFired) h+='<div class="rn" style="font-size:.8rem;color:var(--muted);margin-top:6px">حُدِّدت مساحة البناء إلى '+fmt(eff)+'م² — أقصى تغطية أرضية مسموحة للقسيمة وفق اشتراطات المنطقة'+(g.zoning_code?(' ('+g.zoning_code+' '+g.zone_max_coverage_pct+'%)'):'')+'.</div>';
     }else{
       // Sprint 2.22.0b.10 — show the MAX-buildable footprint from the plot's own
       // dimensions − legal setbacks (a CEILING; the user corrects DOWN). Falls back
@@ -2601,7 +2601,7 @@ function show(d){
     const noDetails=!ui.floors&&!ui.basement&&!ui.footprint_m2&&!ui.external_majlis&&!ui.annexes;
     if(noDetails){
       h+='<div class="rc" style="border-color:#f4d03f;background:#fffdf3">';
-      h+='<div class="rt" style="margin-bottom:6px;color:#a87000">ℹ التقييم يفترض بناءً نموذجياً</div>';
+      h+='<div class="rt" style="margin-bottom:6px;color:var(--primary)">ℹ التقييم يفترض بناءً نموذجياً</div>';
       h+='<div class="rn" style="font-size:.85rem;color:#666">قد يؤدي إدخال التفاصيل الفعلية للعقار — كالحالة والمساحة الدقيقة والتشطيبات — إلى تعديل جوهري في التقدير.</div>';
       h+='</div>';
     }
