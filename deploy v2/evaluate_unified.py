@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b70-modal-a11y'
-SPRINT_TAG = '2.22.0b.70'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b71-condition-axis-infra'
+SPRINT_TAG = '2.22.0b.71'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -488,6 +488,72 @@ def _lookup_calibrated_cap_rate(asset_type, area_name, plot_area_m2, stock_class
                               f'(شريحة العقار {bracket} م² بلا عيّنة كافية؛ '
                               f'العائد الصافي مستقر عبر شرائح المنطقة الواحدة).')
     return cap_rate, prov
+
+
+# ============================================================
+# Sprint 2.22.0b.71 — Condition-axis adaptable calibration (B-2 infra)
+# ============================================================
+# condition_adjustments.sqlite is a COMMITTED read-only snapshot (the cap_rates.sqlite
+# precedent, Operational_Rules #43), built by condition_calibrator.py. It holds the
+# per-grade effective-age PENALTIES the DRC reads. THE MECHANISM (this lookup + the
+# _cost_approach_value pricing) NEVER changes; only the NUMBERS in the DB change when
+# the GT-2 confirmed-sale corpus reaches n>=20 (the PO's «الرقم يتغيّر لا الكود»).
+# Safe-fail by design: a missing DB / schema drift / any exception → (None, None) → the
+# caller falls back to the hardcoded COST_CONDITION_PENALTY → byte-identical. At n=1 the
+# DB is SEEDED from the V001/TD-93317 ladder (seed == COST_CONDITION_PENALTY, a sync-guard
+# test enforces it), so seeding is a value no-op; the numbers are disclosed-INDICATIVE
+# (the b16/E25 discipline) until the corpus calibrates them.
+_COND_ADJ_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            'condition_adjustments.sqlite')
+
+
+def _lookup_condition_penalty(condition, area_name=None, built_type_stratum=None):
+    """Return (penalty_years, provenance_dict) from condition_adjustments.sqlite, or
+    (None, None) → caller falls back to the hardcoded COST_CONDITION_PENALTY.
+
+    Future-proof signature: at n=1 only GLOBAL rows (NULL area, NULL stratum) exist, so
+    area_name/built_type_stratum are accepted but don't yet matter (the global penalty
+    wins). When the corpus emits per-(area, stratum, condition) cells, the SAME code
+    PREFERS them — zero code change. Mirrors _lookup_calibrated_cap_rate (read-only,
+    confidence-gated, highest sample_size wins, safe-fail)."""
+    import sqlite3
+    cond = (condition or '').strip().lower()
+    if not cond:
+        return None, None
+    try:
+        if not os.path.exists(_COND_ADJ_DB):
+            return None, None
+        conn = sqlite3.connect(f"file:{_COND_ADJ_DB}?mode=ro", uri=True)
+        try:
+            rows = conn.execute(
+                "SELECT area_match_key, built_type_stratum, condition, penalty_years, "
+                "sample_size, confidence, source FROM condition_adjustments "
+                "WHERE condition=? AND penalty_years IS NOT NULL "
+                "AND confidence IN ('reliable','indicative')",
+                (cond,),
+            ).fetchall()
+        finally:
+            conn.close()
+    except Exception:
+        return None, None
+    if not rows:
+        return None, None
+    token = _cap_area_token(area_name) if area_name else None
+    # PREFER (stratum match) then (area match) then global; tie-break highest sample_size.
+    # (sorts, never filters → a global row always survives, so n=1 always resolves.)
+    def _rank(r):
+        stratum_match = 1 if (built_type_stratum and r[1] == built_type_stratum) else 0
+        area_match = 1 if (token and r[0] and _cap_area_token(r[0]) == token) else 0
+        return (stratum_match, area_match, r[4] or 0)
+    best = max(rows, key=_rank)
+    pen = best[3]
+    if pen is not None and float(pen).is_integer():
+        pen = int(pen)               # the integer seed → byte-identical to the hardcoded dict
+    prov = {
+        'source': best[6], 'penalty_years': pen, 'sample_size': best[4],
+        'confidence': best[5], 'built_type_stratum': best[1], 'area_match_key': best[0],
+    }
+    return pen, prov
 
 
 # ============================================================
@@ -5944,7 +6010,13 @@ def _cost_approach_value(land_floor, footprint_max_m2, floors, finish, age_years
         else:
             return None
         rcn = COST_RCN_BY_FINISH.get((finish or '').strip().lower(), COST_RCN_DEFAULT)
-        penalty = COST_CONDITION_PENALTY.get((condition or '').strip().lower(), COST_DEFAULT_PENALTY)
+        # Sprint 2.22.0b.71: the condition penalty is read from the swappable calibration
+        # DB (condition_adjustments.sqlite — seeded n=1 from V001, so byte-identical to the
+        # hardcoded ladder), safe-falling to the hardcoded dict. `is not None` keeps `new`=0
+        # and the negative trims (excellent/renovated) honored. The numbers swap when the
+        # GT-2 corpus calibrates them — zero code change (the PO's «الرقم يتغيّر لا الكود»).
+        _cp, _ = _lookup_condition_penalty(condition)
+        penalty = _cp if _cp is not None else COST_CONDITION_PENALTY.get((condition or '').strip().lower(), COST_DEFAULT_PENALTY)
         eff_age = max(0, age_years + penalty)
         retention = _cost_retention(eff_age, finish)
         building = round(bua * rcn * retention)
