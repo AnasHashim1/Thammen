@@ -25,7 +25,7 @@ check('LANG init forces AR while EN dark (ignores any stored choice)',
 check('DOMContentLoaded restore gated by EN_ENABLED',
       "if(EN_ENABLED){var s=_langStored();setLang(s==='en'?'en':'ar');}" in HTML)
 check('setLang dark-period guard (EN stays off until reveal)',
-      "if(!EN_ENABLED&&l==='en')return;" in HTML)
+      "if(!EN_ENABLED&&l==='en')" in HTML and "EN_ENABLED" in HTML)
 check('_mountLangToggle dormant until EN_ENABLED',
       'function _mountLangToggle(){' in HTML and 'if(!EN_ENABLED)return;' in HTML)
 

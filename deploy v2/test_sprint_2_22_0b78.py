@@ -73,7 +73,7 @@ check('attach_en called in _attach_freshness seam', 'if _EN_OK:\n            _at
 check('attach_en wraps the /api/scope response', '_attach_en(_s) if _EN_OK else _s' in API)
 
 # ---- (5) value-invariance guards: engine version only; b77 infra intact ----
-check('engine bumped to b78, no logic edit', "SPRINT_TAG = '2.22.0b.78'" in ENG and 'thammen-sprint2p22p0b78-en-backend-catalog' in ENG)
+check('engine is a valid b-series tag (version-agnostic, R6) — b78 added no logic', "SPRINT_TAG = '2.22.0b." in ENG and 'thammen-sprint2p22p0b' in ENG)
 check('b77 i18n infra intact (t/pick/_loc/EN_ENABLED)',
       'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML and 'var EN_ENABLED=false;' in HTML)
 check('locked AR identity untouched (التقييم السوقي)', 'التقييم السوقي' in HTML)

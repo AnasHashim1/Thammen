@@ -31,8 +31,8 @@ check('consent affirmation → ثمّن تقييم سوقيّ آليّ للدع�
       'أن ثمّن تقييم سوقيّ آليّ للدعم وليس تقييماً معتمداً' in HTML
       and 'أن ثمّن تقدير سوقي آلي للدعم' not in HTML)
 check('home htag → تقييم عقارك في قطر (old absent)',
-      '<div class="htag">تقييم عقارك في قطر</div>' in HTML
-      and '<div class="htag">تقدير عقارك في قطر</div>' not in HTML)
+      'class="htag"' in HTML and 'تقييم عقارك في قطر</div>' in HTML
+      and 'تقدير عقارك في قطر' not in HTML)  # b79: data-en attr added to the htag tag
 check('share line → تقييم سوقيّ آليّ، وليس تقييماً معتمداً (old absent)',
       "'تقييم سوقيّ آليّ، وليس تقييماً معتمداً.'" in HTML
       and "'تقدير سوقيّ آليّ، وليس تقييماً معتمداً.'" not in HTML)
@@ -59,8 +59,8 @@ check('EN terms → automated market valuation (old estimate-phrase absent)',
       'Thammen is an automated market valuation for villas and land' in HTML
       and 'Thammen is an automated market estimate for villas and land' not in HTML)
 check('top-bar status → نتيجة التقييم السوقي (old absent)',
-      '<div class="tbar-st">نتيجة التقييم السوقي</div>' in HTML
-      and '<div class="tbar-st">نتيجة التقدير السوقي</div>' not in HTML)
+      'نتيجة التقييم السوقي</div>' in HTML
+      and 'نتيجة التقدير السوقي' not in HTML)  # b79: data-en attr added to the tbar-st tag
 check('hero label → التقييم السوقي (old absent)',
       '<span class="lbl">التقييم السوقي</span>' in HTML
       and '<span class="lbl">التقدير السوقي</span>' not in HTML)
@@ -70,8 +70,8 @@ check('share value line → قيمة التقييم السوقي (old absent)',
 check('home CTA → ابدأ التقييم (old absent)',
       '>ابدأ التقييم</button>' in HTML and '>ابدأ التقدير</button>' not in HTML)
 check('refine top-bar → تحسين التقييم (old absent)',
-      '<div class="tbar-st">تحسين التقييم</div>' in HTML
-      and '<div class="tbar-st">تحسين التقدير</div>' not in HTML)
+      'تحسين التقييم</div>' in HTML
+      and 'تحسين التقدير' not in HTML)  # b79: data-en attr added to the tbar-st tag
 check('refine submit → احسب التقييم المُحسَّن (old absent)',
       '>احسب التقييم المُحسَّن</button>' in HTML
       and '>احسب التقدير المُحسَّن</button>' not in HTML)

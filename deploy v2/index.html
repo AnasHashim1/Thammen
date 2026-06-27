@@ -449,7 +449,14 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 body.lang-en{direction:ltr;text-align:left}
 .lang-toggle{font-family:'IBM Plex Sans Arabic',sans-serif;font-size:.72rem;font-weight:600;color:var(--primary);background:transparent;border:1px solid var(--border);border-radius:999px;padding:3px 11px;cursor:pointer;line-height:1.4;white-space:nowrap}
 .lang-toggle:hover{background:var(--alt)}
-.home-lang{position:absolute;top:14px;left:14px;z-index:2}</style>
+.home-lang{position:absolute;top:14px;left:14px;z-index:2}
+/* Sprint 2.22.0b.79 — EN core-flow dir-flip (gate/home/form ONLY; result/report screens keep RTL until b80, so they are NOT flipped here). */
+.gate-lang{margin-top:10px;display:flex;justify-content:center}
+body.lang-en #betaGate,body.lang-en .bgate,body.lang-en #homeScreen,body.lang-en #formScreen{direction:ltr}
+body.lang-en .bg-note,body.lang-en .bg-ack,body.lang-en #formScreen .ftitle,body.lang-en #formScreen .br-note,body.lang-en #formScreen label{text-align:left}
+body.lang-en #formScreen input,body.lang-en #formScreen select{text-align:left}
+body.lang-en #betaGate .bg-en{display:none}
+body.lang-en #scopeModal>div{direction:ltr!important;text-align:left!important}</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="ic-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 2.5 17.5A1.6 1.6 0 0 0 3.9 20h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/><line x1="12" y1="9" x2="12" y2="13.5"/><line x1="12" y1="16.6" x2="12.01" y2="16.6"/></symbol><symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9 17 19.5 6.5"/></symbol><symbol id="ic-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></symbol><symbol id="ic-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="20.5" y1="20.5" x2="15.2" y2="15.2"/></symbol><symbol id="ic-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="20.5" x2="21" y2="20.5"/><line x1="6.5" y1="20.5" x2="6.5" y2="13"/><line x1="12" y1="20.5" x2="12" y2="6.5"/><line x1="17.5" y1="20.5" x2="17.5" y2="10"/></symbol><symbol id="ic-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4.5" width="12" height="16" rx="2"/><rect x="9" y="2.5" width="6" height="4" rx="1.3"/></symbol><symbol id="ic-tool" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"/></symbol><symbol id="ic-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="4" x2="12" y2="20.5"/><line x1="5.5" y1="7.5" x2="18.5" y2="7.5"/><path d="M5.5 7.5 2.8 13.5h5.4Z"/><path d="M18.5 7.5 15.8 13.5h5.4Z"/><line x1="8" y1="20.5" x2="16" y2="20.5"/></symbol><symbol id="ic-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2 12 4.5l8 6.7"/><path d="M6 9.7V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.7"/></symbol><symbol id="ic-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6-5.4 6-10.2A6 6 0 0 0 6 10.8C6 15.6 12 21 12 21Z"/><circle cx="12" cy="10.6" r="2.2"/></symbol><symbol id="ic-gem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12l3 5.5L12 21 3 9.5Z"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><path d="M9 4 7.5 9.5 12 21M15 4l1.5 5.5L12 21"/></symbol><symbol id="ic-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 7.5V12l3 1.8"/></symbol><symbol id="ic-ruler" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="8.5" width="18.8" height="7" rx="1" transform="rotate(-45 12 12)"/><path d="M9.7 6.6l1.6 1.6M7 9.3l1.6 1.6M12.4 3.9 14 5.5"/></symbol><symbol id="ic-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 17.6 6.6 20l1.2-6-4.5-4.2 6.1-.7Z"/></symbol><symbol id="ic-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.2"/><path d="M11 11l9.2 9.2M17.6 17.6l1.8-1.8M14.4 14.4l1.8-1.8"/></symbol><symbol id="ic-coins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6.2" rx="7" ry="3"/><path d="M5 6.2v5.6c0 1.7 3.1 3 7 3s7-1.3 7-3V6.2"/><path d="M5 11.8v5.6c0 1.7 3.1 3 7 3s7-1.3 7-3v-5.6"/></symbol><symbol id="ic-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5V3.5h11v6"/><path d="M6.5 17.5h-2a1.5 1.5 0 0 1-1.5-1.5v-4a1.5 1.5 0 0 1 1.5-1.5h15a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5h-2"/><rect x="6.5" y="14.5" width="11" height="6" rx="1"/></symbol><symbol id="ic-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 18.5h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.8.7 1.3 1.4 1.3 2.4h5c0-1 .5-1.7 1.3-2.4A6 6 0 0 0 12 3Z"/></symbol><symbol id="ic-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l5 5V19a1.5 1.5 0 0 1-1.5 1.5h-9.5A1.5 1.5 0 0 1 6.5 19V5A1.5 1.5 0 0 1 7 3.5Z"/><path d="M13.5 3.5v5.5H19"/></symbol><symbol id="ic-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2Z"/><line x1="5" y1="16.5" x2="15.5" y2="16.5"/></symbol><symbol id="ic-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M9.7 9.6a2.4 2.4 0 1 1 3.4 2.3c-.8.4-1.1 1-1.1 1.8"/><line x1="12" y1="16.8" x2="12.01" y2="16.8"/></symbol><symbol id="ic-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol><symbol id="ic-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><line x1="3.8" y1="12" x2="20.2" y2="12"/><path d="M12 3.8c2.4 2 2.4 14.4 0 16.4M12 3.8c-2.4 2-2.4 14.4 0 16.4"/></symbol><symbol id="ic-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="5"/><path d="M6 11l6-6 6 6"/></symbol><symbol id="ic-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16Z"/><line x1="13.5" y1="6.5" x2="17.5" y2="10.5"/></symbol></defs></svg>
@@ -461,12 +468,12 @@ body.lang-en{direction:ltr;text-align:left}
 <div class="bgate thmr" id="betaGate" role="dialog" aria-modal="true" aria-labelledby="bgTitle">
   <div class="bgate-card">
     <div class="bgate-head">
-      <h2 id="bgTitle">ثمّن — تقييم سوقيّ آليّ للفلل والأراضي في قطر</h2>
+      <h2 id="bgTitle" data-en="Thammen — Automated Market Valuation for villas and land in Qatar">ثمّن — تقييم سوقيّ آليّ للفلل والأراضي في قطر</h2>
     </div>
-    <div class="bg-note">بالمتابعة تُقرّ بأن هذه معلومة استرشاديّة لدعم القرار، وليست تقييماً معتمداً. التفاصيل الكاملة وحدود الخدمة في «الشروط وإشعار الخصوصية» أدناه.</div>
-    <div class="bg-ack">أُقرّ بأنني فهمت أن ثمّن تقييم سوقيّ آليّ للدعم وليس تقييماً معتمداً، وأوافق على الاستخدام على الأساس الموضّح في الشروط وإشعار الخصوصية.</div>
-    <button class="hbtn" onclick="ackBeta()">أوافق وأكمل</button>
-    <div class="bg-links"><a onclick="openTerms();return false;">الشروط وإشعار الخصوصية الكاملة ↓</a></div>
+    <div class="bg-note" data-en="By continuing, you acknowledge that this is indicative information to support a decision, not a certified valuation. The full details and service limits are in the &quot;Terms &amp; Privacy Notice&quot; below.">بالمتابعة تُقرّ بأن هذه معلومة استرشاديّة لدعم القرار، وليست تقييماً معتمداً. التفاصيل الكاملة وحدود الخدمة في «الشروط وإشعار الخصوصية» أدناه.</div>
+    <div class="bg-ack" data-en="I acknowledge that Thammen is an automated market valuation for support and not a certified valuation, and I agree to use it on the basis set out in the Terms and Privacy Notice.">أُقرّ بأنني فهمت أن ثمّن تقييم سوقيّ آليّ للدعم وليس تقييماً معتمداً، وأوافق على الاستخدام على الأساس الموضّح في الشروط وإشعار الخصوصية.</div>
+    <button class="hbtn" onclick="ackBeta()" data-en="I agree and continue">أوافق وأكمل</button>
+    <div class="bg-links"><a onclick="openTerms();return false;" data-en="Full Terms &amp; Privacy Notice ↓">الشروط وإشعار الخصوصية الكاملة ↓</a></div>
     <details class="bg-en">
       <summary>English summary</summary>
       <div class="en">
@@ -496,28 +503,28 @@ body.lang-en{direction:ltr;text-align:left}
        Sprint 2.22.0b.48 — elevated home: confident navy title + bronze rule + a navy 3-step
        trust band (Sprint C slice 3) + a registered-transactions credibility line. The b24 copy
        (title + recency) is PRESERVED verbatim; presentation only, value-invariant. -->
-  <div class="htag">تقييم عقارك في قطر</div>
-  <div class="hsub">تقييم سوقيّ آليّ للفلل والأراضي في قطر</div>
+  <div class="htag" data-en="Value your property in Qatar">تقييم عقارك في قطر</div>
+  <div class="hsub" data-en="Automated market valuation for villas and land in Qatar">تقييم سوقيّ آليّ للفلل والأراضي في قطر</div>
   <div class="hrule"></div>
   <div class="htrust">
-    <div class="hstep"><span class="n">١</span><span class="t">أدخل العنوان</span></div>
+    <div class="hstep"><span class="n" data-en="1">١</span><span class="t" data-en="Enter the address">أدخل العنوان</span></div>
     <span class="hsep">←</span>
-    <div class="hstep"><span class="n">٢</span><span class="t">نحلّل الصفقات المسجّلة</span></div>
+    <div class="hstep"><span class="n" data-en="2">٢</span><span class="t" data-en="We analyze the registered transactions">نحلّل الصفقات المسجّلة</span></div>
     <span class="hsep">←</span>
-    <div class="hstep"><span class="n">٣</span><span class="t">نتيجتك فوراً</span></div>
+    <div class="hstep"><span class="n" data-en="3">٣</span><span class="t" data-en="Your result, instantly">نتيجتك فوراً</span></div>
   </div>
-  <button class="hbtn" onclick="go('form')">ابدأ التقييم</button>
-  <div class="hcred">من صفقات وزارة العدل المسجّلة — لا أسعار إعلانات.</div>
+  <button class="hbtn" onclick="go('form')" data-en="Start the valuation">ابدأ التقييم</button>
+  <div class="hcred" data-en="From registered Ministry of Justice transactions — not listing prices.">من صفقات وزارة العدل المسجّلة — لا أسعار إعلانات.</div>
   <div class="hfoot" id="dfSubtitle">بيانات وزارة العدل حتى ديسمبر 2025</div>
   <!-- Sprint 2.14.0 — RICS VPS 1 Scope link -->
   <div style="margin-top:14px;font-size:.85rem;color:var(--muted);position:relative;z-index:1">
-    <a href="#" onclick="openScope();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer">
+    <a href="#" onclick="openScope();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer" data-en="What Thammen supports and what it doesn't ↓">
       ما يدعمه ثمّن وما لا يدعمه ↓
     </a>
   </div>
   <!-- Sprint 2.22.0a.24 — Terms & Privacy footer link -->
   <div style="margin-top:8px;font-size:.8rem;color:var(--muted);position:relative;z-index:1">
-    <a href="#" onclick="openTerms();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer">الشروط وإشعار الخصوصية</a>
+    <a href="#" onclick="openTerms();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer" data-en="Terms &amp; Privacy Notice">الشروط وإشعار الخصوصية</a>
   </div>
 </div>
 
@@ -525,7 +532,7 @@ body.lang-en{direction:ltr;text-align:left}
 <div id="scopeModal" role="dialog" aria-modal="true" aria-label="نطاق خدمة ثمّن" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeScope()">
   <div style="background:#fff;max-width:680px;max-height:85vh;overflow-y:auto;border-radius:12px;padding:28px;direction:rtl">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--alt);padding-bottom:12px">
-      <h2 style="margin:0;color:var(--primary)">نطاق خدمة ثمّن</h2>
+      <h2 style="margin:0;color:var(--primary)" data-en="Thammen's service scope">نطاق خدمة ثمّن</h2>
       <button onclick="closeScope()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted)">×</button>
     </div>
     <div id="scopeContent">جارٍ التحميل...</div>
@@ -539,27 +546,27 @@ body.lang-en{direction:ltr;text-align:left}
     <div class="tbar-st" id="statusBar">جارٍ الاتصال...</div>
   </div>
   <div class="fwrap">
-    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> إدخال العقار <a id="clrIdent" onclick="clearIdentity()" style="display:none;font-weight:400;font-size:.78rem;color:var(--bronze);cursor:pointer;margin-right:10px">مسح <svg class=ic aria-hidden=true><use href=#ic-x></use></svg></a></div>
+    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> <span data-en="Property entry">إدخال العقار</span> <a id="clrIdent" onclick="clearIdentity()" style="display:none;font-weight:400;font-size:.78rem;color:var(--bronze);cursor:pointer;margin-right:10px"><span data-en="Clear ">مسح </span><svg class=ic aria-hidden=true><use href=#ic-x></use></svg></a></div>
     <div class="fcard">
       <!-- Sprint 2.21.0: input mode tabs — address (villa/building) OR land PIN -->
       <div class="aud-row" style="margin-bottom:12px">
-        <div class="aud-btn sel" id="tabAddr" onclick="selTab('address')">فيلا/مبنى (عنوان)</div>
-        <div class="aud-btn" id="tabLand" onclick="selTab('land')">أرض / قطعة (PIN)</div>
+        <div class="aud-btn sel" id="tabAddr" onclick="selTab('address')" data-en="Villa/building (address)">فيلا/مبنى (عنوان)</div>
+        <div class="aud-btn" id="tabLand" onclick="selTab('land')" data-en="Land / plot (PIN)">أرض / قطعة (PIN)</div>
       </div>
       <div id="grpAddr">
         <div class="fr3">
-          <div class="fg"><label>رقم المنطقة</label><input type="number" id="zone" placeholder="مثال: 70" min="1"></div>
-          <div class="fg"><label>رقم الشارع</label><input type="number" id="street" placeholder="مثال: 380" min="1"></div>
-          <div class="fg"><label>رقم المبنى</label><input type="number" id="building" placeholder="مثال: 25" min="1"></div>
+          <div class="fg"><label data-en="Zone no.">رقم المنطقة</label><input type="number" id="zone" placeholder="مثال: 70" data-en-ph="e.g. 70" min="1"></div>
+          <div class="fg"><label data-en="Street no.">رقم الشارع</label><input type="number" id="street" placeholder="مثال: 380" data-en-ph="e.g. 380" min="1"></div>
+          <div class="fg"><label data-en="Building no.">رقم المبنى</label><input type="number" id="building" placeholder="مثال: 25" data-en-ph="e.g. 25" min="1"></div>
         </div>
         <!-- Sprint 2.22.0b.33 (DEF-UX14): help line — the simple owner sees three
              bare number fields with no source hint (the PIN field already had one).
              Tells the Qatari user WHERE the national address comes from. -->
-        <div class="br-note" style="margin-top:8px;font-size:.78rem;color:var(--muted)">هذه الأرقام على لوحة عنوان المبنى أو فاتورة كهرماء (المنطقة، ثم الشارع، ثم رقم المبنى).</div>
+        <div class="br-note" style="margin-top:8px;font-size:.78rem;color:var(--muted)" data-en="These numbers are on the building's address plate or your Kahramaa bill (zone, then street, then building number).">هذه الأرقام على لوحة عنوان المبنى أو فاتورة كهرماء (المنطقة، ثم الشارع، ثم رقم المبنى).</div>
       </div>
       <div id="grpLand" style="display:none">
-        <div class="fg"><label>رقم القطعة (PIN)</label><input type="text" id="pin" inputmode="numeric" placeholder="مثال: 74328443" pattern="\d{7,9}"></div>
-        <div class="br-note" style="margin-top:6px;font-size:.78rem;color:var(--muted)">أدخل رقم القطعة من شهادة الملكية أو خرائط GIS</div>
+        <div class="fg"><label data-en="Plot number (PIN)">رقم القطعة (PIN)</label><input type="text" id="pin" inputmode="numeric" placeholder="مثال: 74328443" data-en-ph="e.g. 74328443" pattern="\d{7,9}"></div>
+        <div class="br-note" style="margin-top:6px;font-size:.78rem;color:var(--muted)" data-en="Enter the plot number from the title deed or GIS maps">أدخل رقم القطعة من شهادة الملكية أو خرائط GIS</div>
         <!-- Sprint 2.21.0.7.1: interim hotfix warning removed — the Asset Type
              Reality Check (QARS-in-polygon + RULEID) now handles built parcels,
              non-residential, governmental, commercial and mixed-use PINs with
@@ -571,20 +578,20 @@ body.lang-en{direction:ltr;text-align:left}
          one number for everyone (signed label). «مالك» restored as the DEFAULT first
          option; the engine normalizes owner→buyer (default view), so the value axis
          is untouched. valuer keeps its v4 skip-to-results routing. -->
-    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-user></use></svg> من أنت؟ <span style="font-weight:400;font-size:.82rem;color:var(--muted)">(يحدّد طريقة العرض فقط — الرقم واحد للجميع)</span></div>
+    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-user></use></svg> <span data-en="Who are you?">من أنت؟</span> <span style="font-weight:400;font-size:.82rem;color:var(--muted)" data-en="(sets the presentation only — one number for everyone)">(يحدّد طريقة العرض فقط — الرقم واحد للجميع)</span></div>
     <div class="fcard">
       <div class="aud-row">
-        <div class="aud-btn sel" onclick="selAud(this,'owner')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-key></use></svg></span>مالك</div>
-        <div class="aud-btn" onclick="selAud(this,'buyer')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-home></use></svg></span>مشتري</div>
-        <div class="aud-btn" onclick="selAud(this,'seller')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-coins></use></svg></span>بائع</div>
-        <div class="aud-btn" onclick="selAud(this,'investor')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg></span>مستثمر</div>
-        <div class="aud-btn" onclick="selAud(this,'valuer')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg></span>مثمّن</div>
+        <div class="aud-btn sel" onclick="selAud(this,'owner')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-key></use></svg></span><span data-en="Owner">مالك</span></div>
+        <div class="aud-btn" onclick="selAud(this,'buyer')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-home></use></svg></span><span data-en="Buyer">مشتري</span></div>
+        <div class="aud-btn" onclick="selAud(this,'seller')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-coins></use></svg></span><span data-en="Seller">بائع</span></div>
+        <div class="aud-btn" onclick="selAud(this,'investor')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg></span><span data-en="Investor">مستثمر</span></div>
+        <div class="aud-btn" onclick="selAud(this,'valuer')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg></span><span data-en="Valuer">مثمّن</span></div>
       </div>
     </div>
     <!-- Sprint 2.22.0b.2.1 — optional property details relocated to a separate
          screen (#refineScreen). formScreen is now identification-only; the bare
          eval posts /api/evaluate, then the user may open «حسّن التقدير» (refine). -->
-    <button class="sbtn" id="sBtn" onclick="run()">ثمّن</button>
+    <button class="sbtn" id="sBtn" onclick="run()" data-en="Value it">ثمّن</button>
     <div id="fRes"></div>
   </div>
 </div>
@@ -593,7 +600,7 @@ body.lang-en{direction:ltr;text-align:left}
 <div class="screen thmr" id="refineScreen">
   <div class="tbar">
     <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
-    <div class="tbar-st">تحسين التقييم</div>
+    <div class="tbar-st" data-en="Refine the valuation">تحسين التقييم</div>
   </div>
   <div class="fwrap">
     <button class="bbtn" onclick="go('results')">→ رجوع للنتيجة</button>
@@ -674,7 +681,7 @@ body.lang-en{direction:ltr;text-align:left}
 <div class="screen thmr" id="confirmScreen">
   <div class="tbar">
     <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
-    <div class="tbar-st">مراجعة البيانات</div>
+    <div class="tbar-st" data-en="Review the data">مراجعة البيانات</div>
   </div>
   <div class="rwrap">
     <button class="bbtn" onclick="go('form')">→ تقييم جديد</button>
@@ -686,7 +693,7 @@ body.lang-en{direction:ltr;text-align:left}
 <div class="screen" id="resultsScreen">
   <div class="tbar">
     <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
-    <div class="tbar-st">نتيجة التقييم السوقي</div>
+    <div class="tbar-st" data-en="Market valuation result">نتيجة التقييم السوقي</div>
   </div>
   <div class="rwrap">
     <button class="bbtn" onclick="go('form')">→ تقييم جديد</button>
@@ -711,7 +718,7 @@ body.lang-en{direction:ltr;text-align:left}
 <div class="screen" id="reportScreen">
   <div class="tbar">
     <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
-    <div class="tbar-st">التقرير الكامل</div>
+    <div class="tbar-st" data-en="Full report">التقرير الكامل</div>
   </div>
   <div class="rwrap">
     <button class="bbtn no-print" onclick="go('results')">→ رجوع للنتيجة</button>
@@ -728,7 +735,7 @@ body.lang-en{direction:ltr;text-align:left}
 <div class="screen" id="shortReportScreen">
   <div class="tbar">
     <div class="tbar-logo" onclick="go('home')"><span class="tbar-wm">ثمّن</span></div>
-    <div class="tbar-st">التقرير المختصر</div>
+    <div class="tbar-st" data-en="Short report">التقرير المختصر</div>
   </div>
   <div class="rwrap">
     <!-- b29: المختصر صار هبوطاً افتراضياً بعد التحسين — «رجوع للنتيجة» تُصبح غير صادقة
@@ -799,14 +806,30 @@ function _syncLangToggle(){
     });
   }catch(e){}
 }
+// b79: swap the STATIC screens (gate/home/form/top-bars) by their data-en/data-en-ph.
+// Captures the original Arabic once (data-ar0 / data-arPh) so AR restores exactly.
+// JS-driven elements (statusBar/scopeContent/dfSubtitle) are NOT data-en — they
+// render their own language via t()/pick() in chk()/openScope().
+function _applyStaticI18n(){
+  try{
+    document.querySelectorAll('[data-en]').forEach(function(el){
+      if(el.dataset.ar0===undefined) el.dataset.ar0=el.innerHTML;
+      el.innerHTML=(LANG==='en')?el.dataset.en:el.dataset.ar0;
+    });
+    document.querySelectorAll('[data-en-ph]').forEach(function(el){
+      if(el.dataset.arPh===undefined) el.dataset.arPh=el.getAttribute('placeholder')||'';
+      el.setAttribute('placeholder',(LANG==='en')?el.dataset.enPh:el.dataset.arPh);
+    });
+  }catch(e){}
+}
 function setLang(l){
-  if(!EN_ENABLED&&l==='en')return;            // dark-period guard: EN stays off
+  if(!EN_ENABLED&&l==='en')l='ar';            // dark-period guard: flag-off ALWAYS lands on AR
   LANG=(l==='en')?'en':'ar';
   try{localStorage.setItem(_LANG_KEY,LANG);}catch(e){}
   var h=document.documentElement;
   h.setAttribute('lang',LANG); h.setAttribute('dir',LANG==='en'?'ltr':'rtl');
   document.body.classList.toggle('lang-en',LANG==='en');
-  _syncLangToggle(); _rerenderForLang();
+  _syncLangToggle(); _applyStaticI18n(); try{chk();}catch(e){} _rerenderForLang();
 }
 // Mount a small language pill into every .tbar + the home header. DORMANT until
 // EN_ENABLED, so the dark build never shows a toggle (byte-identical AR).
@@ -817,6 +840,9 @@ function _mountLangToggle(){
     document.querySelectorAll('.tbar').forEach(function(tb){if(!tb.querySelector('.lang-toggle'))tb.appendChild(mk());});
     var home=document.getElementById('homeScreen');
     if(home&&!home.querySelector('.lang-toggle')){var slot=document.createElement('div');slot.className='home-lang';slot.appendChild(mk());home.insertBefore(slot,home.firstChild);}
+    // b79: the consent gate is the FIRST frame — mount a toggle there too so an EN user can switch before passing it.
+    var gh=document.querySelector('#betaGate .bgate-head');
+    if(gh&&!gh.querySelector('.lang-toggle')){var gslot=document.createElement('div');gslot.className='gate-lang';gslot.appendChild(mk());gh.appendChild(gslot);}
     _syncLangToggle();
   }catch(e){}
 }
@@ -902,18 +928,18 @@ function goForm(focusId){
 function openScope(){
   document.getElementById('scopeModal').style.display='flex';
   const c=document.getElementById('scopeContent');
-  if(c.dataset.loaded)return;
+  if(c.dataset.loaded===LANG)return;   // b79: re-render on language switch
   fetch('/api/scope').then(r=>r.json()).then(d=>{
-    let h='<div style="background:var(--alt);padding:12px;border-radius:6px;font-size:.9rem;line-height:1.7;margin-bottom:18px;color:var(--primary)">'+(d.service_level_ar||'')+'</div>';
-    h+='<div style="margin-bottom:18px"><div style="font-weight:700;color:var(--ok);margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg> مدعوم بالكامل</div>';
-    (d.supported||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--ok);background:var(--ok-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+s.label_ar+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">'+s.reason_ar+'</div></div>'});
-    h+='</div><div style="margin-bottom:18px"><div style="font-weight:700;color:var(--warn);margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> مدعوم بشروط (يحتاج إفادة منك)</div>';
-    (d.limited||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--warn);background:var(--warn-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+s.label_ar+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">يتطلب: '+(s.requires||'')+'</div></div>'});
-    h+='</div><div><div style="font-weight:700;color:var(--bad);margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-x></use></svg> خارج النطاق</div>';
-    (d.unsupported||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--bad);background:var(--bad-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+s.label_ar+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">'+s.reason_ar+'</div></div>'});
+    let h='<div style="background:var(--alt);padding:12px;border-radius:6px;font-size:.9rem;line-height:1.7;margin-bottom:18px;color:var(--primary)">'+pick(d,'service_level')+'</div>';
+    h+='<div style="margin-bottom:18px"><div style="font-weight:700;color:var(--ok);margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg> '+t('مدعوم بالكامل','Fully supported')+'</div>';
+    (d.supported||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--ok);background:var(--ok-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+pick(s,'label')+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">'+pick(s,'reason')+'</div></div>'});
+    h+='</div><div style="margin-bottom:18px"><div style="font-weight:700;color:var(--warn);margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('مدعوم بشروط (يحتاج إفادة منك)','Supported with conditions (requires your input)')+'</div>';
+    (d.limited||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--warn);background:var(--warn-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+pick(s,'label')+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">'+t('يتطلب: ','Requires: ')+(pick(s,'requires')||s.requires||'')+'</div></div>'});
+    h+='</div><div><div style="font-weight:700;color:var(--bad);margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-x></use></svg> '+t('خارج النطاق','Out of scope')+'</div>';
+    (d.unsupported||[]).forEach(s=>{h+='<div style="padding:8px 12px;border-right:3px solid var(--bad);background:var(--bad-bg);margin-bottom:6px;border-radius:0 6px 6px 0"><div style="font-weight:600">'+pick(s,'label')+'</div><div style="font-size:.85rem;color:var(--muted);margin-top:2px">'+pick(s,'reason')+'</div></div>'});
     h+='</div>';
-    c.innerHTML=h;c.dataset.loaded='1';
-  }).catch(e=>{c.innerHTML='<div style="color:var(--bad)">تعذّر تحميل نطاق الخدمة</div>'});
+    c.innerHTML=h;c.dataset.loaded=LANG;
+  }).catch(e=>{c.innerHTML='<div style="color:var(--bad)">'+t('تعذّر تحميل نطاق الخدمة','Failed to load the service scope')+'</div>'});
 }
 function closeScope(){document.getElementById('scopeModal').style.display='none'}
 
@@ -939,7 +965,7 @@ function ackBeta(){
   window.scrollTo(0,0);
 }
 
-async function chk(){const b=document.getElementById('statusBar');try{const r=await fetch(API+'/api/health');const d=await r.json();if(d.status==='ok'){const ok=d.moj_db&&(typeof d.moj_db==='object'?d.moj_db.available:d.moj_db);b.innerHTML=ok?'متصل <span class="sdot on"></span>':'متصل — قاعدة البيانات غير جاهزة <span class="sdot off"></span>'}}catch(e){b.innerHTML='غير متصل <span class="sdot off"></span>'}}
+async function chk(){const b=document.getElementById('statusBar');try{const r=await fetch(API+'/api/health');const d=await r.json();if(d.status==='ok'){const ok=d.moj_db&&(typeof d.moj_db==='object'?d.moj_db.available:d.moj_db);b.innerHTML=ok?(t('متصل','Connected')+' <span class="sdot on"></span>'):(t('متصل — قاعدة البيانات غير جاهزة','Connected — database not ready')+' <span class="sdot off"></span>')}}catch(e){b.innerHTML=t('غير متصل','Offline')+' <span class="sdot off"></span>'}}
 
 // Sprint 2.7: Load data-freshness state and render sticky banner + subtitle
 async function loadFreshness(){

@@ -50,8 +50,8 @@ check('coverage + not-affiliated preserved in Terms (EN)',
 
 # ── 3. HOME «العدل» reduced — redundant repeats dropped, legitimate credits kept ──
 check('home hsub no longer «مبنيّ على بيانات وزارة العدل»',
-      '<div class="hsub">تقييم سوقيّ آليّ للفلل والأراضي في قطر</div>' in HTML
-      and 'مبنيّ على بيانات وزارة العدل المفتوحة</div>' not in HTML)
+      'class="hsub"' in HTML and 'تقييم سوقيّ آليّ للفلل والأراضي في قطر</div>' in HTML
+      and 'مبنيّ على بيانات وزارة العدل المفتوحة</div>' not in HTML)  # b79: data-en attr added to the hsub tag
 check('home step-2 no longer «صفقات العدل»',
       'نحلّل الصفقات المسجّلة' in HTML and 'نحلّل صفقات العدل' not in HTML)
 check('home hcred trust line KEPT (the one legitimate العدل credit)',
