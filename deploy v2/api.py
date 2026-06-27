@@ -92,6 +92,17 @@ except Exception as _mail_err:  # pragma: no cover
     _MAIL_OK = False
     log.warning(f"report_mailer module unavailable: {_mail_err}")
 
+# ── Sprint 2.22.0b.78: EN localization post-pass. Walks the response dict and
+#    ADDITIVELY attaches `{base}_en` siblings for cataloged `{base}_ar` strings
+#    (the dormant EN version's backend coverage). Value-invariant — never touches
+#    amount/method/rule or any `_ar` value; the AR-default frontend ignores `_en`.
+try:
+    from en_localize import attach_en as _attach_en
+    _EN_OK = True
+except Exception as _en_err:  # pragma: no cover
+    _EN_OK = False
+    log.warning(f"en_localize module unavailable: {_en_err}")
+
 # ── Config (via environment variables) ──
 MOJ_CSV = Path(os.getenv("MOJ_CSV_PATH", "moj_weekly.csv"))
 MOJ_DB = Path(os.getenv("MOJ_DB_PATH", "moj_weekly.db"))
@@ -246,6 +257,9 @@ def _attach_freshness(result):
         fresh = get_freshness()
         if fresh is not None:
             result["data_freshness"] = freshness_for_response(fresh)
+        # Sprint 2.22.0b.78 — additive EN siblings (value-invariant; best-effort).
+        if _EN_OK:
+            _attach_en(result)
     except Exception:
         pass
     return result
@@ -959,7 +973,8 @@ async def scope(request: Request):
     """
     try:
         from scope_of_service import service_scope_summary
-        return service_scope_summary()
+        _s = service_scope_summary()
+        return _attach_en(_s) if _EN_OK else _s   # b78: additive EN siblings
     except Exception as e:
         return {"error": str(e), "available": False}
 

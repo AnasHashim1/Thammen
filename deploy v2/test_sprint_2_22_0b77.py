@@ -71,9 +71,9 @@ check('b75 synonym-unify intact (منهج الدخل)',
       'منهج الدخل' in HTML)
 check('static EN mirrors preserved (gate fold + source credit)',
       'class="bg-en"' in HTML and 'src-credit' in HTML)
-check('engine bumped to b77, no logic edit (version lines only)',
-      "SPRINT_TAG = '2.22.0b.77'" in ENG and
-      'thammen-sprint2p22p0b77-en-localization-infra' in ENG)
+check('engine is a valid b-series tag (version-agnostic, R6) — b77 added no logic',
+      "SPRINT_TAG = '2.22.0b." in ENG and
+      'thammen-sprint2p22p0b' in ENG)
 
 print('\nb77:', passed, 'passed,', failed, 'failed')
 raise SystemExit(1 if failed else 0)
