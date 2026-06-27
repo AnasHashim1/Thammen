@@ -444,7 +444,12 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .src-credit{margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:.72rem;line-height:1.75;color:var(--muted);text-align:right;direction:rtl}
 .src-credit a{color:var(--muted);text-decoration:underline}
 .src-credit .en{display:block;margin-top:8px;direction:ltr;text-align:left;font-size:.7rem;color:var(--muted)}
-.ic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.16em;flex:0 0 auto;stroke-width:1.7}</style>
+.ic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.16em;flex:0 0 auto;stroke-width:1.7}
+/* Sprint 2.22.0b.77 — EN localization scaffold (DORMANT until EN_ENABLED; no element carries these classes in the AR-only build, so byte-identical AR). */
+body.lang-en{direction:ltr;text-align:left}
+.lang-toggle{font-family:'IBM Plex Sans Arabic',sans-serif;font-size:.72rem;font-weight:600;color:var(--primary);background:transparent;border:1px solid var(--border);border-radius:999px;padding:3px 11px;cursor:pointer;line-height:1.4;white-space:nowrap}
+.lang-toggle:hover{background:var(--alt)}
+.home-lang{position:absolute;top:14px;left:14px;z-index:2}</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="ic-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 2.5 17.5A1.6 1.6 0 0 0 3.9 20h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/><line x1="12" y1="9" x2="12" y2="13.5"/><line x1="12" y1="16.6" x2="12.01" y2="16.6"/></symbol><symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9 17 19.5 6.5"/></symbol><symbol id="ic-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></symbol><symbol id="ic-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="20.5" y1="20.5" x2="15.2" y2="15.2"/></symbol><symbol id="ic-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="20.5" x2="21" y2="20.5"/><line x1="6.5" y1="20.5" x2="6.5" y2="13"/><line x1="12" y1="20.5" x2="12" y2="6.5"/><line x1="17.5" y1="20.5" x2="17.5" y2="10"/></symbol><symbol id="ic-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4.5" width="12" height="16" rx="2"/><rect x="9" y="2.5" width="6" height="4" rx="1.3"/></symbol><symbol id="ic-tool" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"/></symbol><symbol id="ic-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="4" x2="12" y2="20.5"/><line x1="5.5" y1="7.5" x2="18.5" y2="7.5"/><path d="M5.5 7.5 2.8 13.5h5.4Z"/><path d="M18.5 7.5 15.8 13.5h5.4Z"/><line x1="8" y1="20.5" x2="16" y2="20.5"/></symbol><symbol id="ic-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2 12 4.5l8 6.7"/><path d="M6 9.7V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.7"/></symbol><symbol id="ic-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6-5.4 6-10.2A6 6 0 0 0 6 10.8C6 15.6 12 21 12 21Z"/><circle cx="12" cy="10.6" r="2.2"/></symbol><symbol id="ic-gem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12l3 5.5L12 21 3 9.5Z"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><path d="M9 4 7.5 9.5 12 21M15 4l1.5 5.5L12 21"/></symbol><symbol id="ic-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 7.5V12l3 1.8"/></symbol><symbol id="ic-ruler" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="8.5" width="18.8" height="7" rx="1" transform="rotate(-45 12 12)"/><path d="M9.7 6.6l1.6 1.6M7 9.3l1.6 1.6M12.4 3.9 14 5.5"/></symbol><symbol id="ic-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 17.6 6.6 20l1.2-6-4.5-4.2 6.1-.7Z"/></symbol><symbol id="ic-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.2"/><path d="M11 11l9.2 9.2M17.6 17.6l1.8-1.8M14.4 14.4l1.8-1.8"/></symbol><symbol id="ic-coins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6.2" rx="7" ry="3"/><path d="M5 6.2v5.6c0 1.7 3.1 3 7 3s7-1.3 7-3V6.2"/><path d="M5 11.8v5.6c0 1.7 3.1 3 7 3s7-1.3 7-3v-5.6"/></symbol><symbol id="ic-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5V3.5h11v6"/><path d="M6.5 17.5h-2a1.5 1.5 0 0 1-1.5-1.5v-4a1.5 1.5 0 0 1 1.5-1.5h15a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5h-2"/><rect x="6.5" y="14.5" width="11" height="6" rx="1"/></symbol><symbol id="ic-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 18.5h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.8.7 1.3 1.4 1.3 2.4h5c0-1 .5-1.7 1.3-2.4A6 6 0 0 0 12 3Z"/></symbol><symbol id="ic-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l5 5V19a1.5 1.5 0 0 1-1.5 1.5h-9.5A1.5 1.5 0 0 1 6.5 19V5A1.5 1.5 0 0 1 7 3.5Z"/><path d="M13.5 3.5v5.5H19"/></symbol><symbol id="ic-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2Z"/><line x1="5" y1="16.5" x2="15.5" y2="16.5"/></symbol><symbol id="ic-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M9.7 9.6a2.4 2.4 0 1 1 3.4 2.3c-.8.4-1.1 1-1.1 1.8"/><line x1="12" y1="16.8" x2="12.01" y2="16.8"/></symbol><symbol id="ic-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol><symbol id="ic-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><line x1="3.8" y1="12" x2="20.2" y2="12"/><path d="M12 3.8c2.4 2 2.4 14.4 0 16.4M12 3.8c-2.4 2-2.4 14.4 0 16.4"/></symbol><symbol id="ic-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="5"/><path d="M6 11l6-6 6 6"/></symbol><symbol id="ic-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16Z"/><line x1="13.5" y1="6.5" x2="17.5" y2="10.5"/></symbol></defs></svg>
@@ -752,6 +757,74 @@ const TIER_LABEL_AR={
   'signed_valuation':      'تقييم موقّع'
 };
 
+// ── Sprint 2.22.0b.77 — EN LOCALIZATION INFRASTRUCTURE (dormant scaffold) ──────
+// The PO's #1 launch item is a full English version. A partial EN = a mixed AR/EN
+// UI = a deficiency, so it is built DARK behind EN_ENABLED and revealed only once
+// the EN coverage is complete + the PO has signed off on the wording. This sprint
+// ships ONLY the primitives + a tested-but-hidden toggle scaffold; every string
+// stays Arabic (no wiring yet), so the live site is byte-identical AR and the
+// 5-fixture VALUE gate is untouched (frontend-only, no engine logic).
+//   t(ar,en)     — translate an inline literal pair (AR fallback when no en)
+//   pick(o,base) — o.{base}_en in EN else o.{base}_ar off a backend object
+//   _loc()       — active Intl locale (Western vs Arabic-Indic digits)
+//   setLang(l)   — flip LANG + <html dir/lang> + body.lang-en + re-render
+// Later sprints wire strings to t()/pick(); the reveal sprint flips EN_ENABLED.
+var EN_ENABLED=false;                 // ← the reveal sprint flips this to true
+var _LANG_KEY='thammen_lang';
+function _langStored(){try{return localStorage.getItem(_LANG_KEY);}catch(e){return null;}}
+// During the dark period EN is FORCED off regardless of any stored choice, so a
+// user who once picked EN (in a future build) still gets a clean AR site now.
+var LANG=(EN_ENABLED&&_langStored()==='en')?'en':'ar';
+function t(ar,en){return (LANG==='en'&&en!=null)?en:ar;}
+function pick(o,base){if(!o)return '';var en=o[base+'_en'];return (LANG==='en'&&en!=null&&en!=='')?en:((o[base+'_ar']!=null)?o[base+'_ar']:'');}
+function _loc(){return LANG==='en'?'en-US':'ar-QA';}
+// Re-render the active result-family screen so its t()/pick() strings re-resolve
+// after a language flip (static HTML screens get wired in the core-flow sprint).
+function _rerenderForLang(){
+  try{
+    var d=window._lastResult, a=document.querySelector('.screen.active');
+    if(!a||!d)return; var id=a.id;
+    if(id==='resultsScreen')show(d);
+    else if(id==='confirmScreen')showConfirm(d);
+    else if(id==='reportScreen')showReport(d);
+    else if(id==='shortReportScreen')showShortReport(d);
+  }catch(e){}
+}
+function _syncLangToggle(){
+  try{
+    var offerEn=(LANG!=='en'); // the button offers the OTHER language
+    document.querySelectorAll('.lang-toggle').forEach(function(b){
+      b.textContent=offerEn?'English':'العربية';
+      b.setAttribute('aria-label',offerEn?'Switch to English':'التبديل إلى العربية');
+    });
+  }catch(e){}
+}
+function setLang(l){
+  if(!EN_ENABLED&&l==='en')return;            // dark-period guard: EN stays off
+  LANG=(l==='en')?'en':'ar';
+  try{localStorage.setItem(_LANG_KEY,LANG);}catch(e){}
+  var h=document.documentElement;
+  h.setAttribute('lang',LANG); h.setAttribute('dir',LANG==='en'?'ltr':'rtl');
+  document.body.classList.toggle('lang-en',LANG==='en');
+  _syncLangToggle(); _rerenderForLang();
+}
+// Mount a small language pill into every .tbar + the home header. DORMANT until
+// EN_ENABLED, so the dark build never shows a toggle (byte-identical AR).
+function _mountLangToggle(){
+  if(!EN_ENABLED)return;
+  try{
+    var mk=function(){var b=document.createElement('button');b.type='button';b.className='lang-toggle';b.onclick=function(){setLang(LANG==='en'?'ar':'en');};return b;};
+    document.querySelectorAll('.tbar').forEach(function(tb){if(!tb.querySelector('.lang-toggle'))tb.appendChild(mk());});
+    var home=document.getElementById('homeScreen');
+    if(home&&!home.querySelector('.lang-toggle')){var slot=document.createElement('div');slot.className='home-lang';slot.appendChild(mk());home.insertBefore(slot,home.firstChild);}
+    _syncLangToggle();
+  }catch(e){}
+}
+document.addEventListener('DOMContentLoaded',function(){
+  if(EN_ENABLED){var s=_langStored();setLang(s==='en'?'en':'ar');}  // restore choice only when EN is live
+  _mountLangToggle();
+});
+
 function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(n+'Screen').classList.add('active');window.scrollTo(0,0);if(n==='form')chk()}
 
 // Sprint 2.16.10 — surface tower-specific input fields and update the rental
@@ -932,7 +1005,7 @@ function clearIdentity(){
 }
 document.addEventListener('DOMContentLoaded',_restoreIdentity);
 
-function fmt(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString('ar-QA')}
+function fmt(n){return n==null||isNaN(n)?'—':Number(n).toLocaleString(_loc())}  // b77: locale via _loc() (ar-QA when LANG=ar → byte-identical; en-US in EN)
 // Sprint 2.22.0b.57 — HTML-escape INSURANCE for plain-data fields (address/district/
 // asset-label/area-names) injected into innerHTML. NOT applied to the engine-authored
 // *_ar note/clause fields (those carry intended HTML markup and are trusted our-engine output).
