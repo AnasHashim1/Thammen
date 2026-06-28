@@ -43,8 +43,8 @@ check('report footer pin-line → تقييم سوقيّ آليّ وليس تقي
       '</use></svg> تقييم سوقيّ آليّ وليس تقييماً معتمداً' in HTML
       and '</use></svg> تقدير سوقي آلي وليس تقييماً معتمداً' not in HTML)
 check('short-report subhead → تقييم سوقيّ آليّ · ليس تقييماً معتمداً (old absent)',
-      '<small>تقييم سوقيّ آليّ · ليس تقييماً معتمداً</small>' in HTML
-      and '<small>تقدير سوقي آلي · ليس تقييماً معتمداً</small>' not in HTML)
+      'تقييم سوقيّ آليّ · ليس تقييماً معتمداً' in HTML  # b80 R6: subhead literal now the t() first-arg (no longer bare in <small>)
+      and 'تقدير سوقي آلي · ليس تقييماً معتمداً' not in HTML)
 check('short-report micro b → تقييم سوقيّ آليّ + ليصير تقييمنا (old absent)',
       '<b>تقييم سوقيّ آليّ وليس تقييماً معتمداً</b>' in HTML
       and 'ليصير تقييمنا أدقّ للجميع' in HTML

@@ -94,7 +94,7 @@ check('openShortReport renders from window._lastResult (b2.3 pattern, no re-fetc
 check('D6 — TIER-3 CTA opens the SHORT report first',
       re.search(r'onclick="openShortReport\(\)">.*?التقرير المختصر', HTML) is not None)
 check('D6 — the FULL report one click away inside the short report',
-      'onclick="openReport()">التقرير الكامل</button>' in HTML)
+      "onclick=\"openReport()\">'+t('التقرير الكامل','Full report')+'</button>" in HTML)  # b80 R6: التقرير الكامل now t()-wrapped
 check('the b23 verify link now shares _verifyUrl (one builder, no drift)',
       HTML.count('function _verifyUrl(') == 1 and '_verifyUrl(d)' in HTML
       and HTML.count("'&rule='+encodeURIComponent") == 1)
@@ -161,7 +161,7 @@ check('the §٥ raise-the-number teaser (b62: card→one line; full table in §�
       'قد يرتفع الرقم' in SR and 'الإيجار أقوى معلومة' in SR
       and 'حسّن التقييم' in SR and '1.9M' not in SR and '4.7M' not in SR)  # b62 R6: §5 cost card→teaser (page-1 leanness)
 check('the §٦ scenarios table bound to the b23 broadcast (scn.items + the idea column)',
-      'v.scenarios' in SR and 'scn.items.forEach' in SR and 'it.label_ar' in SR
+      'v.scenarios' in SR and 'scn.items.forEach' in SR and "pick(it,'label')" in SR  # b80 R6: it.label_ar → pick(it,'label')
       and 'ماذا لو؟' in SR and 'الفكرة' in SR)  # b56 R6: وش لو→ماذا لو (formal register)
 check('the tamper line (the PDF §٩)', 'ليست النسخة الصادرة بهذا التاريخ' in SR)
 check('the FULL PDF legal block (التركات + المنصة + الخلاصة العملية caveat)',  # b56 R6: الزبدة→الخلاصة

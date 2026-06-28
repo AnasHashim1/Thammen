@@ -49,7 +49,7 @@ check('the b35 result-screen buyer calculator is UNTOUCHED (still gated, reuses 
 check('engine_version GONE from showShortReport (page-1 header de-noised)',
       'd.engine_version' not in SR)
 check('المرجع report_ref KEPT in the page-1 header',
-      "المرجع <b dir=\"ltr\">'+d.report_ref" in SR)
+      "t('المرجع ','Reference ')+'<b dir=\"ltr\">'+d.report_ref" in SR)  # b80 R6: المرجع label now t()-wrapped
 check('the FULL report STILL carries engine_version (b17 footer contract intact)',
       "d.engine_version||''" in HTML)
 

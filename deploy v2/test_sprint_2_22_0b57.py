@@ -40,7 +40,7 @@ check('report rep-addr via esc', '<div class="rep-addr">\'+esc(d.address)+\'</di
 check('report district span via esc', "<span>المنطقة: '+esc(d.district)+'</span>" in HTML)
 check('short-report row address+district via esc',
       "esc(d.address||'')" in HTML and "(d.district?(' · '+esc(d.district)):'')" in HTML)
-check('income cap-cell district via esc', "<span class=\"v\">'+esc((d.cap_rate_provenance||{}).district_ar" in HTML)
+check('income cap-cell district via esc', "<span class=\"v\">'+esc(pick(d.cap_rate_provenance,'district')" in HTML)  # b80 R6: district_ar → pick(), still esc()-wrapped
 check('refusal flat address+district via esc',
       "<strong>العنوان:</strong> '+esc(d.address)+'</div>" in HTML
       and "<strong>المنطقة:</strong> '+esc(d.district)+'</div>" in HTML)

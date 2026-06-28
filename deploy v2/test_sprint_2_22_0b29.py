@@ -69,8 +69,7 @@ rows = re.findall(r"thmr-btns(?:\\?'|\")>(.*?)</div>'", HTML, re.S)
 valued_row = next((r for r in rows if "التفاصيل الكاملة" in r), "")
 chk("short report: «التفاصيل الكاملة» button present in the thmr-btns row", bool(valued_row))
 chk("short report: «التفاصيل الكاملة» targets go('results') (the b15 screen)",
-    re.search(r"onclick=\\?\"go\(\\?'results\\?'\)\\?\">التفاصيل الكاملة", valued_row.replace("\\'", "'"))
-    or "onclick=\"go('results')\">التفاصيل الكاملة" in valued_row.replace("\\'", "'"))
+    "onclick=\"go('results')\">'+t('التفاصيل الكاملة','Full details')" in valued_row.replace("\\'", "'"))  # b80 R6: التفاصيل الكاملة now t()-wrapped (still → go('results'))
 chk("short report: «التقرير الكامل» (الكامل) still targets openReport()",
     "openReport()" in valued_row and "التقرير الكامل" in valued_row)
 chk("short report: button order الملحق -> التفاصيل -> الكامل -> طباعة",

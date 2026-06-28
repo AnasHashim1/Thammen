@@ -29,7 +29,7 @@ check('openReport() renders from window._lastResult (no re-fetch)',
 # that label), not the volatile emoji/icon glyph.
 check('TIER-3 report CTA → short-first (D6), full report one click away (b17 path intact)',
       'onclick="openShortReport()"' in HTML and 'التقرير المختصر' in HTML
-      and 'onclick="openReport()">التقرير الكامل' in HTML
+      and "onclick=\"openReport()\">'+t('التقرير الكامل','Full report')" in HTML  # b80 R6: التقرير الكامل now t()-wrapped (intent: full report one click away)
       and 't3-secondary" onclick="printReport()"' not in HTML)
 
 # ── shared builders: ONE voice across screens 4 + 5 (b14 coherence) ──
