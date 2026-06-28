@@ -56,8 +56,8 @@ check('range-as-lead headline retained', 'النطاق التقديري السو
 #       moved from the flat h+= wall into LABELED clusters (cProp/cData); nothing deleted, just grouped.
 check('report still renders age-sensitivity (b55: «حول العقار» cluster, cProp+=)',
       "v.age_sensitivity&&v.age_sensitivity.note_ar)cProp+=" in HTML)
-check('report still renders moj sample-size (b55: «حول البيانات» cluster, cData+=)',
-      "if(d.moj_sample_size)cData+='<div class=\"rn\" style=\"margin-top:8px;font-size:.78rem\">صفقات البيع المسجلة" in HTML)
+check('report still renders moj sample-size (b55 cluster cData+=; b81: AR in t())',
+      "if(d.moj_sample_size)cData+='<div class=\"rn\" style=\"margin-top:8px;font-size:.78rem\">'+t('صفقات البيع المسجلة لعقارات مشابهة: '" in HTML)
 
 # ── 5. VALUE-INVARIANCE — show() does not touch v.amount/v.low/v.high ──
 check('no mutation of v.amount/v.low/v.high', not re.search(r'\bv\.(amount|low|high)\s*=[^=]', HTML))

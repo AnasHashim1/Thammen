@@ -82,8 +82,8 @@ check('no v.amount / low / high mutation in show()', not re.search(r'v\.(amount|
 check('reads broadcast value_stack.cost only — no new engine field invented',
       "_vc.bua_m2" in SHOW and "_vc.rcn_qar_per_m2" in SHOW and "_vc.retention" in SHOW)
 # the report + short-report BUA rows (the DRY siblings) are UNTOUCHED — still present in the file
-check('report DEF-12 depreciated-building BUA row still present (showReport untouched)',
-      re.search(r"البناء المُهلَك'\+\(\(_cR\.bua_m2&&_cR\.rcn_qar_per_m2&&_cR\.retention!=null\)", HTML) is not None)
+check('report DEF-12 depreciated-building BUA row still present (b81: label via t(), BUA mechanics intact)',
+      re.search(r"t\('البناء المُهلَك','Depreciated building'\)\+\(\(_cR\.bua_m2&&_cR\.rcn_qar_per_m2&&_cR\.retention!=null\)", HTML) is not None)
 check('short-report «البناء بعد العمر» BUA row still present (showShortReport untouched)',
       'البناء بعد العمر' in HTML and "cost.bua_m2&&cost.rcn_qar_per_m2&&cost.retention!=null" in HTML)
 

@@ -32,15 +32,17 @@ print('— §1 the three-value rows (order + sources) —')
 # cost-led → «مرتكز التكلفة»). The row renders _def12R; the median literal lives in
 # the label-decision branches (in showReport, outside this block regex).
 i_mv = blk.find("'+_def12R+'")
-i_cost = blk.find('v.value_stack.cost.label_ar')
+# b81 R6: the cost row still composes SOLELY from value_stack.cost — now read via pick()
+# (EN twin with graceful AR fallback); the SOLE-source contract is unchanged.
+i_cost = blk.find("pick(v.value_stack.cost,'label')")
 i_fs = blk.find('قيمة البيع الجبريّ الإرشاديّة')  # b56 R6: تشكيل + ×٠٫٩٠ guarded label
 check('MV row present (leader-aware _def12R)', i_mv >= 0)
 check('the median label survives for true-median leads',
       'القيمة السوقية (الوسيط)' in HTML)
-check('cost row composes from value_stack.cost.label_ar (the SOLE source)', i_cost >= 0)
+check('cost row composes from value_stack.cost via pick(...,label) (the SOLE source)', i_cost >= 0)
 check('forced-sale row present', i_fs >= 0)
 check('order: MV -> cost -> forced-sale', 0 <= i_mv < i_cost < i_fs)
-check('V001 calibration sub-line rides value_stack.cost.sub_ar', 'v.value_stack.cost.sub_ar' in blk)
+check('V001 calibration sub-line rides value_stack.cost via pick(...,sub)', "pick(v.value_stack.cost,'sub')" in blk)
 check('no hardcoded cost label duplicate (label comes from the engine contract)',
       'قيمة التكلفة (أرض + بناء مُهلَك)' not in blk)
 

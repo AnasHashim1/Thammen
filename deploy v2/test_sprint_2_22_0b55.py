@@ -31,11 +31,11 @@ def check(name, cond):
 check('cluster buffers declared', "let cNum='', cProp='', cData='';" in REP)
 check('_repCl labeled-wrapper helper',
       "const _repCl=(lbl,body)=>body?('<div class=\"rep-cl\"><div class=\"rep-cl-h\">'+lbl+'</div>'+body+'</div>'):'';" in REP)
-check('clusters emitted in order number→property→data',
-      "h+=_repCl('حول الرقم',cNum)+_repCl('حول العقار',cProp)+_repCl('حول البيانات',cData);" in REP)
-check('label «حول الرقم»',   "_repCl('حول الرقم',cNum)" in REP)
-check('label «حول العقار»',  "_repCl('حول العقار',cProp)" in REP)
-check('label «حول البيانات»', "_repCl('حول البيانات',cData)" in REP)
+check('clusters emitted in order number→property→data (b81: labels wired via t())',
+      "h+=_repCl(t('حول الرقم','About the number'),cNum)+_repCl(t('حول العقار','About the property'),cProp)+_repCl(t('حول البيانات','About the data'),cData);" in REP)
+check('label «حول الرقم»',   "_repCl(t('حول الرقم','About the number'),cNum)" in REP)
+check('label «حول العقار»',  "_repCl(t('حول العقار','About the property'),cProp)" in REP)
+check('label «حول البيانات»', "_repCl(t('حول البيانات','About the data'),cData)" in REP)
 check('.rep-cl / .rep-cl-h CSS present', '.rep-cl{' in HTML and '.rep-cl-h{' in HTML)
 check('.rep-cl print page-break protected', '.rep-cl { page-break-inside: avoid; }' in HTML)
 
@@ -43,8 +43,8 @@ check('.rep-cl print page-break protected', '.rep-cl { page-break-inside: avoid;
 check('cNum <- leadership.note_ar', "v.leadership.note_ar){cNum+=" in REP)
 check('cNum <- old_stock_reanchor', "v.old_stock_reanchor.note_ar)cNum+=" in REP)
 check('cNum <- cost_triangulation', "v.cost_triangulation.note_ar)cNum+=" in REP)
-check('cNum <- value_floor land-floor',
-      "cNum+='<div class=\"rn\" style=\"margin-top:8px;font-size:.76rem\">'+(vfR.land_floor_note_ar" in REP)
+check('cNum <- value_floor land-floor (b81: via pick)',
+      "cNum+='<div class=\"rn\" style=\"margin-top:8px;font-size:.76rem\">'+pick(vfR,'land_floor_note')" in REP)
 
 # ── 3. «حول العقار» (cProp): condition · age-honesty · re-survey · age-sensitivity · HBU ──
 check('cProp <- condition_note (still folds on scenarios)', "v.scenarios.items.length>1))cProp+=" in REP)
@@ -54,12 +54,12 @@ check('cProp <- age_sensitivity (b18 §A1)', "v.age_sensitivity&&v.age_sensitivi
 check('cProp <- hbu', "v.hbu_note_ar)cProp+=" in REP)
 
 # ── 4. «حول البيانات» (cData): dual-evidence / dispersion pool · moj sample ──
-check('cData <- dual-evidence (cost-led)',
-      "cData+='<div class=\"rn\" style=\"margin-top:6px;font-size:.74rem\"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> شواهد السوق: مطابق" in REP)
-check('cData <- dispersion (market-led)',
-      "cData+='<div class=\"rn\" style=\"margin-top:6px;font-size:.74rem\"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> حوض المقارنات" in REP)
-check('cData <- moj sample-size (cite-n)',
-      "if(d.moj_sample_size)cData+='<div class=\"rn\" style=\"margin-top:8px;font-size:.78rem\">صفقات البيع المسجلة" in REP)
+check('cData <- dual-evidence (cost-led) (b81: AR moved into t())',
+      "</use></svg> '+t('شواهد السوق: مطابق ','Market evidence: matched ')" in REP)
+check('cData <- dispersion (market-led) (b81: AR moved into t())',
+      "</use></svg> '+t('حوض المقارنات: وسيط ','Comparables pool: median ')" in REP)
+check('cData <- moj sample-size (cite-n) (b81: AR moved into t())',
+      "if(d.moj_sample_size)cData+='<div class=\"rn\" style=\"margin-top:8px;font-size:.78rem\">'+t('صفقات البيع المسجلة لعقارات مشابهة: '" in REP)
 
 # ── 5. NO note lost — none of the moved notes still uses the old flat h+= buffer ──
 check('age-sensitivity no longer flat h+= (-> cProp)', "v.age_sensitivity&&v.age_sensitivity.note_ar)h+=" not in REP)
@@ -70,9 +70,9 @@ check('cost_triangulation no longer flat h+= (-> cNum)', "v.cost_triangulation.n
 
 # ── 6. Placement: the clusters render AFTER the DEF-12 lead block, BEFORE the one MUC card ──
 check('clusters after DEF-12 block opens',
-      REP.index("h+=_repCl('حول الرقم',cNum)") > REP.index("h+='<div class=\"rep-def12\">';"))
+      REP.index("h+=_repCl(t('حول الرقم','About the number'),cNum)") > REP.index("h+='<div class=\"rep-def12\">';"))
 check('clusters before the MUC card',
-      REP.index("h+=_repCl('حول الرقم',cNum)") < REP.index('_mucCardHtml(m_ar,m_b,m_r)'))
+      REP.index("h+=_repCl(t('حول الرقم','About the number'),cNum)") < REP.index('_mucCardHtml(m_ar,m_b,m_r)'))
 
 # ── 7. COMPLIANCE / honesty UNTOUCHED (kept, b26/b51 — one each, never deleted) ──
 check('ONE MUC clause after the number (_mucCardHtml)', '_mucCardHtml(m_ar,m_b,m_r)' in REP)

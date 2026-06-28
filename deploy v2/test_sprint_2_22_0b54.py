@@ -36,12 +36,12 @@ check('home htag → تقييم عقارك في قطر (old absent)',
 check('share line → تقييم سوقيّ آليّ، وليس تقييماً معتمداً (old absent)',
       "'تقييم سوقيّ آليّ، وليس تقييماً معتمداً.'" in HTML
       and "'تقدير سوقيّ آليّ، وليس تقييماً معتمداً.'" not in HTML)
-check('report brand → ثمّن — تقييم سوقيّ آليّ للعقار (old absent)',
-      'ثمّن<span> — تقييم سوقيّ آليّ للعقار</span>' in HTML
-      and 'ثمّن<span> — تقدير سوقي آليّ للعقار</span>' not in HTML)
-check('report footer pin-line → تقييم سوقيّ آليّ وليس تقييماً معتمداً (old absent)',
-      '</use></svg> تقييم سوقيّ آليّ وليس تقييماً معتمداً' in HTML
-      and '</use></svg> تقدير سوقي آلي وليس تقييماً معتمداً' not in HTML)
+check('report brand → تقييم سوقيّ آليّ للعقار locked (b81: now wired in t(); old تقدير absent)',
+      "t(' — تقييم سوقيّ آليّ للعقار',' — Automated market property valuation')" in HTML
+      and ' — تقدير سوقي آليّ للعقار' not in HTML)
+check('report footer pin-line → تقييم سوقيّ آليّ وليس تقييماً معتمداً locked (b81: in t(); old تقدير absent)',
+      "t('تقييم سوقيّ آليّ وليس تقييماً معتمداً'," in HTML
+      and 'تقدير سوقي آلي وليس تقييماً معتمداً' not in HTML)
 check('short-report subhead → تقييم سوقيّ آليّ · ليس تقييماً معتمداً (old absent)',
       'تقييم سوقيّ آليّ · ليس تقييماً معتمداً' in HTML  # b80 R6: subhead literal now the t() first-arg (no longer bare in <small>)
       and 'تقدير سوقي آلي · ليس تقييماً معتمداً' not in HTML)

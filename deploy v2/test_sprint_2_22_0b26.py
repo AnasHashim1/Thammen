@@ -58,13 +58,13 @@ check('EN mirror anchors on the record date, no event date',
       and 'onwards' not in (_muc['muc_clause_en'] or ''))
 
 print('\n[2] PDF fix — leader-aware labels (the two blind «الوسيط»)')
-check('label decision present (_midR/_def12R)', "_midR='مرتكز التكلفة (أرض + بناء مُهلَك)'" in REP
-      and "_def12R='القيمة السوقية (الوسيط)'" in REP)
+check('label decision present (_midR/_def12R) (b81: labels via t())', "_midR=t('مرتكز التكلفة (أرض + بناء مُهلَك)'," in REP
+      and "_def12R=t('القيمة السوقية (الوسيط)'," in REP)
 check('the median marker renders the decision, not the literal',
       "'+_midR+' ≈ <strong>'" in REP and 'الوسيط (التقدير المركزي) ≈ <strong>' not in REP)
 check('DEF-12 row 1 renders the decision', "'+_def12R+'</span><strong>" in REP)
 check('neutral fallback «التقدير المركزي» + the income guard',
-      "_midR='التقدير المركزي'" in REP and "income_triangulation||{}).mode==='income_led'" in REP)
+      "_midR=t('التقدير المركزي'," in REP and "income_triangulation||{}).mode==='income_led'" in REP)
 check('forced-sale basis line de-blinded', 'الأساس: القيمة التقديريّة المركزيّة ×' in REP  # b56 R6: تشكيل
       and 'القيمة السوقية المركزية (الوسيط)' not in REP)
 
@@ -78,8 +78,8 @@ check('the brief MU section is SKIPPED in the report loop (the ص9 merge)',
       "if(sec.id==='material_uncertainty')return;" in REP)
 
 print('\n[4] D8 — ONE «المنهجية والمعايير» annex (ص2+ص9)')
-check('the annex header rendered ONCE (comments excluded)',
-      REP.count('<div class="rt" style="margin-bottom:8px">المنهجية والمعايير</div>') == 1)
+check('the annex header rendered ONCE (comments excluded) (b81: title via t())',
+      REP.count("<div class=\"rt\" style=\"margin-bottom:8px\">'+t('المنهجية والمعايير','Methodology and standards')+'</div>") == 1)
 check('the a8 standards note lives INSIDE the annex (no early standalone card)',
       REP.find('المنهجية والمعايير') < REP.find('rics_methodology_note_ar'))
 check('the brief methodology section captured into the annex + skipped in the loop',

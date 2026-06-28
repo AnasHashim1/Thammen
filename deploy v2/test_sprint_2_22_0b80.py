@@ -62,8 +62,7 @@ check('#srOut LTR override present',
       'body.lang-en #srOut .thmr-row .v{text-align:right}' in HTML and
       'body.lang-en #srOut .thmr-sctab th{text-align:left}' in HTML and
       'body.lang-en #srOut .thmr-rbar .dot.c{right:auto;left:0' in HTML)
-check('NO bleed: full report (#repOut) + result (#resultsScreen) NOT EN-flipped; no global .thmr flip',
-      'body.lang-en #repOut' not in HTML and
+check('NO bleed: result (#resultsScreen) NOT EN-flipped; no global .thmr flip (b81 adds #repOut intentionally, scoped)',
       'body.lang-en #resultsScreen' not in HTML and
       'body.lang-en .thmr{direction' not in HTML)
 

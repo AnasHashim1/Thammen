@@ -37,7 +37,7 @@ check('district via esc (ri)', "ri('المنطقة',esc(d.district))" in HTML
 check('asset-label via esc (ri)', "ri('نوع العقار',esc(" in HTML
       and "ri('نوع العقار',(d.asset_type" not in HTML)
 check('report rep-addr via esc', '<div class="rep-addr">\'+esc(d.address)+\'</div>' in HTML)
-check('report district span via esc', "<span>المنطقة: '+esc(d.district)+'</span>" in HTML)
+check('report district span via esc (b81: label moved into t(), esc kept)', "t('المنطقة: ','District: ')+esc(d.district)+'</span>" in HTML)
 check('short-report row address+district via esc',
       "esc(d.address||'')" in HTML and "(d.district?(' · '+esc(d.district)):'')" in HTML)
 check('income cap-cell district via esc', "<span class=\"v\">'+esc(pick(d.cap_rate_provenance,'district')" in HTML)  # b80 R6: district_ar → pick(), still esc()-wrapped
@@ -59,8 +59,8 @@ check('hbu_note_ar NOT esc-wrapped', 'v.hbu_note_ar' in HTML and 'esc(v.hbu_note
 # ── 4. The 3 small fixes ──
 check('gate window._betaAck fallback honored (pre-paint script)',
       "sessionStorage.getItem('thammen_beta_ack')==='1'||window._betaAck){var g" in HTML)
-check('value_stack.cost.label_ar/sub_ar ||\'\' guards',
-      "(v.value_stack.cost.label_ar||'')" in HTML and "(v.value_stack.cost.sub_ar||'')" in HTML)
+check('value_stack.cost label/sub null-safe (b81: pick() returns "" when absent — supersedes the ||\'\' guard)',
+      "pick(v.value_stack.cost,'label')" in HTML and "pick(v.value_stack.cost,'sub')" in HTML)
 check('openMapPicker coords coerced to Number',
       "openMapPicker('+Number(lat)+','+Number(lon)+')" in HTML
       and "openMapPicker('+lat+','+lon+')" not in HTML)

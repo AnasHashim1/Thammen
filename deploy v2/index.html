@@ -464,7 +464,13 @@ body.lang-en #srOut .thmr-row .v{text-align:right}
 body.lang-en #srOut .thmr-sctab th{text-align:left}
 body.lang-en #srOut .thmr-sctab th.l,body.lang-en #srOut .thmr-sctab td.num{text-align:right}
 body.lang-en #srOut .thmr-rbar .dot.c{right:auto;left:0;transform:translate(-50%,-50%)}
-body.lang-en #srOut .thmr-rbar .dot.m{right:auto;left:100%;transform:translate(-50%,-50%)}</style>
+body.lang-en #srOut .thmr-rbar .dot.m{right:auto;left:100%;transform:translate(-50%,-50%)}
+/* b81 — full report (#repOut) LTR flip, scoped (no leakage to #srOut / the result screen). The
+   report uses the result-family classes: .ri is a stacked card, .rep-def12-row/.rep-meta are flex
+   (auto-correct in LTR), .rep-foot stays centered — so one container rule covers it; numbers live in
+   dir=ltr islands. .rep-foot keeps center. */
+body.lang-en #repOut{direction:ltr;text-align:left}
+body.lang-en #repOut .rep-foot{text-align:center}</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="ic-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 2.5 17.5A1.6 1.6 0 0 0 3.9 20h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/><line x1="12" y1="9" x2="12" y2="13.5"/><line x1="12" y1="16.6" x2="12.01" y2="16.6"/></symbol><symbol id="ic-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9 17 19.5 6.5"/></symbol><symbol id="ic-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></symbol><symbol id="ic-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="20.5" y1="20.5" x2="15.2" y2="15.2"/></symbol><symbol id="ic-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="20.5" x2="21" y2="20.5"/><line x1="6.5" y1="20.5" x2="6.5" y2="13"/><line x1="12" y1="20.5" x2="12" y2="6.5"/><line x1="17.5" y1="20.5" x2="17.5" y2="10"/></symbol><symbol id="ic-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4.5" width="12" height="16" rx="2"/><rect x="9" y="2.5" width="6" height="4" rx="1.3"/></symbol><symbol id="ic-tool" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"/></symbol><symbol id="ic-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="4" x2="12" y2="20.5"/><line x1="5.5" y1="7.5" x2="18.5" y2="7.5"/><path d="M5.5 7.5 2.8 13.5h5.4Z"/><path d="M18.5 7.5 15.8 13.5h5.4Z"/><line x1="8" y1="20.5" x2="16" y2="20.5"/></symbol><symbol id="ic-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2 12 4.5l8 6.7"/><path d="M6 9.7V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.7"/></symbol><symbol id="ic-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6-5.4 6-10.2A6 6 0 0 0 6 10.8C6 15.6 12 21 12 21Z"/><circle cx="12" cy="10.6" r="2.2"/></symbol><symbol id="ic-gem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12l3 5.5L12 21 3 9.5Z"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><path d="M9 4 7.5 9.5 12 21M15 4l1.5 5.5L12 21"/></symbol><symbol id="ic-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 7.5V12l3 1.8"/></symbol><symbol id="ic-ruler" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="8.5" width="18.8" height="7" rx="1" transform="rotate(-45 12 12)"/><path d="M9.7 6.6l1.6 1.6M7 9.3l1.6 1.6M12.4 3.9 14 5.5"/></symbol><symbol id="ic-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 17.6 6.6 20l1.2-6-4.5-4.2 6.1-.7Z"/></symbol><symbol id="ic-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.2"/><path d="M11 11l9.2 9.2M17.6 17.6l1.8-1.8M14.4 14.4l1.8-1.8"/></symbol><symbol id="ic-coins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6.2" rx="7" ry="3"/><path d="M5 6.2v5.6c0 1.7 3.1 3 7 3s7-1.3 7-3V6.2"/><path d="M5 11.8v5.6c0 1.7 3.1 3 7 3s7-1.3 7-3v-5.6"/></symbol><symbol id="ic-printer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 9.5V3.5h11v6"/><path d="M6.5 17.5h-2a1.5 1.5 0 0 1-1.5-1.5v-4a1.5 1.5 0 0 1 1.5-1.5h15a1.5 1.5 0 0 1 1.5 1.5v4a1.5 1.5 0 0 1-1.5 1.5h-2"/><rect x="6.5" y="14.5" width="11" height="6" rx="1"/></symbol><symbol id="ic-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 18.5h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.8 10.6c.8.7 1.3 1.4 1.3 2.4h5c0-1 .5-1.7 1.3-2.4A6 6 0 0 0 12 3Z"/></symbol><symbol id="ic-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l5 5V19a1.5 1.5 0 0 1-1.5 1.5h-9.5A1.5 1.5 0 0 1 6.5 19V5A1.5 1.5 0 0 1 7 3.5Z"/><path d="M13.5 3.5v5.5H19"/></symbol><symbol id="ic-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10.5a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2Z"/><line x1="5" y1="16.5" x2="15.5" y2="16.5"/></symbol><symbol id="ic-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M9.7 9.6a2.4 2.4 0 1 1 3.4 2.3c-.8.4-1.1 1-1.1 1.8"/><line x1="12" y1="16.8" x2="12.01" y2="16.8"/></symbol><symbol id="ic-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol><symbol id="ic-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><line x1="3.8" y1="12" x2="20.2" y2="12"/><path d="M12 3.8c2.4 2 2.4 14.4 0 16.4M12 3.8c-2.4 2-2.4 14.4 0 16.4"/></symbol><symbol id="ic-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="5"/><path d="M6 11l6-6 6 6"/></symbol><symbol id="ic-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16Z"/><line x1="13.5" y1="6.5" x2="17.5" y2="10.5"/></symbol></defs></svg>
@@ -772,6 +778,13 @@ const TIER_LABEL_AR={
   'analytical_range':      'نطاق تحليلي',
   'broker_verified_range': 'نطاق محقّق من الوسيط',
   'signed_valuation':      'تقييم موقّع'
+};
+// b81 — EN tier labels (dormant until EN_ENABLED; AR build never reads this → byte-identical).
+const TIER_LABEL_EN={
+  'indicative_estimate':   'Indicative estimate',
+  'analytical_range':      'Analytical range',
+  'broker_verified_range': 'Broker-verified range',
+  'signed_valuation':      'Signed valuation'
 };
 
 // ── Sprint 2.22.0b.77 — EN LOCALIZATION INFRASTRUCTURE (dormant scaffold) ──────
@@ -1458,17 +1471,19 @@ function copyResult(){
 function _mucFields(d){
   let muc_ar=null, muc_basis=null, muc_review=null;
   const mu=d.material_uncertainty;
+  // b81: guards still read .*_ar (truthiness, AR byte-identical); the VALUE is pick()'d so the EN
+  // clause renders once the backend muc_*_en twins land (graceful AR fallback meanwhile).
   if(mu&&mu.muc_clause_ar){
-    muc_ar=mu.muc_clause_ar;
-    muc_basis=mu.muc_basis_ar;
-    muc_review=mu.muc_review_recommendation_ar;
+    muc_ar=pick(mu,'muc_clause');
+    muc_basis=pick(mu,'muc_basis');
+    muc_review=pick(mu,'muc_review_recommendation');
   }
   if(!muc_ar&&d.brief&&Array.isArray(d.brief.sections)){
     const muSec=d.brief.sections.find(s=>s.id==='material_uncertainty');
     if(muSec&&muSec.content){
-      muc_ar=muSec.content.muc_clause_ar;
-      muc_basis=muSec.content.muc_basis_ar;
-      muc_review=muSec.content.muc_review_recommendation_ar;
+      muc_ar=pick(muSec.content,'muc_clause');
+      muc_basis=pick(muSec.content,'muc_basis');
+      muc_review=pick(muSec.content,'muc_review_recommendation');
     }
   }
   return [muc_ar,muc_basis,muc_review];
@@ -1477,10 +1492,10 @@ function _mucCardHtml(muc_ar,muc_basis,muc_review){
   if(!muc_ar)return '';
   let out='<div style="background:var(--bad-bg);border:2px solid var(--bad);border-radius:8px;padding:16px;margin-bottom:14px">';
   // Sprint 2.22.0a.2 Pattern A: LRM-wrap Latin tokens to prevent bidi reversal (Operational_Rules #25).
-  out+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> تحفظ مادي وفق ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ و ‎VPS 6‎ — و ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎</div>';
+  out+='<div style="font-weight:700;color:var(--bad);margin-bottom:8px;font-size:1.02rem"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('تحفظ مادي وفق ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ و ‎VPS 6‎ — و ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎','Material uncertainty under ‎RICS Red Book Global Standards‎ (‎effective 31 January 2025‎) — ‎VPGA 10‎ and ‎VPS 6‎ — and ‎IVS‎ (‎effective 31 January 2025‎) — ‎IVS 106‎')+'</div>';
   out+='<div style="white-space:pre-line;line-height:1.7;font-size:.92rem">'+muc_ar.replace(/^\u26A0\uFE0F?[^\n]*\n+/,'')+'</div>';
-  if(muc_basis)out+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--bad);font-size:.85rem;color:var(--muted)"><strong>الأساس:</strong> '+muc_basis+'</div>';
-  if(muc_review)out+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+muc_review+'</div>';
+  if(muc_basis)out+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--bad);font-size:.85rem;color:var(--muted)"><strong>'+t('الأساس:','Basis:')+'</strong> '+muc_basis+'</div>';
+  if(muc_review)out+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>'+t('التوصية:','Recommendation:')+'</strong> '+muc_review+'</div>';
   out+='</div>';
   return out;
 }
@@ -1707,21 +1722,21 @@ function showReport(d){
   const hasValuation=v.amount!=null&&v.amount>0;
   const now=new Date();
   // م3/D8 — the SIGNED six keep-annexes get NUMBERED labels (page order).
-  let _axN=0; const _ax=()=>{_axN++;return '<div style="color:var(--thmr-bronze,#A4814A);font-weight:700;font-size:.72rem;margin:2px 0 4px">ملحق '+_axN+'</div>';};
+  let _axN=0; const _ax=()=>{_axN++;return '<div style="color:var(--thmr-bronze,#A4814A);font-weight:700;font-size:.72rem;margin:2px 0 4px">'+t('ملحق ','Appendix ')+_axN+'</div>';};
   const _axWrap=(html)=>html?(_ax()+html):'';
   let h='';
-  h+='<button class="copy-btn print-btn no-print" onclick="printReportA4()"><svg class=ic aria-hidden=true><use href=#ic-printer></use></svg> طباعة / حفظ PDF (A4)</button><div style="clear:both"></div>';
+  h+='<button class="copy-btn print-btn no-print" onclick="printReportA4()"><svg class=ic aria-hidden=true><use href=#ic-printer></use></svg> '+t('طباعة / حفظ PDF (A4)','Print / save PDF (A4)')+'</button><div style="clear:both"></div>';
   // (1) cover: brand + address/PIN + date + engine version + the staleness banner.
   h+='<div class="rc rep-cover">';
-  h+='<div class="rep-brand">ثمّن<span> — تقييم سوقيّ آليّ للعقار</span></div>';
+  h+='<div class="rep-brand">'+t('ثمّن','Thammen')+'<span>'+t(' — تقييم سوقيّ آليّ للعقار',' — Automated market property valuation')+'</span></div>';
   if(d.address)h+='<div class="rep-addr">'+esc(d.address)+'</div>';
   const _pbr=d.property_basis||{};
   h+='<div class="rep-meta">';
-  if(_pbr.pin!=null)h+='<span>الرقم المساحي: <span dir="ltr">'+_pbr.pin+'</span></span>';
-  if(d.district)h+='<span>المنطقة: '+esc(d.district)+'</span>';
-  h+='<span>التاريخ: <span dir="ltr">'+now.toISOString().slice(0,10)+'</span></span>';
+  if(_pbr.pin!=null)h+='<span>'+t('الرقم المساحي: ','Cadastral no.: ')+'<span dir="ltr">'+_pbr.pin+'</span></span>';
+  if(d.district)h+='<span>'+t('المنطقة: ','District: ')+esc(d.district)+'</span>';
+  h+='<span>'+t('التاريخ: ','Date: ')+'<span dir="ltr">'+now.toISOString().slice(0,10)+'</span></span>';
   h+='</div>';
-  if(d.data_freshness&&d.data_freshness.caveat_ar){h+='<div class="dfc s-'+(d.data_freshness.severity||'info')+'" style="margin-top:10px">'+d.data_freshness.caveat_ar+'</div>';}
+  if(d.data_freshness&&d.data_freshness.caveat_ar){h+='<div class="dfc s-'+(d.data_freshness.severity||'info')+'" style="margin-top:10px">'+pick(d.data_freshness,'caveat')+'</div>';}
   h+='</div>';
   // Sprint 2.22.0b.26 (م3/D8): the MUC block MOVED to AFTER the number (ص1+ص9 merged
   // into ONE block — the brief MU section is skipped in the loop below); the a8
@@ -1732,21 +1747,21 @@ function showReport(d){
     // blind-«الوسيط» fix): «الوسيط» only on a true comparison median.
     const _ldR=v.leadership||null;
     const _ildR=((v.income_triangulation||{}).mode==='income_led')||v.method==='income_approach_only';
-    let _midR='التقدير المركزي', _def12R='القيمة التقديرية (المركزية)';
-    if(_ldR&&_ldR.leader==='cost'){_midR='مرتكز التكلفة (أرض + بناء مُهلَك)';_def12R='القيمة التقديرية (مرتكز التكلفة — أرض + بناء مُهلَك)';}
-    else if(_ldR&&_ldR.leader==='market'){_midR='الوسيط (التقدير المركزي)';_def12R='القيمة السوقية (الوسيط)';}
-    else if(!_ldR&&!_ildR&&String(v.method||'').indexOf('comparison')===0){_midR='الوسيط (التقدير المركزي)';_def12R='القيمة السوقية (الوسيط)';}
+    let _midR=t('التقدير المركزي','Central estimate'), _def12R=t('القيمة التقديرية (المركزية)','Estimated value (central)');
+    if(_ldR&&_ldR.leader==='cost'){_midR=t('مرتكز التكلفة (أرض + بناء مُهلَك)','Cost anchor (land + depreciated building)');_def12R=t('القيمة التقديرية (مرتكز التكلفة — أرض + بناء مُهلَك)','Estimated value (cost anchor — land + depreciated building)');}
+    else if(_ldR&&_ldR.leader==='market'){_midR=t('الوسيط (التقدير المركزي)','Median (central estimate)');_def12R=t('القيمة السوقية (الوسيط)','Market value (median)');}
+    else if(!_ldR&&!_ildR&&String(v.method||'').indexOf('comparison')===0){_midR=t('الوسيط (التقدير المركزي)','Median (central estimate)');_def12R=t('القيمة السوقية (الوسيط)','Market value (median)');}
     // (3) headline range + status + DEF-12 two-values (REPORT-ONLY; display math ×0.90 — no engine
     // change). Plain .rc (NOT calc-block — the a8 contract scopes that visual to the screen-4
     // valuation card exactly once; test_sprint_2p22p0a_calc_visual_and_ledger pins it).
-    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">القيمة السوقية (MV)</div>';
-    const _tierR=TIER_LABEL_AR[d.tier_label]||'';
+    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">'+t('القيمة السوقية (MV)','Market value (MV)')+'</div>';
+    const _tierR=(LANG==='en'?TIER_LABEL_EN:TIER_LABEL_AR)[d.tier_label]||'';
     if(_tierR)h+='<div style="display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px">'+_tierR+'</div>';
     if(v.low!=null&&v.high!=null){
-      h+='<div class="ri full"><div class="rl">النطاق التقديري السوقي</div><div class="rv hl" style="font-size:1.4rem">'+fmt(v.low)+' – '+fmt(v.high)+' ر.ق</div></div>';
-      h+='<div class="rn" style="font-size:.84rem">'+_midR+' ≈ <strong>'+fmt(v.amount)+'</strong> ر.ق</div>';
+      h+='<div class="ri full"><div class="rl">'+t('النطاق التقديري السوقي','Estimated market range')+'</div><div class="rv hl" style="font-size:1.4rem">'+fmt(v.low)+' – '+fmt(v.high)+t(' ر.ق',' QAR')+'</div></div>';
+      h+='<div class="rn" style="font-size:.84rem">'+_midR+' ≈ <strong>'+fmt(v.amount)+'</strong>'+t(' ر.ق',' QAR')+'</div>';
     }else{
-      h+='<div class="ri full"><div class="rl">القيمة التقديرية</div><div class="rv hl" style="font-size:1.4rem">'+fmt(v.amount)+' ر.ق</div></div>';
+      h+='<div class="ri full"><div class="rl">'+t('القيمة التقديرية','Estimated value')+'</div><div class="rv hl" style="font-size:1.4rem">'+fmt(v.amount)+t(' ر.ق',' QAR')+'</div></div>';
     }
     // Sprint 2.22.0b.51 (reorder): DEF-12 three-value block leads here — right under the headline
     // range — so the reader meets the KEY numbers (سوقية/كلفة/جبري) BEFORE the fine-print evidence
@@ -1761,20 +1776,20 @@ function showReport(d){
     const _fs=Math.round((v.amount||0)*0.90);
     // Sprint 2.22.0b.72 (value-clarity): one plain-language bridge so the three figures aren't read as
     // competing/co-equal numbers — they are (our estimate · rebuild cost · quick-sale). Value-invariant.
-    h+='<div class="rn" style="font-size:.8rem;margin-bottom:8px;color:var(--muted)">ثلاثة أرقام: تقديرُنا لقيمة بيتك · كلفةُ إعادة بنائه · وتقديرٌ عند البيع السريع.</div>';
+    h+='<div class="rn" style="font-size:.8rem;margin-bottom:8px;color:var(--muted)">'+t('ثلاثة أرقام: تقديرُنا لقيمة بيتك · كلفةُ إعادة بنائه · وتقديرٌ عند البيع السريع.','Three numbers: our estimate of your home\'s value · the cost to rebuild it · and an estimate for a quick sale.')+'</div>';
     h+='<div class="rep-def12">';
-    h+='<div class="rep-def12-row"><span>'+_def12R+'</span><strong>'+fmt(v.amount)+' ر.ق</strong></div>';
+    h+='<div class="rep-def12-row"><span>'+_def12R+'</span><strong>'+fmt(v.amount)+t(' ر.ق',' QAR')+'</strong></div>';
     if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
-      h+='<div class="rep-def12-row"><span>'+(v.value_stack.cost.label_ar||'')+'</span><strong>'+fmt(v.value_stack.cost.value)+' ر.ق</strong></div>';
-      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">'+(v.value_stack.cost.sub_ar||'')+'</div>';
+      h+='<div class="rep-def12-row"><span>'+pick(v.value_stack.cost,'label')+'</span><strong>'+fmt(v.value_stack.cost.value)+t(' ر.ق',' QAR')+'</strong></div>';
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px">'+pick(v.value_stack.cost,'sub')+'</div>';
     }else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){
-      h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.value_stack.cost.unavailable_reason_ar+'</div>';
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+pick(v.value_stack.cost,'unavailable_reason')+'</div>';
     }else if(v.cost_note_ar){
-      h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+v.cost_note_ar+'</div>';
+      h+='<div class="rn" style="font-size:.72rem;margin-top:2px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+pick(v,'cost_note')+'</div>';
     }
-    h+='<div class="rep-def12-row"><span>قيمة البيع الجبريّ الإرشاديّة (×٠٫٩٠ — ليست تصفية معتمدة)</span><strong>'+fmt(_fs)+' ر.ق</strong></div>';
-    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">قيمة بيعٍ جبريٍّ إرشاديّة (عُرفٌ سوقيٌّ ×٠٫٩٠) — ليست تقييم تصفية معتمداً. الأساس: القيمة التقديريّة المركزيّة × ٠٫٩٠.</div>';
-    h+='<div class="rn" style="font-size:.7rem;margin-top:4px">الأرقام كما يبثّها المحرك — تدوير موحَّد من المصدر، لا تقريب إضافي في العرض.</div>';
+    h+='<div class="rep-def12-row"><span>'+t('قيمة البيع الجبريّ الإرشاديّة (×٠٫٩٠ — ليست تصفية معتمدة)','Indicative forced-sale value (×0.90 — not a certified liquidation)')+'</span><strong>'+fmt(_fs)+t(' ر.ق',' QAR')+'</strong></div>';
+    h+='<div class="rn" style="font-size:.74rem;margin-top:6px">'+t('قيمة بيعٍ جبريٍّ إرشاديّة (عُرفٌ سوقيٌّ ×٠٫٩٠) — ليست تقييم تصفية معتمداً. الأساس: القيمة التقديريّة المركزيّة × ٠٫٩٠.','An indicative forced-sale value (a market convention of ×0.90) — not a certified liquidation valuation. Basis: the central estimated value × 0.90.')+'</div>';
+    h+='<div class="rn" style="font-size:.7rem;margin-top:4px">'+t('الأرقام كما يبثّها المحرك — تدوير موحَّد من المصدر، لا تقريب إضافي في العرض.','The figures are as broadcast by the engine — uniformly rounded at source, with no extra display rounding.')+'</div>';
     h+='</div>';
     // ════ Sprint 2.22.0b.55 «رشاقة التقرير الكامل» — the fine-print notes that used to stack as a
     // flat wall under the DEF-12 block are GROUPED into 3 LABELED clusters: «حول الرقم» (كيف اشتُقّت
@@ -1785,37 +1800,37 @@ function showReport(d){
     // when the scenarios table answers it (a17/a19 disclosure verbatim where no scenarios exist).
     let cNum='', cProp='', cData='';
     // ── «حول الرقم»: leadership verdict (b20) · old-stock re-anchor · cost-triangulation · land-floor decomposition ──
-    if(v.leadership&&v.leadership.note_ar){cNum+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.leadership.note_ar+'</div>';}
-    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar)cNum+='<div class="rn" style="margin-top:8px;font-size:.78rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+v.old_stock_reanchor.note_ar+'</div>';
-    if(v.cost_triangulation&&v.cost_triangulation.note_ar)cNum+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.cost_triangulation.note_ar+'</div>';
+    if(v.leadership&&v.leadership.note_ar){cNum+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+pick(v.leadership,'note')+'</div>';}
+    if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar)cNum+='<div class="rn" style="margin-top:8px;font-size:.78rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+pick(v.old_stock_reanchor,'note')+'</div>';
+    if(v.cost_triangulation&&v.cost_triangulation.note_ar)cNum+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+pick(v.cost_triangulation,'note')+'</div>';
     if(v.value_floor){
       const vfR=v.value_floor;
-      cNum+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+(vfR.land_floor_note_ar||'');
-      if(vfR.land_anchored&&vfR.land_anchored_note_ar)cNum+=' '+vfR.land_anchored_note_ar;
-      else if(vfR.implied_building_note_ar)cNum+=' '+vfR.implied_building_note_ar;
+      cNum+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+pick(vfR,'land_floor_note');
+      if(vfR.land_anchored&&vfR.land_anchored_note_ar)cNum+=' '+pick(vfR,'land_anchored_note');
+      else if(vfR.implied_building_note_ar)cNum+=' '+pick(vfR,'implied_building_note');
       cNum+='</div>';
     }
     // ── «حول العقار»: condition (not assessed, a17/a19) · building-age honesty · re-survey · user-age sensitivity (§A1) · HBU ──
-    if(v.condition_note_ar&&!(v.scenarios&&v.scenarios.items&&v.scenarios.items.length>1))cProp+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+v.condition_note_ar+'</div>';
-    if(v.leadership&&v.leadership.age_honesty_note_ar){cProp+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.leadership.age_honesty_note_ar+'</div>';}
-    if(v.leadership&&v.leadership.resurvey_note_ar){cProp+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '+v.leadership.resurvey_note_ar+'</div>';}
-    if(v.age_sensitivity&&v.age_sensitivity.note_ar)cProp+='<div class="rn" style="margin-top:8px;font-size:.76rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+v.age_sensitivity.note_ar+'</div>';
-    if(v.hbu_note_ar)cProp+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+v.hbu_note_ar+'</div>';
+    if(v.condition_note_ar&&!(v.scenarios&&v.scenarios.items&&v.scenarios.items.length>1))cProp+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+pick(v,'condition_note')+'</div>';
+    if(v.leadership&&v.leadership.age_honesty_note_ar){cProp+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+pick(v.leadership,'age_honesty_note')+'</div>';}
+    if(v.leadership&&v.leadership.resurvey_note_ar){cProp+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '+pick(v.leadership,'resurvey_note')+'</div>';}
+    if(v.age_sensitivity&&v.age_sensitivity.note_ar)cProp+='<div class="rn" style="margin-top:8px;font-size:.76rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+pick(v.age_sensitivity,'note')+'</div>';
+    if(v.hbu_note_ar)cProp+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+pick(v,'hbu_note')+'</div>';
     // ── «حول البيانات»: the evidence pool — dual-evidence (cost-led, b20/م3 mixed-pool fix) OR bracket
     // dispersion with its own n (market-led) — + the registered-sales sample count (cite-n) ──
     if(_ldR&&_ldR.leader==='cost'){
       const _tR=_ldR.thresholds||{};
       const _gdR=(_ldR.geo_full_dispersion!=null)?_ldR.geo_full_dispersion:'—';
-      cData+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> شواهد السوق: مطابق <span dir="ltr">n='+(_ldR.matched_n!=null?_ldR.matched_n:'—')+' (&lt;'+(_tR.matched_min_n!=null?_tR.matched_min_n:10)+')</span> · جغرافي <span dir="ltr">'+(_ldR.geo_full_n!=null?_ldR.geo_full_n:'—')+'/'+_gdR+((_gdR!=='—'&&_gdR>=(_tR.dispersion_t!=null?_tR.dispersion_t:0.30))?' (&gt;'+(_tR.dispersion_t!=null?_tR.dispersion_t:0.30)+')':'')+'</span></div>';
+      cData+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> '+t('شواهد السوق: مطابق ','Market evidence: matched ')+'<span dir="ltr">n='+(_ldR.matched_n!=null?_ldR.matched_n:'—')+' (&lt;'+(_tR.matched_min_n!=null?_tR.matched_min_n:10)+')</span>'+t(' · جغرافي ',' · geographic ')+'<span dir="ltr">'+(_ldR.geo_full_n!=null?_ldR.geo_full_n:'—')+'/'+_gdR+((_gdR!=='—'&&_gdR>=(_tR.dispersion_t!=null?_tR.dispersion_t:0.30))?' (&gt;'+(_tR.dispersion_t!=null?_tR.dispersion_t:0.30)+')':'')+'</span></div>';
     }else if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){
-      cData+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> حوض المقارنات: وسيط '+fmt(v.value_stack.market.median)+' ر.ق · تشتت 36 شهراً <span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span>'+((v.value_stack.market.bracket_n_36!=null)?' <span dir="ltr">(n='+v.value_stack.market.bracket_n_36+')</span>':'')+'</div>';
+      cData+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> '+t('حوض المقارنات: وسيط ','Comparables pool: median ')+fmt(v.value_stack.market.median)+t(' ر.ق · تشتت 36 شهراً ',' QAR · 36-month dispersion ')+'<span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span>'+((v.value_stack.market.bracket_n_36!=null)?' <span dir="ltr">(n='+v.value_stack.market.bracket_n_36+')</span>':'')+'</div>';
     }
-    if(d.moj_sample_size)cData+='<div class="rn" style="margin-top:8px;font-size:.78rem">صفقات البيع المسجلة لعقارات مشابهة: '+d.moj_sample_size+' صفقة</div>';
+    if(d.moj_sample_size)cData+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+t('صفقات البيع المسجلة لعقارات مشابهة: ','Registered sales of comparable properties: ')+d.moj_sample_size+t(' صفقة',' sales')+'</div>';
     // emit non-empty clusters in order (number → property → data); each carries ONE bronze label.
     // The DEF-12 three-value block (above, b51 reorder) still LEADS with the key numbers; these
     // grouped clusters follow — the reader meets the value first, then «كيف/عن ماذا/من أين».
     const _repCl=(lbl,body)=>body?('<div class="rep-cl"><div class="rep-cl-h">'+lbl+'</div>'+body+'</div>'):'';
-    h+=_repCl('حول الرقم',cNum)+_repCl('حول العقار',cProp)+_repCl('حول البيانات',cData);
+    h+=_repCl(t('حول الرقم','About the number'),cNum)+_repCl(t('حول العقار','About the property'),cProp)+_repCl(t('حول البيانات','About the data'),cData);
     h+='</div>';
     // م3/D8 — the ONE MUC block, AFTER the number (ص1 + ص9 merged; the brief MU
     // section is skipped in the annex loop below).
@@ -1825,13 +1840,13 @@ function showReport(d){
     // effect of condition/finish/teardown on the SAME plot + footprint.
     const _scn=v.scenarios;
     if(_scn&&_scn.items&&_scn.items.length>1){
-      h+='<div class="rc"><div class="rh"><div class="rt">سيناريوهات الحالة والتشطيب</div></div>';
+      h+='<div class="rc"><div class="rh"><div class="rt">'+t('سيناريوهات الحالة والتشطيب','Condition and finish scenarios')+'</div></div>';
       _scn.items.forEach(it=>{
         const _isAs=(it.key==='as_is');
-        h+='<div class="rep-def12-row" style="'+(_isAs?'font-weight:700':'')+'"><span>'+it.label_ar+'</span><strong>'+fmt(it.value)+' ر.ق</strong></div>';
-        if(it.assumptions_ar)h+='<div class="rn" style="font-size:.72rem;margin:0 0 4px">'+it.assumptions_ar+'</div>';
+        h+='<div class="rep-def12-row" style="'+(_isAs?'font-weight:700':'')+'"><span>'+pick(it,'label')+'</span><strong>'+fmt(it.value)+t(' ر.ق',' QAR')+'</strong></div>';
+        if(it.assumptions_ar)h+='<div class="rn" style="font-size:.72rem;margin:0 0 4px">'+pick(it,'assumptions')+'</div>';
       });
-      if(_scn.note_ar)h+='<div class="rn" style="font-size:.74rem;margin-top:6px">'+_scn.note_ar+'</div>';
+      if(_scn.note_ar)h+='<div class="rn" style="font-size:.74rem;margin-top:6px">'+pick(_scn,'note')+'</div>';
       h+='</div>';
     }
     // (4) evidence quality (the b2.2 panel, full) — numbered annex (D8 keep-list).
@@ -1843,10 +1858,10 @@ function showReport(d){
     if(!(v.leadership&&v.leadership.leader==='cost'))h+=_decompHtml(d,v,hasValuation);
     else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
       const _cR=v.value_stack.cost;
-      h+='<div class="rc"><div class="rh"><div class="rt">تفكيك المرتكز (أرقام DRC مباشرة)</div></div>';
-      h+='<div class="rep-def12-row"><span>الأرض (مرجع وزارة العدل)</span><strong>'+fmt(_cR.land_floor)+' ر.ق</strong></div>';
-      h+='<div class="rep-def12-row"><span>البناء المُهلَك'+((_cR.bua_m2&&_cR.rcn_qar_per_m2&&_cR.retention!=null)?(' (<span dir="ltr">BUA '+_cR.bua_m2+' × '+fmt(_cR.rcn_qar_per_m2)+' × '+_cR.retention+'</span>)'):'')+'</span><strong>'+fmt(_cR.building_value)+' ر.ق</strong></div>';
-      if(_cR.sub_ar)h+='<div class="rn" style="font-size:.72rem;margin-top:4px">'+_cR.sub_ar+'</div>';
+      h+='<div class="rc"><div class="rh"><div class="rt">'+t('تفكيك المرتكز (أرقام DRC مباشرة)','Anchor breakdown (direct DRC figures)')+'</div></div>';
+      h+='<div class="rep-def12-row"><span>'+t('الأرض (مرجع وزارة العدل)','Land (Ministry of Justice reference)')+'</span><strong>'+fmt(_cR.land_floor)+t(' ر.ق',' QAR')+'</strong></div>';
+      h+='<div class="rep-def12-row"><span>'+t('البناء المُهلَك','Depreciated building')+((_cR.bua_m2&&_cR.rcn_qar_per_m2&&_cR.retention!=null)?(' (<span dir="ltr">BUA '+_cR.bua_m2+' × '+fmt(_cR.rcn_qar_per_m2)+' × '+_cR.retention+'</span>)'):'')+'</span><strong>'+fmt(_cR.building_value)+t(' ر.ق',' QAR')+'</strong></div>';
+      if(_cR.sub_ar)h+='<div class="rn" style="font-size:.72rem;margin-top:4px">'+pick(_cR,'sub')+'</div>';
       h+='</div>';
     }
     h+=_substHtml(d,v,hasValuation);
@@ -1854,38 +1869,38 @@ function showReport(d){
     const _rtrR=d.reasoning_trace;
     if(_rtrR&&_rtrR.known_unknowns&&_rtrR.known_unknowns.length>0){
       h+=_ax();
-      h+='<div class="rc"><div class="rt" style="margin-bottom:10px">ما لا نعرفه (يحتاج فحص ميداني)</div><div class="rn">';
+      h+='<div class="rc"><div class="rt" style="margin-bottom:10px">'+t('ما لا نعرفه (يحتاج فحص ميداني)','What we don\'t know (needs a field inspection)')+'</div><div class="rn">';
       _rtrR.known_unknowns.forEach(u=>{h+='• '+u+'<br>'});
       h+='</div></div>';
     }
     // (6) property basis (b9) + footprint (b10).
-    h+='<div class="rc"><div class="rh"><div class="rt">بيانات العقار الأساسية</div></div><div class="rg">';
-    if(d.address)h+=ri('العنوان',esc(d.address),0,1);
-    if(d.district)h+=ri('المنطقة',esc(d.district));
-    if(d.plot_area_m2)h+=ri('مساحة الأرض',fmt(d.plot_area_m2)+' م²');
-    if(d.asset_type)h+=ri('نوع العقار',esc((d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:(ASSET_AR[d.asset_type]||d.asset_type)));
+    h+='<div class="rc"><div class="rh"><div class="rt">'+t('بيانات العقار الأساسية','Property basics')+'</div></div><div class="rg">';
+    if(d.address)h+=ri(t('العنوان','Address'),esc(d.address),0,1);
+    if(d.district)h+=ri(t('المنطقة','District'),esc(d.district));
+    if(d.plot_area_m2)h+=ri(t('مساحة الأرض','Plot area'),fmt(d.plot_area_m2)+t(' م²',' m²'));
+    if(d.asset_type)h+=ri(t('نوع العقار','Property type'),esc((d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:t(ASSET_AR[d.asset_type]||d.asset_type,ASSET_EN[d.asset_type]||d.asset_type)));
     const _piR=d.property_info||{};
-    if(_piR.zoning)h+=ri('التصنيف',_piR.zoning);
+    if(_piR.zoning)h+=ri(t('التصنيف','Zoning'),_piR.zoning);
     h+=pbRows(d.property_basis);
     const _gR=v.geometry||{};
-    if(_gR.footprint_basis==='confirmed'&&_gR.effective_footprint_m2)h+=ri('مساحة البناء المعتمدة','<svg class=ic aria-hidden=true><use href=#ic-check></use></svg> '+fmt(_gR.effective_footprint_m2)+' م²');
-    else if(_gR.max_buildable_footprint_m2)h+=ri('مساحة البناء الأرضي (تقدير أقصى)','≈ '+fmt(_gR.max_buildable_footprint_m2)+' م²');
+    if(_gR.footprint_basis==='confirmed'&&_gR.effective_footprint_m2)h+=ri(t('مساحة البناء المعتمدة','Confirmed built-up area'),'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg> '+fmt(_gR.effective_footprint_m2)+t(' م²',' m²'));
+    else if(_gR.max_buildable_footprint_m2)h+=ri(t('مساحة البناء الأرضي (تقدير أقصى)','Ground-floor footprint (max estimate)'),'≈ '+fmt(_gR.max_buildable_footprint_m2)+t(' م²',' m²'));
     h+='</div></div>';
   }else{
-    h+='<div class="rc"><div class="rn">'+(v.reason_ar||'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً — لا يصدر تقرير قيمة.')+'</div></div>';
+    h+='<div class="rc"><div class="rn">'+(pick(v,'reason')||t('لا تتوفر بيانات كافية لتقييم هذا العقار حالياً — لا يصدر تقرير قيمة.','Not enough data to value this property right now — no value report is issued.'))+'</div></div>';
     // refusal keeps its MVU clause (b17 contract) — rendered here since the one
     // MUC block now lives after the number on the valued path.
     h+=_mucCardHtml(m_ar,m_b,m_r);
   }
   // (7) م3/D8 — ONE «المنهجية والمعايير» annex (ص2 + ص9 merged): the a4 bare line +
   // the brief methodology section + the a8 standards note, in one card.
-  h+='<div class="rc"><div class="rt" style="margin-bottom:8px">المنهجية والمعايير</div>';
-  if(d.methodology_ar)h+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin-bottom:10px;font-size:.78rem;color:#666;line-height:1.5">'+d.methodology_ar+'</div>';
+  h+='<div class="rc"><div class="rt" style="margin-bottom:8px">'+t('المنهجية والمعايير','Methodology and standards')+'</div>';
+  if(d.methodology_ar)h+='<div style="text-align:center;padding:8px 12px;background:#f5f5f5;border-radius:6px;margin-bottom:10px;font-size:.78rem;color:#666;line-height:1.5">'+pick(d,'methodology')+'</div>';
   const _brR=d.brief;
   const _methSecR=(_brR&&_brR.sections||[]).find(s=>s&&s.id==='methodology');
   if(_methSecR)h+=renderSection(_methSecR);
   if(d.rics_methodology_note_ar){
-    h+='<div style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-top:8px"><div style="font-weight:600;font-size:.9rem;margin-bottom:4px">ℹ معايير &lrm;RICS / IVS&lrm;</div>'+d.rics_methodology_note_ar+'</div>';
+    h+='<div style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-top:8px"><div style="font-weight:600;font-size:.9rem;margin-bottom:4px">'+t('ℹ معايير &lrm;RICS / IVS&lrm;','ℹ &lrm;RICS / IVS&lrm; standards')+'</div>'+pick(d,'rics_methodology_note')+'</div>';
   }
   h+='</div>';
   const _srcNode=document.querySelector('.src-credit');
@@ -1895,7 +1910,7 @@ function showReport(d){
   // methodology (merged into the annex above) · flags when NO listing exists
   // (the empty-ad section folds — the b14 copy stays for screen 4).
   if(_brR&&_brR.sections&&_brR.sections.length>0){
-    h+='<div class="rc" style="background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px"><div class="rt" style="font-size:1.05rem;margin-bottom:0">'+(_brR.title_ar||'التقرير التفصيلي')+'</div></div>';
+    h+='<div class="rc" style="background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px"><div class="rt" style="font-size:1.05rem;margin-bottom:0">'+(pick(_brR,'title')||t('التقرير التفصيلي','Detailed report'))+'</div></div>';
     _brR.sections.forEach(sec=>{
       if(!sec)return;
       if(sec.id==='material_uncertainty')return;
@@ -1908,19 +1923,19 @@ function showReport(d){
   // (9) footer: not-certified (a20 status appended) + engine version + timestamp + the GT hook
   // (the Terms' OWN signed channel — PHASE0_b17 §3; feeds the D-3 GT kit).
   h+='<div class="rep-foot">';
-  h+='<div><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> تقييم سوقيّ آليّ وليس تقييماً معتمداً'+((d.material_uncertainty||{}).rics_compliant_status_ar?(' ('+d.material_uncertainty.rics_compliant_status_ar+')'):'')+'.</div>';
+  h+='<div><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> '+t('تقييم سوقيّ آليّ وليس تقييماً معتمداً','An automated market valuation, not a certified valuation')+((d.material_uncertainty||{}).rics_compliant_status_ar?(' ('+pick(d.material_uncertainty,'rics_compliant_status')+')'):'')+'.</div>';
   h+='<div style="margin-top:6px" dir="ltr">'+(d.engine_version||'')+' · '+now.toISOString().replace('T',' ').slice(0,16)+' UTC</div>';
   // Sprint 2.22.0b.23 — report id + tamper-evident verify link (when the server has the key).
   if(d.report_ref){
-    h+='<div style="margin-top:6px">رقم التقرير: <span dir="ltr" style="font-weight:600">'+d.report_ref+'</span>';
+    h+='<div style="margin-top:6px">'+t('رقم التقرير: ','Report no.: ')+'<span dir="ltr" style="font-weight:600">'+d.report_ref+'</span>';
     // Sprint 2.22.0b.25 (م2): the URL builder is shared with the short-report QR (_verifyUrl).
     const _vu=_verifyUrl(d);
     if(_vu){
-      h+=' · <a href="'+_vu+'" target="_blank" rel="noopener" style="color:var(--bronze)">تحقّق من صحّة التقرير <svg class=ic aria-hidden=true><use href=#ic-check></use></svg></a>';
+      h+=' · <a href="'+_vu+'" target="_blank" rel="noopener" style="color:var(--bronze)">'+t('تحقّق من صحّة التقرير ','Verify this report ')+'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg></a>';
     }
     h+='</div>';
   }
-  h+='<div class="rep-gt">اختياريّ: لتحسين دقّة ثمّن للجميع، شاركنا سعر بيع موثَّقاً أو تقييماً معتمداً لهذا العقار — البريد <span dir="ltr">info@thammen.qa</span>.</div>';
+  h+='<div class="rep-gt">'+t('اختياريّ: لتحسين دقّة ثمّن للجميع، شاركنا سعر بيع موثَّقاً أو تقييماً معتمداً لهذا العقار — البريد ','Optional: to improve Thammen\'s accuracy for everyone, share a documented sale price or a certified valuation for this property — email ')+'<span dir="ltr">info@thammen.qa</span>.</div>';
   h+='</div>';
   o.innerHTML=h;
 }
