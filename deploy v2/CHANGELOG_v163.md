@@ -92,8 +92,8 @@ git -C "C:/Thammen" commit -m "Sprint 2.22.0b.82: EN wiring of the confirmation 
 git -C "C:/Thammen" subtree push --prefix "deploy v2" heroku master   # backgrounded (split >5min)
 git -C "C:/Thammen" push origin master                                 # backup
 ```
-**Gate-1: pending an explicit deploy word** (the subtree split exceeds the 5-min foreground limit →
-backgrounded; `heroku auth` valid).
+**SHIPPED Heroku v254** — commit `11f4ce2` → `git subtree push` (backgrounded, split `f2f41a1`, exit 0,
+Released v254) + `git push origin master`; on the PO's explicit «go». `heroku auth` = `ans_hashim@hotmail.com`.
 
 ## 7. Verification curl (post-deploy)
 ```
