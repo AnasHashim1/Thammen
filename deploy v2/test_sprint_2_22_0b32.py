@@ -52,7 +52,7 @@ check('evidence panel still in the full REPORT (numbered annex)',
       '_axWrap(evidencePanelHtml(d,acc))' in HTML)
 
 # ── (17) setbacks equation → tooltip; number + «عدّله» CTA stay ──
-check('confirm: max-buildable NUMBER stays', "'≈ '+fmt(geo.max_buildable_footprint_m2)+' م²'" in SHOWCONFIRM)
+check('confirm: max-buildable NUMBER stays', "'≈ '+fmt(geo.max_buildable_footprint_m2)+t(' م²',' m²')" in SHOWCONFIRM)  # b82 R6: م² now t()-wrapped (EN), number intent preserved
 check('confirm: «عدّله» CTA stays', 'عدّله في خطوة التحسين' in SHOWCONFIRM)
 check('confirm: setbacks formula moved to a title tooltip', 'class="cg-tip"' in SHOWCONFIRM and 'title="' in SHOWCONFIRM)
 check('confirm: tooltip carries the E15 setbacks formula',
@@ -85,8 +85,8 @@ check('refine carries the age hint (so (19) is a MOVE, not a loss)',
 
 # ── KEEP-list: the confirm screen still has its four owner essentials ──
 check('confirm keeps: basis review card', 'راجِع بيانات العقار' in SHOWCONFIRM)
-check('confirm keeps: address row', "ri('العنوان'" in SHOWCONFIRM)
-check('confirm keeps: zoning/area rows', "ri('المنطقة'" in SHOWCONFIRM and ('المساحة المعتمدة في التقدير' in SHOWCONFIRM or 'مساحة القسيمة' in SHOWCONFIRM))
+check('confirm keeps: address row', "ri(t('العنوان'" in SHOWCONFIRM)  # b82 R6: label now t()-wrapped (EN), row intent preserved
+check('confirm keeps: zoning/area rows', "ri(t('المنطقة'" in SHOWCONFIRM and ('المساحة المعتمدة في التقدير' in SHOWCONFIRM or 'مساحة القسيمة' in SHOWCONFIRM))  # b82 R6: label t()-wrapped
 check('confirm keeps: muted preliminary range', 'تقدير مبدئي (نطاق)' in SHOWCONFIRM)
 check('confirm keeps: confirm button', 'تابِع بهذه البيانات' in SHOWCONFIRM)
 check('confirm keeps: full-report escape', "go('results')" in SHOWCONFIRM.replace("\\'","'"))
