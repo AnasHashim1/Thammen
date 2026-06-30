@@ -58,7 +58,7 @@ check('defaults 20% / 25y / 4.5% (match the b28 short-report contract)',
 # now the b3-evolved hero range line (.rng) — the range-as-lead behaviour is unchanged.
 check('calculator placed UNDER the figure (after the range, before the how-accordion _acc call)',
       SHOW.index("القسط الشهريّ") > SHOW.index("النطاق التقديري السوقي") and
-      SHOW.index("القسط الشهريّ") < SHOW.index("_acc('<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> كيف وصلنا"))
+      SHOW.index("القسط الشهريّ") < SHOW.index("_acc('<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> '+t('كيف وصلنا"))
 check('the «استشر بنكك» disclosure is present (not a binding offer)', 'استشر بنكك' in SHOW)
 
 # ── 3. value-invariance + scope guards ──

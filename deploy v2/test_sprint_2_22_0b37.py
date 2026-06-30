@@ -72,7 +72,7 @@ check('the new line appends to the `how` buffer (the «كيف وصلنا» accor
 # the cost-VALUE line that precedes it is preserved (R6/Lesson-2 — re-pointed at b48 de-emoji: the
 # 🏗️ emoji is now an inline-SVG icon; the load-bearing JS composition is unchanged → pin it WITHOUT the emoji)
 check('the original cost-value label line is preserved',
-      "'+_vc.label_ar+': '+fmt(_vc.value)+' ر.ق — '+_vc.sub_ar" in SHOW)
+      "'+pick(_vc,'label')+': '+fmt(_vc.value)+t(' ر.ق',' QAR')+' — '+pick(_vc,'sub')" in SHOW)
 # the unavailable-reason else-branch still chains
 check('the cost-unavailable else-branch still chains (else if … unavailable_reason_ar)',
       "else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar)" in SHOW)

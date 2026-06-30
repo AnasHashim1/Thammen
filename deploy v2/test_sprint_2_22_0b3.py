@@ -27,13 +27,13 @@ check("headline = fmt(v.low) – fmt(v.high) ر.ق", "+fmt(v.low)+' – '+fmt(v.
 # market RANGE is presented as the lead range line on the navy hero band (the old big
 # .rv hl 1.5rem result-screen headline was superseded by the hero — the report keeps its own).
 check('range presented on the result HERO (.rng low–high)',
-      "النطاق التقديري السوقي <b>'+fmt(v.low)+' – '+fmt(v.high)+'</b> ر.ق" in HTML
+      "النطاق التقديري السوقي','Estimated market range')+' <b>'+fmt(v.low)+' – '+fmt(v.high)+'</b> '+t('ر.ق','QAR')" in HTML
       and 'class="rhero"' in HTML)
 # 4. the central estimate (median = v.amount) is the CONFIDENT LEAD FIGURE in the hero .num
 # band (b47 evolves the muted-marker form of b3 → a lead figure; the SHORT/FULL report keeps
 # the «الوسيط (التقدير المركزي)» marker, asserted unchanged below).
 check('central figure leads the result HERO (.num = fmt(v.amount))',
-      '<div class="num">\'+fmt(v.amount)+\' <small>ر.ق</small></div>' in HTML
+      '<div class="num">\'+fmt(v.amount)+\' <small>\'+t(\'ر.ق\',\'QAR\')+\'</small></div>' in HTML
       and 'الوسيط (التقدير المركزي)' in HTML)
 # 5. asymmetry-safe gate (low!=null && high!=null) — matches the showConfirm prototype.
 check('gate v.low!=null&&v.high!=null', 'if(v.low!=null&&v.high!=null){' in HTML)
@@ -42,7 +42,7 @@ check('gate v.low!=null&&v.high!=null', 'if(v.low!=null&&v.high!=null){' in HTML
 # no-range result still shows the figure as the headline. (The report's «القيمة التقديرية»
 # point-fallback line persists in showReport, asserted via the leadership-aware _def12R below.)
 check('point fallback — figure always leads the hero, range conditional',
-      '<div class="num">\'+fmt(v.amount)+\' <small>ر.ق</small></div>' in HTML
+      '<div class="num">\'+fmt(v.amount)+\' <small>\'+t(\'ر.ق\',\'QAR\')+\'</small></div>' in HTML
       and 'if(v.low!=null&&v.high!=null){' in HTML)
 # 7. the b3 range-as-lead intent landed and is documented as KEPT-but-evolved (b47 superseded
 # the original b3 comment when it restructured the result figure into the hero — R6/Lesson-2:

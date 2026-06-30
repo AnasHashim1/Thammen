@@ -50,8 +50,8 @@ check('short-report micro b → تقييم سوقيّ آليّ + ليصير تق
       and 'ليصير تقييمنا أدقّ للجميع' in HTML
       and '<b>تقدير سوقي آلي وليس تقييماً معتمداً</b>' not in HTML)
 check('result not-certified line → تقييم سوقيّ آليّ — ليس تقييماً معتمداً (old absent)',
-      '</use></svg> تقييم سوقيّ آليّ — ليس تقييماً معتمداً' in HTML
-      and '</use></svg> تقدير سوقيّ آليّ — ليس تقييماً معتمداً' not in HTML)
+      "</use></svg> '+t('تقييم سوقيّ آليّ — ليس تقييماً معتمداً" in HTML
+      and 'تقدير سوقيّ آليّ — ليس تقييماً معتمداً' not in HTML)
 check('terms intro → ثمّن تقييم سوقيّ آليّ للفلل والأراضي (old absent)',
       '<p>ثمّن تقييم سوقيّ آليّ للفلل والأراضي مبني على' in HTML
       and '<p>ثمّن تقدير سوقي آلي للفلل والأراضي مبني على' not in HTML)
@@ -62,7 +62,7 @@ check('top-bar status → نتيجة التقييم السوقي (old absent)',
       'نتيجة التقييم السوقي</div>' in HTML
       and 'نتيجة التقدير السوقي' not in HTML)  # b79: data-en attr added to the tbar-st tag
 check('hero label → التقييم السوقي (old absent)',
-      '<span class="lbl">التقييم السوقي</span>' in HTML
+      '<span class="lbl">\'+t(\'التقييم السوقي\',\'Market valuation\')+\'</span>' in HTML
       and '<span class="lbl">التقدير السوقي</span>' not in HTML)
 check('share value line → قيمة التقييم السوقي (old absent)',
       "'قيمة التقييم السوقي: '+fmt(v.amount)" in HTML

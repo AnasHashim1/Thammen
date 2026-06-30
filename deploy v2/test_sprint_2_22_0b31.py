@@ -26,12 +26,12 @@ check('ONE «كيف وصلنا لهذا الرقم؟» accordion = how + full ev
       # b34 (DEF-UX12) added a 3rd `open` arg (role-driven density) — match without the trailing `);`.
       # b48 (de-emoji): the 🔍 emoji became an inline-SVG icon; the Arabic text is unchanged → re-anchor
       # on the stable text fragment that ends the summary string.
-      "كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML)
+      "كيف وصلنا لهذا الرقم؟','How we got to this number'), how+evidencePanelHtml(d,acc)" in HTML)
 # the «كيف وصلنا» accordion is built FIRST (right after the figure+MVU), before basic-info.
 # b48 (de-emoji): the 🔍/🏠 emojis became inline-SVG icons; re-anchor the ORDER check on the stable
 # Arabic-text + `,_info)` fragments that still uniquely identify each `t2+=_acc(...)` call.
 check('«كيف وصلنا» accordion is the FIRST t2 accordion (before basic-info)',
-      HTML.index("كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)") < HTML.index("بيانات العقار الأساسية',_info);"))
+      HTML.index("كيف وصلنا لهذا الرقم؟','How we got to this number'), how+evidencePanelHtml(d,acc)") < HTML.index("بيانات العقار الأساسية','Property basics'),_info);"))
 # the standalone «جودة الأدلّة (تفصيل)» accordion is GONE (folded into «كيف وصلنا»).
 check('standalone «جودة الأدلّة (تفصيل)» accordion REMOVED (folded)',
       "_acc('📊 جودة الأدلّة (تفصيل)',evidencePanelHtml(d,acc))" not in HTML)
@@ -49,7 +49,7 @@ check('note 7/9 resurvey → how', 'v.leadership.resurvey_note_ar){how+=' in HTM
 # in `how` (the «كيف وصلنا» accordion), not t1 — proven by the cost label_ar line appending to `how`.
 # b48 (de-emoji): the 🏗️ emoji became an inline-SVG icon (ic-tool); the behaviour (label_ar → how) is the
 # stable pin — re-anchored on the icon-close + `'+_vc.label_ar` fragment.
-check('note 8/9 cost-value-line → how', '</use></svg> \'+_vc.label_ar' in HTML and 'const _vc=v.value_stack.cost;' in HTML)
+check('note 8/9 cost-value-line → how', '</use></svg> \'+pick(_vc,\'label\')' in HTML and 'const _vc=v.value_stack.cost;' in HTML)
 check('note 9/9 market-dispersion → how', 'v.value_stack.market.dispersion_36!=null){how+=' in HTML)
 
 # ── 3. the 9 notes are GONE from t1 (no double-render) ──

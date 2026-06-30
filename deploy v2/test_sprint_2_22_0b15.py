@@ -45,7 +45,7 @@ check('refusal assembly head+muc+a8acc+alerts+flat+foot', 'h=head+muc+a8acc+aler
 # and renders «تحفظ مادي: '+MUC_LEVEL_AR[mu.level]» — not the volatile emoji/exact margin.
 check('MUC chip in TIER-1 (t1+=… تحفظ مادي: +MUC_LEVEL_AR)',
       "t1+='<div style=\"display:inline-block;padding:3px 10px;background:var(--warn-bg);color:var(--warn);" in HTML
-      and " تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';" in HTML)
+      and " '+t('تحفظ مادي: ','Material uncertainty: ')+(LANG==='en'?MUC_LEVEL_EN:MUC_LEVEL_AR)[mu.level]+'</div>';" in HTML)
 # 8. the FULL MVU clause is still BUILT via the shared _mucCardHtml builder (same clause, same red styling).
 # b52 re-point (R6/Lesson-2): the lean pass folds the clause behind its chip (_mucFold) instead of
 # always-visible — the chip + «ليس معتمداً» stay always-visible in TIER-1 (checks 7 + 9), the full clause one click away.
@@ -79,13 +79,13 @@ check('scratch consumed before assembly', "h='';  // scratch consumed" in HTML)
 #     longer a standalone «جودة الأدلّة (تفصيل)» accordion — it now folds INTO the «كيف وصلنا لهذا الرقم؟»
 #     accordion alongside the 9-note parade; assertion below + test_sprint_2_22_0b31.py own the new shape.)
 # b48 re-point: the 🏠 emoji became an inline-SVG icon — pin the title text + wiring.
-check('basic-info → TIER-2 accordion', " بيانات العقار الأساسية',_info);" in HTML and 't2+=_acc(' in HTML)
+check('basic-info → TIER-2 accordion', " '+t('بيانات العقار الأساسية','Property basics'),_info);" in HTML and 't2+=_acc(' in HTML)
 # b48 re-point: the 🔍 emoji became an inline-SVG icon — pin the title text + the how+evidencePanel wiring.
-check('full evidence panel → «كيف وصلنا» accordion (b31 fold)', " كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML and 't2+=_acc(' in HTML)  # b34: 3rd open arg → drop trailing );
+check('full evidence panel → «كيف وصلنا» accordion (b31 fold)', " '+t('كيف وصلنا لهذا الرقم؟','How we got to this number'), how+evidencePanelHtml(d,acc)" in HTML and 't2+=_acc(' in HTML)  # b34: 3rd open arg → drop trailing );
 # 15. brief sections: valued → accordion; refusal → flat (verbatim title card).
 # b48 re-point: the 📄 emoji became an inline-SVG icon — pin the title expression + wiring.
-check('brief sections → TIER-2 accordion (valued)', "'+(br.title_ar||'تفاصيل التقرير'),_secs);" in HTML and 't2+=_acc(' in HTML)
-check('brief sections → flat (refusal verbatim)', "flat+='<div class=\"rc\" style=\"background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px\"><div class=\"rt\" style=\"font-size:1.15rem;margin-bottom:0\">'+(br.title_ar||'التقرير')+'</div></div>';" in HTML)
+check('brief sections → TIER-2 accordion (valued)', "'+(pick(br,'title')||t('تفاصيل التقرير','Report details')),_secs);" in HTML and 't2+=_acc(' in HTML)
+check('brief sections → flat (refusal verbatim)', "flat+='<div class=\"rc\" style=\"background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px\"><div class=\"rt\" style=\"font-size:1.15rem;margin-bottom:0\">'+(pick(br,'title')||t('التقرير','Report'))+'</div></div>';" in HTML)
 
 # ── TIER-3 actions ──
 # 16. TIER-3 refine + report CTAs (valued path).

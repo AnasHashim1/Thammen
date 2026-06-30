@@ -30,11 +30,11 @@ check('esc() escapes < > & " \'',
 check('esc() null-safe (s==null → empty)', "function esc(s){return s==null?'':" in HTML)
 
 # ── 2. esc() applied to the PLAIN-DATA fields (address / district / asset-label) ──
-check('address via esc (ri)', "ri('العنوان',esc(d.address),0,1)" in HTML
+check('address via esc (ri)', "ri(t('العنوان','Address'),esc(d.address),0,1)" in HTML
       and "ri('العنوان',d.address,0,1)" not in HTML)
-check('district via esc (ri)', "ri('المنطقة',esc(d.district))" in HTML
+check('district via esc (ri)', "ri(t('المنطقة','District'),esc(d.district))" in HTML
       and "ri('المنطقة',d.district)" not in HTML)
-check('asset-label via esc (ri)', "ri('نوع العقار',esc(" in HTML
+check('asset-label via esc (ri)', "ri(t('نوع العقار','Property type'),esc(" in HTML
       and "ri('نوع العقار',(d.asset_type" not in HTML)
 check('report rep-addr via esc', '<div class="rep-addr">\'+esc(d.address)+\'</div>' in HTML)
 check('report district span via esc (b81: label moved into t(), esc kept)', "t('المنطقة: ','District: ')+esc(d.district)+'</span>" in HTML)
@@ -42,11 +42,11 @@ check('short-report row address+district via esc',
       "esc(d.address||'')" in HTML and "(d.district?(' · '+esc(d.district)):'')" in HTML)
 check('income cap-cell district via esc', "<span class=\"v\">'+esc(pick(d.cap_rate_provenance,'district')" in HTML)  # b80 R6: district_ar → pick(), still esc()-wrapped
 check('refusal flat address+district via esc',
-      "<strong>العنوان:</strong> '+esc(d.address)+'</div>" in HTML
-      and "<strong>المنطقة:</strong> '+esc(d.district)+'</div>" in HTML)
+      "<strong>'+t('العنوان:','Address:')+'</strong> '+esc(d.address)+'</div>" in HTML
+      and "<strong>'+t('المنطقة:','District:')+'</strong> '+esc(d.district)+'</div>" in HTML)
 check('assetAr value esc at definition', 'const assetAr=esc(' in HTML)
 check('keystone neighbour area-name via esc', 'esc(g.source_area)' in HTML)
-check('comparable-row area via esc', "row('المنطقة',esc(c.area))" in HTML)
+check('comparable-row area via esc', "row(t('المنطقة','District'),esc(c.area))" in HTML)
 
 # ── 3. The engine-authored *_ar NOTE/CLAUSE fields are LEFT RAW (intended HTML, trusted) ──
 check('condition_note_ar NOT esc-wrapped (formatting preserved)',

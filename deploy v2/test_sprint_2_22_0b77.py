@@ -59,8 +59,8 @@ check('.home-lang slot style',
       '.home-lang{' in HTML)
 
 # ---- (5) VALUE-INVARIANCE: AR untouched, engine = version lines only ----
-check('existing local `const t` (line ~3016) intact — no global-t collision break',
-      'const t=cp.time_pct' in HTML)
+check('comparable_grid local var renamed t→t2 (b83: avoids the global t() i18n collision)',
+      'const t2=cp.time_pct' in HTML)
 check('locked hero label preserved (b54 terminology lock)',
       'التقييم السوقي' in HTML)
 check('forced-sale honesty preserved (b56)',

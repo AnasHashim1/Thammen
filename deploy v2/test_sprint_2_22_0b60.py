@@ -29,13 +29,13 @@ def check(name, cond):
 
 # ── 1. the refusal-card reason now prefers the specific refusal_reason explanation ──
 check('reason prefers d.refusal_reason.message_ar (then generic fallback)',
-      "const reason=v.reason_ar||(d.refusal_reason&&d.refusal_reason.message_ar)||'لا تتوفر بيانات كافية" in HTML)
+      "const reason=pick(v,'reason')||(d.refusal_reason&&pick(d.refusal_reason,'message'))||t('لا تتوفر بيانات كافية" in HTML)
 check('generic fallback string still present (last resort)',
       'لا تتوفر بيانات كافية لتقييم هذا العقار حالياً.' in HTML)
 
 # ── 2. honest title for the unclassifiable case (not the misleading «needs more data») ──
 check('unknown → honest h2 «تعذّر تحديد نوع العقار»',
-      "d.asset_type==='unknown'?'تعذّر تحديد نوع العقار':'التقييم يحتاج بيانات إضافية'" in HTML)
+      "d.asset_type==='unknown'?t('تعذّر تحديد نوع العقار','Could not determine the property type'):t('التقييم يحتاج بيانات إضافية','The valuation needs more data')" in HTML)
 check('known-type refusal keeps «التقييم يحتاج بيانات إضافية»',
       'التقييم يحتاج بيانات إضافية' in HTML)
 check('b36 apartment/tower title untouched',

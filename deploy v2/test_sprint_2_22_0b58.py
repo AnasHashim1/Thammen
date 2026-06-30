@@ -49,7 +49,7 @@ check('consent gate dialog kept (id internal, not user-facing)', 'id="betaGate"'
 check('Terms modal still reachable (openTerms)', 'openTerms()' in HTML)
 
 # ── 4. No regression of b57 (esc) / value-invariance ──
-check('b57 esc() helper intact', 'function esc(s){' in HTML and "ri('العنوان',esc(d.address),0,1)" in HTML)
+check('b57 esc() helper intact', 'function esc(s){' in HTML and "ri(t('العنوان','Address'),esc(d.address),0,1)" in HTML)
 check('no mutation of v.amount/v.low/v.high', not re.search(r'\bv\.(amount|low|high)\s*=[^=]', HTML))
 
 # ── 5. Engine version (format only — R6 / Lesson-2: no exact pin) ──

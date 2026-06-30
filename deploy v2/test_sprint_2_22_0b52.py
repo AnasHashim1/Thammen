@@ -28,9 +28,9 @@ check('age-sensitivity → how (NOT t1)',
       'v.age_sensitivity&&v.age_sensitivity.note_ar){how+=' in HTML
       and 'v.age_sensitivity&&v.age_sensitivity.note_ar){t1+=' not in HTML)
 check('moj sample-size (cite-n) → how (NOT always-visible)',
-      "how+='<div class=\"rn\" style=\"margin-top:8px;font-size:.78rem\">صفقات البيع المسجلة لعقارات مشابهة:" in HTML)
+      "how+='<div class=\"rn\" style=\"margin-top:8px;font-size:.78rem\">'+t('صفقات البيع المسجلة لعقارات مشابهة:" in HTML)
 check('methodology bare line → how (NOT always-visible)',
-      "margin:10px 0 0;font-size:.78rem;color:#666;line-height:1.5\">'+d.methodology_ar" in HTML)
+      "margin:10px 0 0;font-size:.78rem;color:#666;line-height:1.5\">'+pick(d,'methodology')" in HTML)
 
 # ── 2. The FULL MUC legal clause folds behind its chip via _mucFold (was always-visible) ──
 check('_mucFold collapses the full clause via _acc(…, muc, false)',
@@ -43,7 +43,7 @@ check('full MVU clause STILL built via _mucCardHtml (not deleted)',
 # ── 3. The DECISION-relevant compliance signposts STAY always-visible in TIER-1 ──
 check('MUC level chip STAYS in TIER-1 (amber token + level text)',
       "t1+='<div style=\"display:inline-block;padding:3px 10px;background:var(--warn-bg);color:var(--warn);" in HTML
-      and " تحفظ مادي: '+MUC_LEVEL_AR[mu.level]+'</div>';" in HTML)
+      and " '+t('تحفظ مادي: ','Material uncertainty: ')+(LANG==='en'?MUC_LEVEL_EN:MUC_LEVEL_AR)[mu.level]+'</div>';" in HTML)
 check('«ليس تقييماً معتمداً» STAYS in TIER-1 (a20 status appended)',
       "t1+='<div class=\"rn\" style=\"margin-top:10px;font-size:.82rem;color:#8a6d3b;background:#fcf8e3" in HTML
       and 'تقييم سوقيّ آليّ — ليس تقييماً معتمداً' in HTML  # b54 R6: تقدير→تقييم (identity lock)

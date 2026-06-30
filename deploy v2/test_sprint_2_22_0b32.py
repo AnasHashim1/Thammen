@@ -47,7 +47,7 @@ check('evidence panel still on the RESULT (b31 «كيف وصلنا» accordion)'
       # b34 (DEF-UX12) added a 3rd `open` arg (role density) — match without the trailing `);`
       # b48 (de-emoji) turned the 🔍 prefix into an inline-SVG icon — pin the stable
       # accordion title + the nested evidence panel, NOT the volatile emoji.
-      "كيف وصلنا لهذا الرقم؟', how+evidencePanelHtml(d,acc)" in HTML)
+      "كيف وصلنا لهذا الرقم؟','How we got to this number'), how+evidencePanelHtml(d,acc)" in HTML)
 check('evidence panel still in the full REPORT (numbered annex)',
       '_axWrap(evidencePanelHtml(d,acc))' in HTML)
 
@@ -70,9 +70,9 @@ check('pbRows() gains the basisOnly param', 'function pbRows(pb, basisOnly){' in
 # the cadastral id (PIN) is printed BEFORE the basisOnly early-return → it survives on confirm.
 _pb_start = HTML.index('function pbRows(pb, basisOnly){')
 _pb_body = HTML[_pb_start:_pb_start+700]
-_pin_at = _pb_body.index("ri('الرقم المساحي'")
+_pin_at = _pb_body.index("ri(t('الرقم المساحي'")
 _ret_at = _pb_body.index('if(basisOnly)return h;')
-_elec_at = _pb_body.index("ri('رقم الكهرباء'")
+_elec_at = _pb_body.index("ri(t('رقم الكهرباء'")
 check('pbRows: PIN printed BEFORE the basisOnly early-return (stays on confirm)', _pin_at < _ret_at)
 check('pbRows: utilities + age AFTER the early-return (hidden on confirm)', _ret_at < _elec_at)
 check('pbRows: age-estimate row is after the early-return too',
