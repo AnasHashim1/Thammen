@@ -409,6 +409,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .thmr-chip .cedit{color:var(--thmr-bronze);opacity:.8}
 .thmr-legalz{display:flex;align-items:flex-start;gap:8px;font-size:.74rem;color:var(--thmr-ink2);line-height:1.85;background:var(--thmr-wash);border:1px solid var(--thmr-line);border-radius:10px;padding:9px 12px;margin:0 0 12px}
 .thmr-legalz .ic{flex:0 0 auto;color:var(--warn);margin-top:2px;width:1em;height:1em}
+/* b94: the accuracy-upgrade block (unknown specs moved off the face) */
+.thmr-upg{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--thmr-ink2);line-height:1.8;background:#FBF6EC;border:1px solid #EADFC8;border-radius:10px;padding:9px 12px;margin:0 0 12px}
+.thmr-upg .ic{flex:0 0 auto;color:var(--thmr-bronze);width:1em;height:1em}
+.thmr-upg .upg-btn{flex:0 0 auto;margin-inline-start:auto;background:var(--thmr-navy);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit}
 .thmr-fold{border:1px solid var(--thmr-line);border-radius:12px;margin:0 0 12px;padding-bottom:4px}
 .thmr-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 15px;font-weight:700;color:var(--thmr-navy);font-size:.9rem}
 .thmr-fold>summary::-webkit-details-marker{display:none}
@@ -2200,6 +2204,7 @@ function showShortReport(d){
   else{_cCls='r';_cTxt=t('بيانات محدودة جداً','Very limited data');_cSub=t('لقلّة الصفقات المسجّلة في هذه الشريحة ('+_confN+')، اعتمد على النطاق السعريّ أدناه كدليل استرشاديّ.','given the few registered sales in this bracket ('+_confN+'), rely on the price range below as an indicative guide.');}
   // 5 informational chips (villa vs land). ✎ chips deep-link to refine (Claim-Your-Home; static in b90).
   const _isLand=(d.asset_type==='raw_land'||cs==='land');
+  const _srMiss=[];  // b94: unknown specs collected off the face → the «ترقية دقّة المؤشّر» block
   const _CONDAR={excellent:'ممتاز',very_good:'جيّد جداً',good:'جيّد',average:'متوسّط',fair:'متوسّط',poor:'ضعيف',renovated:'مُجدَّد',teardown:'للهدم',new:'جديد'};
   const _chip=(ic,k,val,ed,ttl)=>'<span class="thmr-chip'+(ed?' est editable':'')+'"'+(ed?(' onclick="go(\'refine\')" title="'+(ttl||t('دقّق هذه المعلومة','Refine this detail'))+'"'):'')+'><svg class=ic aria-hidden=true><use href=#ic-'+ic+'></use></svg><span class="ck">'+k+'</span> <span class="cv">'+val+'</span>'+(ed?' <svg class="ic cedit" aria-hidden=true><use href=#ic-edit></use></svg>':'')+'</span>';
   let chips='';
@@ -2214,12 +2219,15 @@ function showShortReport(d){
     const _hgt=(_lf.match(/G\s*\+\s*[\dP+]+/)||[])[0]||null; if(_hgt)chips+=_chip('chart',t('الارتفاع','Height'),esc(_hgt),false);
   }else{
     const _ui=d.user_inputs||{};
-    chips+=_chip('home',t('مساحة البناء','Built area'),(cost.bua_m2?('≈ '+fmt(cost.bua_m2)+t(' م²',' m²')):t('غير محدّدة','not set')),true);
-    chips+=_chip('clock',t('عمر البناء','Building age'),(_ageY?t('فوق '+_ageY+' سنة','over '+_ageY+' yrs'):t('غير محدّد','not set')),true,t('العمر من السجل الرسميّ — قد يكون أقدم؛ اضغط لتدقيق العمر الفعلي','Age from the official record — may be older; tap to refine the actual age'));  // b73 age-floor honesty preserved
-    const _fin=_ui.is_luxury?t('فاخر','Luxury'):(_ui.condition?t(_CONDAR[_ui.condition]||_ui.condition,String(_ui.condition)):t('غير محدّد','not set'));
-    chips+=_chip('gem',t('التشطيب','Finish'),_fin,!(_ui.is_luxury||_ui.condition));
+    // b94 (Gemini r7 #2): the 5-second face shows ONLY what the algorithm knows — an
+    // unknown spec chip («غير محدّد» ×3) reads as a SYSTEM gap and erodes trust. Unknowns
+    // MOVE off the face into the «ترقية دقّة المؤشّر» block (below the legal line): an
+    // accuracy-upgrade invitation into the EXISTING refine screen (no feature promise).
+    if(cost.bua_m2)chips+=_chip('home',t('مساحة البناء','Built area'),'≈ '+fmt(cost.bua_m2)+t(' م²',' m²'),true); else _srMiss.push(t('مساحة البناء','built area'));
+    if(_ageY)chips+=_chip('clock',t('عمر البناء','Building age'),t('فوق '+_ageY+' سنة','over '+_ageY+' yrs'),true,t('العمر من السجل الرسميّ — قد يكون أقدم؛ اضغط لتدقيق العمر الفعلي','Age from the official record — may be older; tap to refine the actual age')); else _srMiss.push(t('عمر البناء','building age'));  // b73 age-floor honesty preserved
+    if(_ui.is_luxury||_ui.condition)chips+=_chip('gem',t('التشطيب','Finish'),_ui.is_luxury?t('فاخر','Luxury'):t(_CONDAR[_ui.condition]||_ui.condition,String(_ui.condition)),false); else _srMiss.push(t('التشطيب','the finish'));
     let _anx=[];if(_ui.external_majlis)_anx.push(t('مجلس خارجي','external majlis'));if(_ui.annexes)_anx.push(fmt(_ui.annexes)+t(' ملحق',' annex(es)'));
-    chips+=_chip('key',t('الملاحق','Annexes'),(_anx.length?_anx.join(' · '):t('غير محدّدة','not set')),!_anx.length);
+    if(_anx.length)chips+=_chip('key',t('الملاحق','Annexes'),_anx.join(' · '),false); else _srMiss.push(t('الملاحق','the annexes'));
     if(_area)chips+=_chip('ruler',t('مساحة الأرض','Plot area'),fmt(_area)+t(' م²',' m²'),false);
   }
   // ── the hero (navy band) ──
@@ -2269,6 +2277,11 @@ function showShortReport(d){
   h+='<div class="thmr-chips">'+chips+'</div>';
   // ── compressed legal line (counsel-safe; the FULL block stays in §٩ page-2) ──
   h+='<div class="thmr-legalz"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg><span>'+t('مؤشّر سعريّ استرشاديّ مبنيّ على صفقات وزارة العدل العلنية — ليس تقييماً عقارياً معتمداً ولا حجّة رسمية.','An indicative price signal based on public Ministry of Justice transactions — not a certified real-estate valuation, nor official evidence.')+'</span></div>';
+  // ── b94: the accuracy-upgrade block (Gemini r7 #2) — honest framing: these specs were
+  // NOT included in the automated figure; the CTA opens the EXISTING refine screen. ──
+  if(_srMiss.length){
+    h+='<div class="thmr-upg"><svg class=ic aria-hidden=true><use href=#ic-edit></use></svg><span><b>'+t('ترقية دقّة المؤشّر','Upgrade the indicator\'s accuracy')+'</b> — '+t('مواصفات لم تدخل في هذا الرقم الآلي: ','specs not included in this automated figure: ')+_srMiss.join(' · ')+'.</span><button class="upg-btn" onclick="go(\'refine\')">'+t('حسّن التقييم','Refine the valuation')+'</button></div>';
+  }
   // ── ONE «عرض التفاصيل» fold: wraps the financing + §١-٥ + footer (the b90 declutter); basisLn relocated here ──
   h+='<details class="thmr-fold" id="srFold"><summary>'+t('عرض التفاصيل','Show the details')+'<span class="farr">▾</span></summary>';
   h+='<div class="thmr-micro" style="margin:8px 2px 10px">'+basisLn+'</div>';
