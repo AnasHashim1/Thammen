@@ -290,6 +290,12 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 /* Sprint 2.22.0b.55 — labeled note-clusters in the full report (حول الرقم/العقار/البيانات). */
 .rep-cl{margin-top:12px}
 .rep-cl-h{color:var(--bronze);font-weight:700;font-size:.74rem;margin-bottom:1px;padding-bottom:3px;border-bottom:1px solid var(--alt)}
+/* Sprint 2.22.0b.91 «الشامل proof-first» — the comparable-transactions + land-grid tables (unit «م²» in the header, bare number cells) */
+.rep-comp{width:100%;border-collapse:collapse;font-size:.76rem;margin:6px 0}
+.rep-comp th{font-size:.68rem;font-weight:700;color:var(--bronze);text-align:right;padding:5px 6px;border-bottom:1.5px solid var(--bronze);white-space:nowrap}
+.rep-comp th.n,.rep-comp td.n{text-align:left;font-feature-settings:'tnum'}
+.rep-comp td{padding:5px 6px;border-bottom:1px dashed var(--alt);color:var(--primary)}
+.rep-comp tbody tr:last-child td{border-bottom:none}
 @media(max-width:600px){.hlogo img{max-width:260px}.fr3,.fr2{grid-template-columns:1fr}.rg{grid-template-columns:1fr}.fcard{padding:18px}.aud-row{grid-template-columns:1fr 1fr}}
 
 /* ════ Sprint 2.22.0b.25 (م2) — the thm-report design system ════
@@ -1749,6 +1755,61 @@ function printReport(){
 // methodology & sources (the a25 attribution CLONED at runtime from .src-credit — zero copy
 // duplication) → audience brief sections → footer (not-certified + version + timestamp + GT hook).
 function openReport(){const d=window._lastResult; if(!d)return; showReport(d); go('report');}
+// ════ Sprint 2.22.0b.91 «الشامل proof-first» — the cold-evidence surfaces the bank/valuer wants
+// FIRST (Gemini r5 #9-11): the actual MoJ comparable transactions + the location adjustments + the
+// area trend, surfaced in the printable report (they previously lived only on the result screen's
+// «كيف وصلنا»). VALUE-INVARIANT — pure display of the b38-b41 / comparable_grid / trend broadcast;
+// graceful-absent (thin cells / non-attached leaders render nothing). #10: the unit «م²» in the
+// column HEADER (bare number cells = scannability). #11: adjustment %/×factor in dir=ltr islands. ════
+function _repComparables(v){
+  const c=v.comparables||v.considered_comparables; if(!c||!(c.rows&&c.rows.length))return '';
+  const considered=!!(v.considered_comparables&&!v.comparables);  // cost-led «reviewed but did not set the number»
+  let h='<div class="rc"><div class="rh"><div class="rt"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '
+    +(considered?t('صفقات السوق في منطقتك — اطّلعنا عليها','Market transactions in your area — reviewed')
+                :t('الصفقات المقارِنة (وزارة العدل)','Comparable transactions (Ministry of Justice)'))+'</div></div>';
+  h+='<table class="rep-comp"><thead><tr><th>'+t('التاريخ','Date')+'</th><th class="n">'+t('المساحة (م²)','Area (m²)')+'</th><th class="n">'+t('السعر (ر.ق)','Price (QAR)')+'</th><th class="n">'+t('ر.ق/م²','QAR/m²')+'</th></tr></thead><tbody>';
+  c.rows.forEach(r=>{h+='<tr><td dir="ltr">'+r.date+'</td><td class="n" dir="ltr">'+fmt(r.area_m2)+'</td><td class="n" dir="ltr">'+fmt(r.total_price)+'</td><td class="n" dir="ltr">'+fmt(r.price_per_m2)+'</td></tr>';});
+  h+='</tbody></table>';
+  h+='<div class="rn" style="font-size:.72rem;margin-top:4px">'+t('عرض ','Showing ')+c.rows.length+t(' من ',' of ')+(c.n!=null?c.n:c.rows.length)+t(' صفقة (الأحدث أولاً) — مجهولة الهوية.',' transactions (newest first) — anonymized.')+'</div>';
+  const nb=c.neighbours;  // #11: geo neighbours «معاملات التعديل» — source area + ×factor (dir=ltr)
+  if(nb&&nb.rows&&nb.rows.length){
+    h+='<div class="rep-cl-h" style="margin-top:10px">'+t('صفقات مجاورة مُعدَّلة الموقع (معامل التعديل)','Location-adjusted neighbour transactions (adjustment factor)')+'</div>';
+    h+='<table class="rep-comp"><thead><tr><th>'+t('المنطقة','Area')+'</th><th class="n">'+t('المساحة (م²)','Area (m²)')+'</th><th class="n">'+t('خام ر.ق/م²','raw QAR/m²')+'</th><th class="n">'+t('×التعديل','×factor')+'</th><th class="n">'+t('مُعدَّل ر.ق/م²','adj. QAR/m²')+'</th></tr></thead><tbody>';
+    nb.rows.forEach(r=>{h+='<tr><td>'+esc(r.source_area||'')+'</td><td class="n" dir="ltr">'+fmt(r.area_m2)+'</td><td class="n" dir="ltr">'+fmt(r.price_per_m2_raw)+'</td><td class="n" dir="ltr">×'+r.adjustment_factor+'</td><td class="n" dir="ltr">'+fmt(r.price_per_m2_adjusted)+'</td></tr>';});
+    h+='</tbody></table><div class="rn" style="font-size:.7rem;margin-top:3px">'+t('السعر خامٌ في منطقة الجار؛ ×التعديل يحوّله إلى مستوى موقعك (لم تُبَع بالرقم المُعدَّل).','The price is raw in the neighbour’s area; ×factor converts it to your location (not sold at the adjusted figure).')+'</div>';
+  }
+  h+='<div class="rn" style="font-size:.68rem;margin-top:5px;color:var(--muted)">'+t('المصدر: وزارة العدل عبر بوابة قطر للبيانات المفتوحة — ','Source: Ministry of Justice via Qatar Open Data — ')+'<span dir="ltr">CC BY 4.0</span></div>';
+  return h+'</div>';
+}
+function _repLandGrid(d){
+  const g=d.comparable_grid; if(!g||!(g.comparables&&g.comparables.length))return '';
+  let h='<div class="rc"><div class="rh"><div class="rt"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '+t('صفقات الأرض المقارِنة + معاملات التعديل','Comparable land sales + adjustments')+'</div></div>';
+  h+='<table class="rep-comp"><thead><tr><th>'+t('التاريخ','Date')+'</th><th class="n">'+t('المساحة (م²)','Area (m²)')+'</th><th class="n">'+t('خام ر.ق/م²','raw QAR/m²')+'</th><th class="n">'+t('التعديل','Adj.')+'</th><th class="n">'+t('مُعدَّل ر.ق/م²','adj. QAR/m²')+'</th></tr></thead><tbody>';
+  g.comparables.slice(0,8).forEach(r=>{
+    const adj=(r.adjustments&&r.adjustments.length)?r.adjustments.map(a=>(a.pct_display>=0?'+':'')+a.pct_display+'%').join(' '):'—';  // #11: dir=ltr island prevents +/× bidi overlap
+    h+='<tr><td dir="ltr">'+r.date+'</td><td class="n" dir="ltr">'+fmt(Math.round(r.size_m2))+'</td><td class="n" dir="ltr">'+fmt(Math.round(r.price_per_m2_raw))+'</td><td class="n" dir="ltr">'+adj+'</td><td class="n" dir="ltr">'+fmt(Math.round(r.price_per_m2_adjusted))+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div class="rn" style="font-size:.72rem;margin-top:4px">'+t('عرض ','Showing ')+Math.min(8,g.comparables.length)+t(' من ',' of ')+g.n+t(' صفقة أرض — النِّسَب معاملات تطبيع زمنيّ إلى تاريخ التقييم.',' land sales — the percentages are time-normalization adjustments to the valuation date.')+(g.note_ar?(' '+pick(g,'note')):'')+'</div>';
+  h+='<div class="rn" style="font-size:.68rem;margin-top:5px;color:var(--muted)">'+t('المصدر: وزارة العدل — ','Source: Ministry of Justice — ')+'<span dir="ltr">CC BY 4.0</span></div>';
+  return h+'</div>';
+}
+function _repTrend(d){
+  const tr=d.trend; if(!tr)return '';
+  let h='<div class="rc"><div class="rh"><div class="rt"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> '+t('اتجاه المنطقة','Area trend')+(tr.historical_window_ar?(' <span style="font-weight:400;font-size:.72rem;color:var(--muted)">'+pick(tr,'historical_window')+'</span>'):'')+'</div></div>';
+  const ys=tr.years||[];
+  if(ys.length){
+    const mx=Math.max.apply(null,ys.map(y=>y.median_m2||0))||1;
+    h+='<div class="trend-row">';
+    ys.forEach(y=>{const pct=Math.round((y.median_m2||0)/mx*100);h+='<div class="trend-col" style="height:'+Math.max(pct,5)+'%" title="'+y.year+': '+fmt(y.median_m2)+t(' ر.ق/م² (',' QAR/m² (')+y.n+t(' معاملة)',' sales)')+'"></div>';});
+    h+='</div><div class="trend-labels">';
+    ys.forEach(y=>{h+='<span>'+y.year+'</span>';});
+    h+='</div>';
+  }
+  if(tr.suppressed_reason_ar)h+='<div class="rn" style="font-size:.72rem;margin-top:6px">'+pick(tr,'suppressed_reason')+'</div>';
+  else if(tr.label)h+='<div class="rn" style="font-size:.74rem;margin-top:6px">'+t('الاتجاه العام: ','Overall trend: ')+esc(tr.label)+'</div>';
+  return h+'</div>';
+}
 function showReport(d){
   const o=document.getElementById('repOut'); if(!o)return;
   // م3 — the thm-report identity on the full report (the short report's column).
@@ -1826,6 +1887,12 @@ function showReport(d){
     h+='<div class="rn" style="font-size:.74rem;margin-top:6px">'+t('قيمة بيعٍ جبريٍّ إرشاديّة (عُرفٌ سوقيٌّ ×٠٫٩٠) — ليست تقييم تصفية معتمداً. الأساس: القيمة التقديريّة المركزيّة × ٠٫٩٠.','An indicative forced-sale value (a market convention of ×0.90) — not a certified liquidation valuation. Basis: the central estimated value × 0.90.')+'</div>';
     h+='<div class="rn" style="font-size:.7rem;margin-top:4px">'+t('الأرقام كما يبثّها المحرك — تدوير موحَّد من المصدر، لا تقريب إضافي في العرض.','The figures are as broadcast by the engine — uniformly rounded at source, with no extra display rounding.')+'</div>';
     h+='</div>';
+    // ════ Sprint 2.22.0b.91 «الشامل proof-first» — the ACTUAL sales + adjustments + area trend lead
+    // right after the number (the valuer/bank wants the proof first), BEFORE the fine-print clusters.
+    // Value-invariant (display of the b38-b41 / comparable_grid / trend broadcast; graceful-absent).
+    h+=_repComparables(v);
+    h+=_repLandGrid(d);
+    h+=_repTrend(d);
     // ════ Sprint 2.22.0b.55 «رشاقة التقرير الكامل» — the fine-print notes that used to stack as a
     // flat wall under the DEF-12 block are GROUPED into 3 LABELED clusters: «حول الرقم» (كيف اشتُقّت
     // القيمة) · «حول العقار» (ما لا نعرفه عن المبنى) · «حول البيانات» (العيّنة والتشتّت خلفه). VALUE-

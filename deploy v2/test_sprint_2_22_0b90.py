@@ -116,9 +116,9 @@ check('new face strings are bilingual (t() wrapped)',
       "'Estimated market value')" in SR and "'Show the details')" in SR and
       "'Very limited data')" in SR and "'Refine this detail')" in SR)
 mv = re.search(r"ENGINE_VERSION\s*=\s*'(thammen-sprint[^']+)'", EU)
-check('ENGINE_VERSION format + b90', bool(mv) and mv.group(1).startswith('thammen-sprint') and 'b90' in mv.group(1))
+check('ENGINE_VERSION is a b-series tag (R6, version-agnostic)', bool(mv) and mv.group(1).startswith('thammen-sprint2p22p0b'))
 mt = re.search(r"SPRINT_TAG\s*=\s*'(\d+\.\d+\.\d+[a-z0-9.]*)'", EU)
-check('SPRINT_TAG dotted-numeric', bool(mt) and mt.group(1) == '2.22.0b.90')
+check('SPRINT_TAG is a 2.22.0b-series tag (R6)', bool(mt) and mt.group(1).startswith('2.22.0b.'))
 
 passed = sum(1 for _, ok, _ in results if ok); total = len(results)
 for name, ok, detail in results:
