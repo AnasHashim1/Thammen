@@ -413,6 +413,9 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .thmr-upg{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--thmr-ink2);line-height:1.8;background:#FBF6EC;border:1px solid #EADFC8;border-radius:10px;padding:9px 12px;margin:0 0 12px}
 .thmr-upg .ic{flex:0 0 auto;color:var(--thmr-bronze);width:1em;height:1em}
 .thmr-upg .upg-btn{flex:0 0 auto;margin-inline-start:auto;background:var(--thmr-navy);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit}
+/* b95 (م٢): the preliminary-subdivision indicator line */
+.thmr-sub{display:flex;align-items:flex-start;gap:8px;font-size:.76rem;color:var(--thmr-navy);line-height:1.8;background:#F4F7F4;border:1px solid #D8E4D8;border-radius:10px;padding:9px 12px;margin:0 0 12px;font-weight:600}
+.thmr-sub .ic{flex:0 0 auto;color:var(--ok);margin-top:2px;width:1em;height:1em}
 .thmr-fold{border:1px solid var(--thmr-line);border-radius:12px;margin:0 0 12px;padding-bottom:4px}
 .thmr-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 15px;font-weight:700;color:var(--thmr-navy);font-size:.9rem}
 .thmr-fold>summary::-webkit-details-marker{display:none}
@@ -2205,6 +2208,7 @@ function showShortReport(d){
   // 5 informational chips (villa vs land). ✎ chips deep-link to refine (Claim-Your-Home; static in b90).
   const _isLand=(d.asset_type==='raw_land'||cs==='land');
   const _srMiss=[];  // b94: unknown specs collected off the face → the «ترقية دقّة المؤشّر» block
+  let _subdivLn='';  // م٢/b95: the preliminary-subdivision indicator line (land, conservative)
   const _CONDAR={excellent:'ممتاز',very_good:'جيّد جداً',good:'جيّد',average:'متوسّط',fair:'متوسّط',poor:'ضعيف',renovated:'مُجدَّد',teardown:'للهدم',new:'جديد'};
   const _chip=(ic,k,val,ed,ttl)=>'<span class="thmr-chip'+(ed?' est editable':'')+'"'+(ed?(' onclick="go(\'refine\')" title="'+(ttl||t('دقّق هذه المعلومة','Refine this detail'))+'"'):'')+'><svg class=ic aria-hidden=true><use href=#ic-'+ic+'></use></svg><span class="ck">'+k+'</span> <span class="cv">'+val+'</span>'+(ed?' <svg class="ic cedit" aria-hidden=true><use href=#ic-edit></use></svg>':'')+'</span>';
   let chips='';
@@ -2217,6 +2221,27 @@ function showShortReport(d){
     const _lf=(d.location_features||[]).map(x=>(x&&x.label)?x.label:'').join(' · ');
     const _cls=(_lf.match(/\bR[123]\b/)||[])[0]||null; if(_cls)chips+=_chip('file',t('التصنيف','Zoning'),_cls,false);
     const _hgt=(_lf.match(/G\s*\+\s*[\dP+]+/)||[])[0]||null; if(_hgt)chips+=_chip('chart',t('الارتفاع','Height'),esc(_hgt),false);
+    // ════ م٢ (SIGNED §6, Gemini r3 ⭐⭐) — the preliminary-subdivision indicator. DISPLAY-ONLY,
+    // never touches the number. CONSERVATIVE frontage from the broadcast b10 plot_dims_m:
+    // a corner plot's two street frontages ARE the two edge lengths (adjacent edges) →
+    // fully decidable; a non-corner plot's street edge is ONE of the two dims → we claim
+    // ONLY when even the SHORTER dim ≥ 24m (whichever edge faces the street, it passes);
+    // undecidable cases render NOTHING (no semi-strong claim on a guess — #54 honesty).
+    // Frontages are NEVER summed (the SIGNED §6 rule: each resulting parcel needs area AND frontage).
+    const _dims=(v.geometry||{}).plot_dims_m||null;
+    if(_area&&_area>=800&&_dims&&_dims.length===2){
+      const _dMax=Math.max(_dims[0],_dims[1]), _dMin=Math.min(_dims[0],_dims[1]);
+      let _front=null;
+      if(_ca.is_corner){ if(_dMax>=12&&_dMin>=12)_front=_dMax; }
+      else if(_dMin>=24)_front=_dMin;
+      if(_front!=null){
+        const _N=Math.min(Math.floor(_area/400),Math.floor(_front/12));
+        if(_N>=2){
+          const _Nw=(_N===2)?t('قطعتين','2 parcels'):(_N<=10?t(_N+' قطع',_N+' parcels'):t(_N+' قطعة',_N+' parcels'));
+          _subdivLn='<div class="thmr-sub"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg><span>'+t('مؤشّرات الأرض تتيح الفرز مبدئياً إلى '+_Nw+' — يخضع لقوانين الارتدادات وموافقة التخطيط العمرانيّ بوزارة البلدية.','The plot\'s indicators preliminarily allow subdivision into '+_Nw+' — subject to setback regulations and Ministry of Municipality planning approval.')+'</span></div>';
+        }
+      }
+    }
   }else{
     const _ui=d.user_inputs||{};
     // b94 (Gemini r7 #2): the 5-second face shows ONLY what the algorithm knows — an
@@ -2275,6 +2300,7 @@ function showShortReport(d){
   h+='<div class="thmr-conf '+_cCls+'"><svg class=ic aria-hidden=true><use href=#ic-'+(_cCls==='g'?'check':_cCls==='r'?'alert':'chart')+'></use></svg><span>'+_cTxt+(_cSub?' <span class="cnote">— '+_cSub+'</span>':'')+'</span></div>';
   // ── the 5 property chips ──
   h+='<div class="thmr-chips">'+chips+'</div>';
+  if(_subdivLn)h+=_subdivLn;  // م٢/b95: the positive subdivision insight rides right under the chips
   // ── compressed legal line (counsel-safe; the FULL block stays in §٩ page-2) ──
   h+='<div class="thmr-legalz"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg><span>'+t('مؤشّر سعريّ استرشاديّ مبنيّ على صفقات وزارة العدل العلنية — ليس تقييماً عقارياً معتمداً ولا حجّة رسمية.','An indicative price signal based on public Ministry of Justice transactions — not a certified real-estate valuation, nor official evidence.')+'</span></div>';
   // ── b94: the accuracy-upgrade block (Gemini r7 #2) — honest framing: these specs were
