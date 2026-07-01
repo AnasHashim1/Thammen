@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b86-en-brief-sections'
-SPRINT_TAG = '2.22.0b.86'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b87-en-cost-scenario-assumptions'
+SPRINT_TAG = '2.22.0b.87'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -5216,6 +5216,10 @@ def evaluate_thammen(
                                                        'عمر النظام (CGIS) أساس الاحتساب (E26)'
                                                        ).format(f=_cost_av['finish'],
                                                                 r=_cost_av['retention']),
+                                    'assumptions_en': ('Assumptions: finish {f} · retention factor {r} · '  # b87
+                                                       'system (CGIS) age is the basis (E26)'
+                                                       ).format(f=_cost_av['finish'],
+                                                                r=_cost_av['retention']),
                                 }
                             else:
                                 _stack_cost_i = {'unavailable_reason_ar': None}
@@ -5272,6 +5276,10 @@ def evaluate_thammen(
                                     'finish': _cost_av['finish'],
                                     'assumptions_ar': ('افتراضات: تشطيب {f} · معامل احتفاظ {r} · '
                                                        'عمر النظام (CGIS) أساس الاحتساب (E26)'
+                                                       ).format(f=_cost_av['finish'],
+                                                                r=_cost_av['retention']),
+                                    'assumptions_en': ('Assumptions: finish {f} · retention factor {r} · '  # b87
+                                                       'system (CGIS) age is the basis (E26)'
                                                        ).format(f=_cost_av['finish'],
                                                                 r=_cost_av['retention']),
                                 }
@@ -6130,6 +6138,7 @@ def _valuation_scenarios(amount, low, high, land_floor, footprint_max_m2, footpr
             'label_ar': SCENARIO_LABELS['as_is'][0], 'label_en': SCENARIO_LABELS['as_is'][1],
             'value': amount, 'low': low, 'high': high,
             'assumptions_ar': 'التقدير المعتمد كما هو أعلاه.',
+            'assumptions_en': 'The adopted estimate, as shown above.',  # b87
         }]
         # the DRC scenarios need a land floor + footprint + age; absent → as_is only.
         if not land_floor or land_floor <= 0 or age_years is None or not (
@@ -6150,6 +6159,9 @@ def _valuation_scenarios(amount, low, high, land_floor, footprint_max_m2, footpr
                     'assumptions_ar': ('منهج التكلفة: تشطيب {f} · معامل احتفاظ {r} · '
                                        'مساحة بناء ≈ {b} م² (قابلة للتعديل).').format(
                                            f=finish, r=c['retention'], b=c['bua_m2']),
+                    'assumptions_en': ('Cost approach: finish {f} · retention factor {r} · '  # b87
+                                       'built-up area ≈ {b} m² (adjustable).').format(
+                                           f=finish, r=c['retention'], b=c['bua_m2']),
                 })
         # teardown_land — the b4 demolition band on the actual/estimated BUA.
         _bua_td = (footprint_actual * max(1, int(floors) if floors else COST_DEFAULT_FLOORS)) \
@@ -6164,6 +6176,9 @@ def _valuation_scenarios(amount, low, high, land_floor, footprint_max_m2, footpr
             'low': _r100k(max(round(central * 0.88), 0)),
             'high': _r100k(land_floor),
             'assumptions_ar': ('قيمة الأرض ({l} ر.ق) − هدم تقديري ({d} ر.ق) — المبنى عبء لا قيمة.').format(
+                l=f'{_r10k(land_floor):,}', d=f'{demo:,}'),
+            'assumptions_en': ('Land value ({l} QAR) − estimated demolition ({d} QAR) — '  # b87
+                               'the building is a cost, not value.').format(
                 l=f'{_r10k(land_floor):,}', d=f'{demo:,}'),
         })
         return out
