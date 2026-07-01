@@ -113,6 +113,29 @@ STRATUM_DESC_AR = {
         'في بعض المناطق تكون عينة هذه الفئة ضعيفة (n<5) فلا يُعتمد على وسيطها مباشرة.',
 }
 
+# Sprint 2.22.0b.85 — EN twins of the stratification labels/descriptions
+# (additive; the frontend reads them via pick() only when LANG=='en', dormant).
+STRATUM_LABELS_EN = {
+    'land_priced':  'Land-priced',
+    'aging_stock':  'Mid-age build',
+    'modern_stock': 'Modern good build',
+    'luxury_new':   'Luxury / new build',
+}
+
+STRATUM_DESC_EN = {
+    'land_priced':
+        'Market pattern: land value dominates in older properties.',
+    'aging_stock':
+        'Villas 10+ years old with an average finish or partial renovation. '
+        'The most frequent category in most Qatar areas, and it tends to dominate the blended median.',
+    'modern_stock':
+        'Villas 2-10 years old, good finish, ready-to-move condition without renovation. '
+        'Their true value is often 20-40% above the blended median.',
+    'luxury_new':
+        'New villas (1-3 years) with a luxury finish, or projects under development. '
+        "In some areas this category's sample is weak (n<5), so its median is not relied on directly.",
+}
+
 # Below this n, the stratum median is shown but flagged as indicative
 RELIABLE_N = 10
 MINIMUM_N_FOR_MEDIAN = 3
@@ -347,7 +370,9 @@ def compute_strata(
         entry = {
             'ratio_band':     _stratum_band_label(name),
             'label_ar':       STRATUM_LABELS_AR[name],
+            'label_en':       STRATUM_LABELS_EN.get(name, name),  # Sprint 2.22.0b.85
             'description_ar': STRATUM_DESC_AR[name],
+            'description_en': STRATUM_DESC_EN.get(name, ''),      # Sprint 2.22.0b.85
             'n':              len(xs),
             'median_per_m2':  round(med) if med else None,
             'reliable':       len(xs) >= RELIABLE_N,
@@ -356,6 +381,11 @@ def compute_strata(
                 'شواهد كافية (n≥10)' if len(xs) >= RELIABLE_N
                 else ('شواهد محدودة (n=' + str(len(xs)) + ')' if len(xs) >= MINIMUM_N_FOR_MEDIAN
                       else 'شواهد غير كافية')
+            ),
+            'reliability_label_en': (  # Sprint 2.22.0b.85 — EN twin
+                'Sufficient evidence (n≥10)' if len(xs) >= RELIABLE_N
+                else ('Limited evidence (n=' + str(len(xs)) + ')' if len(xs) >= MINIMUM_N_FOR_MEDIAN
+                      else 'Insufficient evidence')
             ),
         }
         if plot_area_m2 and med:
@@ -390,10 +420,16 @@ def classify_subject_property(
         'implied_ratio':           round(ratio, 2),
         'classification':          stratum,
         'classification_label_ar': STRATUM_LABELS_AR.get(stratum, stratum),
+        'classification_label_en': STRATUM_LABELS_EN.get(stratum, stratum),  # Sprint 2.22.0b.85
         'guidance_ar': (
             'سعر العقار الذي أدخلته يضعه في فئة "' + STRATUM_LABELS_AR.get(stratum, stratum) + '". '
             'قارن هذا مع وسيط الفئة في الجدول أدناه: إن كان قريباً منه فالسعر متّسق مع السوق، '
             'وإن كان أعلى بـ 20%+ فالسعر مرتفع لفئته.'
+        ),
+        'guidance_en': (  # Sprint 2.22.0b.85 — EN twin
+            'The price you entered places it in the "' + STRATUM_LABELS_EN.get(stratum, stratum) + '" category. '
+            'Compare it with the category median in the table below: if it is close, the price is consistent '
+            'with the market; if it is 20%+ higher, the price is high for its category.'
         ),
     }
 
@@ -449,6 +485,13 @@ def build_stock_strata_result(
             'القيمة الرئيسية المعروضة في الأعلى تستخدم الوسيط المدمج لكل الفئات وهذا محافظ. '
             'التصنيف بحسب الفئات في الأسفل شفافية إضافية للمستخدم.'
         ),
+        'methodology_en': (  # Sprint 2.22.0b.85 — EN twin
+            'Each villa transaction is classified by the ratio of its price to the area land median. '
+            'This ratio separates age and finish categories: an old villa sells at roughly the land '
+            'price (ratio ~1.0), a modern good villa (~1.7), a luxury new villa (~2.3+). '
+            'The main value shown above uses the blended median across all categories, which is conservative. '
+            'The category breakdown below is additional transparency for the user.'
+        ),
         'land_reference': {
             **land_ref,
             'source_ar': 'وسيط معاملات بيع أراضي مسجَّلة في نفس المنطقة (MoJ)',
@@ -457,6 +500,7 @@ def build_stock_strata_result(
         'dominant_stratum': {
             'name':       dominant_name,
             'label_ar':   STRATUM_LABELS_AR.get(dominant_name, dominant_name),
+            'label_en':   STRATUM_LABELS_EN.get(dominant_name, dominant_name),  # Sprint 2.22.0b.85
             'n':          dominant.get('n'),
             'share_pct':  round(100 * dominant.get('n', 0) /
                                 sum(s.get('n', 0) for s in strata.values()), 1)
@@ -465,6 +509,11 @@ def build_stock_strata_result(
                 'الفئة المسيطرة على عينة المنطقة. '
                 'الوسيط المدمج يميل لتمثيلها أكثر من غيرها — '
                 'فإن كانت فيلتك من فئة مختلفة، الرقم الرئيسي قد لا يعكس قيمتها بدقة.'
+            ),
+            'note_en': (  # Sprint 2.22.0b.85 — EN twin
+                'The category dominating the area sample. The blended median leans toward it more '
+                'than the others — so if your villa is in a different category, the main number may '
+                'not reflect its value precisely.'
             ),
         },
         'subject_property': subject,
@@ -476,5 +525,10 @@ def build_stock_strata_result(
             'هذه الطبقات مقدّمة كشفافية إضافية — القيمة الرئيسية أعلاه '
             'لم تتأثّر. اختيار الفئة المناسبة لعقارك حسب العمر والتشطيب '
             'يبقى قرار المستخدم.'
+        ),
+        'sprint_scope_caveat_en': (  # Sprint 2.22.0b.85 — EN twin
+            'These strata are provided as additional transparency — the main value above is '
+            'unaffected. Choosing the category that fits your property by age and finish remains '
+            "the user's decision."
         ),
     }
