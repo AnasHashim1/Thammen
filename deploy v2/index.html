@@ -360,6 +360,36 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .tagfx.opt{color:var(--muted);background:var(--alt);border:1px solid var(--thmr-line,#E3DDD2)}
 /* Sprint 2.22.0b.89 — the un-gated financing toggle (result + short report): hide the native marker */
 .fin-toggle summary{list-style:none}.fin-toggle summary::-webkit-details-marker{display:none}.fin-toggle summary:hover{opacity:.85}
+/* Sprint 2.22.0b.90 «وجه المختصر» — the 5-second face: hero range-bar + confidence pill + chips + compressed legal + the one fold */
+.thmr-facebar{direction:ltr;margin:12px 8px 2px}
+.thmr-facebar .ftrack{position:relative;height:5px;border-radius:99px;background:linear-gradient(90deg,rgba(255,255,255,.28),var(--gold))}
+.thmr-facebar .fdot{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid var(--thmr-navy);box-shadow:0 0 0 1.5px rgba(255,255,255,.5);transform:translate(-50%,-50%)}
+.thmr-facebar .flbls{display:flex;justify-content:space-between;font-size:.68rem;color:#C9D4DF;margin-top:6px}
+.thmr-conf{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:700;border-radius:10px;padding:8px 12px;margin:0 0 12px}
+.thmr-conf .ic{flex:0 0 auto;width:1em;height:1em}
+.thmr-conf .cnote{font-weight:400;color:var(--thmr-ink2);font-size:.74rem}
+.thmr-conf.g{color:var(--ok);background:#ECFDF5;border:1px solid #A7F3D0}
+.thmr-conf.y{color:var(--warn);background:#FFFBEB;border:1px solid #FDE68A}
+.thmr-conf.o{color:#9A3412;background:#FFF7ED;border:1px solid #FED7AA}
+.thmr-conf.r{color:var(--bad);background:#FEF2F2;border:1px solid #FECACA}
+.thmr-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.thmr-chip{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;color:var(--thmr-ink);background:#fff;border:1px solid var(--thmr-line);border-radius:999px;padding:5px 12px}
+.thmr-chip .ic{width:.85em;height:.85em;color:var(--thmr-bronze)}
+.thmr-chip .ck{color:var(--thmr-ink2)}
+.thmr-chip .cv{font-weight:700;color:var(--thmr-navy)}
+.thmr-chip.est{border-style:dashed}
+.thmr-chip.editable{cursor:pointer}
+.thmr-chip.editable:hover{border-color:var(--thmr-bronze);background:var(--thmr-wash)}
+.thmr-chip .cedit{color:var(--thmr-bronze);opacity:.8}
+.thmr-legalz{display:flex;align-items:flex-start;gap:8px;font-size:.74rem;color:var(--thmr-ink2);line-height:1.85;background:var(--thmr-wash);border:1px solid var(--thmr-line);border-radius:10px;padding:9px 12px;margin:0 0 12px}
+.thmr-legalz .ic{flex:0 0 auto;color:var(--warn);margin-top:2px;width:1em;height:1em}
+.thmr-fold{border:1px solid var(--thmr-line);border-radius:12px;margin:0 0 12px;padding-bottom:4px}
+.thmr-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 15px;font-weight:700;color:var(--thmr-navy);font-size:.9rem}
+.thmr-fold>summary::-webkit-details-marker{display:none}
+.thmr-fold>summary:hover{opacity:.85}
+.thmr-fold>summary .farr{margin-inline-start:auto;color:var(--thmr-bronze);font-size:.8rem;transition:transform .2s}
+.thmr-fold[open]>summary .farr{transform:rotate(180deg)}
+.thmr-fold>*:not(summary){margin-left:12px;margin-right:12px}
 
 /* Sprint 2.4d: Print / Save-as-PDF styles */
 @media print {
@@ -2001,8 +2031,10 @@ function bcRecalc(){
 }
 function openShortReport(){const d=window._lastResult; if(!d)return; showShortReport(d); go('shortReport');}
 function printShortReport(){
+  // b90: force-open the «عرض التفاصيل» fold so the details print (a closed <details> is not printed); restore after.
+  const _f=document.getElementById('srFold'); const _was=_f?_f.open:null; if(_f)_f.open=true;
   document.body.classList.add('printing-short');
-  setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('printing-short'),500);},50);
+  setTimeout(()=>{window.print();setTimeout(()=>{document.body.classList.remove('printing-short');if(_f&&_was===false)_f.open=false;},500);},50);
 }
 // Sprint 2.22.0b.28 (م2 print-contract alignment): the PO delivered the GOVERNING print
 // contract docs/ثمن_التقرير_المختصر_v2_امريخ.pdf — the surface re-rendered to its two-page
@@ -2061,17 +2093,70 @@ function showShortReport(d){
   h+='<div class="thmr-page" id="srPage1">';
   h+='<div class="thmr-head"><div class="b1">'+t('ثمّن — التقرير المختصر','Thammen — Short Report')+'<small>'+t('الخلاصة في صفحة واحدة','Summary on one page')+'</small></div>';
   h+='<div class="meta">'+(d.report_ref?(t('المرجع ','Reference ')+'<b dir="ltr">'+d.report_ref+'</b>'):'')+'</div></div>';  // b63: dropped the raw engine_version dev-string from the owner's page-1 header (noise at top; ref + QR/verify prove authenticity; the page-2 meta + the full report keep it)
-  // the property strip (the PDF header row).
-  h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:10px"><span class="k">'+t(ASSET_AR[d.asset_type]||'عقار',ASSET_EN[d.asset_type]||'Property')+' <b dir="ltr">'+esc(d.address||'')+'</b>'+(d.district?(' · '+esc(d.district)):'')+'</span><span class="v" style="font-weight:400">'+(d.plot_area_m2?(t('مساحة الأرض: ','Plot area: ')+'<b>'+fmt(d.plot_area_m2)+t(' م²',' m²')+'</b>'):'')+(_ageY?t(' · عمر البناء: <b>فوق '+_ageY+' سنة</b> (سجل رسميّ — قد يكون أقدم)',' · Building age: <b>over '+_ageY+' years</b> (official record — may be older)'):'')+t(' · التاريخ: ',' · Date: ')+'<span dir="ltr">'+today+'</span></span></div>';
-  h+='<div class="thmr-hero" style="background:var(--thmr-navy);border:none"><span class="lbl" style="color:var(--gold)">'+t('قيمة بيتك التقديرية اليوم','Your home\'s estimated value today')+'</span>';
-  h+='<div class="num" style="color:#fff">'+fmt(v.amount)+' <small>'+t('ريال','QAR')+'</small></div>';
-  h+='<div style="display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:2px 14px;margin-top:7px;font-size:.74rem;color:#EAF0F6">'+t('تقدير استرشادي — وليس تقييماً معتمداً','An indicative estimate — not a certified valuation')+'</div>';
-  h+='<div class="basis" style="color:#C9D4DF">'+basisLn+'</div>';
-  if(cs==='cost'&&ld&&ld.market_value&&ld.market_value>v.amount){
-    h+='<div class="thmr-rbar"><div class="track"><span class="dot c"></span><span class="dot m"></span></div>';
-    h+='<div class="lbls"><span class="a" style="color:#fff">'+fmt(v.amount)+t(' — المرتكز',' — the anchor')+'</span><span style="color:#C9D4DF">'+fmt(ld.market_value)+t(' — طرف سوق المنطقة (مؤشرات حذرة)',' — the high end of the local market (cautious signals)')+'</span></div></div>';
+  // the property identity strip (b90: decluttered to asset + address + district; plot/age → chips, date → hero).
+  h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:12px"><span class="k">'+t(ASSET_AR[d.asset_type]||'عقار',ASSET_EN[d.asset_type]||'Property')+' <b dir="ltr">'+esc(d.address||'')+'</b>'+(d.district?(' · '+esc(d.district)):'')+'</span></div>';
+  // ════ Sprint 2.22.0b.90 «وجه المختصر» — the 5-second face (VALUE-INVARIANT: presentation of the
+  // broadcast figures; amount/low/high untouched). Gemini r5 items 1-9+13. Hero (neutral label +
+  // price/ft² + LTR range-bar + ft²-range + date) → confidence pill (E4 ladder) → 5 chips → compressed
+  // legal → ONE «عرض التفاصيل» fold wrapping the financing + §١-٥ + footer (each string verbatim). ════
+  const _area=d.plot_area_m2||null;
+  const _ppf=(_area&&v.amount)?Math.round((v.amount/_area)/10.7639):null;
+  const _lowFt=(_area&&v.low!=null)?Math.round((v.low/_area)/10.7639):null;
+  const _highFt=(_area&&v.high!=null)?Math.round((v.high/_area)/10.7639):null;
+  const _hpct=(v.low!=null&&v.high!=null&&v.high>v.low)?Math.max(0,Math.min(100,(v.amount-v.low)/(v.high-v.low)*100)):null;
+  const _confN=(_n!=null)?_n:((vf.land_n_transactions!=null)?vf.land_n_transactions:null);
+  let _cCls,_cTxt,_cSub='';  // Gemini r5 #8: E4 ladder 20/10/5; n<5 «محدودة جداً» + the scarcity note.
+  if(_confN==null){_cCls='o';_cTxt=t('ثقة محدودة','Limited confidence');}
+  else if(_confN>=20){_cCls='g';_cTxt=t('ثقة عالية','High confidence');_cSub=t('بيانات وفيرة: '+_confN+' صفقة مسجَّلة في شريحتك','ample data: '+_confN+' registered sales in your bracket');}
+  else if(_confN>=10){_cCls='y';_cTxt=t('ثقة متوسطة','Moderate confidence');_cSub=t('بيانات كافية: '+_confN+' صفقة مسجَّلة','sufficient data: '+_confN+' registered sales');}
+  else if(_confN>=5){_cCls='o';_cTxt=t('ثقة محدودة','Limited confidence');_cSub=t('بيانات قليلة: '+_confN+' صفقة — الرقم استرشاديّ','few sales: '+_confN+' — the number is indicative');}
+  else{_cCls='r';_cTxt=t('بيانات محدودة جداً','Very limited data');_cSub=t('لقلّة الصفقات المسجّلة في هذه الشريحة ('+_confN+')، اعتمد على النطاق السعريّ أدناه كدليل استرشاديّ.','given the few registered sales in this bracket ('+_confN+'), rely on the price range below as an indicative guide.');}
+  // 5 informational chips (villa vs land). ✎ chips deep-link to refine (Claim-Your-Home; static in b90).
+  const _isLand=(d.asset_type==='raw_land'||cs==='land');
+  const _CONDAR={excellent:'ممتاز',very_good:'جيّد جداً',good:'جيّد',average:'متوسّط',fair:'متوسّط',poor:'ضعيف',renovated:'مُجدَّد',teardown:'للهدم',new:'جديد'};
+  const _chip=(ic,k,val,ed,ttl)=>'<span class="thmr-chip'+(ed?' est editable':'')+'"'+(ed?(' onclick="go(\'refine\')" title="'+(ttl||t('دقّق هذه المعلومة','Refine this detail'))+'"'):'')+'><svg class=ic aria-hidden=true><use href=#ic-'+ic+'></use></svg><span class="ck">'+k+'</span> <span class="cv">'+val+'</span>'+(ed?' <svg class="ic cedit" aria-hidden=true><use href=#ic-edit></use></svg>':'')+'</span>';
+  let chips='';
+  if(_isLand){
+    if(_area)chips+=_chip('ruler',t('المساحة','Area'),fmt(_area)+t(' م²',' m²'),false);
+    const _ca=(d.geometric_factors||{}).corner_analysis||{};
+    if(_ca.is_corner)chips+=_chip('pin',t('الموقع','Location'),t('أرض زاوية','Corner plot'),false);
+    else{const _sc=((_ca.local_streets||[]).length)+(_ca.main_road_adjacent?1:0);if(_sc>0)chips+=_chip('pin',t('الشوارع','Streets'),_sc+t(' شارع',' street(s)'),false);}
+    if(d.district)chips+=_chip('globe',t('الحي','District'),esc(d.district)+(d.zone?(' · Zone '+d.zone):''),false);
+    const _lf=(d.location_features||[]).map(x=>(x&&x.label)?x.label:'').join(' · ');
+    const _cls=(_lf.match(/\bR[123]\b/)||[])[0]||null; if(_cls)chips+=_chip('file',t('التصنيف','Zoning'),_cls,false);
+    const _hgt=(_lf.match(/G\s*\+\s*[\dP+]+/)||[])[0]||null; if(_hgt)chips+=_chip('chart',t('الارتفاع','Height'),esc(_hgt),false);
+  }else{
+    const _ui=d.user_inputs||{};
+    chips+=_chip('home',t('مساحة البناء','Built area'),(cost.bua_m2?('≈ '+fmt(cost.bua_m2)+t(' م²',' m²')):t('غير محدّدة','not set')),true);
+    chips+=_chip('clock',t('عمر البناء','Building age'),(_ageY?t('فوق '+_ageY+' سنة','over '+_ageY+' yrs'):t('غير محدّد','not set')),true,t('العمر من السجل الرسميّ — قد يكون أقدم؛ اضغط لتدقيق العمر الفعلي','Age from the official record — may be older; tap to refine the actual age'));  // b73 age-floor honesty preserved
+    const _fin=_ui.is_luxury?t('فاخر','Luxury'):(_ui.condition?t(_CONDAR[_ui.condition]||_ui.condition,String(_ui.condition)):t('غير محدّد','not set'));
+    chips+=_chip('gem',t('التشطيب','Finish'),_fin,!(_ui.is_luxury||_ui.condition));
+    let _anx=[];if(_ui.external_majlis)_anx.push(t('مجلس خارجي','external majlis'));if(_ui.annexes)_anx.push(fmt(_ui.annexes)+t(' ملحق',' annex(es)'));
+    chips+=_chip('key',t('الملاحق','Annexes'),(_anx.length?_anx.join(' · '):t('غير محدّدة','not set')),!_anx.length);
+    if(_area)chips+=_chip('ruler',t('مساحة الأرض','Plot area'),fmt(_area)+t(' م²',' m²'),false);
   }
+  // ── the hero (navy band) ──
+  h+='<div class="thmr-hero" style="background:var(--thmr-navy);border:none">';
+  h+='<span class="lbl" style="color:var(--gold)">'+t('القيمة السوقية التقديرية','Estimated market value')+'</span>';
+  h+='<div class="num" style="color:#fff">'+fmt(v.amount)+' <small>'+t('ريال','QAR')+'</small></div>';
+  if(_ppf)h+='<div style="color:#C9D4DF;font-size:.82rem;font-weight:600;margin-top:3px"><span dir="ltr">'+fmt(_ppf)+'</span>'+t(' ر.ق / قدم²',' QAR / ft²')+'</div>';
+  h+='<div style="display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:2px 14px;margin-top:8px;font-size:.74rem;color:#EAF0F6">'+t('تقدير استرشادي — وليس تقييماً معتمداً','An indicative estimate — not a certified valuation')+'</div>';
+  if(_hpct!=null){
+    h+='<div class="thmr-facebar"><div class="ftrack"><span class="fdot" style="left:'+_hpct.toFixed(1)+'%"></span></div>';
+    h+='<div class="flbls"><span dir="ltr">'+fmt(v.low)+'</span><span dir="ltr">'+fmt(v.high)+'</span></div></div>';
+    if(_lowFt&&_highFt)h+='<div style="color:#9FB0C0;font-size:.72rem;margin-top:2px">'+t('نطاق سعر القدم: ','Per-ft² range: ')+'<span dir="ltr">~'+fmt(_lowFt)+' — ~'+fmt(_highFt)+'</span>'+t(' ر.ق/قدم²',' QAR/ft²')+'</div>';
+  }
+  h+='<div style="color:#9FB0C0;font-size:.72rem;margin-top:6px">'+t('تاريخ التقييم: ','Valuation date: ')+'<span dir="ltr">'+today+'</span></div>';
   h+='</div>';
+  // ── confidence pill (E4 ladder) ──
+  h+='<div class="thmr-conf '+_cCls+'"><svg class=ic aria-hidden=true><use href=#ic-'+(_cCls==='g'?'check':_cCls==='r'?'alert':'chart')+'></use></svg><span>'+_cTxt+(_cSub?' <span class="cnote">— '+_cSub+'</span>':'')+'</span></div>';
+  // ── the 5 property chips ──
+  h+='<div class="thmr-chips">'+chips+'</div>';
+  // ── compressed legal line (counsel-safe; the FULL block stays in §٩ page-2) ──
+  h+='<div class="thmr-legalz"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg><span>'+t('مؤشّر سعريّ استرشاديّ مبنيّ على صفقات وزارة العدل العلنية — ليس تقييماً عقارياً معتمداً ولا حجّة رسمية.','An indicative price signal based on public Ministry of Justice transactions — not a certified real-estate valuation, nor official evidence.')+'</span></div>';
+  // ── ONE «عرض التفاصيل» fold: wraps the financing + §١-٥ + footer (the b90 declutter); basisLn relocated here ──
+  h+='<details class="thmr-fold" id="srFold"><summary>'+t('عرض التفاصيل','Show the details')+'<span class="farr">▾</span></summary>';
+  h+='<div class="thmr-micro" style="margin:8px 2px 10px">'+basisLn+'</div>';
   // Sprint 2.22.0b.89 (Option A): financing = an OPTIONAL collapsed toggle for EVERYONE (was
   // buyer-gated b63; the role selector was removed — a mortgage calculator is a secondary buyer
   // tool, kept folded per Gemini r6). _srPayment/srRecalcPay reused (DRY); the PDF wording + the
@@ -2129,6 +2214,7 @@ function showShortReport(d){
   h+='<div class="thmr-micro" style="margin-top:10px">'+t('<b>تقييم سوقيّ آليّ وليس تقييماً معتمداً</b> — للقرارات الكبيرة استعن بمعاينة ميدانية ومقيّم مرخّص. عندك سعر بيع موثَّق أو تقييم بنك لهذا العقار؟ شاركه (اختياريّ) ليصير تقييمنا أدقّ للجميع: البريد ','<b>An automated market valuation, not a certified valuation</b> — for major decisions rely on a field inspection and a licensed valuer. Do you have a documented sale price or a bank valuation for this property? Share it (optional) to make our estimate more accurate for everyone: email ')+'<span dir="ltr">info@thammen.qa</span>.</div>';
   h+='<div class="thmr-fpline">'+(vUrl?'<span class="thmr-qr" id="srQr1"></span>':'')
     +'<span>'+(d.report_fp?(t('البصمة ','Fingerprint ')+'<span class="fp" dir="ltr">'+d.report_fp+'</span> · '):'')+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a> · '):'')+t('بيانات وزارة العدل عبر بوابة قطر للبيانات المفتوحة (','Ministry of Justice data via Qatar Open Data (')+'<span dir="ltr">CC BY 4.0</span>'+t(') — التقدير مُشتق وليس تقييماً رسمياً',') — the estimate is derived and is not an official valuation')+'</span></div>';
+  h+='</details>';  // b90: close the «عرض التفاصيل» fold (financing + §١-٥ + footer folded under the 5-second face)
   // b29 (إتمام D6): زرّا الشريحة الموقَّعان — «التفاصيل الكاملة» → شاشة النتيجة (b15،
   // مبثوثة دائماً لأن show() يسبق هذا العرض) · «التقرير الكامل» → الكامل (قائم من b25).
   h+='<div class="thmr-btns"><button class="thmr-btn" onclick="document.getElementById(\'srPage2\').scrollIntoView({behavior:\'smooth\'})">'+t('الملحق المتخصص ↓','Specialist appendix ↓')+'</button>'

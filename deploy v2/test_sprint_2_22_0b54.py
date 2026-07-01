@@ -110,7 +110,7 @@ check('Terms §5 disclaimer → التقييم لأغراض الدعم (old abse
 check('range-as-lead value term STAYS — النطاق التقديري السوقي', 'النطاق التقديري السوقي' in HTML)
 check('central-estimate value term STAYS — الوسيط (التقدير المركزي)', 'الوسيط (التقدير المركزي)' in HTML)
 check('value adjective STAYS — القيمة التقديرية', 'القيمة التقديرية' in HTML)
-check('short-report hero value term STAYS — قيمة بيتك التقديرية', 'قيمة بيتك التقديرية' in HTML)
+check('short-report hero value term STAYS «تقديريّ» (b90 neutralized the label → «القيمة السوقية التقديرية»)', 'القيمة السوقية التقديرية' in HTML)
 check('short-report pill STAYS — تقدير استرشادي', 'تقدير استرشادي' in HTML)
 check('technical estimate STAYS — مساحة البناء الأرضي (تقدير أقصى)', 'مساحة البناء الأرضي (تقدير أقصى)' in HTML)
 check('technical estimate STAYS — تقدير مبدئي', 'تقدير مبدئي' in HTML)

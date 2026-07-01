@@ -36,8 +36,8 @@ check('no #a87000 left (the only site was the assumes-typical title)',
       HTML.count('#a87000') == 0)
 
 # ---- (3) short-report age-clarity: registered age = a documented floor ----
-check('age note clarifies the floor (قد يكون أقدم)',
-      'سنة</b> (سجل رسميّ — قد يكون أقدم)' in HTML)
+check('age-floor honesty preserved (قد يكون أقدم) — b90 moved it from the strip to the age-chip tooltip; «فوق N سنة» conveys the floor on the chip',
+      'قد يكون أقدم' in HTML)
 check('old bare "(سجل رسمي)" attribution replaced',
       '(سجل رسمي)' not in HTML)
 

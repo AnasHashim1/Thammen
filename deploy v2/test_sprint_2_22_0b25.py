@@ -104,7 +104,7 @@ check('the b23 verify link now shares _verifyUrl (one builder, no drift)',
 # the cost-led surface re-rendered to the PDF's two-page copy; the matrix's
 # conditional SKELETON survives as the basis lines for the non-cost leaders.
 print('\n[4] the PDF-contract hero + the matrix skeleton in the basis lines')
-check('the PDF hero (universal, warm)', 'قيمة بيتك التقديرية اليوم' in SR)
+check('the hero label (b90: neutralized to «القيمة السوقية التقديرية»)', 'القيمة السوقية التقديرية' in SR)
 check('the PDF hero pill', 'تقدير استرشادي — وليس تقييماً معتمداً' in SR)
 check('cost basis = the PDF sentence, matched_n-bound',
       'محسوبة من قيمة الأرض + قيمة البناء بعد عمره' in SR

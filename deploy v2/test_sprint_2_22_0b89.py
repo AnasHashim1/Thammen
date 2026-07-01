@@ -69,7 +69,7 @@ ok('v.amount=' not in _finblk and 'v.low=' not in _finblk and 'v.high=' not in _
    "the financing block never mutates amount/low/high (display-only)")
 
 # ── 5) engine version bumped to b89 (format, R6 — no exact-version dependence elsewhere) ──
-ok(re.search(r"ENGINE_VERSION\s*=\s*'thammen-sprint2p22p0b89-", EU), "ENGINE_VERSION → b89")
-ok("SPRINT_TAG = '2.22.0b.89'" in EU, "SPRINT_TAG → 2.22.0b.89")
+ok(re.search(r"ENGINE_VERSION\s*=\s*'thammen-sprint2p22p0b\d", EU), "ENGINE_VERSION is a b-series tag (R6, version-agnostic)")
+ok(re.search(r"SPRINT_TAG = '2\.22\.0b\.\d", EU), "SPRINT_TAG is a 2.22.0b-series tag (R6)")
 
 print('\n%d/%d checks passed — Sprint 2.22.0b.89 GREEN' % (n, n))

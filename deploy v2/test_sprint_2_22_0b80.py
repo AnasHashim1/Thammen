@@ -77,7 +77,7 @@ check('EN coverage markers (page 1 + page 2)',
 
 # ---- (7) VALUE-INVARIANCE: AR literals verbatim + locked identity + dormant flag ----
 check('AR report literals kept verbatim (byte-identical AR render)',
-      'قيمة بيتك التقديرية اليوم' in HTML and 'الأرقام الثلاثة التي تهمّك' in HTML and
+      'القيمة السوقية التقديرية' in HTML and 'الأرقام الثلاثة التي تهمّك' in HTML and  # b90 R6: hero label neutralized «قيمة بيتك التقديرية اليوم»→«القيمة السوقية التقديرية»
       'المصدر: وزارة العدل — صفقات مسجلة حتى ديسمبر 2025' in HTML and
       'الملحق المتخصص ↓' in HTML and 'موقعك في نطاق المتر' in HTML)
 check('b54 locked identity intact (التقييم السوقي)', 'التقييم السوقي' in HTML)
