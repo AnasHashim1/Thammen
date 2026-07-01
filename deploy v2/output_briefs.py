@@ -139,6 +139,16 @@ _PROVENANCE_CONFIDENCE_AR = {
     'indicative': 'شواهد محدودة',
     'fallback': 'شواهد غير كافية — استُخدم معدل افتراضي',
 }
+# Sprint 2.22.0b.86 — EN twins (additive; frontend reads via pick() when LANG=='en', dormant).
+_PROVENANCE_SOURCE_EN = {
+    'calibrated': 'Calibrated from market data',
+    'hardcoded': 'Default rate (not calibrated)',
+}
+_PROVENANCE_CONFIDENCE_EN = {
+    'reliable': 'Sufficient evidence',
+    'indicative': 'Limited evidence',
+    'fallback': 'Insufficient evidence — a default rate was used',
+}
 
 
 def build_cap_rate_provenance_section(provenance):
@@ -170,8 +180,13 @@ def build_cap_rate_provenance_section(provenance):
                 f"لنفس المنطقة، بمعدّل مُستعار من الشريحة {provenance.get('borrowed_from_bracket')} "
                 f"(شريحة العقار {provenance.get('subject_bracket')} بلا عيّنة كافية)"
             )
+            _scope_en = (  # Sprint 2.22.0b.86
+                f"for the same area, at a rate borrowed from the {provenance.get('borrowed_from_bracket')} "
+                f"bracket (the property's {provenance.get('subject_bracket')} bracket lacked a sufficient sample)"
+            )
         else:
             _scope_ar = "لنفس المنطقة والشريحة"
+            _scope_en = "for the same area and bracket"  # Sprint 2.22.0b.86
         body_ar = (
             f"معدل الرسملة المستخدم ({provenance.get('cap_rate_pct')}%) "
             f"معايَر تجريبياً من إيجارات السوق الحالية (PropertyFinder) منسوبةً إلى "
@@ -180,15 +195,27 @@ def build_cap_rate_provenance_section(provenance):
             f"مستوى الثقة: {provenance.get('confidence')}، "
             f"آخر تحديث: {provenance.get('last_updated')}."
         )
+        body_en = (  # Sprint 2.22.0b.86 — EN twin
+            f"The cap rate used ({provenance.get('cap_rate_pct')}%) is empirically calibrated from "
+            f"current market rents (PropertyFinder) relative to the Ministry of Justice sale median "
+            f"{_scope_en} — sample n={provenance.get('sample_size')}, "
+            f"confidence: {provenance.get('confidence')}, last updated: {provenance.get('last_updated')}."
+        )
     else:
         body_ar = (
             f"معدل الرسملة المستخدم ({provenance.get('cap_rate_pct')}%) معدل نموذجي "
             f"(غير معايَر) — لا توجد بيانات إيجار/بيع كافية لهذه المنطقة والشريحة. "
             f"{provenance.get('reason_ar', '')}"
         ).strip()
+        body_en = (  # Sprint 2.22.0b.86 — EN twin
+            f"The cap rate used ({provenance.get('cap_rate_pct')}%) is a typical (uncalibrated) rate — "
+            f"there is not enough rent/sale data for this area and bracket. "
+            f"{provenance.get('reason_en', '')}"
+        ).strip()
     return {
         'id': 'cap_rate_provenance',
         'title_ar': 'مصدر معدل الرسملة',
+        'title_en': 'Cap-rate source',
         'content': {
             # Machine-readable (English) — kept for backward compatibility.
             'source': source,
@@ -198,8 +225,11 @@ def build_cap_rate_provenance_section(provenance):
             'last_updated': provenance.get('last_updated'),
             # Arabic display strings (Sprint 2.19.1) — what the brief renders.
             'source_ar': _PROVENANCE_SOURCE_AR.get(source, source),
+            'source_en': _PROVENANCE_SOURCE_EN.get(source, source),          # Sprint 2.22.0b.86
             'confidence_ar': _PROVENANCE_CONFIDENCE_AR.get(confidence, confidence),
+            'confidence_en': _PROVENANCE_CONFIDENCE_EN.get(confidence, confidence),  # Sprint 2.22.0b.86
             'body_ar': body_ar,
+            'body_en': body_en,                                              # Sprint 2.22.0b.86
         },
     }
 
@@ -209,6 +239,11 @@ _GRID_CONFIDENCE_AR = {
     'reliable': 'شواهد كافية',
     'indicative': 'شواهد محدودة',
     'fallback': 'شواهد غير كافية',
+}
+_GRID_CONFIDENCE_EN = {  # Sprint 2.22.0b.86 — EN twin
+    'reliable': 'Sufficient evidence',
+    'indicative': 'Limited evidence',
+    'fallback': 'Insufficient evidence',
 }
 
 
@@ -244,18 +279,23 @@ def build_comparable_grid_section(grid, audience='buyer'):
     return {
         'id': 'comparable_grid',
         'title_ar': 'شبكة المقارنات المعدّلة',
+        'title_en': 'Adjusted comparables grid',
         'content': {
             'detail': detail,
             'adjusted_median_per_m2': grid.get('adjusted_median_per_m2'),
             'n': grid.get('n'),
             'confidence': conf,
             'confidence_ar': _GRID_CONFIDENCE_AR.get(conf, conf),
+            'confidence_en': _GRID_CONFIDENCE_EN.get(conf, conf),  # Sprint 2.22.0b.86
             'valuation_date': grid.get('valuation_date'),
             'sources': grid.get('sources'),                 # E10 attribution
             'note_ar': grid.get('note_ar'),
+            'note_en': grid.get('note_en'),  # Sprint 2.22.0b.86 (passthrough; adjustment_grid EN = b87)
             'comparables': comps,
             'footer_ar': ('علاوة الزاوية والحجم ستُضاف لاحقاً عند توفّر بيانات '
                           'مرتبطة جغرافياً (geographically-keyed).'),
+            'footer_en': ('Corner and size premiums will be added later once '  # Sprint 2.22.0b.86
+                          'geographically-keyed data is available.'),
         },
     }
 
@@ -303,6 +343,7 @@ def build_tier_breakdown_section(evaluation):
     return {
         'id': 'tier_breakdown',
         'title_ar': 'تفصيل المصادر',
+        'title_en': 'Source breakdown',
         'content': {
             'rows': rows,
             'n_used': hybrid.get('n_used'),
@@ -346,6 +387,7 @@ def _refusal_reason_section(evaluation):
     return {
         'id': 'refusal_reason',
         'title_ar': 'سبب عدم التقدير',
+        'title_en': 'Why the valuation was withheld',
         'content': rr,
     }
 
@@ -399,6 +441,7 @@ def _use_case_banner_section(evaluation, audience=None):
     return {
         'id': 'use_case_banner',
         'title_ar': 'حالات الاستخدام',
+        'title_en': 'Use cases',
         'content': USE_CASE_BANNER,
     }
 
@@ -459,6 +502,7 @@ def _adjustment_ledger_directional_section(evaluation, audience=None):
     return {
         'id': 'adjustment_ledger_directional',
         'title_ar': 'سجل التعديلات الاتجاهية',
+        'title_en': 'Trend-adjustment log',
         'content': {
             'note_ar': (
                 'التعديلات التفصيلية ستظهر قريباً عند تفعيل مرحلة الأسئلة '
@@ -523,6 +567,7 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
         sections.append({
             'id': 'verdict',
             'title_ar': 'هل السعر معقول؟',
+        'title_en': 'Is the price reasonable?',
             'content': {
                 'listing_price': listing.get('listing_price'),
                 'benchmark': listing.get('benchmark_total') or base['valuation_total'],
@@ -549,6 +594,7 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     sections.append({
         'id': 'flags',
         'title_ar': 'المخاطر والإشارات',
+        'title_en': 'Risks and signals',
         'content': {
             'red_flags': flags.get('red_flags', []),
             'green_flags': flags.get('green_flags', []),
@@ -582,6 +628,7 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
     sections.append({
         'id': 'due_diligence',
         'title_ar': 'أسئلة يجب طرحها قبل الشراء',
+        'title_en': 'Questions to ask before buying',
         'content': _dd_questions,
     })
 
@@ -664,6 +711,7 @@ def _seller_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
     sections.append({
         'id': 'valuation',
         'title_ar': 'قيمة عقارك',
+        'title_en': 'Your property value',
         'content': {
             'estimated_value': base['valuation_total'],
             'range_low': base['valuation_low'],
@@ -678,6 +726,7 @@ def _seller_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
         sections.append({
             'id': 'pricing',
             'title_ar': 'استراتيجية التسعير',
+        'title_en': 'Pricing strategy',
             'content': {
                 'aggressive_price': round(val * 1.15),
                 'realistic_price': round(val * 1.10),
@@ -695,6 +744,7 @@ def _seller_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
         sections.append({
             'id': 'trend',
             'title_ar': 'اتجاه السوق',
+        'title_en': 'Market trend',
             'content': trend,
         })
 
@@ -702,6 +752,7 @@ def _seller_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
     sections.append({
         'id': 'tips',
         'title_ar': 'نصائح للبيع',
+        'title_en': 'Selling tips',
         'content': [
             'أفرغ العقار إن أمكن — الوحدات الفارغة تُباع أسرع',
             'صوِّر 6-10 صور جودة عالية (لا لقطات شاشة)',
@@ -771,6 +822,7 @@ def _investor_brief(evaluation, rent_data, adjustments, uncertainty, income_valu
     sections.append({
         'id': 'yield',
         'title_ar': 'تحليل العائد',
+        'title_en': 'Yield analysis',
         'content': yield_section,
     })
 
@@ -779,6 +831,7 @@ def _investor_brief(evaluation, rent_data, adjustments, uncertainty, income_valu
         sections.append({
             'id': 'income_value',
             'title_ar': 'القيمة بمنهج الدخل',
+        'title_en': 'Income-approach value',
             'content': {
                 'income_value': income_value.get('income_value'),
                 'cap_rate_used': income_value.get('cap_rate_used'),
@@ -794,6 +847,7 @@ def _investor_brief(evaluation, rent_data, adjustments, uncertainty, income_valu
         sections.append({
             'id': 'sensitivity',
             'title_ar': 'تحليل الحساسية',
+        'title_en': 'Sensitivity analysis',
             'content': income_value['sensitivity'],
             'note': 'ماذا لو تغيّر معدّل الرسملة أو رسوم الخدمات؟',
         })
@@ -803,6 +857,7 @@ def _investor_brief(evaluation, rent_data, adjustments, uncertainty, income_valu
         sections.append({
             'id': 'rent_reference',
             'title_ar': 'مرجع الإيجار',
+        'title_en': 'Rent reference',
             'content': {
                 'monthly_median': rent_data.get('monthly_median'),
                 'annual_range': [rent_data.get('annual_low'), rent_data.get('annual_high')],
@@ -816,6 +871,7 @@ def _investor_brief(evaluation, rent_data, adjustments, uncertainty, income_valu
     sections.append({
         'id': 'market_context',
         'title_ar': 'السياق السوقي',
+        'title_en': 'Market context',
         'content': {
             'qatar_benchmark': '5-6% عائد صافي للشقق السكنية = طبيعي',
             'above_6_net': 'أكثر من 6% صافي = فرصة تستحق الفحص',
