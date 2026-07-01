@@ -135,8 +135,8 @@ check('prior #srOut/#repOut/#cgOut blocks intact + no global .thmr flip',
 
 # ---- (9) plumbing + dormant + identity + version ----
 check('_rerenderForLang routes resultsScreen -> show', "id==='resultsScreen')show(d)" in HTML)
-check('EN dormant + b77 primitives intact',
-      'var EN_ENABLED=false;' in HTML and 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML)
+check('EN revealed (EN_ENABLED=true, b88) + b77 primitives intact',
+      'var EN_ENABLED=true;' in HTML and 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML)
 check('b54 locked identity intact (تقييم سوقيّ آليّ)', 'تقييم سوقيّ آليّ' in HTML)
 check('engine is a valid b-series tag (no exact pin)',
       "SPRINT_TAG = '2.22.0b." in ENG and 'thammen-sprint2p22p0b' in ENG)

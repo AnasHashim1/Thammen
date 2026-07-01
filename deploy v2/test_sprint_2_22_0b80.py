@@ -81,8 +81,8 @@ check('AR report literals kept verbatim (byte-identical AR render)',
       'المصدر: وزارة العدل — صفقات مسجلة حتى ديسمبر 2025' in HTML and
       'الملحق المتخصص ↓' in HTML and 'موقعك في نطاق المتر' in HTML)
 check('b54 locked identity intact (التقييم السوقي)', 'التقييم السوقي' in HTML)
-check('EN dormant (EN_ENABLED=false) + b77 primitives intact',
-      'var EN_ENABLED=false;' in HTML and 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML)
+check('EN revealed (EN_ENABLED=true, b88) + b77 primitives intact',
+      'var EN_ENABLED=true;' in HTML and 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML)
 
 # ---- (8) engine = a valid b-series tag (version-agnostic, R6) ----
 check('engine is a valid b-series tag (no exact pin)',

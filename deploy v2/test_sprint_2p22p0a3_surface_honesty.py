@@ -487,7 +487,7 @@ def test_t1_3_old_phrase_absent_from_index_html():
 def test_t1_3_new_phrase_present_at_3_sites():
     assert "للحصول على تحليل آلي" in _EU_SRC
     assert "لتحليل آلي يرجى تزويدنا" in _EU_SRC
-    assert "scopeLabel='تحليل آلي'" in _INDEX_SRC
+    assert "scopeLabel=t('تحليل آلي'" in _INDEX_SRC   # b88 R6: phrase preserved as the t() AR arg (EN reveal)
     print('  PASS test_t1_3_new_phrase_present_at_3_sites')
 
 

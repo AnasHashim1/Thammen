@@ -85,8 +85,8 @@ sr_wrap_buttons = re.findall(r"<button[^>]*>([^<]*)</button>", sr_wrap)
 chk("shortReportScreen wrapper: button relabeled «→ التفاصيل الكاملة» (old label gone from buttons)",
     any("→ التفاصيل الكاملة" in b for b in sr_wrap_buttons)
     and not any("رجوع للنتيجة" in b for b in sr_wrap_buttons))
-chk("shortReportScreen wrapper: still targets go('results')",
-    re.search(r"onclick=\"go\('results'\)\">→ التفاصيل الكاملة", sr_wrap))
+chk("shortReportScreen wrapper: still targets go('results')",  # b88 R6: data-en attr added, still → go('results') + AR label
+    re.search(r"onclick=\"go\('results'\)\"[^>]*>→ التفاصيل الكاملة", sr_wrap))
 
 # ── (4) the FULL report screen's wrapper untouched ───────────────────────────
 mrep = re.search(r"id=\"reportScreen\".*?<div id=\"repOut\"", HTML, re.S)

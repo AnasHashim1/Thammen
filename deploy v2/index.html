@@ -623,7 +623,7 @@ body.lang-en #rOut .br-l,body.lang-en #rOut .rl,body.lang-en #rOut .ev1lbl{text-
     <div class="tbar-st" data-en="Refine the valuation">تحسين التقييم</div>
   </div>
   <div class="fwrap">
-    <button class="bbtn" onclick="go('results')">→ رجوع للنتيجة</button>
+    <button class="bbtn" onclick="go('results')" data-en="← Back to result">→ رجوع للنتيجة</button>
     <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg> تفاصيل العقار (المرحلة 2)</div>
     <!-- Sprint 2.22.0b.27 (م4 — signed): the refine fields regrouped into the THREE
          v3-contract groups, each TAGGED by its real effect (يحرّك التقدير / يدقّق
@@ -704,7 +704,7 @@ body.lang-en #rOut .br-l,body.lang-en #rOut .rl,body.lang-en #rOut .ev1lbl{text-
     <div class="tbar-st" data-en="Review the data">مراجعة البيانات</div>
   </div>
   <div class="rwrap">
-    <button class="bbtn" onclick="go('form')">→ تقييم جديد</button>
+    <button class="bbtn" onclick="go('form')" data-en="← New valuation">→ تقييم جديد</button>
     <div id="cgOut"></div>
   </div>
 </div>
@@ -716,14 +716,14 @@ body.lang-en #rOut .br-l,body.lang-en #rOut .rl,body.lang-en #rOut .ev1lbl{text-
     <div class="tbar-st" data-en="Market valuation result">نتيجة التقييم السوقي</div>
   </div>
   <div class="rwrap">
-    <button class="bbtn" onclick="go('form')">→ تقييم جديد</button>
+    <button class="bbtn" onclick="go('form')" data-en="← New valuation">→ تقييم جديد</button>
     <div id="rOut"></div>
     <div class="disc">
-      هذا التقييم السوقيّ الآليّ إرشاديّ ومبنيّ على بيانات وزارة العدل المتاحة للعموم.<br>
-      لا يُعتبر تثميناً رسمياً ولا يحل محل المثمّن المعتمد.<br>
-      ننصح بالاستعانة بمثمّن معتمد للمعاملات فوق ٥ مليون ريال.<br><br>
-      <a href="#" onclick="openTerms();return false;" style="color:var(--muted);text-decoration:underline">الشروط وإشعار الخصوصية</a><br><br>
-      <span style="color:var(--bronze)">ثمّن</span> — يستخدم بيانات وزارة العدل المفتوحة (<span dir="ltr">CC BY 4.0</span>)
+      <span data-en="This automated market valuation is indicative and based on publicly available Ministry of Justice data.">هذا التقييم السوقيّ الآليّ إرشاديّ ومبنيّ على بيانات وزارة العدل المتاحة للعموم.</span><br>
+      <span data-en="It is not an official valuation and does not replace a certified valuer.">لا يُعتبر تثميناً رسمياً ولا يحل محل المثمّن المعتمد.</span><br>
+      <span data-en="We recommend engaging a certified valuer for transactions above QAR 5 million.">ننصح بالاستعانة بمثمّن معتمد للمعاملات فوق ٥ مليون ريال.</span><br><br>
+      <a href="#" onclick="openTerms();return false;" style="color:var(--muted);text-decoration:underline" data-en="Terms &amp; Privacy Notice">الشروط وإشعار الخصوصية</a><br><br>
+      <span style="color:var(--bronze)">ثمّن</span> <span data-en="— uses Ministry of Justice open data">— يستخدم بيانات وزارة العدل المفتوحة</span> (<span dir="ltr">CC BY 4.0</span>)
       <!-- Sprint 2.22.0a.25 — MoJ source attribution (CC BY 4.0 / Q13). Latin/numeric tokens wrapped dir="ltr" per a24 bidi pattern. -->
       <div class="src-credit">
         مصدر البيانات: نشرات بيع العقارات الصادرة عن وزارة العدل (دولة قطر) عبر بوابة قطر للبيانات المفتوحة (<span dir="ltr">data.gov.qa</span>)، بموجب رخصة المشاع الإبداعي «نَسب المُصنَّف» <span dir="ltr">4.0</span> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener"><span dir="ltr">CC BY 4.0</span></a>). تُعالَج البيانات وتُجمَّع بواسطة «ثَمِّن»، والتقديرات مُشتقّة وليست تقييمات رسمية صادرة عن وزارة العدل.
@@ -741,7 +741,7 @@ body.lang-en #rOut .br-l,body.lang-en #rOut .rl,body.lang-en #rOut .ev1lbl{text-
     <div class="tbar-st" data-en="Full report">التقرير الكامل</div>
   </div>
   <div class="rwrap">
-    <button class="bbtn no-print" onclick="go('results')">→ رجوع للنتيجة</button>
+    <button class="bbtn no-print" onclick="go('results')" data-en="← Back to result">→ رجوع للنتيجة</button>
     <div id="repOut"></div>
   </div>
 </div>
@@ -760,7 +760,7 @@ body.lang-en #rOut .br-l,body.lang-en #rOut .rl,body.lang-en #rOut .ev1lbl{text-
   <div class="rwrap">
     <!-- b29: المختصر صار هبوطاً افتراضياً بعد التحسين — «رجوع للنتيجة» تُصبح غير صادقة
          لمن لم يرَ النتيجة بعد؛ «التفاصيل الكاملة» صادقة على مسارَي الدخول معاً. -->
-    <button class="bbtn no-print" onclick="go('results')">→ التفاصيل الكاملة</button>
+    <button class="bbtn no-print" onclick="go('results')" data-en="← Full details">→ التفاصيل الكاملة</button>
     <div id="srOut" class="thmr"></div>
   </div>
 </div>
@@ -805,7 +805,7 @@ const TIER_LABEL_EN={
 //   _loc()       — active Intl locale (Western vs Arabic-Indic digits)
 //   setLang(l)   — flip LANG + <html dir/lang> + body.lang-en + re-render
 // Later sprints wire strings to t()/pick(); the reveal sprint flips EN_ENABLED.
-var EN_ENABLED=false;                 // ← the reveal sprint flips this to true
+var EN_ENABLED=true;                  // b88 REVEAL: EN toggle live (PO wording sign-off 2026-07-01); AR remains the default (LANG='ar' unless the user picks EN)
 var _LANG_KEY='thammen_lang';
 function _langStored(){try{return localStorage.getItem(_LANG_KEY);}catch(e){return null;}}
 // During the dark period EN is FORCED off regardless of any stored choice, so a
@@ -2248,8 +2248,8 @@ function show(d){
   let foot='';    // ALWAYS-VISIBLE compliance foot (freshness / disclaimer / verification)
 
   // ── Copy button (top, floats right) ──
-  head+='<button id="copyBtn" class="copy-btn" onclick="copyResult()"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> نسخ النتيجة</button>';
-  head+='<button class="copy-btn print-btn" onclick="printReport()" style="margin-right:8px"><svg class=ic aria-hidden=true><use href=#ic-printer></use></svg> طباعة / حفظ PDF</button>';
+  head+='<button id="copyBtn" class="copy-btn" onclick="copyResult()"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '+t('نسخ النتيجة','Copy result')+'</button>';
+  head+='<button class="copy-btn print-btn" onclick="printReport()" style="margin-right:8px"><svg class=ic aria-hidden=true><use href=#ic-printer></use></svg> '+t('طباعة / حفظ PDF','Print / save PDF')+'</button>';
   head+='<div style="clear:both"></div>';
 
   // ── Sprint 2.14.0 + 2.16.9 + 2.22.0a/9+/12: Material Valuation Uncertainty (MVU) Clause ──
@@ -2368,14 +2368,14 @@ function show(d){
   const ss=d.service_scope;
   if(ss){
     let scopeBg,scopeColor,scopeIcon,scopeLabel;
-    if(_ux3NotReady){scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>';scopeLabel='غير مدعوم بعد';}
-    else if(ss.tier==='supported'){scopeBg='var(--alt)';scopeColor='var(--muted)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-check></use></svg>';scopeLabel='تحليل آلي';}  /* Sprint 2.22.0b.47: demote the loud green — the navy hero is the result-screen focal point */
-    else if(ss.tier==='limited'){scopeBg='var(--warn-bg)';scopeColor='var(--warn)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>';scopeLabel='تقييم مشروط';}
-    else{scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-x></use></svg>';scopeLabel='خارج النطاق';}
+    if(_ux3NotReady){scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>';scopeLabel=t('غير مدعوم بعد','Not yet supported');}
+    else if(ss.tier==='supported'){scopeBg='var(--alt)';scopeColor='var(--muted)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-check></use></svg>';scopeLabel=t('تحليل آلي','Automated analysis');}  /* Sprint 2.22.0b.47: demote the loud green — the navy hero is the result-screen focal point */
+    else if(ss.tier==='limited'){scopeBg='var(--warn-bg)';scopeColor='var(--warn)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>';scopeLabel=t('تقييم مشروط','Conditional valuation');}
+    else{scopeBg='var(--bad-bg)';scopeColor='var(--bad)';scopeIcon='<svg class=ic aria-hidden=true><use href=#ic-x></use></svg>';scopeLabel=t('خارج النطاق','Out of scope');}
     alerts+='<div style="background:'+scopeBg+';border-right:4px solid '+scopeColor+';padding:12px 14px;margin-bottom:14px;border-radius:0 6px 6px 0">';
     alerts+='<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
-    alerts+='<div><strong style="color:'+scopeColor+'">'+scopeIcon+' '+scopeLabel+'</strong> — '+ss.label_ar+'</div>';
-    if(!_ux3NotReady)alerts+='<div style="font-size:.82rem;color:var(--muted)">'+ss.methodology_ar+'</div>';
+    alerts+='<div><strong style="color:'+scopeColor+'">'+scopeIcon+' '+scopeLabel+'</strong> — '+pick(ss,'label')+'</div>';
+    if(!_ux3NotReady)alerts+='<div style="font-size:.82rem;color:var(--muted)">'+pick(ss,'methodology')+'</div>';
     alerts+='</div>';
     if(_ux3NotReady){
       // DEF-UX3: honest stance (no «يتطلب الإيجار», no «منهج الدخل» — the income

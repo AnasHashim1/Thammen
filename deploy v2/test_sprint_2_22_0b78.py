@@ -74,8 +74,8 @@ check('attach_en wraps the /api/scope response', '_attach_en(_s) if _EN_OK else 
 
 # ---- (5) value-invariance guards: engine version only; b77 infra intact ----
 check('engine is a valid b-series tag (version-agnostic, R6) — b78 added no logic', "SPRINT_TAG = '2.22.0b." in ENG and 'thammen-sprint2p22p0b' in ENG)
-check('b77 i18n infra intact (t/pick/_loc/EN_ENABLED)',
-      'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML and 'var EN_ENABLED=false;' in HTML)
+check('b77 i18n infra intact (t/pick/_loc/EN_ENABLED); revealed b88',
+      'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML and 'var EN_ENABLED=true;' in HTML)
 check('locked AR identity untouched (التقييم السوقي)', 'التقييم السوقي' in HTML)
 
 print('\nb78:', passed, 'passed,', failed, 'failed')

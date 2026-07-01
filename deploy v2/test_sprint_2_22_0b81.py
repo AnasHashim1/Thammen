@@ -147,8 +147,8 @@ check('deferred shared builders STILL CALLED in showReport (render AR until b83)
       '_decompHtml(d,v,hasValuation)' in HTML and '_substHtml(d,v,hasValuation)' in HTML and
       '_strataHtml(d)' in HTML and 'evidencePanelHtml(d,acc)' in HTML and
       'pbRows(d.property_basis)' in HTML and 'h+=renderSection(sec)' in HTML)
-check('EN dormant (EN_ENABLED=false) + b77 primitives intact',
-      'var EN_ENABLED=false;' in HTML and 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML)
+check('EN revealed (EN_ENABLED=true, b88) + b77 primitives intact',
+      'var EN_ENABLED=true;' in HTML and 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML)
 check('b54 locked identity intact (تقييم سوقيّ آليّ)', 'تقييم سوقيّ آليّ' in HTML)
 check('_rerenderForLang routes reportScreen -> showReport (b80 plumbing)',
       "id==='reportScreen')showReport(d)" in HTML)

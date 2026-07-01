@@ -18,8 +18,8 @@ def check(name, cond):
         failed += 1; print('  FAIL', name)
 
 # ---- (1) dark-period default: EN forced OFF, AR is the guaranteed state ----
-check('EN_ENABLED defaults false (dark)',
-      'var EN_ENABLED=false;' in HTML)
+check('EN_ENABLED revealed true (b88); AR still the default',
+      'var EN_ENABLED=true;' in HTML)
 check('LANG init forces AR while EN dark (ignores any stored choice)',
       "var LANG=(EN_ENABLED&&_langStored()==='en')?'en':'ar';" in HTML)
 check('DOMContentLoaded restore gated by EN_ENABLED',

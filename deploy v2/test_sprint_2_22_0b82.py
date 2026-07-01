@@ -110,8 +110,8 @@ check('prior #srOut / #repOut blocks intact + no result-screen / global .thmr fl
 
 # ---- (11) plumbing + dormant flag + locked identity intact ----
 check('_rerenderForLang routes confirmScreen -> showConfirm', "id==='confirmScreen')showConfirm(d)" in HTML)
-check('EN dormant (EN_ENABLED=false) + b77 primitives intact',
-      'var EN_ENABLED=false;' in HTML and 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML)
+check('EN revealed (EN_ENABLED=true, b88) + b77 primitives intact',
+      'var EN_ENABLED=true;' in HTML and 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML)
 check('b54 locked identity intact (تقييم سوقيّ آليّ)', 'تقييم سوقيّ آليّ' in HTML)
 
 # ---- (12) engine = a valid b-series tag (version-agnostic, R6) ----

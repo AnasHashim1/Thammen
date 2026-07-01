@@ -72,7 +72,7 @@ check('result/report screens NOT flipped in lang-en (deferred to b80)',
       'body.lang-en #resultsScreen' not in HTML and 'body.lang-en #reportScreen' not in HTML)
 
 # ---- (7) VALUE-INVARIANCE: b77/b78 intact, AR identity, engine = version lines ----
-check('b77 i18n primitives intact', 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML and 'var EN_ENABLED=false;' in HTML)
+check('b77 i18n primitives intact; revealed b88', 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML and 'var EN_ENABLED=true;' in HTML)
 check('locked AR identity untouched (التقييم السوقي)', 'التقييم السوقي' in HTML)
 check('AR gate/home/form text still present (default render unchanged)',
       'ثمّن — تقييم سوقيّ آليّ للفلل والأراضي في قطر' in HTML and 'تقييم عقارك في قطر' in HTML and

@@ -62,10 +62,10 @@ check('predicate names exactly apartment_building + tower (2 types)',
 # b48 de-emoji (R6/Lesson-2): the 🚧 emoji became an inline-SVG icon (<use href=#ic-alert>).
 # Pin the BEHAVIOUR (not-ready → bad styling + «غير مدعوم بعد» label, NOT «تقييم مشروط»), with the
 # icon as an inline svg <use> rather than the literal emoji.
-check('badge: _ux3NotReady → svg-icon «غير مدعوم بعد» (bad styling, not «تقييم مشروط»)',
-      re.search(r"if\(_ux3NotReady\)\{scopeBg='var\(--bad-bg\)';scopeColor='var\(--bad\)';scopeIcon='<svg [^']*?<use href=#ic-[^>]*></use></svg>';scopeLabel='غير مدعوم بعد';\}", BADGE) is not None)
-check('badge: methodology line («منهج الدخل») gated OFF for not-ready',
-      "if(!_ux3NotReady)alerts+='<div style=\"font-size:.82rem;color:var(--muted)\">'+ss.methodology_ar+'</div>'" in BADGE)
+check('badge: _ux3NotReady → svg-icon «غير مدعوم بعد» (bad styling, not «تقييم مشروط»)',  # b88 R6: label now t()-wrapped (AR arg preserved)
+      re.search(r"if\(_ux3NotReady\)\{scopeBg='var\(--bad-bg\)';scopeColor='var\(--bad\)';scopeIcon='<svg [^']*?<use href=#ic-[^>]*></use></svg>';scopeLabel=t\('غير مدعوم بعد','Not yet supported'\);\}", BADGE) is not None)
+check('badge: methodology line («منهج الدخل») gated OFF for not-ready',  # b88 R6: ss.methodology_ar → pick(ss,'methodology'); gating unchanged
+      "if(!_ux3NotReady)alerts+='<div style=\"font-size:.82rem;color:var(--muted)\">'+pick(ss,'methodology')+'</div>'" in BADGE)
 check('badge: honest sub «ثمّن يدعم الفلل والأراضي فقط حالياً»',
       'ثمّن يدعم <strong>الفلل والأراضي</strong> فقط حالياً.' in BADGE)
 # the «يتطلب» line now lives in the ELSE branch (NOT shown when _ux3NotReady)
