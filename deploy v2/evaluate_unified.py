@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b83-en-result-screen-builders'
-SPRINT_TAG = '2.22.0b.83'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b84-en-decomposition-twins'
+SPRINT_TAG = '2.22.0b.84'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1615,6 +1615,9 @@ def _decompose_value(
     else:
         land_conf = 'thin'
         land_conf_ar = 'شواهد غير كافية'
+    # Sprint 2.22.0b.84 — EN twin of the land confidence label (dormant pick() fallback)
+    land_conf_en = {'reliable': 'Sufficient evidence', 'indicative': 'Limited evidence',
+                    'thin': 'Insufficient evidence'}.get(land_conf, land_conf_ar)
 
     # Status & interpretation
     if bld_implied < 0:
@@ -1663,6 +1666,36 @@ def _decompose_value(
             f'يتسق مع بناء جديد أو فاخر أو ذو BUA كبيرة.'
         )
 
+    # Sprint 2.22.0b.84 — EN twin of `interp` (keyed on status; dormant pick() fallback)
+    _bp = bld_pct * 100
+    if status == 'land_exceeds_value':
+        interp_en = (
+            'The estimated value is below the standalone land value. This is unusual — '
+            'either the building detracts from value (demolition warranted) or the market '
+            'sample is below the true land value. A licensed-valuer review is required.'
+        )
+    elif status == 'land_dominant':
+        interp_en = (
+            f'The building contributes a very small share ({_bp:.1f}%) of the property value. '
+            f"A residential building's contribution to value tends to decline as the property "
+            f'ages without renovation, so the land becomes the largest pricing component.'
+        )
+    elif status == 'building_modest':
+        interp_en = (
+            f'The building contributes a limited share ({_bp:.1f}%) of the value — '
+            f'consistent with an old or worn building. The main value is in the land.'
+        )
+    elif status == 'normal':
+        interp_en = (
+            f'The building contributes {_bp:.1f}% of the value — a contribution within the '
+            f'typical range for a building on this plot.'
+        )
+    else:
+        interp_en = (
+            f'The building contributes a high share ({_bp:.1f}%) of the value — '
+            f'consistent with a new, luxury, or large-BUA building.'
+        )
+
     return {
         'land': {
             'per_m2_qar': round(land_per_m2),
@@ -1670,6 +1703,7 @@ def _decompose_value(
             'window_months': land_window,
             'confidence': land_conf,
             'confidence_ar': land_conf_ar,
+            'confidence_en': land_conf_en,
             'reliable': land_reliable,
             'estimated_qar': land_value,
             'plot_area_m2': round(plot_area_m2),
@@ -1684,12 +1718,19 @@ def _decompose_value(
             'bua_m2': round(bua_m2) if bua_m2 else None,
             'as_pct_of_total': round(bld_pct * 100, 1),
             'interpretation_ar': interp,
+            'interpretation_en': interp_en,
             'status': status,
         },
         'methodology_note_ar': (
             'يفصل ثمّن قيمة الأرض (من معاملات بيع أراضٍ نقية في نفس المنطقة) '
             'عن قيمة البناء الضمنية (الفرق بين القيمة الكلية وقيمة الأرض). '
             'هذا الفصل يكشف للمستخدم نسبة مساهمة كل عنصر — حسب RICS Red Book.'
+        ),
+        'methodology_note_en': (
+            'Thammen separates the land value (from clean land-sale transactions in the '
+            'same area) from the implied building value (the difference between the total '
+            "value and the land value). This separation shows each component's contribution "
+            'share — per the RICS Red Book.'
         ),
     }
 
@@ -1750,6 +1791,17 @@ def _reconcile_decomposition_narrative(output):
                 f'اختر «بناء فاخر» — يُسعَّر التشطيب عبر فرق كلفة الإحلال، '
                 f'لا بتبديل وسيط المقارنة.'
             )
+            # Sprint 2.22.0b.84 — EN twin (keeps AR/EN consistent after the reconcile overwrite)
+            _dom_label_en = dom.get('label_en') or dom_label
+            _share_txt_en = (f'{dom_share}% of the sample' if dom_share is not None else 'the dominant category')
+            bi['interpretation_en'] = (
+                f'The high implied-building share ({pct}%) reflects an area median dominated by '
+                f'the «{_dom_label_en}» category ({_share_txt_en}) — there is no real building '
+                f'value for a property of this age; this is consistent with the 10-year pattern '
+                f'below. If your property genuinely has a luxury finish, choose «luxury build» — '
+                f'the finish is priced through the replacement-cost difference, not by switching '
+                f'the comparison median.'
+            )
             bi['narrative_case'] = 'A'
             # reverse cross-line: ride the dominant-stratum note (the 10-Year panel surface)
             _base = dom.get('note_ar') or ''
@@ -1762,6 +1814,10 @@ def _reconcile_decomposition_narrative(output):
             bi['interpretation_ar'] = (
                 'البناء الضمني محسوب كفرقٍ عن قيمة الأرض — وهو حدّ أعلى استدلاليّ '
                 'لا قياس مباشر لقيمة البناء.'
+            )
+            bi['interpretation_en'] = (  # Sprint 2.22.0b.84 — EN twin
+                'The implied building is computed as a difference from the land value — an '
+                'indicative upper bound, not a direct measurement of building value.'
             )
             bi['narrative_case'] = 'C'
     except Exception:
