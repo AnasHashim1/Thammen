@@ -166,6 +166,13 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .rbar .dot.c{background:var(--gold)}
 .rbar .lbls{display:flex;justify-content:space-between;font-size:.68rem;color:#C7D2DE;margin-top:8px}
 @media(max-width:480px){.rhero .num{font-size:1.85rem}}
+/* b93 luxury (Gemini r7 #3): cadastral watermark (~4% opacity, local SVG — zero CDN, b45 lock)
+   + a champagne-gold hairline ring with a slow sheen, on BOTH navy heroes (one نسق). */
+.rhero,.thmr-hero.lux{position:relative;overflow:hidden}
+.rhero::before,.thmr-hero.lux::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='230'%20height='230'%3E%3Cg%20fill='none'%20stroke='white'%20stroke-width='1'%3E%3Cpath%20d='M8%2034h86v64H8zM94%208h64v90H94zM158%2030h66v72h-66zM22%2098h108v62H22zM130%2098h94v96h-94zM8%20160h122v62H8zM94%2034v64M52%2098v62'/%3E%3C/g%3E%3C/svg%3E");background-size:230px}
+.rhero::after,.thmr-hero.lux::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;border:1px solid transparent;background:linear-gradient(115deg,rgba(232,201,154,.7),rgba(232,201,154,.14) 30%,rgba(232,201,154,.8) 50%,rgba(232,201,154,.14) 70%,rgba(232,201,154,.7)) border-box;background-size:250% 100%;-webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);mask-composite:exclude;animation:luxsheen 9s linear infinite}
+@keyframes luxsheen{0%{background-position:0% 0}100%{background-position:250% 0}}
+@media(prefers-reduced-motion:reduce){.rhero::after,.thmr-hero.lux::after{animation:none}}
 /* Sprint 2.22.0a/8 — adjustment_ledger_directional placeholder badge (Q4 α + Anas refinement) */
 .alg-placeholder-badge{display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px;font-weight:600}
 .alg-placeholder-note{font-size:.86rem;color:var(--muted);line-height:1.8;padding:12px 14px;background:var(--alt);border-radius:8px}
@@ -2228,7 +2235,7 @@ function showShortReport(d){
   const _scarce=(_confN!=null&&_confN<5&&v.low!=null&&v.high!=null);
   const _skew=(_hpct!=null&&(_hpct<20||_hpct>80));
   const _anchorLegend=(cs==='cost'||(ld&&ld.rule==='geo_full'))?t('الأرضية = مرتكز الكلفة (أرض + بناء مُهلَك) · السقف = وسيط صفقات السوق','Floor = the cost anchor (land + depreciated building) · Ceiling = the market sales median'):'';
-  h+='<div class="thmr-hero" style="background:var(--thmr-navy);border:none">';
+  h+='<div class="thmr-hero lux" style="background:var(--thmr-navy);border:none">';
   if(_scarce){
     h+='<span class="lbl" style="color:var(--gold)">'+t('القيمة المتوقّعة بين','Expected value between')+'</span>';
     h+='<div class="num" style="color:#fff;font-size:1.45rem"><span dir="ltr">'+fmt(v.low)+'</span> '+t('و','and')+' <span dir="ltr">'+fmt(v.high)+'</span> <small>'+t('ريال','QAR')+'</small></div>';
@@ -2683,8 +2690,21 @@ function show(d){
       // central-estimate (median) position within [low,high] — DISPLAY-only, clamped to [0,100].
       var _hpct=(v.high>v.low)?Math.max(0,Math.min(100,Math.round((v.amount-v.low)/(v.high-v.low)*100))):50;
       t1+='<div class="rng">'+t('النطاق التقديري السوقي','Estimated market range')+' <b>'+fmt(v.low)+' – '+fmt(v.high)+'</b> '+t('ر.ق','QAR')+'</div>';
+      // b93 mirror of the b92 tiered bracket: an edge-pinned dot reads broken (Gemini r7 #1) —
+      // when skewed, render the labeled tiers instead; the central case keeps the b48 rbar verbatim.
+      if(_hpct<20||_hpct>80){
+        var _mkp2=Math.max(18,Math.min(82,_hpct));
+        var _ldr2=(v.leadership||{});
+        var _leg2=(_ldr2.leader==='cost'||_ldr2.rule==='geo_full')?t('الأرضية = مرتكز الكلفة (أرض + بناء مُهلَك) · السقف = وسيط صفقات السوق','Floor = the cost anchor (land + depreciated building) · Ceiling = the market sales median'):'';
+        t1+='<div class="thmr-tiers"><div class="tmk" style="left:'+_mkp2+'%"><span class="tchip">'+t('القيمة التقديرية','Estimated value')+'</span><span class="tstem"></span></div>';
+        t1+='<div class="ttrack"><span></span><span></span><span></span></div>';
+        t1+='<div class="tlbls"><span><b>'+t('الأرضية السعرية','Price floor')+'</b><i dir="ltr">'+fmt(v.low)+'</i></span><span style="text-align:right"><b>'+t('السقف السوقي','Market ceiling')+'</b><i dir="ltr">'+fmt(v.high)+'</i></span></div>';
+        if(_leg2)t1+='<div class="tleg" dir="auto">'+_leg2+'</div>';
+        t1+='</div>';
+      }else{
       t1+='<div class="rbar"><div class="track"><span class="dot c" style="right:'+_hpct+'%"></span></div>';
       t1+='<div class="lbls"><span>'+t('الأدنى ','Low ')+fmt(v.low)+'</span><span>'+t('الأعلى ','High ')+fmt(v.high)+'</span></div></div>';
+      }
     }
     t1+='</div>'; // .rhero
     // TYPE tier badge — quiet, below the hero.

@@ -67,8 +67,8 @@ check('value-math = ONLY the 3 disclosed conventions (×0.90/×1.10/×1.30)',
 check('no assignment into v.amount/low/high', not re.search(r'v\.(amount|low|high)\s*=[^=]', SR))
 
 # ── version ──
-check('ENGINE_VERSION bumped to b92 (format-agnostic)',
-      re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+b92-", ENG) is not None)
+check('ENGINE_VERSION b-series format (R6 — no exact version pin)',
+      re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+b\d+-", ENG) is not None)
 check('SPRINT_TAG dotted-numeric', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+b?\.?\d*", ENG) is not None)
 
 print(f'\n{passed}/{passed+failed} PASS' + ('' if failed == 0 else f' — {failed} FAIL'))
