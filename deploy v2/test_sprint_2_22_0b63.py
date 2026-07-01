@@ -31,18 +31,22 @@ results = []
 def check(name, cond, detail=''):
     results.append((name, bool(cond), detail))
 
-# ── (1) financing line buyer-gated ──
+# ── (1) financing line — un-gated collapsed toggle for ALL (b89 Option A) ──
+# b89 R6 re-point: the «من أنت؟» role selector was removed, so the short-report financing is
+# NO LONGER buyer-gated — it is an OPTIONAL collapsed fin-toggle available to EVERYONE. The
+# .thmr-pay calc literal + the sr* ids + «استشر بنكك» are kept (now inside the <details>).
 check('SR scope extracted', bool(SR))
-check('financing line still in source (literal kept for the buyer)',
+check('financing line still in source (calc literal kept, now inside the toggle)',
       'class="thmr-micro thmr-pay"' in SR and 'id="srDown"' in SR and 'استشر بنكك' in SR)
-# the gate predicate sits immediately before the .thmr-pay emission
-_gate = re.search(r"\(d\.audience\|\|'owner'\)==='buyer'\)\s*\{\s*\n\s*h\+='<div class=\"thmr-micro thmr-pay\"", SR)
-check('financing emission wrapped in a buyer-gate', _gate is not None)
+# the un-gated predicate sits immediately before the fin-toggle <details> emission
+_gate = re.search(r"if\(hasVal&&d\.asset_type!=='raw_land'\)\{\s*\n\s*h\+='<details class=\"fin-toggle\"", SR)
+check('b89 (Option A): short-report financing UN-GATED to a fin-toggle for ALL (buyer-gate removed)',
+      _gate is not None and "(d.audience||'owner')==='buyer'" not in SR)
 check('functions stay defined (DRY — reused by the buyer + result-screen b35)',
       SR.count('function _srPayment(') == 0 and HTML.count('function _srPayment(') == 1
       and HTML.count('function srRecalcPay(') == 1)
-check('the b35 result-screen buyer calculator is UNTOUCHED (still gated, reuses _srPayment)',
-      "d.audience==='buyer'" in HTML and 'bcRecalc' in HTML
+check('b89: the result-screen financing (b35) is ALSO un-gated + still reuses _srPayment (DRY)',
+      "d.audience==='buyer'&&v.amount" not in HTML and 'bcRecalc' in HTML
       and HTML.count('_srPayment(v.amount,20,25,4.5)') >= 1)
 
 # ── (2) engine_version dropped from the short-report page-1 header ──

@@ -42,11 +42,13 @@ check('home tag/sub/steps/cta/cred carry data-en',
 check('form tabs + labels + placeholders carry data-en / data-en-ph',
       'data-en="Villa/building (address)"' in HTML and 'data-en="Zone no."' in HTML and
       'data-en-ph="e.g. 70"' in HTML and 'data-en="Plot number (PIN)"' in HTML)
-check('audience buttons wrap text in data-en spans (icons preserved)',
-      '<span data-en="Owner">مالك</span>' in HTML and '<span data-en="Valuer">مثمّن</span>' in HTML)
-check('submit + entry titles carry data-en',
+# b89 R6 re-point: the «من أنت؟» role selector (5 buttons) was REMOVED (Option A) → the role
+# data-en spans are gone with it. The submit + input-entry titles keep their data-en.
+check('b89: the audience role buttons are REMOVED (no data-en role spans)',
+      '<span data-en="Owner">مالك</span>' not in HTML and '<span data-en="Valuer">مثمّن</span>' not in HTML)
+check('submit + entry titles carry data-en («Who are you?» removed with the selector)',
       'onclick="run()" data-en="Value it"' in HTML and
-      'data-en="Property entry"' in HTML and 'data-en="Who are you?"' in HTML)
+      'data-en="Property entry"' in HTML and 'data-en="Who are you?"' not in HTML)
 check('all 5 static top-bar titles carry data-en',
       'data-en="Refine the valuation"' in HTML and 'data-en="Review the data"' in HTML and
       'data-en="Market valuation result"' in HTML and 'data-en="Full report"' in HTML and

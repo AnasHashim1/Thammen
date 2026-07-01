@@ -358,6 +358,8 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .tagfx.move{color:#fff;background:var(--thmr-bronze,#A4814A)}
 .tagfx.tune{color:var(--thmr-navy,#16324F);background:#F3EBDD;border:1px solid #E4D2B4}
 .tagfx.opt{color:var(--muted);background:var(--alt);border:1px solid var(--thmr-line,#E3DDD2)}
+/* Sprint 2.22.0b.89 — the un-gated financing toggle (result + short report): hide the native marker */
+.fin-toggle summary{list-style:none}.fin-toggle summary::-webkit-details-marker{display:none}.fin-toggle summary:hover{opacity:.85}
 
 /* Sprint 2.4d: Print / Save-as-PDF styles */
 @media print {
@@ -594,20 +596,15 @@ body.lang-en #rOut .br-l,body.lang-en #rOut .rl,body.lang-en #rOut .ev1lbl{text-
              superseded. -->
       </div>
     </div>
-    <!-- Sprint 2.22.0b.24 (R13 text bundle, م0): the selector sets PRESENTATION only —
-         one number for everyone (signed label). «مالك» restored as the DEFAULT first
-         option; the engine normalizes owner→buyer (default view), so the value axis
-         is untouched. valuer keeps its v4 skip-to-results routing. -->
-    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-user></use></svg> <span data-en="Who are you?">من أنت؟</span> <span style="font-weight:400;font-size:.82rem;color:var(--muted)" data-en="(sets the presentation only — one number for everyone)">(يحدّد طريقة العرض فقط — الرقم واحد للجميع)</span></div>
-    <div class="fcard">
-      <div class="aud-row">
-        <div class="aud-btn sel" onclick="selAud(this,'owner')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-key></use></svg></span><span data-en="Owner">مالك</span></div>
-        <div class="aud-btn" onclick="selAud(this,'buyer')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-home></use></svg></span><span data-en="Buyer">مشتري</span></div>
-        <div class="aud-btn" onclick="selAud(this,'seller')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-coins></use></svg></span><span data-en="Seller">بائع</span></div>
-        <div class="aud-btn" onclick="selAud(this,'investor')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg></span><span data-en="Investor">مستثمر</span></div>
-        <div class="aud-btn" onclick="selAud(this,'valuer')"><span class="aud-icon"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg></span><span data-en="Valuer">مثمّن</span></div>
-      </div>
-    </div>
+    <!-- Sprint 2.22.0b.89 (Option A — audience unification, PO + Gemini r6 2026-07-01):
+         the «من أنت؟» role selector was REMOVED → one neutral entry for everyone. The number
+         is audience-invariant (b24) and the hero label is now neutral («القيمة السوقية التقديرية»),
+         so the upfront role step was pure friction that implied the number would change by role.
+         `audience` stays 'owner' by default (engine normalizes owner→buyer → VALUE-INVARIANT).
+         The buyer-only financing calculator is un-gated to an optional toggle for ALL (result +
+         short report). Specialists reach «الأدلّة/كيف وصلنا» (folded, one click) + «التقرير الكامل».
+         `selAud` + the .aud-* CSS are now dead (kept inert; no user path reaches them). -->
+    <input type="hidden" id="audLegacy" value="owner">
     <!-- Sprint 2.22.0b.2.1 — optional property details relocated to a separate
          screen (#refineScreen). formScreen is now identification-only; the bare
          eval posts /api/evaluate, then the user may open «حسّن التقدير» (refine). -->
@@ -2075,12 +2072,12 @@ function showShortReport(d){
     h+='<div class="lbls"><span class="a" style="color:#fff">'+fmt(v.amount)+t(' — المرتكز',' — the anchor')+'</span><span style="color:#C9D4DF">'+fmt(ld.market_value)+t(' — طرف سوق المنطقة (مؤشرات حذرة)',' — the high end of the local market (cautious signals)')+'</span></div></div>';
   }
   h+='</div>';
-  // the D3 financing line — BUYER-GATED (b63): a mortgage calculator is a BUYER tool.
-  // The OWNER default (+ seller/investor) no longer meets it under the headline (declutter
-  // the start). The buyer still gets it here AND on the result screen (b35); _srPayment +
-  // srRecalcPay stay defined (reused — DRY). The PDF wording + the 3 editable assumptions kept.
-  if((d.audience||'owner')==='buyer'){
-  h+='<div class="thmr-micro thmr-pay" style="text-align:center;margin:0 0 12px">'+t('للتصوّر فقط: تمويل ','For illustration only: financing ')+'<span dir="ltr"><input id="srDown" type="number" value="20" min="0" max="90" oninput="srRecalcPay()"></span>'+t('% دفعة أولى على ','% down payment over ')+'<input id="srYears" type="number" value="25" min="1" max="35" oninput="srRecalcPay()">'+t(' سنة ≈ ',' years ≈ ')+'<b id="srPay">'+(function(){const p=_srPayment(v.amount,20,25,4.5);return p?(fmt(p)+t(' ر.ق شهرياً',' QAR/month')):'—';})()+'</b> '+t('(بمعدل افتراضي ','(at an assumed rate ')+'<input id="srRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="srRecalcPay()">'+t('% — استشر بنكك)','% — consult your bank)')+'</div>';
+  // Sprint 2.22.0b.89 (Option A): financing = an OPTIONAL collapsed toggle for EVERYONE (was
+  // buyer-gated b63; the role selector was removed — a mortgage calculator is a secondary buyer
+  // tool, kept folded per Gemini r6). _srPayment/srRecalcPay reused (DRY); the PDF wording + the
+  // 3 editable assumptions (20% · 25y · 4.5%) kept verbatim; sr* ids (no bc* collision).
+  if(hasVal&&d.asset_type!=='raw_land'){
+  h+='<details class="fin-toggle" style="border:1px solid var(--thmr-line);border-radius:10px;padding:8px 12px;margin:0 0 12px"><summary style="cursor:pointer;font-weight:600;font-size:.8rem;color:var(--thmr-navy)"><svg class=ic aria-hidden=true><use href=#ic-coins></use></svg> '+t('حاسبة التمويل الاسترشاديّة','Indicative financing calculator')+'</summary><div class="thmr-micro thmr-pay" style="text-align:center;margin-top:8px">'+t('للتصوّر فقط: تمويل ','For illustration only: financing ')+'<span dir="ltr"><input id="srDown" type="number" value="20" min="0" max="90" oninput="srRecalcPay()"></span>'+t('% دفعة أولى على ','% down payment over ')+'<input id="srYears" type="number" value="25" min="1" max="35" oninput="srRecalcPay()">'+t(' سنة ≈ ',' years ≈ ')+'<b id="srPay">'+(function(){const p=_srPayment(v.amount,20,25,4.5);return p?(fmt(p)+t(' ر.ق شهرياً',' QAR/month')):'—';})()+'</b> '+t('(بمعدل افتراضي ','(at an assumed rate ')+'<input id="srRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="srRecalcPay()">'+t('% — استشر بنكك)','% — consult your bank)')+'</div></details>';
   }
   // §١ — the leader story paragraph (the PDF cost-led title; matrix stories otherwise).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('١','1')+'</span>'+(cs==='cost'?t('لماذا أقل مما تسمعه عن بيوت حولك؟','Why is this lower than what you hear about homes around you?'):t('على ماذا يرتكز الرقم؟','What is the number based on?'))+'</div>';
@@ -2531,14 +2528,16 @@ function show(d){
     if(v.condition_note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.8rem">'+pick(v,'condition_note')+'</div>';}
     if(v.teardown&&v.teardown.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-home></use></svg> '+pick(v.teardown,'note')+'</div>';}
     if(v.luxury_new_premium&&v.luxury_new_premium.note_ar){t1+='<div class="rn" style="margin-top:10px;font-size:.82rem;border-right:3px solid var(--ok);background:var(--ok-bg)"><svg class=ic aria-hidden=true><use href=#ic-gem></use></svg> '+pick(v.luxury_new_premium,'note')+'</div>';}
-    // ── Sprint 2.22.0b.35 (DEF-UX16): buyer financing calculator — display-only, under the figure,
-    // ONLY for audience=buyer (study §2 «المشترية: حاسبة تمويل»). Reuses _srPayment (b25 D3 amortization,
-    // DRY). VALUE-INVARIANT — an illustrative monthly payment derived FROM v.amount; the engine, amount,
-    // range, and tier order are untouched. Defaults (20% down · 25y · 4.5%) match the signed short-report
-    // contract (b28). Separate ids (bc*) → no collision with the short-report calculator (sr*). ──
-    if(d.audience==='buyer'&&v.amount&&d.asset_type!=='raw_land'){
+    // ── Sprint 2.22.0b.35 (DEF-UX16) + b89 (Option A): financing calculator — display-only, now an
+    // OPTIONAL collapsed toggle for EVERYONE (was audience==='buyer'; the role selector was removed →
+    // financing is a secondary tool the buyer opens, per Gemini r6, kept out of the 5-second face).
+    // Reuses _srPayment (b25 D3 amortization, DRY). VALUE-INVARIANT — an illustrative monthly payment
+    // derived FROM v.amount; amount/range/tier untouched. Defaults (20% · 25y · 4.5%) = the signed b28
+    // contract. Separate ids (bc*) → no collision with the short-report calculator (sr*). ──
+    if(v.amount&&v.amount>0&&d.asset_type!=='raw_land'){
       const _bcInit=_srPayment(v.amount,20,25,4.5);
-      t1+='<div class="rn" style="margin-top:12px;font-size:.82rem;line-height:2;border-right:3px solid var(--bronze);background:var(--alt)"><svg class=ic aria-hidden=true><use href=#ic-coins></use></svg> '+t('حاسبة التمويل التقريبية: ','Approximate financing calculator: ')+'<span dir="ltr"><input id="bcDown" type="number" value="20" min="0" max="90" oninput="bcRecalc()" style="width:46px;padding:2px 4px"></span>'+t('% دفعة أولى · ','% down · ')+'<input id="bcYears" type="number" value="25" min="1" max="35" oninput="bcRecalc()" style="width:46px;padding:2px 4px">'+t(' سنة · ',' years · ')+'<input id="bcRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="bcRecalc()" style="width:52px;padding:2px 4px">'+t('% فائدة → القسط الشهريّ ≈ ','% interest → monthly payment ≈ ')+'<b id="bcPay">'+(_bcInit?(fmt(_bcInit)+t(' ر.ق/شهر',' QAR/mo')):'—')+'</b> <span style="color:var(--muted);font-size:.76rem">'+t('— تقديريّ، استشر بنكك','— indicative, consult your bank')+'</span></div>';
+      t1+='<details class="rn fin-toggle" style="margin-top:12px;border-right:3px solid var(--bronze);background:var(--alt)"><summary style="cursor:pointer;font-weight:600;font-size:.82rem;color:var(--primary)"><svg class=ic aria-hidden=true><use href=#ic-coins></use></svg> '+t('حاسبة التمويل الاسترشاديّة','Indicative financing calculator')+'</summary>'
+        +'<div style="font-size:.82rem;line-height:2;margin-top:8px">'+t('دفعة أولى ','Down payment ')+'<span dir="ltr"><input id="bcDown" type="number" value="20" min="0" max="90" oninput="bcRecalc()" style="width:46px;padding:2px 4px"></span>'+t('% · ','% · ')+'<input id="bcYears" type="number" value="25" min="1" max="35" oninput="bcRecalc()" style="width:46px;padding:2px 4px">'+t(' سنة · ',' years · ')+'<input id="bcRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="bcRecalc()" style="width:52px;padding:2px 4px">'+t('% فائدة → القسط الشهريّ ≈ ','% interest → monthly payment ≈ ')+'<b id="bcPay">'+(_bcInit?(fmt(_bcInit)+t(' ر.ق/شهر',' QAR/mo')):'—')+'</b> <span style="color:var(--muted);font-size:.76rem">'+t('— تقديريّ، استشر بنكك','— indicative, consult your bank')+'</span></div></details>';
     }
     // ── DEF-UX11: the «9-note parade» (value-floor · HBU · old-stock · cost-triangulation · leadership ·
     // age-honesty · resurvey · cost-value-line · market-dispersion) → `how`, NOT `t1`. Every condition +

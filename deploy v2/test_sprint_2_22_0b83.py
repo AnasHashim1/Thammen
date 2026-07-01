@@ -90,9 +90,9 @@ check('condition/teardown/luxury/leadership notes via pick',
       "pick(v,'condition_note')" in SHOW and "pick(v.teardown,'note')" in SHOW and
       "pick(v.leadership,'note')" in SHOW and "pick(v,'hbu_note')" in SHOW and
       "pick(v.old_stock_reanchor,'note')" in SHOW)
-check('financing calculator wired (buyer)',
-      "t('حاسبة التمويل التقريبية: ','Approximate financing calculator: ')" in SHOW and
-      "t('% دفعة أولى · ','% down · ')" in SHOW)
+check('financing calculator wired for ALL (b89 Option A — un-gated toggle)',
+      "t('حاسبة التمويل الاسترشاديّة','Indicative financing calculator')" in SHOW and
+      "t('دفعة أولى ','Down payment ')" in SHOW)
 check('not-certified TIER-1 line wired',
       "t('تقييم سوقيّ آليّ — ليس تقييماً معتمداً','An automated market valuation — not a certified valuation')" in SHOW)
 check('the two TIER-2 accordion titles wired',

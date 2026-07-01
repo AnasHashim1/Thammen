@@ -43,8 +43,11 @@ check('bcRecalc reads the bc* ids (not the sr* short-report ids)',
       "'bcDown'" in BC and "'bcYears'" in BC and "'bcRate'" in BC and "'bcPay'" in BC)
 check('bcRecalc does NOT touch the sr* ids', "'srDown'" not in BC and "'srPay'" not in BC)
 
-# ── 2. the calculator renders ONLY for audience=buyer, under the figure ──
-check('calculator gated on audience==buyer (+ DEBUG-fix #7: excludes raw_land)', "d.audience==='buyer'" in SHOW and re.search(r"if\(d\.audience==='buyer'&&v\.amount&&d\.asset_type!=='raw_land'\)", SHOW) is not None)
+# ── 2. the calculator renders as an un-gated toggle for ALL, under the figure ──
+# b89 R6 re-point (Option A — the «من أنت؟» role selector was removed): the financing calculator
+# is NO LONGER audience==='buyer' gated; it is an OPTIONAL collapsed fin-toggle for EVERYONE
+# (still excludes raw_land). The DRY reuse of _srPayment + the bc* ids + the b28 defaults are intact.
+check('b89 (Option A): calculator UN-GATED to a toggle for ALL (excludes raw_land; buyer-gate removed)', "d.audience==='buyer'&&v.amount" not in SHOW and re.search(r"if\(v\.amount&&v\.amount>0&&d\.asset_type!=='raw_land'\)", SHOW) is not None and 'fin-toggle' in SHOW)
 check('calculator carries the bc* inputs + live oninput=bcRecalc',
       'id="bcDown"' in SHOW and 'id="bcYears"' in SHOW and 'id="bcRate"' in SHOW and 'id="bcPay"' in SHOW and 'oninput="bcRecalc()"' in SHOW)
 # defaults match the signed short-report contract (b28): 20% down · 25y · 4.5%
@@ -65,8 +68,8 @@ check('the «استشر بنكك» disclosure is present (not a binding offer)',
 check('no v.amount / low / high mutation in show()', not re.search(r'v\.(amount|low|high)\s*=[^=]', SHOW))
 check('the payment is DERIVED from v.amount (display-only, not a stored field)',
       re.search(r"_srPayment\(v\.amount", SHOW) is not None)
-check('non-buyer roles do NOT get the calculator (gated)',
-      SHOW.count("d.audience==='buyer'&&v.amount") >= 1)
+check('b89 (Option A): ALL roles get the financing toggle (the audience buyer-gate is removed)',
+      SHOW.count("d.audience==='buyer'&&v.amount") == 0 and 'حاسبة التمويل الاسترشاديّة' in SHOW)
 check('no api.py change implied — frontend-only (engine diff = the 2 version lines; checked via git separately)', True)
 
 # ── summary ──

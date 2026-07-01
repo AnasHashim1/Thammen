@@ -62,26 +62,27 @@ check("_render_subtitle('ديسمبر 2025') == the signed line",
 check('dynamic refresh keeps the same صيغة (no «آخر تحديث» drift)',
       'آخر تحديث' not in _render_subtitle('ديسمبر 2025'))
 
-print('\n[3] Audience selector — signed label + «مالك» default')
-check('label = «من أنت؟»', 'من أنت؟' in HTML)
-check('label carries «(يحدّد طريقة العرض فقط — الرقم واحد للجميع)»',
-      'يحدّد طريقة العرض فقط — الرقم واحد للجميع' in HTML)
-check('old label «نوع التقرير» gone', 'نوع التقرير' not in HTML)
-check('«مالك» button present with owner value', "selAud(this,'owner')" in HTML and '>مالك<' in HTML)
-_aud_row = re.search(r'<div class="aud-row">(.*?)</div>\s*</div>', HTML, re.S)
-_row = _aud_row.group(1) if _aud_row else ''
-_owner_pos = _row.find("'owner'")
-_buyer_pos = _row.find("'buyer'")
-check('«مالك» is FIRST (before مشتري/بائع/مستثمر/مثمن)',
-      0 <= _owner_pos < _buyer_pos)
-check('«مالك» carries the default sel class',
-      re.search(r'<div class="aud-btn sel" onclick="selAud\(this,\'owner\'\)"', HTML) is not None)
-check('buyer no longer default-selected',
-      re.search(r'<div class="aud-btn sel" onclick="selAud\(this,\'buyer\'\)"', HTML) is None)
-check("JS default audience = 'owner'", "let audience='owner'" in HTML)
-check('all five options present', all(
-    f"selAud(this,'{a}')" in HTML for a in ('owner', 'buyer', 'seller', 'investor', 'valuer')))
-check('valuer keeps the v4 skip routing', "audience!=='valuer'" in HTML)
+print('\n[3] Audience unification (b89 Option A — the «من أنت؟» role selector was REMOVED)')
+# b89 R6 re-point: the 5-role selector was removed → one neutral entry. The number is
+# audience-invariant (b24 doctrine), the hero label is neutral (b54/b88), so the upfront role
+# step was pure friction (Gemini r6 + PO 2026-07-01). `audience` stays 'owner' by default (the
+# engine normalizes owner→buyer → value-invariant); the routing guard + the input tab stay intact.
+check('the ftitle «من أنت؟» role-grid header is REMOVED (no rendered role selector)',
+      '<span data-en="Who are you?">من أنت؟</span>' not in HTML)
+check('the role-grid label «(يحدّد طريقة العرض فقط — الرقم واحد للجميع)» is REMOVED',
+      'يحدّد طريقة العرض فقط — الرقم واحد للجميع' not in HTML)
+check('old label «نوع التقرير» still absent', 'نوع التقرير' not in HTML)
+check('the «مالك» role button is REMOVED', "selAud(this,'owner')" not in HTML)
+check('the «مشتري» role button is REMOVED', "selAud(this,'buyer')" not in HTML)
+check('NO role button carries the default sel class (selAud role buttons gone)',
+      re.search(r'<div class="aud-btn sel" onclick="selAud\(this,\'owner\'\)"', HTML) is None)
+check('no buyer default-selected role button',
+      re.search(r'selAud\(this,\'buyer\'\)', HTML) is None)
+check("JS default audience = 'owner' (engine normalizes owner→buyer → value-invariant)",
+      "let audience='owner'" in HTML)
+check('none of the 5 role options remain', all(
+    f"selAud(this,'{a}')" not in HTML for a in ('owner', 'buyer', 'seller', 'investor', 'valuer')))
+check('the valuer skip-routing guard is intact (now always owner → short report)', "audience!=='valuer'" in HTML)
 
 print('\n[4] api boundary accepts owner/مالك (production validator, E14)')
 import api  # the real FastAPI module
