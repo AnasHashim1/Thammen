@@ -293,6 +293,10 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .rep-def12{margin-top:12px;padding:10px 12px;background:var(--alt);border-radius:8px}
 .rep-def12-row{display:flex;justify-content:space-between;gap:10px;padding:4px 0;font-size:.9rem}
 .rep-foot{font-size:.78rem;color:var(--muted);text-align:center;padding:14px 10px;border-top:1px dashed var(--light);margin-top:8px}
+/* b96 (م٣): the print-visible verification QR on the full report footer */
+.rep-qrwrap{display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0 4px}
+.rep-qrwrap #repQr{flex:0 0 auto;background:#fff;padding:5px;border:1px solid var(--light);border-radius:8px;line-height:0}
+.rep-qrwrap .rep-qrcap{font-size:.72rem;color:var(--muted);text-align:start;max-width:200px}
 .rep-gt{margin-top:10px;padding:8px 10px;background:var(--alt);border-radius:8px;color:var(--text)}
 /* Sprint 2.22.0b.55 — labeled note-clusters in the full report (حول الرقم/العقار/البيانات). */
 .rep-cl{margin-top:12px}
@@ -439,7 +443,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   body.printing-short .thmr-page { border: none !important; box-shadow: none !important; border-radius: 0 !important; page-break-after: always; }
   body.printing-short .thmr-page:last-child { page-break-after: auto; }
   .thmr-card, .thmr-hero, .thmr-legal, .thmr-fpline { page-break-inside: avoid; }
-  .rep-def12, .rep-cover, .rep-foot { page-break-inside: avoid; }
+  .rep-def12, .rep-cover, .rep-foot, .rep-qrwrap, .rep-comp { page-break-inside: avoid; }
   .rep-cl { page-break-inside: avoid; }
   /* Hide everything not part of the report */
   .hero, .fcard, .sbtn, .bbtn, .copy-btn, .map-btn-main, .map-popup, .aud-row,
@@ -1858,6 +1862,9 @@ function showReport(d){
   if(_pbr.pin!=null)h+='<span>'+t('الرقم المساحي: ','Cadastral no.: ')+'<span dir="ltr">'+_pbr.pin+'</span></span>';
   if(d.district)h+='<span>'+t('المنطقة: ','District: ')+esc(d.district)+'</span>';
   h+='<span>'+t('التاريخ: ','Date: ')+'<span dir="ltr">'+now.toISOString().slice(0,10)+'</span></span>';
+  // b96 (م٣ bank-grade): the report identity on the COVER — the bank sees ref + fingerprint on page 1.
+  if(d.report_ref)h+='<span>'+t('المرجع: ','Reference: ')+'<span dir="ltr">'+d.report_ref+'</span></span>';
+  if(d.report_fp)h+='<span>'+t('بصمة المحتوى: ','Content fingerprint: ')+'<span dir="ltr">'+d.report_fp+'</span></span>';
   h+='</div>';
   if(d.data_freshness&&d.data_freshness.caveat_ar){h+='<div class="dfc s-'+(d.data_freshness.severity||'info')+'" style="margin-top:10px">'+pick(d.data_freshness,'caveat')+'</div>';}
   h+='</div>';
@@ -2055,18 +2062,28 @@ function showReport(d){
   h+='<div><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> '+t('تقييم سوقيّ آليّ وليس تقييماً معتمداً','An automated market valuation, not a certified valuation')+((d.material_uncertainty||{}).rics_compliant_status_ar?(' ('+pick(d.material_uncertainty,'rics_compliant_status')+')'):'')+'.</div>';
   h+='<div style="margin-top:6px" dir="ltr">'+(d.engine_version||'')+' · '+now.toISOString().replace('T',' ').slice(0,16)+' UTC</div>';
   // Sprint 2.22.0b.23 — report id + tamper-evident verify link (when the server has the key).
+  let _repVu=null;  // b96: hoisted so the post-injection QR render sees it
   if(d.report_ref){
     h+='<div style="margin-top:6px">'+t('رقم التقرير: ','Report no.: ')+'<span dir="ltr" style="font-weight:600">'+d.report_ref+'</span>';
     // Sprint 2.22.0b.25 (م2): the URL builder is shared with the short-report QR (_verifyUrl).
-    const _vu=_verifyUrl(d);
-    if(_vu){
-      h+=' · <a href="'+_vu+'" target="_blank" rel="noopener" style="color:var(--bronze)">'+t('تحقّق من صحّة التقرير ','Verify this report ')+'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg></a>';
+    _repVu=_verifyUrl(d);
+    if(_repVu){
+      h+=' · <a href="'+_repVu+'" target="_blank" rel="noopener" style="color:var(--bronze)">'+t('تحقّق من صحّة التقرير ','Verify this report ')+'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg></a>';
     }
     h+='</div>';
+  }
+  // b96 (م٣ bank-grade): the PRINT-VISIBLE verification anchor — QR + fingerprint on paper
+  // (the short-report b25 pattern brought to the full report; the LOCAL QR lib, zero CDN).
+  if(_repVu){
+    h+='<div class="rep-qrwrap"><div id="repQr"></div><div class="rep-qrcap">'+t('امسح للتحقّق من أصالة هذا التقرير','Scan to verify this report\'s authenticity')+(d.report_fp?('<br><span dir="ltr">'+t('البصمة ','Fingerprint ')+d.report_fp+'</span>'):'')+'</div></div>';
   }
   h+='<div class="rep-gt">'+t('اختياريّ: لتحسين دقّة ثمّن للجميع، شاركنا سعر بيع موثَّقاً أو تقييماً معتمداً لهذا العقار — البريد ','Optional: to improve Thammen\'s accuracy for everyone, share a documented sale price or a certified valuation for this property — email ')+'<span dir="ltr">info@thammen.qa</span>.</div>';
   h+='</div>';
   o.innerHTML=h;
+  // b96: the verify QR (LOCAL lib — no CDN); rendered post-injection (the b25 srQr pattern).
+  if(_repVu&&typeof QRCode!=='undefined'){
+    try{new QRCode(document.getElementById('repQr'),{text:_repVu,width:92,height:92,correctLevel:QRCode.CorrectLevel.M});}catch(e){}
+  }
 }
 // A4 print path for the report screen ONLY (the @media print rules key on .printing-report).
 function printReportA4(){

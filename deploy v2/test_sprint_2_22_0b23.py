@@ -143,9 +143,9 @@ check('8.11 report renders report_ref + verify link', 'd.report_ref' in html and
 # Sprint 2.22.0b.25 (م2) re-point: the gate moved INTO the shared _verifyUrl builder
 # (one builder for the report link + the short-report QR — no drift); the link still
 # renders ONLY when ref+fp+basis are present (the builder returns null otherwise).
-check('8.12 verify link gated on report_fp present (key configured)',
+check('8.12 verify link gated on report_fp present (key configured)',  # b96 R6: report footer var _vu→_repVu (short-report keeps _vu)
       'if(!(d.report_ref&&d.report_fp&&_b))return null;' in html
-      and 'const _vu=_verifyUrl(d);' in html and 'if(_vu){' in html)
+      and '=_verifyUrl(d);' in html and ('if(_vu){' in html or 'if(_repVu){' in html))
 
 print('=' * 64)
 print(f'{len(PASS)} passed / {len(FAIL)} failed')

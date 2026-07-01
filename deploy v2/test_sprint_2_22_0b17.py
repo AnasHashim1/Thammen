@@ -84,7 +84,8 @@ check('printing-report class shows the report screen alone',
       and 'body.printing-report #reportScreen { display: block !important; }' in HTML)
 check('printReportA4 adds/removes the class', "classList.add('printing-report')" in HTML
       and "classList.remove('printing-report')" in HTML)
-check('DEF-12/cover/footer page-break protected', '.rep-def12, .rep-cover, .rep-foot { page-break-inside: avoid; }' in HTML)
+check('DEF-12/cover/footer page-break protected',  # b96 R6: the list grew (+ .rep-qrwrap/.rep-comp)
+      re.search(r'\.rep-def12,\s*\.rep-cover,\s*\.rep-foot[^{]*\{\s*page-break-inside:\s*avoid;', HTML) is not None)
 
 # ── engine version (format only — R6/Lesson-2) ──
 check('ENGINE_VERSION format', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)
