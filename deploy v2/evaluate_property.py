@@ -2022,6 +2022,8 @@ def evaluate_property(zone: int, street: int, building: int,
                 unknown_asset_type = 'villa_standalone'
             elif asset_type in ('COMPOUND_SMALL', 'COMPOUND_LARGE'):
                 unknown_asset_type = 'villa_compound'
+            elif asset_type in ('RAW_LAND', 'raw_land'):
+                unknown_asset_type = 'raw_land'   # Sprint 2.22.0b.97 — land-specific unknowns (no building)
             add_standard_unknowns(trace, asset_type=unknown_asset_type)
 
             evaluation.reasoning_trace = trace.to_dict()

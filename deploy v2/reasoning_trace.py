@@ -368,6 +368,21 @@ def build_from_listing_flags(trace: ReasoningTrace, flags) -> ReasoningTrace:
 
 def add_standard_unknowns(trace: ReasoningTrace, asset_type: str = 'apartment') -> ReasoningTrace:
     """أضف المجاهيل المعيارية التي لا يستطيع النظام معرفتها."""
+    # Sprint 2.22.0b.97 — raw land has NO building, so the building-oriented
+    # unknowns (interior condition/finish/AC, last renovation, tenant, floor)
+    # do not apply. A vacant plot's real unknowns are land-specific: soil,
+    # servicing, subdivision approval, easements. (The legal item is kept —
+    # it applies to land too.) Early-return so the building list never leaks.
+    if asset_type == 'raw_land':
+        for u in [
+            "طبيعة التربة وصلاحيتها للبناء (فحص جيوتقنيّ)",
+            "أي التزامات قانونية (رهون، خلافات، إرث، حصص غير مفروزة)",
+            "توفّر الخدمات والمرافق للقطعة (كهرباء، ماء، صرف صحّي)",
+            "إمكان الفرز الفعليّ وموافقة التخطيط العمرانيّ بوزارة البلدية",
+            "أي ارتفاقات أو قيود تخطيطية خاصّة على القطعة",
+        ]:
+            trace.add_unknown(u)
+        return trace
     standard = [
         "حالة العقار الداخلية الفعلية (تشطيبات، صيانة، تكييف)",
         "أي التزامات قانونية (رهون، خلافات، إرث، حصص غير مفروزة)",

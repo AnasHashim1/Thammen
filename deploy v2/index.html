@@ -1906,7 +1906,9 @@ function showReport(d){
     const _fs=Math.round((v.amount||0)*0.90);
     // Sprint 2.22.0b.72 (value-clarity): one plain-language bridge so the three figures aren't read as
     // competing/co-equal numbers — they are (our estimate · rebuild cost · quick-sale). Value-invariant.
-    h+='<div class="rn" style="font-size:.8rem;margin-bottom:8px;color:var(--muted)">'+t('ثلاثة أرقام: تقديرُنا لقيمة بيتك · كلفةُ إعادة بنائه · وتقديرٌ عند البيع السريع.','Three numbers: our estimate of your home\'s value · the cost to rebuild it · and an estimate for a quick sale.')+'</div>';
+    h+='<div class="rn" style="font-size:.8rem;margin-bottom:8px;color:var(--muted)">'+(d.asset_type==='raw_land'
+      ? t('رقمان لأرضك: القيمة السوقية التقديرية · وتقديرٌ عند البيع السريع (×٠٫٩٠). ولأنها أرض فضاء، فقيمة الكلفة هي قيمة الأرض نفسها — لا مكوّن بناء.','Two numbers for your land: the estimated market value · and a quick-sale estimate (×0.90). As it is vacant land, the cost value is the land value itself — no building component.')
+      : t('ثلاثة أرقام: تقديرُنا لقيمة بيتك · كلفةُ إعادة بنائه · وتقديرٌ عند البيع السريع.','Three numbers: our estimate of your home\'s value · the cost to rebuild it · and an estimate for a quick sale.'))+'</div>';
     h+='<div class="rep-def12">';
     h+='<div class="rep-def12-row"><span>'+_def12R+'</span><strong>'+fmt(v.amount)+t(' ر.ق',' QAR')+'</strong></div>';
     if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
@@ -2340,7 +2342,7 @@ function showShortReport(d){
   h+='<div class="thmr-lay" style="margin-bottom:0;border:none;padding:2px 0 0">'+neigh+'</div></div>';
   // §٢ — الأرقام الثلاثة التي تهمّك (the PDF three-card row).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('٢','2')+'</span>'+t('الأرقام الثلاثة التي تهمّك','The three numbers that matter to you')+'</div>';
-  h+='<div class="thmr-row"><span class="k">'+t('التقدير المركزي لبيتك اليوم','Your home\'s central estimate today')+(d.plot_area_m2?(' · ≈ <span dir="ltr">'+fmt(Math.round(v.amount/d.plot_area_m2))+'</span>'+t(' ر.ق/م² أرض',' QAR/m² of land')):'')+'</span><span class="v">'+fmt(v.amount)+'</span></div>';
+  h+='<div class="thmr-row"><span class="k">'+(cs==='land'?t('التقدير المركزي لأرضك اليوم','Your land\'s central estimate today'):t('التقدير المركزي لبيتك اليوم','Your home\'s central estimate today'))+(d.plot_area_m2?(' · ≈ <span dir="ltr">'+fmt(Math.round(v.amount/d.plot_area_m2))+'</span>'+t(' ر.ق/م² أرض',' QAR/m² of land')):'')+'</span><span class="v">'+fmt(v.amount)+'</span></div>';
   h+='<div class="thmr-row"><span class="k">'+t('لو احتجت بيعاً سريعاً (تقدير البنوك عادةً) — خصم 10% المتعارف عليه (×0.90، ليست تقييم تصفية)','If you needed a quick sale (the usual bank estimate) — the customary 10% discount (×0.90, not a liquidation valuation)')+'</span><span class="v">≈ '+fmt(Math.round(v.amount*0.90))+'</span></div>';
   if(cs==='cost'&&ld&&ld.market_value){
     h+='<div class="thmr-row"><span class="k">'+t('ما تبيعه الفلل الجديدة الفاخرة حولك — فئة أخرى، ليست فئة بيتك','What new luxury villas around you sell for — a different class, not your home\'s class')+'</span><span class="v">'+t('حتى ','up to ')+fmt(ld.market_value)+'</span></div>';
@@ -2351,8 +2353,16 @@ function showShortReport(d){
   // §٣ — الخلاصة العملية (the PDF seller/buyer advice; the bars = the SIGNED hard ceilings).
   if(hasVal){
     h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('٣','3')+'</span>'+t('الخلاصة العملية ','The practical takeaway ')+'<span style="font-weight:400;font-size:.7rem;color:var(--thmr-ink2)">'+t('(إرشادية — والقرار قرارك)','(indicative — the decision is yours)')+'</span></div>';
-    h+='<div class="thmr-micro" style="font-size:.8rem">'+t('<b>◆ بائعاً:</b> اعرض ≈ ','<b>◆ As a seller:</b> list at ≈ ')+fmt(_bar10)+t(' (سقف +10%، عُرف السوق)؛ الإقفال الواقعيّ قرب ',' (ceiling +10%, market custom); a realistic close is near ')+fmt(v.amount)+t(' ما لم يتميّز بيتك فعلاً — وفوق +30% (≈ ',' unless your home truly stands out — and above +30% (≈ ')+fmt(_bar30)+t(') انتظارٌ غالباً بلا مشترٍ جادّ.',') is usually a long wait with no serious buyer.')+'</div>';
-    h+='<div class="thmr-micro" style="font-size:.8rem">'+t('<b>◆ مشترياً:</b> ما فوق ≈ ','<b>◆ As a buyer:</b> anything above ≈ ')+fmt(_bar10)+t(' يلزمه سببٌ تتحقّق منه (تجديد كامل · إضافات موثّقة · دخل إيجار)؛ اطلب بيان وزارة العدل، واسأل عن العمر الحقيقيّ لا قول البائع.',' needs a reason you can verify (full renovation · documented additions · rental income); request the Ministry of Justice statement, and ask about the real age — not the seller\'s word.')+'</div></div>';
+    if(cs==='land'){
+      // Sprint 2.22.0b.97 — land-aware advice: the ×1.10/×1.30 ceilings still apply, but a
+      // vacant plot's differentiators are location/frontage/corner/subdivision — NOT renovation
+      // /rental/building-age (those are villa concepts, meaningless for أرض فضاء). «أرضك» not «بيتك».
+      h+='<div class="thmr-micro" style="font-size:.8rem">'+t('<b>◆ بائعاً:</b> اعرض ≈ ','<b>◆ As a seller:</b> list at ≈ ')+fmt(_bar10)+t(' (سقف +10%، عُرف السوق)؛ الإقفال الواقعيّ قرب ',' (ceiling +10%, market custom); a realistic close is near ')+fmt(v.amount)+t(' ما لم تتميّز أرضك فعلاً (زاوية · واجهة واسعة · إمكان فرز) — وفوق +30% (≈ ',' unless your land truly stands out (a corner · wide frontage · subdivision potential) — and above +30% (≈ ')+fmt(_bar30)+t(') انتظارٌ غالباً بلا مشترٍ جادّ.',') is usually a long wait with no serious buyer.')+'</div>';
+      h+='<div class="thmr-micro" style="font-size:.8rem">'+t('<b>◆ مشترياً:</b> ما فوق ≈ ','<b>◆ As a buyer:</b> anything above ≈ ')+fmt(_bar10)+t(' يلزمه سببٌ تتحقّق منه (موقع مميّز · واجهة/زاوية · إمكان فرز)؛ اطلب بيان وزارة العدل، وتأكّد من حدود القطعة وتصنيفها ومساحتها المسجّلة.',' needs a reason you can verify (a prime location · frontage/corner · subdivision potential); request the Ministry of Justice statement, and confirm the plot boundaries, its zoning, and its registered area.')+'</div></div>';
+    }else{
+      h+='<div class="thmr-micro" style="font-size:.8rem">'+t('<b>◆ بائعاً:</b> اعرض ≈ ','<b>◆ As a seller:</b> list at ≈ ')+fmt(_bar10)+t(' (سقف +10%، عُرف السوق)؛ الإقفال الواقعيّ قرب ',' (ceiling +10%, market custom); a realistic close is near ')+fmt(v.amount)+t(' ما لم يتميّز بيتك فعلاً — وفوق +30% (≈ ',' unless your home truly stands out — and above +30% (≈ ')+fmt(_bar30)+t(') انتظارٌ غالباً بلا مشترٍ جادّ.',') is usually a long wait with no serious buyer.')+'</div>';
+      h+='<div class="thmr-micro" style="font-size:.8rem">'+t('<b>◆ مشترياً:</b> ما فوق ≈ ','<b>◆ As a buyer:</b> anything above ≈ ')+fmt(_bar10)+t(' يلزمه سببٌ تتحقّق منه (تجديد كامل · إضافات موثّقة · دخل إيجار)؛ اطلب بيان وزارة العدل، واسأل عن العمر الحقيقيّ لا قول البائع.',' needs a reason you can verify (full renovation · documented additions · rental income); request the Ministry of Justice statement, and ask about the real age — not the seller\'s word.')+'</div></div>';
+    }
   }
   // §٤ — من أين جاء الرقم؟ (cost: the PDF three sources; else the broadcast decomposition).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('٤','4')+'</span>'+t('من أين جاء الرقم؟','Where did the number come from?')+'</div>';
@@ -2999,7 +3009,10 @@ function show(d){
   }
 
   // ── Building details missing notice (Sprint 2.2 + 2.3) ──
-  if(hasValuation&&!v.building_substantiality){
+  // Sprint 2.22.0b.97 — exclude raw_land: a vacant plot is priced per m² of LAND, not
+  // by assuming a building, so «يفترض بناءً نموذجياً» + «الحالة/التشطيبات» is factually
+  // wrong on land (and contradicts the land-aware cost row «≡ قيمة الأرض»).
+  if(hasValuation&&!v.building_substantiality&&d.asset_type!=='raw_land'){
     const ui=d.user_inputs||{};
     const noDetails=!ui.floors&&!ui.basement&&!ui.footprint_m2&&!ui.external_majlis&&!ui.annexes;
     if(noDetails){
@@ -3129,7 +3142,10 @@ function show(d){
   // ── TIER-3 actions (valued path): refine (b13 age nudge) + full report (b17 rewires to screen 5) ──
   if(hasValuation){
     t3+='<div class="t3block">';
-    t3+='<button class="t3btn t3-primary" onclick="go(\'refine\')"><svg class=ic aria-hidden=true><use href=#ic-edit></use></svg> حسّن التقييم — أضف تفاصيل مبناك</button>';
+    // Sprint 2.22.0b.97 — the refine flow is entirely building fields (floors/basement/
+    // condition/finish/BUA/age/rent); none apply to a vacant plot. Hiding the CTA for
+    // raw_land removes «أضف تفاصيل مبناك» + a hollow entry into a villa-only screen.
+    if(d.asset_type!=='raw_land') t3+='<button class="t3btn t3-primary" onclick="go(\'refine\')"><svg class=ic aria-hidden=true><use href=#ic-edit></use></svg> حسّن التقييم — أضف تفاصيل مبناك</button>';
     // Sprint 2.22.0b.25 (م2/D6): the SHORT report opens FIRST; the full report is one
     // click away inside it (its «التقرير الكامل» button → openReport, the b17 screen).
     t3+='<button class="t3btn t3-secondary" onclick="openShortReport()"><svg class=ic aria-hidden=true><use href=#ic-file></use></svg> التقرير المختصر / حفظ PDF</button>';
