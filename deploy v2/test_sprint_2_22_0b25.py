@@ -115,18 +115,19 @@ check('income basis keeps the matrix label «متّسقة مع إيجارك ال
 check('land basis keeps the matrix label «قيمة الأرض»', 'قيمة الأرض:' in SR)
 
 print('\n[5] the PDF/matrix stories + evidence (broadcast-bound)')
-check('cost neighbor = the PDF story, share/market/age-bound',
-      'أغلب ما بيع غالياً في منطقتك' in SR and 'فللاً جديدة فاخرة' in SR
-      and '_domShare' in SR and 'مقارنةٌ غير منصِفة' in SR)  # b56 R6: «لك وعليك» dropped + «غير عادلة»→«غير منصِفة» (formal register)
+check('cost neighbor = the PDF story, share/market/age-bound (b100: price-position, «فاخرة»-as-fact removed)',
+      'أغلب ما بِيع غالياً في منطقتك' in SR and 'بأعلى بكثير من قيمة الأرض (شريحةٌ أعلى سعراً' in SR
+      and 'استدلالاً بالسعر لا معاينةً' in SR and 'فللاً جديدة فاخرة' not in SR
+      and '_domShare' in SR and 'مقارنةٌ غير منصِفة' in SR)  # b56: «غير عادلة»→«غير منصِفة» · b100: kill «فاخرة» claim
 check('market neighbor (matrix verbatim core)',
       'صفقات مثل بيتك كافية وواضحة' in SR and 'وسيطها مرجعك' in SR)
 check('income neighbor (matrix verbatim core)',
       'والدخل أصدق مرجع لعقار مُدِرّ' in SR)
 check('land neighbor (matrix verbatim core)',
       'الأرض تُقاس بسعر المتر في منطقتك' in SR)
-check('the PDF §٢ three-numbers row (fair / quick-sale / the other-class card)',
+check('the PDF §٢ three-numbers row (fair / quick-sale / the higher-tier card)',
       'الأرقام الثلاثة التي تهمّك' in SR and 'لو احتجت بيعاً سريعاً' in SR
-      and 'فئة أخرى، ليست فئة بيتك' in SR)
+      and 'غالباً ليست فئة بيتك' in SR)  # b100 R6: «فئة أخرى، ليست»→«فئة أعلى، غالباً ليست» (price-position)
 check('the PDF §٣ practical-essence advice (b62: compressed bars; SIGNED ceilings kept)',
       'الخلاصة العملية' in SR and '◆ بائعاً' in SR and '◆ مشترياً' in SR  # b62 R6: contract amended — tighter §3 prose
       and 'v.amount*1.10' in SR and 'v.amount*1.30' in SR

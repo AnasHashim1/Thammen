@@ -33,10 +33,10 @@ check('SS: no «median المدمج»',          'median المدمج' not in SS
 check('SS: no «median لها»',             'median لها' not in SS)
 check('SS: no «هذي»',                    'هذي' not in SS)
 check('SS: «الوسيط المدمج» >=4',         SS.count('الوسيط المدمج') >= 4)
-check('SS: «هذه النسبة تفصل» present',    'هذه النسبة تفصل' in SS)
+check('SS: methodology Arabic ratio wording (b100 reworded «هذه النسبة تفصل»→«مؤشّر استدلاليّ»)', 'مؤشّرٌ استدلاليّ (من السعر)' in SS)
 check('SS: «إلى وسيط أراضي المنطقة»',    'إلى وسيط أراضي المنطقة' in SS)
 check('SS: no «سعرها لـ وسيط»',          'سعرها لـ وسيط' not in SS)
-check('SS: C2 «التصنيف بحسب الفئات» intact', 'التصنيف بحسب الفئات' in SS)  # a2-C2 invariant
+check('SS: C2 native-Arabic transparency line intact (b100: فئات→شرائح)', 'التصنيف بحسب الشرائح' in SS)  # a2-C2 invariant (native Arabic, no code-switch)
 
 # ── material_uncertainty ──
 check('MU: «غير معلومة» present', 'المساحة المبنية غير معلومة' in MU)

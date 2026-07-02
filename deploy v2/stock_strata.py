@@ -80,11 +80,15 @@ STRATUM_THRESHOLDS = [
     ('luxury_new',   2.20, None),
 ]
 
+# Sprint 2.22.0b.100 — PRICE-POSITION labels (measured ratio band), NOT asserted
+# age/finish attributes. The engine is condition/built-type BLIND (R7); the stratum is
+# defined purely by price-to-land ratio, so the label names the measured price tier only.
+# The (soft) age/finish inference lives in the description, flagged «استدلالاً بالسعر».
 STRATUM_LABELS_AR = {
     'land_priced':  'بسعر الأرض',
-    'aging_stock':  'بناء متوسط العمر',
-    'modern_stock': 'بناء حديث جيد',
-    'luxury_new':   'فاخر / حديث البناء',
+    'aging_stock':  'قريبة من سعر الأرض',
+    'modern_stock': 'الشريحة المتوسّطة سعراً',
+    'luxury_new':   'الشريحة الأعلى سعراً',
 }
 
 STRATUM_DESC_AR = {
@@ -103,36 +107,40 @@ STRATUM_DESC_AR = {
         # is carried by the ratio_band/label_ar fields in the strata dict.
         'نمط سوقي: غلبة قيمة الأرض في العقارات القديمة',
     'aging_stock':
-        'فلل عمرها 10+ سنوات بتشطيب متوسط أو تجديد جزئي. '
-        'الفئة الأكثر تكراراً في معظم مناطق قطر، وتميل إلى أن تكون مهيمنة على الوسيط المدمج.',
+        'صفقاتٌ بيعت بأعلى قليلاً من قيمة الأرض (1.15-1.5×) — قد تشير إلى بناءٍ متوسّط العمر '
+        '(استدلالاً بالسعر، لا معاينةً). الفئة الأكثر تكراراً، وتميل للهيمنة على الوسيط المدمج.',
     'modern_stock':
-        'فلل عمرها 2-10 سنوات، تشطيب جيد، حالة جاهزة للسكن بدون ترميم. '
-        'كثيراً ما تكون قيمتها الحقيقية أعلى من الوسيط المدمج بنسبة 20-40%.',
+        'صفقاتٌ بيعت بـ1.5-2.2× قيمة الأرض — قد تشير إلى بناءٍ أحدث أو أرقى '
+        '(استدلالاً بالسعر، غير مؤكَّد؛ قد ترفع السعرَ مساحةٌ أو موقعٌ أيضاً). '
+        'قيمتها غالباً أعلى من الوسيط المدمج.',
     'luxury_new':
-        'فلل جديدة (1-3 سنوات) مع تشطيب فاخر، أو مشاريع طور التطوير. '
-        'في بعض المناطق تكون عينة هذه الفئة ضعيفة (n<5) فلا يُعتمد على وسيطها مباشرة.',
+        'صفقاتٌ بيعت بأعلى من 2.2× قيمة الأرض — قد تشير إلى بناءٍ جديدٍ أو تشطيبٍ راقٍ '
+        '(استدلالاً بالسعر، لا معاينةً للتشطيب). '
+        'عيّنة بعض المناطق ضعيفة (n<5) فلا يُعتمد على وسيطها مباشرة.',
 }
 
 # Sprint 2.22.0b.85 — EN twins of the stratification labels/descriptions
 # (additive; the frontend reads them via pick() only when LANG=='en', dormant).
 STRATUM_LABELS_EN = {
     'land_priced':  'Land-priced',
-    'aging_stock':  'Mid-age build',
-    'modern_stock': 'Modern good build',
-    'luxury_new':   'Luxury / new build',
+    'aging_stock':  'Near land price',
+    'modern_stock': 'Mid price tier',
+    'luxury_new':   'Top price tier',
 }
 
 STRATUM_DESC_EN = {
     'land_priced':
         'Market pattern: land value dominates in older properties.',
     'aging_stock':
-        'Villas 10+ years old with an average finish or partial renovation. '
-        'The most frequent category in most Qatar areas, and it tends to dominate the blended median.',
+        'Sales just above the land value (1.15-1.5×) — may indicate a mid-age build '
+        '(inferred from price, not inspected). The most frequent category; it tends to dominate the blended median.',
     'modern_stock':
-        'Villas 2-10 years old, good finish, ready-to-move condition without renovation. '
-        'Their true value is often 20-40% above the blended median.',
+        'Sales at 1.5-2.2× the land value — may indicate a newer or higher-spec build '
+        '(inferred from price, not certain; size or location can also raise the price). '
+        'Their value is often above the blended median.',
     'luxury_new':
-        'New villas (1-3 years) with a luxury finish, or projects under development. '
+        'Sales above 2.2× the land value — may indicate a new build or a high-end finish '
+        '(inferred from price, not an inspection of the finish). '
         "In some areas this category's sample is weak (n<5), so its median is not relied on directly.",
 }
 
@@ -478,19 +486,19 @@ def build_stock_strata_result(
         # English/Arabic code-switching ('الـ stratification') from
         # methodology_ar. Replaced with native Arabic 'التصنيف بحسب
         # الفئات' to keep the substantive disclosure intact.
-        'methodology_ar': (
-            'كل معاملة فيلا تُصنَّف بنسبة سعرها إلى وسيط أراضي المنطقة. '
-            'هذه النسبة تفصل بين فئات العمر والتشطيب: فيلا قديمة تُباع بسعر الأرض '
-            'تقريباً (نسبة ~1.0)، فيلا حديثة جيدة (نسبة ~1.7)، فيلا فاخرة جديدة (نسبة ~2.3+). '
-            'القيمة الرئيسية المعروضة في الأعلى تستخدم الوسيط المدمج لكل الفئات وهذا محافظ. '
-            'التصنيف بحسب الفئات في الأسفل شفافية إضافية للمستخدم.'
+        'methodology_ar': (  # Sprint 2.22.0b.100 — price-position framing (استدلال لا معاينة)
+            'كل معاملة فيلا تُصنَّف بموقع سعرها نسبةً إلى وسيط أراضي المنطقة — '
+            'وهذا مؤشّرٌ استدلاليّ (من السعر) على العمر والتشطيب، لا معاينةٌ لهما: '
+            'قرابة سعر الأرض (~1.0×)، أعلى قليلاً (~1.7×)، الأعلى سعراً (~2.3×+). '
+            'القيمة الرئيسية المعروضة في الأعلى تستخدم الوسيط المدمج لكل الشرائح وهذا محافظ. '
+            'التصنيف بحسب الشرائح في الأسفل شفافية إضافية للمستخدم.'
         ),
-        'methodology_en': (  # Sprint 2.22.0b.85 — EN twin
-            'Each villa transaction is classified by the ratio of its price to the area land median. '
-            'This ratio separates age and finish categories: an old villa sells at roughly the land '
-            'price (ratio ~1.0), a modern good villa (~1.7), a luxury new villa (~2.3+). '
-            'The main value shown above uses the blended median across all categories, which is conservative. '
-            'The category breakdown below is additional transparency for the user.'
+        'methodology_en': (  # Sprint 2.22.0b.85 EN twin · 2.22.0b.100 price-position framing
+            'Each villa transaction is classified by where its price sits relative to the area land '
+            'median — a price-based INFERENCE about age and finish, not an inspection of them: '
+            'roughly the land price (~1.0×), a bit higher (~1.7×), the top price tier (~2.3×+). '
+            'The main value shown above uses the blended median across all tiers, which is conservative. '
+            'The tier breakdown below is additional transparency for the user.'
         ),
         'land_reference': {
             **land_ref,

@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b99-live-pulse-landmark-chips'
-SPRINT_TAG = '2.22.0b.99'           # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b100-honest-price-position-strata'
+SPRINT_TAG = '2.22.0b.100'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -6448,7 +6448,7 @@ OSR_LABEL_AR = ('إعادة إرساء استرشاديّة لمخزونٍ قد�
                 'النافذة الكاملة لوزارة العدل؛ تتحسّن تلقائيّاً مع كلّ صفقة موثَّقة جديدة')
 OSR_LABEL_EN = ('Indicative old-stock re-anchor — calibrated on ONE certified appraisal (V001) + the '
                 'full Ministry-of-Justice window; improves automatically with every documented transaction')
-OSR_NOTE_AR = (OSR_LABEL_AR + '. وسيط العيّنة الخام {comp} ر.ق — مدفوع بطبقة فاخرة مسيطرة ({share}%)؛ '
+OSR_NOTE_AR = (OSR_LABEL_AR + '. وسيط العيّنة الخام {comp} ر.ق — مدفوع بشريحةٍ أعلى سعراً مسيطرة ({share}%)؛ '
                'أساس الإرساء: وسيط سعر المتر للنافذة الكاملة ضمن شريحة مساحة العقار (n={n})، '
                'وأرضيّة النطاق منهج التكلفة/الأرض.')
 OSR_NOTE_EN = (OSR_LABEL_EN + '. The raw sample median {comp} QAR is driven by a dominant premium '

@@ -61,9 +61,12 @@ def test_other_strata_descriptions_unchanged():
         desc = STRATUM_DESC_AR[stratum]
         assert 'Project Instructions' not in desc
         assert desc, f'{stratum} description is empty'
-    # aging_stock keeps its anchor phrase
-    assert 'عمرها 10+' in STRATUM_DESC_AR['aging_stock'], \
-        'aging_stock copy unexpectedly changed'
+    # Sprint 2.22.0b.100 re-point (R6/Lesson-2): the strata descriptions became
+    # PRICE-POSITION (age/finish → a soft inference flagged «استدلالاً بالسعر»).
+    # The a2-C2 mechanical-drop invariant (no internal-doc ref, above) still holds;
+    # the aging anchor updates to the b100 price-inference marker.
+    assert 'استدلالاً بالسعر' in STRATUM_DESC_AR['aging_stock'], \
+        'aging_stock lost the b100 price-inference framing'
     print('  PASS test_other_strata_descriptions_unchanged')
 
 

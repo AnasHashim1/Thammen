@@ -2195,10 +2195,10 @@ function showShortReport(d){
   else basisLn=t('قيمة الأرض: وسيط أراضي منطقتك','Land value: the land median for your area')+(vf.land_per_m2_qar?(' '+fmt(vf.land_per_m2_qar)+t(' ر.ق/م²',' QAR/m²')):'')+(d.plot_area_m2?(' × '+fmt(d.plot_area_m2)+t(' م²',' m²')):'')+(vf.land_n_transactions?(' (n='+vf.land_n_transactions+')'):'');
   let neigh='';
   if(cs==='cost'){
-    neigh=t('أغلب ما بيع غالياً في منطقتك خلال آخر فترة كان فللاً جديدة فاخرة','Most of what sold at high prices in your area recently was new luxury villas')+(_domShare!=null?t(' — نحو '+_domShare+'% من الصفقات —',' — about '+_domShare+'% of sales —'):' —')
+    neigh=t('أغلب ما بِيع غالياً في منطقتك بيعت بأعلى بكثير من قيمة الأرض (شريحةٌ أعلى سعراً — قد تكون أحدث أو أكبر أو أرقى تشطيباً؛ استدلالاً بالسعر لا معاينةً)','Most of what sold at high prices in your area sold well above the land value (a higher-priced tier — possibly newer, larger, or better-finished; inferred from price, not inspected)')+(_domShare!=null?t(' — نحو '+_domShare+'% من الصفقات —',' — about '+_domShare+'% of sales —'):' —')
       +((ld&&ld.market_value)?t(' ووصلت أسعارها إلى '+fmt(ld.market_value)+'.',' reaching '+fmt(ld.market_value)+'.'):'.')
-      +(_ageY?t(' بيتك عمره فوق '+_ageY+' سنة، ومثل أغلب الفلل في قطر بعد سن العاشرة، تقترب قيمته العادلة من قيمة أرضه مضافاً إليها بناءٌ مُهلَكٌ بحسب عمره.',' Your home is over '+_ageY+' years old, and like most villas in Qatar past the ten-year mark, its fair value approaches its land value plus a building depreciated for its age.'):'')
-      +t(' ومقارنة بيتك بأسعار الفلل الجديدة مقارنةٌ غير منصِفة.',' Comparing your home to new-villa prices is an unfair comparison.');
+      +(_ageY?t(' بيتك عمره فوق '+_ageY+' سنة، ومثل أغلب الفلل في قطر بعد العاشرة، اعتمدنا تقديراً محافظاً ≈ قيمة أرضه + بناءً مُهلَكاً بحسب عمره — وقد تعلو قيمته إن كان بناؤه مُصاناً.',' Your home is over '+_ageY+' years old, and like most villas in Qatar past the ten-year mark, we used a conservative estimate ≈ its land value + a building depreciated for its age — and its value may be higher if the building is well-maintained.'):'')
+      +t(' ومقارنة بيتك بأسعار الشريحة الأعلى مقارنةٌ غير منصِفة.',' Comparing your home to the higher-priced tier is an unfair comparison.');
   }else if(cs==='market'){
     neigh=t('صفقات مثل بيتك كافية وواضحة: ','Sales like yours are sufficient and clear: ')+(_mn!=null?_mn:(_n!=null?_n:'—'))+t(' مطابقة خلال 24 شهراً — وسيطها مرجعك.',' matched within 24 months — their median is your reference.');
   }else if(cs==='income'){
@@ -2361,7 +2361,7 @@ function showShortReport(d){
   h+='<div class="thmr-row"><span class="k">'+(cs==='land'?t('التقدير المركزي لأرضك اليوم','Your land\'s central estimate today'):t('التقدير المركزي لبيتك اليوم','Your home\'s central estimate today'))+(d.plot_area_m2?(' · ≈ <span dir="ltr">'+fmt(Math.round(v.amount/d.plot_area_m2))+'</span>'+t(' ر.ق/م² أرض',' QAR/m² of land')):'')+'</span><span class="v">'+fmt(v.amount)+'</span></div>';
   h+='<div class="thmr-row"><span class="k">'+t('لو احتجت بيعاً سريعاً (تقدير البنوك عادةً) — خصم 10% المتعارف عليه (×0.90، ليست تقييم تصفية)','If you needed a quick sale (the usual bank estimate) — the customary 10% discount (×0.90, not a liquidation valuation)')+'</span><span class="v">≈ '+fmt(Math.round(v.amount*0.90))+'</span></div>';
   if(cs==='cost'&&ld&&ld.market_value){
-    h+='<div class="thmr-row"><span class="k">'+t('ما تبيعه الفلل الجديدة الفاخرة حولك — فئة أخرى، ليست فئة بيتك','What new luxury villas around you sell for — a different class, not your home\'s class')+'</span><span class="v">'+t('حتى ','up to ')+fmt(ld.market_value)+'</span></div>';
+    h+='<div class="thmr-row"><span class="k">'+t('ما تبيعه الشريحة الأعلى سعراً حولك — فئة أعلى، غالباً ليست فئة بيتك','What the higher-priced tier around you sells for — a higher class, likely not your home\'s class')+'</span><span class="v">'+t('حتى ','up to ')+fmt(ld.market_value)+'</span></div>';
   }else if(v.low!=null&&v.high!=null){
     h+='<div class="thmr-row"><span class="k">'+t('النطاق التقديري حول الرقم','The estimated range around the number')+'</span><span class="v"><span dir="ltr">'+fmt(v.low)+' – '+fmt(v.high)+'</span></span></div>';
   }
@@ -2809,7 +2809,7 @@ function show(d){
     // where the market leads). Pure additive — no locked-string mutation, no test re-point.
     if(v.leadership&&v.leadership.leader==='cost'){
       var _clMkt=(v.value_stack&&v.value_stack.market&&v.value_stack.market.median)||v.high;
-      t1+='<div class="rn" style="margin-top:8px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+t('اعتمدنا كلفةَ البناء (الأرض + المبنى بعد خصم الإهلاك) لأنّ الصفقات المماثلة القريبة كانت قليلة؛ وقد بِيعت بيوتٌ في منطقتك بنحو ','We used the construction cost (land + building net of depreciation) because comparable nearby sales were few; homes in your area have sold for about ')+fmt(_clMkt)+t(' ر.ق، وهو معروضٌ كحدٍّ أعلى للنطاق. التفصيل في «كيف وصلنا».',' QAR, shown as the range ceiling. Details in “How we got here”.')+'</div>';
+      t1+='<div class="rn" style="margin-top:8px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+t('اعتمدنا كلفةَ البناء (الأرض + المبنى بعد خصم الإهلاك) لأنّ الصفقات المماثلة القريبة كانت قليلة؛ وقد بِيعت بيوتٌ في منطقتك بنحو ','We used the construction cost (land + building net of depreciation) because comparable nearby sales were few; homes in your area have sold for about ')+fmt(_clMkt)+t(' ر.ق، وهو معروضٌ كحدٍّ أعلى للنطاق. وهذا الرقم حدٌّ أدنى محافظ (تعذّر تأكيد حالة البناء)؛ وفيلا مُصانة قد تعلو قيمتها — أدخل حالتها في «حسّن التقييم». التفصيل في «كيف وصلنا».',' QAR, shown as the range ceiling. This figure is a conservative floor (the building condition could not be confirmed); a well-maintained villa may be worth more — enter its condition in “Refine the valuation”. Details in “How we got here”.')+'</div>';
     }
     // Sprint 2.22.0b.72 (value-clarity): on an e25_capped villa the COST diverges HIGH (cost > market;
     // the market leads as the value, cost is a FLOOR not a ceiling). That divergence used to live only in
