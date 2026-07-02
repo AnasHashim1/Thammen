@@ -38,6 +38,11 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .dfb.s-warning{background:var(--warn-bg);color:var(--warn)}
 .dfb.s-alert{background:var(--bad-bg);color:var(--bad);font-weight:500}
 .dfb[hidden]{display:none}
+/* Sprint 2.22.0b.99 «Live Pulse» (Gemini r8) — a small live-sync pulse dot on the freshness
+   banner; inherits the severity colour via currentColor; opacity pulse (reduced-motion safe). */
+.df-pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-inline-end:7px;vertical-align:middle;animation:dfpulse 2s ease-in-out infinite}
+@keyframes dfpulse{0%,100%{opacity:1}50%{opacity:.28}}
+@media(prefers-reduced-motion:reduce){.df-pulse{animation:none;opacity:1}}
 /* Sprint 2.16.3: removed body.has-dfb padding-top override — no longer
    needed since dfb is now sticky and takes its own flow space. */
 .dfc{margin-top:14px;padding:10px 14px;font-size:.78rem;line-height:1.7;border-radius:8px;direction:rtl;text-align:right}
@@ -1068,7 +1073,7 @@ async function loadFreshness(){
     const d=await r.json();
     const bn=document.getElementById('dfBanner');
     if(bn && d.banner_ar){
-      bn.textContent=d.banner_ar;
+      bn.innerHTML='<span class="df-pulse" aria-hidden="true"></span>'+esc(d.banner_ar);  // b99 Live Pulse (banner text is engine-authored; esc for b57 discipline)
       bn.className='dfb s-'+(d.severity||'info');
       bn.hidden=false;
       document.body.classList.add('has-dfb');
@@ -2246,6 +2251,11 @@ function showShortReport(d){
     const _lf=(d.location_features||[]).map(x=>(x&&x.label)?x.label:'').join(' · ');
     const _cls=(_lf.match(/\bR[123]\b/)||[])[0]||null; if(_cls)chips+=_chip('file',t('التصنيف','Zoning'),_cls,false);
     const _hgt=(_lf.match(/G\s*\+\s*[\dP+]+/)||[])[0]||null; if(_hgt)chips+=_chip('chart',t('الارتفاع','Height'),esc(_hgt),false);
+    // Sprint 2.22.0b.99 (Gemini r8) — surface up to 2 auto-discovered location features as
+    // chips (nearby amenities / plot quality): the land face lost its building chips, so fill
+    // it with KNOWN facts the algorithm captured — «technical prestige», not «غير محدّد».
+    // Excludes the classification + height already shown above; value-only (display-only).
+    (d.location_features||[]).map(x=>(x&&x.label)?x.label:'').filter(l=>l&&!/\bR[123]\b|G\s*\+/.test(l)).slice(0,2).forEach(l=>chips+=_chip('pin','',esc(l),false));
     // ════ م٢ (SIGNED §6, Gemini r3 ⭐⭐) — the preliminary-subdivision indicator. DISPLAY-ONLY,
     // never touches the number. CONSERVATIVE frontage from the broadcast b10 plot_dims_m:
     // a corner plot's two street frontages ARE the two edge lengths (adjacent edges) →

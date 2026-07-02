@@ -47,8 +47,11 @@ check('no v.amount/low/high assignment introduced (display-only)',
       HTML.count("'https://thammen.qa/verify?ref='") == 1)
 
 # ── version bump ──
-check('ENGINE_VERSION = b98', 'thammen-sprint2p22p0b98-landline-verify-host' in ENG)
-check('SPRINT_TAG = 2.22.0b.98', "SPRINT_TAG = '2.22.0b.98'" in ENG)
+# R6/Lesson-2: version-agnostic format checks (NOT exact pins — a later bump must not break this)
+check('ENGINE_VERSION is a valid b-series tag',
+      re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+b\d+-", ENG) is not None)
+check('SPRINT_TAG is dotted-numeric b-series',
+      re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+b\.\d+'", ENG) is not None)
 
 # ── b97 regression: the raw-land awareness gates must still be present ──
 check('b97 land gates still intact (CTA + notice + DEF-12 land)',

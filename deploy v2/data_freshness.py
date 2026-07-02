@@ -264,9 +264,12 @@ def _render_banner(month_ar: str, days_old: int, tier: str) -> str:
     if tier == "stale":
         return (f"آخر تحديث لبيانات وزارة العدل: {month_ar} "
                 f"(قبل {days_old} يوماً) — قد لا تعكس آخر تحركات السوق")
-    # very_stale
-    return (f"تنبيه: بيانات وزارة العدل لم تُحدَّث منذ {month_ar} "
-            f"({days_old} يوماً) — استخدم النتائج كمرجع إرشادي فقط")
+    # very_stale — Sprint 2.22.0b.99 «Live Pulse» (Gemini r8): reframe the alarmist «تنبيه»
+    # lead as a professional data-sync indicator WITHOUT weakening honesty — the source
+    # (وزارة العدل), the date (month), the staleness (منذ {days} يوماً) and the «إرشاديّة»
+    # caveat are all preserved (lawyer + linguist APPROVE).
+    return (f"مؤشّر مزامنة البيانات: آخر تحديث رسميّ من وزارة العدل — {month_ar} "
+            f"(منذ {days_old} يوماً) · النتائج إرشاديّة حتى استئناف النشر")
 
 
 def _render_caveat(latest_ar: str, tier: str) -> str:
