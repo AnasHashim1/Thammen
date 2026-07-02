@@ -113,9 +113,11 @@ for label, src in (('show', SHOW), ('shortReport', SR), ('showReport', REP)):
           not re.search(r'v\.(amount|low|high)\s*=[^=]', src))
 
 # ── version bump ──
-check('ENGINE_VERSION = b97 raw-land-awareness',
-      "thammen-sprint2p22p0b97-raw-land-awareness" in ENG)
-check('SPRINT_TAG = 2.22.0b.97', "SPRINT_TAG = '2.22.0b.97'" in ENG)
+# R6/Lesson-2: version-agnostic format checks (NOT exact pins — a later bump must not break this)
+check('ENGINE_VERSION is a valid b-series tag',
+      re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+b\d+-", ENG) is not None)
+check('SPRINT_TAG is dotted-numeric b-series',
+      re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+b\.\d+'", ENG) is not None)
 
 print(f'\n{passed}/{passed+failed} PASS' + ('' if failed == 0 else f' — {failed} FAIL'))
 sys.exit(1 if failed else 0)

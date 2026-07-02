@@ -2103,9 +2103,12 @@ function printReportA4(){
 // Copy contract = docs/MATRIX_short_report_copy_SIGNED.md (signed verbatim).
 function _verifyUrl(d){
   // the b23 verify link, shared by the report link + the short-report QR.
+  // Sprint 2.22.0b.98 — build on the BRANDED host (thammen.qa), not the raw herokuapp API
+  // base: the printed QR + the «thammen.qa/verify» link text must resolve to thammen.qa
+  // (proven: GET thammen.qa/verify?ref=…&fp=… → «تقرير أصليّ»). `API` stays for /api calls.
   const _b=d.report_fp_basis;
   if(!(d.report_ref&&d.report_fp&&_b))return null;
-  return API+'/verify?ref='+encodeURIComponent(d.report_ref)+'&fp='+encodeURIComponent(d.report_fp)
+  return 'https://thammen.qa/verify?ref='+encodeURIComponent(d.report_ref)+'&fp='+encodeURIComponent(d.report_fp)
     +'&addr='+encodeURIComponent(_b.address||'')+'&date='+encodeURIComponent(_b.date||'')
     +'&eng='+encodeURIComponent(_b.engine||'')+'&amount='+encodeURIComponent(_b.amount==null?'':_b.amount)
     +'&low='+encodeURIComponent(_b.low==null?'':_b.low)+'&high='+encodeURIComponent(_b.high==null?'':_b.high)
@@ -2207,7 +2210,10 @@ function showShortReport(d){
   h+='<div class="thmr-head"><div class="b1">'+t('ثمّن — التقرير المختصر','Thammen — Short Report')+'<small>'+t('الخلاصة في صفحة واحدة','Summary on one page')+'</small></div>';
   h+='<div class="meta">'+(d.report_ref?(t('المرجع ','Reference ')+'<b dir="ltr">'+d.report_ref+'</b>'):'')+'</div></div>';  // b63: dropped the raw engine_version dev-string from the owner's page-1 header (noise at top; ref + QR/verify prove authenticity; the page-2 meta + the full report keep it)
   // the property identity strip (b90: decluttered to asset + address + district; plot/age → chips, date → hero).
-  h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:12px"><span class="k">'+t(ASSET_AR[d.asset_type]||'عقار',ASSET_EN[d.asset_type]||'Property')+' <b dir="ltr">'+esc(d.address||'')+'</b>'+(d.district?(' · '+esc(d.district)):'')+'</span></div>';
+  // Sprint 2.22.0b.98 — dedup the district: raw_land's address is already «أرض في {district} — PIN …»,
+  // so appending « · {district}» repeated it («… الوعب — PIN … · الوعب»). Append only when the
+  // address does NOT already contain the district (villa address = «56/565/21» → still appends).
+  h+='<div class="thmr-row" style="border-bottom:1px solid var(--thmr-line);padding-bottom:8px;margin-bottom:12px"><span class="k">'+t(ASSET_AR[d.asset_type]||'عقار',ASSET_EN[d.asset_type]||'Property')+' <b dir="ltr">'+esc(d.address||'')+'</b>'+((d.district&&(d.address||'').indexOf(d.district)===-1)?(' · '+esc(d.district)):'')+'</span></div>';
   // ════ Sprint 2.22.0b.90 «وجه المختصر» — the 5-second face (VALUE-INVARIANT: presentation of the
   // broadcast figures; amount/low/high untouched). Gemini r5 items 1-9+13. Hero (neutral label +
   // price/ft² + LTR range-bar + ft²-range + date) → confidence pill (E4 ladder) → 5 chips → compressed

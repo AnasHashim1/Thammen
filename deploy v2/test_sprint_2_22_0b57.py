@@ -38,8 +38,8 @@ check('asset-label via esc (ri)', "ri(t('نوع العقار','Property type'),e
       and "ri('نوع العقار',(d.asset_type" not in HTML)
 check('report rep-addr via esc', '<div class="rep-addr">\'+esc(d.address)+\'</div>' in HTML)
 check('report district span via esc (b81: label moved into t(), esc kept)', "t('المنطقة: ','District: ')+esc(d.district)+'</span>" in HTML)
-check('short-report row address+district via esc',
-      "esc(d.address||'')" in HTML and "(d.district?(' · '+esc(d.district)):'')" in HTML)
+check('short-report row address+district via esc',  # b98 R6: district dedup-guarded, still esc()
+      "esc(d.address||'')" in HTML and "===-1)?(' · '+esc(d.district)):''" in HTML)
 check('income cap-cell district via esc', "<span class=\"v\">'+esc(pick(d.cap_rate_provenance,'district')" in HTML)  # b80 R6: district_ar → pick(), still esc()-wrapped
 check('refusal flat address+district via esc',
       "<strong>'+t('العنوان:','Address:')+'</strong> '+esc(d.address)+'</div>" in HTML
