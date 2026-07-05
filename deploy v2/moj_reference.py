@@ -146,11 +146,11 @@ def build_reference(rows, area, max_d, return_transactions=False):
         in24 = [r for r in area_rows
                 if (d := parse_date(r[DATE_COL])) and d >= cutoff_24
                 and _bt_matches(r, cat)
-                and (cat != 'villa' or _is_residential_usage(r))]
+                and _is_residential_usage(r)]
         in36 = [r for r in area_rows
                 if (d := parse_date(r[DATE_COL])) and d >= cutoff_36
                 and _bt_matches(r, cat)
-                and (cat != 'villa' or _is_residential_usage(r))]
+                and _is_residential_usage(r)]
         # Pick window
         use, window = (in24, 24) if len(in24) >= MIN_N else (in36, 36)
         if not use:
@@ -197,6 +197,10 @@ def build_reference(rows, area, max_d, return_transactions=False):
                 'n_36': len(sub36),
                 'total_price_median_24': tp24.get('median') if tp24 else None,
                 'total_price_median_36': tp36.get('median') if tp36 else None,
+                # Sprint 2.22.0b.101: 36mo total-price quartiles so the land 36mo-widening
+                # companion (apply_moj_strategy) keeps its RANGE window-consistent (no inversion).
+                'total_price_p25_36':    tp36.get('p25')    if tp36 else None,
+                'total_price_p75_36':    tp36.get('p75')    if tp36 else None,
                 'total_price_p25_24':    tp24.get('p25')    if tp24 else None,
                 'total_price_p75_24':    tp24.get('p75')    if tp24 else None,
                 # (vi) Sprint 2.22.0a.14 — 36mo ppm² dispersion for the bracket honest-range gate:

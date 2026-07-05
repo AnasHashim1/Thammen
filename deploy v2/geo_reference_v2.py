@@ -344,8 +344,9 @@ def _get_area_transactions(
                 continue
         elif category != 'all' and _categorize(r) != category:
             continue
-        # Sprint 2.22.0a.11 (A1): residential-usage filter on the VILLA pool only (land untouched).
-        if category == 'villa' and not _is_residential_usage(r):
+        # Sprint 2.22.0a.11 (A1): residential-usage filter on the villa pool. Sprint 2.22.0b.101
+        # extends it to the LAND pool too (apt/complex + commercial land excluded from residential-land comps).
+        if category in ('villa', 'land') and not _is_residential_usage(r):
             continue
         d = _parse_date(r.get(date_col, ''))
         if not d or d < cutoff:
