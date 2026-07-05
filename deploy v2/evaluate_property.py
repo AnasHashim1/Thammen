@@ -616,35 +616,6 @@ def apply_moj_strategy(asset_type: str, plot_area_m2: float,
 
     # Use bracket if reliable, otherwise fall back to overall category stats
     notes = []
-
-    # ── Sprint 2.22.0b.101 companion: LAND thin-bracket → its own 36-month residential window ──
-    # The b101 residential-usage filter (moj_reference build_reference, land pool) can thin a
-    # premium LAND bracket in the recent 24mo window. Widen a thin filtered land bracket to its OWN
-    # 36mo residential total-price pool (n recovers) — CAPPED at 36mo: all-time would re-admit the
-    # high-priced blank/development land the residential-usage filter keeps in premium areas
-    # (measured Al-Waab 900-1500 residential: 24mo n=4 ~5.3M · 36mo n=7 ~6.5M · all-time n=50 ~11M).
-    # Fires ONLY when the category is on the 24mo window (bracket n == n_24) AND that bracket is
-    # thin (<10) AND 36mo has more. Never mutates the shared bracket dict.
-    if moj_cat == 'land' and bracket:
-        _ln24 = bracket.get('n', 0) or 0
-        _ln36 = bracket.get('n_36') or 0
-        _lm36 = bracket.get('total_price_median_36')
-        if _ln24 < 10 and _lm36 and _ln36 > _ln24:
-            bracket = dict(bracket)  # copy — never mutate the shared reference
-            bracket['total_price_median'] = _lm36
-            bracket['n'] = _ln36
-            # keep the RANGE on the same 36mo window as the median (avoid inversion)
-            _lp25 = bracket.get('total_price_p25_36')
-            _lp75 = bracket.get('total_price_p75_36')
-            if _lp25 is not None:
-                bracket['total_price_p25'] = _lp25
-            if _lp75 is not None:
-                bracket['total_price_p75'] = _lp75
-            notes.append(
-                f'أرض سكنيّة: وُسِّعت الشريحة إلى نافذة 36 شهراً لعيّنة أنسب '
-                f'(n={_ln36}؛ كانت {_ln24} خلال 24 شهراً)'
-            )
-
     if bracket and bracket.get('n', 0) >= 10:
         n = bracket['n']
         per_m2 = bracket.get('price_per_m2_median')
