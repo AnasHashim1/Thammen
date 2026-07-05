@@ -141,16 +141,22 @@ def build_reference(rows, area, max_d, return_transactions=False):
 
     for cat in ('land', 'villa'):
         # Sprint 2.22.0a.12 (A2): built-type stratification — 'villa'→STANDALONE_VILLA pool
-        # (house/فيلتان/compound excluded), 'land'→LAND. Composes with A1's residential-usage
-        # filter (villa pool only). Subject-side classification is unchanged.
+        # (house/فيلتان/compound excluded), 'land'→LAND. Subject-side classification unchanged.
+        # Sprint 2.22.0b.102 (RICS comparability, VPS 3 / IVS 103): the residential-usage filter
+        # (_is_residential_usage: keeps فلل/بيوت سكنية + مسكن + blank; drops عمارات/مجمعات سكنية
+        # [apartment/development land, ~2.8×] + أراض تجارية [~6×]) now applies to BOTH the villa
+        # AND the LAND pool. A residential-land subject must be valued on residential land comps —
+        # apartment/commercial land is not comparable (different highest-and-best-use / buyer pool).
+        # Thin residential cells (n<10) fall to the existing indicative tier (reliability disclosed
+        # via the confidence pill + n + range); the mixed pool is NEVER used as a residential headline.
         in24 = [r for r in area_rows
                 if (d := parse_date(r[DATE_COL])) and d >= cutoff_24
                 and _bt_matches(r, cat)
-                and (cat != 'villa' or _is_residential_usage(r))]
+                and _is_residential_usage(r)]   # b102: residential-usage filter now on BOTH land + villa
         in36 = [r for r in area_rows
                 if (d := parse_date(r[DATE_COL])) and d >= cutoff_36
                 and _bt_matches(r, cat)
-                and (cat != 'villa' or _is_residential_usage(r))]
+                and _is_residential_usage(r)]   # b102: residential-usage filter now on BOTH land + villa
         # Pick window
         use, window = (in24, 24) if len(in24) >= MIN_N else (in36, 36)
         if not use:
