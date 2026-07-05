@@ -31,7 +31,9 @@ A caveat does not cure a headline built on non-comparable evidence.
   (`apply_moj_strategy` unchanged; no new dual-pool). **Villa pool untouched.**
 - **`index.html`** — a stated-assumption **highest-and-best-use** note on the land face for plots ≥900 m²:
   «القيمة على أساس الاستخدام السكنيّ … إن سمح التنظيم ببناء عمارات … فقد تكون قيمتها التطويريّة أعلى — تحقّق من التصنيف.»
-  (VPS 2 basis / IVS 104 HBU — honest for large plots where apartment development may be the HBU).
+  (RICS VPS 2 / IVS Framework — bases of value + HBU; honest for large plots where apartment development
+  may be the HBU. Comparability itself rests on VPS 3 / IVS 103 approaches + IVS 104 data selection.
+  Corrected 2026-07-05 after the Rule #54 primary-source lock: HBU is in the IVS Framework, not IVS 104.)
 
 ## 4. Verification — empirical evidence
 

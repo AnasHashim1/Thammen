@@ -2338,7 +2338,8 @@ function showShortReport(d){
   if(_subdivLn)h+=_subdivLn;  // م٢/b95: the positive subdivision insight rides right under the chips
   // Sprint 2.22.0b.102 (RICS stated assumption / HBU): the land value is on a residential-use basis
   // (residential land comps). For a larger plot where zoning may permit apartment development, the
-  // highest-and-best-use value could be higher — disclose the assumption (VPS 2 basis / IVS 104 HBU).
+  // highest-and-best-use value could be higher — disclose the assumption (RICS VPS 2 / IVS Framework —
+  // bases of value + HBU; comparability itself rests on VPS 3 / IVS 103 + IVS 104 data selection).
   if(_isLand&&_area&&_area>=900)h+='<div class="thmr-sub" style="background:#F1F5FA;border-color:#D3E0EE;color:#3C566E"><svg class=ic aria-hidden=true style="color:#5B7CA0"><use href=#ic-file></use></svg><span>'+t('القيمة على أساس الاستخدام السكنيّ للأرض. إن سمح تنظيم القطعة ببناء عمارات وكان ذلك هو الاستخدام الأعلى، فقد تكون قيمتها التطويريّة أعلى — تحقّق من التصنيف.','This value is on a residential-use basis. If the plot\'s zoning permits apartment development and that is the highest-and-best-use, its development value may be higher — verify the zoning.')+'</span></div>';
   // ── compressed legal line (counsel-safe; the FULL block stays in §٩ page-2) ──
   h+='<div class="thmr-legalz"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg><span>'+t('مؤشّر سعريّ استرشاديّ مبنيّ على صفقات وزارة العدل العلنية — ليس تقييماً عقارياً معتمداً ولا حجّة رسمية.','An indicative price signal based on public Ministry of Justice transactions — not a certified real-estate valuation, nor official evidence.')+'</span></div>';
