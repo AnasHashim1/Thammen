@@ -106,7 +106,7 @@ check('_stage1_dispersion_gate(thin) is None', _stage1_dispersion_gate({'method'
 check('AR land-floor copy verbatim (a22 framing)',
       'تفكيك تحليلي ضمن نموذج المقارنة' in LAND_FLOOR_NOTE_AR
       and 'مكوّن الأرض الاسترشادي' in LAND_FLOOR_NOTE_AR
-      and 'على أساس افتراض الاستخدام الأمثل؛ وليس تقييماً مستقلاً للأرض' in LAND_FLOOR_NOTE_AR)
+      and 'على أساس افتراض أعلى وأفضل استخدام؛ وليس تقييماً مستقلاً للأرض' in LAND_FLOOR_NOTE_AR)
 check('AR implied-building copy verbatim (a22 framing)',
       'مساهمة البناء الضمنية (ناتج حسابي متبقٍّ: التقدير ناقص الأرض)' in IMPLIED_BLDG_NOTE_AR
       and 'تخصيص حسابي، غير مُتحقَّق ميدانياً' in IMPLIED_BLDG_NOTE_AR)

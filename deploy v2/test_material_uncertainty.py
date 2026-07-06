@@ -261,7 +261,8 @@ class TestRICS2025Compliance(unittest.TestCase):
     def test_ar_clause_has_all_4_structural_elements(self):
         clause = self.muc['muc_clause_ar']
         # (1) statement of MVU — title with citation
-        self.assertIn('تحفظ مادي', clause)
+        # b105 R6: «تحفظ مادي» → «عدم اليقين الجوهري» (register lock; the MVU statement element persists)
+        self.assertIn('عدم اليقين الجوهري', clause)
         # (2) cause/reasons (Sprint 2.22.0a.2 C1: reframed from naming
         # specific shock layers to naming the data-evidence cause —
         # both forms satisfy VPGA 10 §6 element 2)

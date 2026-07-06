@@ -42,10 +42,10 @@ check('refusal assembly head+muc+a8acc+alerts+flat+foot', 'h=head+muc+a8acc+aler
 # 7. MUC level CHIP rendered in TIER-1 (first-glance compliance signpost).
 # b48 re-point (R6/Lesson-2): the chip recolored red→amber (--bad→--warn) + the ⚠️ emoji became
 # an inline-SVG icon. Pin the BEHAVIOUR — the chip is built into t1 (TIER-1), uses the amber token,
-# and renders «تحفظ مادي: '+MUC_LEVEL_AR[mu.level]» — not the volatile emoji/exact margin.
-check('MUC chip in TIER-1 (t1+=… تحفظ مادي: +MUC_LEVEL_AR)',
+# and renders «عدم اليقين الجوهري: '+MUC_LEVEL_AR[mu.level]» — not the volatile emoji/exact margin.
+check('MUC chip in TIER-1 (t1+=… عدم اليقين الجوهري: +MUC_LEVEL_AR)',
       "t1+='<div style=\"display:inline-block;padding:3px 10px;background:var(--warn-bg);color:var(--warn);" in HTML
-      and " '+t('تحفظ مادي: ','Material uncertainty: ')+(LANG==='en'?MUC_LEVEL_EN:MUC_LEVEL_AR)[mu.level]+'</div>';" in HTML)
+      and " '+t('عدم اليقين الجوهري: ','Material uncertainty: ')+(LANG==='en'?MUC_LEVEL_EN:MUC_LEVEL_AR)[mu.level]+'</div>';" in HTML)
 # 8. the FULL MVU clause is still BUILT via the shared _mucCardHtml builder (same clause, same red styling).
 # b52 re-point (R6/Lesson-2): the lean pass folds the clause behind its chip (_mucFold) instead of
 # always-visible — the chip + «ليس معتمداً» stay always-visible in TIER-1 (checks 7 + 9), the full clause one click away.

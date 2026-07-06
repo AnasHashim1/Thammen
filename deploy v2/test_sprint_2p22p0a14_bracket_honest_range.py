@@ -72,7 +72,7 @@ def fake_ev(disp, win):
 
 p = _select_primary_comparison(fake_ev(0.45, '37 معاملة، منها 28 خلال 24 شهراً'), {})
 check('B6 Case1 comparison_bracket', p and p['method'] == 'comparison_bracket', str(p and p.get('method')))
-check('B7 source_ar has « نافذة 36 شهراً »', p and 'نافذة 36 شهراً' in p['source_ar'], p and p.get('source_ar'))
+check('B7 source_ar has « صفقات آخر 36 شهراً »', p and 'صفقات آخر 36 شهراً' in p['source_ar'], p and p.get('source_ar'))  # b105 R6: «نافذة»→«صفقات آخر»
 check('B8 window_used carried', p and p.get('window_used') and 'منها' in p['window_used'])
 check('B9 ppm2_dispersion carried (-> gate)', p and p.get('ppm2_dispersion') == 0.45)
 # the carried dispersion feeds the gate end-to-end

@@ -17,8 +17,8 @@ def check(name, cond):
 # ---- material_uncertainty: 0 emoji left; the 4 level TEXTS + clause preserved ----
 for e in ['⚠️', '⛔', 'ℹ️', '✅']:
     check('material_uncertainty: no %s' % e, e not in MU)
-for txt in ['تحفظ مادي جوهري —', 'تحفظ مادي عالٍ —', 'تحفظ مادي متوسط —',
-            'مستوى اليقين جيد —', 'تحفظ مادي وفق']:
+for txt in ['عدم اليقين الجوهري: حرج —', 'عدم اليقين الجوهري: مرتفع —', 'عدم اليقين الجوهري: متوسط —',
+            'مستوى اليقين جيد —', 'عدم اليقين الجوهري في التقييم وفق']:
     check('MUC level/clause text preserved: %s' % txt, txt in MU)
 for txt_en in ['CRITICAL Material Uncertainty', 'HIGH Material Uncertainty',
                'MODERATE Material Uncertainty', 'LOW Material Uncertainty',

@@ -60,7 +60,7 @@ check('NO rejected renumbering (VPS 4 / VPS 5 / IVS 104 / IVS 105) in the floor 
 # ── 2. FRAMING CHANGED to the new wording (verbatim) ──
 check('land-floor AR = indicative land component on an HBU premise',
       'مكوّن الأرض الاسترشادي' in LAND_FLOOR_NOTE_AR
-      and 'على أساس افتراض الاستخدام الأمثل؛ وليس تقييماً مستقلاً للأرض' in LAND_FLOOR_NOTE_AR)
+      and 'على أساس افتراض أعلى وأفضل استخدام؛ وليس تقييماً مستقلاً للأرض' in LAND_FLOOR_NOTE_AR)
 check('land-floor EN = indicative land component on an HBU premise',
       'indicative land component' in LAND_FLOOR_NOTE_EN
       and 'on a highest-and-best-use premise' in LAND_FLOOR_NOTE_EN

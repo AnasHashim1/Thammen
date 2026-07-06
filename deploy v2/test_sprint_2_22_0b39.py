@@ -82,7 +82,7 @@ print("\n── E. index.html render (structural — E14 reads the REAL file) �
 _html = open('index.html', encoding='utf-8').read()
 _seg = _html.split('if(v.comparables', 1)[1].split('// Sprint 2.22.0b.18', 1)[0]
 check("E1 per-basis branch on geo_widened", "_kcGeo=(_kc.basis==='geo_widened')" in _seg)
-check("E2 geo header «صفقات في منطقتك ضمن حوض المقارنة الموسَّع»", 'حوض المقارنة الموسَّع جغرافياً' in _seg)
+check("E2 geo header «صفقات في منطقتك ضمن نطاق المقارنة الموسَّع»", 'نطاق المقارنة الموسَّع جغرافياً' in _seg)
 check("E3 geo widening disclosure (location-adjusted neighbours) + pool_n", 'وُسِّع الحوض لمناطق مجاورة' in _seg
       and 'مُعدَّلة الموقع' in _seg and '_kc.pool_n' in _seg)
 check("E4 bracket header «هي ما قرّر رقمك» retained (b38)", 'هي ما قرّر رقمك' in _seg)

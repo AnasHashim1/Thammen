@@ -82,7 +82,7 @@ check('renderSection comparable_grid local `t` renamed to t2 (no t() shadow)',
 check('hero label + range wired',
       "t('التقييم السوقي','Market valuation')" in SHOW and
       "t('النطاق التقديري السوقي','Estimated market range')" in SHOW)
-check('MUC chip label wired', "t('تحفظ مادي: ','Material uncertainty: ')" in SHOW)
+check('MUC chip label wired', "t('عدم اليقين الجوهري: ','Material uncertainty: ')" in SHOW)
 check('cost-led basis note (b64) wired + e25 divergence (b72) wired',
       "t('اعتمدنا كلفةَ البناء (الأرض + المبنى بعد خصم الإهلاك) لأنّ الصفقات المماثلة القريبة كانت قليلة؛ وقد بِيعت بيوتٌ في منطقتك بنحو '," in SHOW and
       "t('كلفةُ إعادة بناء بيتك (','The cost to rebuild your home (')" in SHOW)
@@ -99,7 +99,7 @@ check('the two TIER-2 accordion titles wired',
       "t('كيف وصلنا لهذا الرقم؟','How we got to this number')" in SHOW and
       "t('بيانات العقار الأساسية','Property basics')" in SHOW)
 check('keystone + considered comparables wired',
-      "t('صفقات في منطقتك ضمن حوض المقارنة الموسَّع جغرافياً','Transactions in your area within the geographically widened comparison pool')" in SHOW and
+      "t('صفقات في منطقتك ضمن نطاق المقارنة الموسَّع جغرافياً','Transactions in your area within the geographically widened comparison pool')" in SHOW and
       "t('صفقات السوق في منطقتك — اطّلعنا عليها ولم تقُد الرقم','Market transactions in your area — we reviewed them but they did not set the number')" in SHOW)
 check('refusal path wired (h2 + facts + CTA)',
       "t('تعذّر تحديد نوع العقار','Could not determine the property type')" in SHOW and

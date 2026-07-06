@@ -268,7 +268,7 @@ def _render_banner(month_ar: str, days_old: int, tier: str) -> str:
     # lead as a professional data-sync indicator WITHOUT weakening honesty — the source
     # (وزارة العدل), the date (month), the staleness (منذ {days} يوماً) and the «إرشاديّة»
     # caveat are all preserved (lawyer + linguist APPROVE).
-    return (f"مؤشّر مزامنة البيانات: آخر تحديث رسميّ من وزارة العدل — {month_ar} "
+    return (f"تاريخ تحديث بيانات وزارة العدل: آخر سجلّ رسميّ — {month_ar} "
             f"(منذ {days_old} يوماً) · النتائج إرشاديّة حتى استئناف النشر")
 
 

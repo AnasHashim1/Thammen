@@ -50,7 +50,7 @@ check('reads the cost block once via _vc = v.value_stack.cost (DRY)',
 check('line header «آليّة الكلفة (نهج DRC)»', 'آليّة الكلفة (نهج DRC):' in B37)
 check('surfaces BUA (مساحة البناء BUA … _vc.bua_m2)', 'مساحة البناء BUA' in B37 and "'+_vc.bua_m2+'" in B37)
 check('surfaces RCN (كلفة الإحلال … fmt(_vc.rcn_qar_per_m2))', 'كلفة الإحلال' in B37 and "fmt(_vc.rcn_qar_per_m2)" in B37)
-check('surfaces retention (معامل الاحتفاظ … _vc.retention)', 'معامل الاحتفاظ' in B37 and "'+_vc.retention+'" in B37)
+check('surfaces retention (نسبة القيمة المتبقية للبناء … _vc.retention)', 'نسبة القيمة المتبقية للبناء' in B37 and "'+_vc.retention+'" in B37)
 check('surfaces depreciated building (البناء المُهلَك … fmt(_vc.building_value))',
       'البناء المُهلَك' in B37 and "fmt(_vc.building_value)" in B37)
 check('surfaces land (الأرض … fmt(_vc.land_floor))', 'الأرض' in B37 and "fmt(_vc.land_floor)" in B37)

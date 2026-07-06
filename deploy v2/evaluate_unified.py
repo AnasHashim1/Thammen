@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b104-short-report-proof-and-clarity'
-SPRINT_TAG = '2.22.0b.104'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b105-language-register-lock'
+SPRINT_TAG = '2.22.0b.105'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1416,7 +1416,7 @@ def _select_primary_comparison(ev, geo_v2, user_age=False) -> Optional[dict]:
         # on the headline (b) + carry the 36mo ppm² dispersion for the bracket honest-range gate (a).
         _bwin = getattr(ev.valuation, 'bracket_window_used', None) if ev.valuation else None
         _bdisp = getattr(ev.valuation, 'bracket_ppm2_dispersion', None) if ev.valuation else None
-        _win_sfx = ' (نافذة 36 شهراً)' if _bwin else ''
+        _win_sfx = ' (صفقات آخر 36 شهراً)' if _bwin else ''
         return {
             'value': bracket_value,
             'low':   ev.valuation.estimated_value_low,
@@ -1846,7 +1846,7 @@ def _reconcile_decomposition_narrative(output):
 # "contribution / mathematical allocation" (not a "value"). See MULTI_AI_VALIDATION_BATCH_SprintB1.md.
 LAND_FLOOR_NOTE_AR = (
     'تفكيك تحليلي ضمن نموذج المقارنة — مكوّن الأرض الاسترشادي: ~‎{x}‎ ر.ق '
-    '(من صفقات أراضٍ مماثلة، على أساس افتراض الاستخدام الأمثل؛ وليس تقييماً مستقلاً للأرض).'
+    '(من صفقات أراضٍ مماثلة، على أساس افتراض أعلى وأفضل استخدام؛ وليس تقييماً مستقلاً للأرض).'
 )
 LAND_FLOOR_NOTE_EN = (
     'Analytical decomposition within the comparison model — indicative land component: ~{x} QAR '
@@ -1871,7 +1871,7 @@ LAND_ANCHORED_NOTE_EN = (
 )
 _VALUE_FLOOR_CITATION_AR = (
     'منهج المقارنة بالمبيعات (‎VPS 3‎ / ‎IVS 103‎)؛ '
-    'قيمة الأرض تعكس الاستخدام الأمثل (‎VPS 2‎ / ‎IVS 102‎)'
+    'قيمة الأرض تعكس أعلى وأفضل استخدام (‎VPS 2‎ / ‎IVS 102‎)'
 )
 _VALUE_FLOOR_CITATION_EN = (
     'Sales Comparison approach (VPS 3 / IVS 103); '
@@ -2802,7 +2802,7 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
         'geometric_factors': _ctx['geometric_factors'], 'property_basis': _ctx.get('property_basis'),
         'material_uncertainty': _enrich_material_uncertainty({
             'level': 'critical',
-            'banner_ar': 'تحفظ مادي حرج: لا توجد بيانات بيع مقارنة لهذه الفئة',
+            'banner_ar': 'عدم اليقين الجوهري (حرج): لا توجد بيانات بيع مقارنة لهذه الفئة',
             'known_unknowns_ar': [
                 'الإيجار الشهري للوحدات',
                 'حالة المبنى والعمر',
@@ -2914,7 +2914,7 @@ def _t2_band_copy(band: str, n: int, muc_range_pct: float) -> dict:
     if band == 'boundary':
         return {
             'banner_ar': (
-                f'تحفظ مادي: عينة عند الحد الأدنى (n={n}<10) — تفسير حذر مطلوب. '
+                f'عدم اليقين الجوهري: عينة عند الحد الأدنى (n={n}<10) — تفسير حذر مطلوب. '
                 f'النطاق ±{pct}% (Rule E3 §5).'
             ),
             # Sprint 2.22.0a.2 C3: tier badge relabel "إرشادي" -> "شواهد محدودة";
@@ -2932,7 +2932,7 @@ def _t2_band_copy(band: str, n: int, muc_range_pct: float) -> dict:
         return {
             # Sprint 2.22.0a.2 C3: tier badge + Category B prose relabel.
             'banner_ar': (
-                f'تحفظ مادي: عينة في فئة "شواهد محدودة" (n={n}, 10≤n<20). '
+                f'عدم اليقين الجوهري: عينة في فئة "شواهد محدودة" (n={n}, 10≤n<20). '
                 f'النطاق ±{pct}% — لا يُعتمد كقيمة سوق نهائية.'
             ),
             'disclaimer_ar': (
@@ -2949,7 +2949,7 @@ def _t2_band_copy(band: str, n: int, muc_range_pct: float) -> dict:
     # with strong sample (Rule E3 §4 — needs T1 to upgrade to "شواهد كافية").
     return {
         'banner_ar': (
-            f'تحفظ مادي: عينة قوية (n={n}≥20) لكن السقف يبقى "شواهد محدودة" '
+            f'عدم اليقين الجوهري: عينة قوية (n={n}≥20) لكن السقف يبقى "شواهد محدودة" '
             f'بدون تأكيد وزارة العدل (Rule E3 §4). النطاق ±{pct}%.'
         ),
         'disclaimer_ar': (
@@ -3468,7 +3468,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
         'material_uncertainty': _enrich_material_uncertainty({
             'level': 'high',
             'banner_ar': (
-                'تحفظ مادي مرتفع: التقدير مبني على معدّل الرسملة نموذجي + إيجار مُقدَّم من '
+                'عدم اليقين الجوهري (مرتفع): التقدير مبني على معدّل الرسملة نموذجي + إيجار مُقدَّم من '
                 'العميل. للقرارات الكبيرة، يُنصح بفحص ميداني وتحقق من الإيجار التاريخي.'
             ),
             'known_unknowns_ar': [
@@ -5766,7 +5766,7 @@ DEMO_QAR_PER_M2 = 240
 DEMO_FLOOR_QAR = 100_000
 DEMO_CAP_QAR = 150_000
 _TEARDOWN_ASSET_TYPES = ('standalone_villa', 'house', 'villa')
-TEARDOWN_NOTE_AR = ('التقييم على أساس الاستخدام الأمثل = إعادة التطوير: قيمة الأرض ({land} ر.ق) '
+TEARDOWN_NOTE_AR = ('التقييم على أساس أعلى وأفضل استخدام = إعادة التطوير: قيمة الأرض ({land} ر.ق) '
                     'مطروحاً منها تكلفة هدم تقديرية ({demo} ر.ق) — المبنى الحالي يُعدّ عبئاً لا '
                     'قيمة مضافة. تقدير الهدم استرشاديّ، والنطاق واسع لعدم اليقين.')
 TEARDOWN_NOTE_EN = ('Valued on Highest-and-Best-Use = redevelopment: land value ({land} QAR) '
@@ -6591,7 +6591,7 @@ LEAD_COST_AGE_HONESTY_EN = ('Depreciation estimates grow more subjective with ag
                             'calibration on a certified appraisal sheet and the market land '
                             'floor mitigate this.')
 LEAD_GEO_FULL_NOTE_AR = ('يقود السوقُ عبر حوض جغرافي غير مطابق طبقياً (n={n}، تشتت={d} — '
-                         'اجتاز عتبة الموثوقية)؛ رُفع التحفظ المادي درجةً وأُدرجت قيمة '
+                         'اجتاز عتبة الموثوقية)؛ رُفع عدم اليقين الجوهري درجةً وأُدرجت قيمة '
                          'التكلفة أرضيةً للنطاق.')
 LEAD_GEO_FULL_NOTE_EN = ('The market leads via a geographically-pooled, stratum-UNMATCHED '
                          'sample (n={n}, dispersion={d} — passes the reliability bar); '
@@ -7045,7 +7045,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                     # level names) → no LRM wrap needed. The em-dash
                     # separates Arabic clauses on both sides.
                     output['trend']['suppressed_reason_ar'] = (
-                        'تحفظ مادي عند مستوى عالٍ/حرج — '
+                        'عدم اليقين الجوهري عند مستوى مرتفع/حرج — '
                         'العينة أو المنهجية قاصرة عن دعم رقم محدد.'
                     )
         else:

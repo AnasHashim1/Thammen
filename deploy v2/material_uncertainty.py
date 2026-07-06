@@ -214,7 +214,7 @@ def regime_muc(regime=None) -> dict:
     # transactions) instead of geopolitical narration. Gemini-approved
     # verbatim per docs/MULTI_AI_VALIDATION_BATCH_2p22p0a2.md §1.
     muc_clause_ar = (
-        f'تحفظ مادي وفق ‎RICS Red Book Global Standards‎ '
+        f'عدم اليقين الجوهري في التقييم وفق ‎RICS Red Book Global Standards‎ '
         f'(‎effective 31 January 2025‎) — ‎VPGA 10‎ '
         f'(‎Material Valuation Uncertainty‎) و ‎VPS 6‎ '
         f'(‎Valuation Reports‎) — و ‎IVS‎ '
@@ -396,9 +396,13 @@ def assess_uncertainty(
     # ── Determine overall level ──
     max_score = max(scores) if scores else 0
 
+    # Sprint 2.22.0b.105 (R3 — signed register lock, Gemini r11): the old MUC term read as financial
+    # stinginess to the ordinary owner → «عدم اليقين الجوهري» (the accurate rendering of RICS VPGA 10
+    # "Material Valuation Uncertainty"; the English standard name rides the formal clause). The level
+    # words unified to the chip's (حرج/مرتفع/متوسط) — the banner previously used جوهري/عالٍ inconsistently.
     if max_score >= 4:
         level = 'critical'
-        banner_ar = ('تحفظ مادي جوهري — '
+        banner_ar = ('عدم اليقين الجوهري: حرج — '
                      'البيانات المتاحة غير كافية لإنتاج تقييم موثوق. '
                      'النتائج للاسترشاد الأوّلي فقط ولا تصلح لاتخاذ قرار.')
         banner_en = ('CRITICAL Material Uncertainty — '
@@ -406,7 +410,7 @@ def assess_uncertainty(
                      'Results are for preliminary guidance only.')
     elif max_score >= 3:
         level = 'high'
-        banner_ar = ('تحفظ مادي عالٍ — '
+        banner_ar = ('عدم اليقين الجوهري: مرتفع — '
                      'عينة المقارنات صغيرة جداً و/أو معلومات أساسية مفقودة. '
                      'يُنصح باستشارة مُقيِّم معتمد.')
         banner_en = ('HIGH Material Uncertainty — '
@@ -414,7 +418,7 @@ def assess_uncertainty(
                      'Certified valuer consultation recommended.')
     elif max_score >= 2:
         level = 'moderate'
-        banner_ar = ('تحفظ مادي متوسط — '
+        banner_ar = ('عدم اليقين الجوهري: متوسط — '
                      'تقييم مكتبي بدون فحص ميداني. '
                      'النتائج معقولة لكنها لا تحل محل معاينة ميدانية.')
         banner_en = ('MODERATE Material Uncertainty — '

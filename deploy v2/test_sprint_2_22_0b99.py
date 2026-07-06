@@ -27,7 +27,7 @@ def check(name, cond):
 # ── A. Live Pulse — engine banner reframe (real function) ──
 import data_freshness as D
 vs = D._render_banner('ديسمبر 2025', 183, 'very_stale')
-check('banner very_stale: calmer «مؤشّر مزامنة» lead', 'مؤشّر مزامنة البيانات' in vs)
+check('banner very_stale: calmer «تاريخ تحديث بيانات وزارة العدل» lead (b105 register lock)', 'تاريخ تحديث بيانات وزارة العدل' in vs)
 check('banner very_stale: alarmist «تنبيه» removed', 'تنبيه' not in vs)
 check('banner HONESTY kept — source «وزارة العدل»', 'وزارة العدل' in vs)
 check('banner HONESTY kept — staleness «منذ 183 يوماً»', 'منذ 183 يوماً' in vs)

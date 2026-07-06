@@ -2215,7 +2215,7 @@ function showShortReport(d){
   if(cs==='cost'){
     neigh=t('أغلب ما بِيع غالياً في منطقتك بيعت بأعلى بكثير من قيمة الأرض (شريحةٌ أعلى سعراً — قد تكون أحدث أو أكبر أو أرقى تشطيباً؛ استدلالاً بالسعر لا معاينةً)','Most of what sold at high prices in your area sold well above the land value (a higher-priced tier — possibly newer, larger, or better-finished; inferred from price, not inspected)')+(_domShare!=null?t(' — نحو '+_domShare+'% من الصفقات —',' — about '+_domShare+'% of sales —'):' —')
       +((ld&&ld.market_value)?t(' ووصلت أسعارها إلى '+fmt(ld.market_value)+'.',' reaching '+fmt(ld.market_value)+'.'):'.')
-      +(_ageY?t(' بيتك عمره فوق '+_ageY+' سنة، ومثل أغلب الفلل في قطر بعد العاشرة، اعتمدنا تقديراً محافظاً ≈ قيمة أرضه + بناءً مُهلَكاً بحسب عمره — وقد تعلو قيمته إن كان بناؤه مُصاناً.',' Your home is over '+_ageY+' years old, and like most villas in Qatar past the ten-year mark, we used a conservative estimate ≈ its land value + a building depreciated for its age — and its value may be higher if the building is well-maintained.'):'')
+      +(_ageY?t(' بيتك عمره فوق '+_ageY+' سنة، ومثل أغلب الفلل في قطر بعد العاشرة، اعتمدنا تقديراً محافظاً ≈ قيمة أرضه + قيمة البناء بعد إنقاص استهلاكه بحسب عمره — وقد تعلو قيمته إن كان بناؤه مُصاناً.',' Your home is over '+_ageY+' years old, and like most villas in Qatar past the ten-year mark, we used a conservative estimate ≈ its land value + the building value after depreciation for its age — and its value may be higher if the building is well-maintained.'):'')
       +t(' ومقارنة بيتك بأسعار الشريحة الأعلى مقارنةٌ غير منصِفة.',' Comparing your home to the higher-priced tier is an unfair comparison.');
   }else if(cs==='market'){
     neigh=t('صفقات مثل بيتك كافية وواضحة: ','Sales like yours are sufficient and clear: ')+(_mn!=null?_mn:(_n!=null?_n:'—'))+t(' مطابقة خلال 24 شهراً — وسيطها مرجعك.',' matched within 24 months — their median is your reference.');
@@ -2320,7 +2320,7 @@ function showShortReport(d){
   //     frontage/street-width wide-range justification. ════
   const _scarce=(_confN!=null&&_confN<5&&v.low!=null&&v.high!=null);
   const _skew=(_hpct!=null&&(_hpct<20||_hpct>80));
-  const _anchorLegend=(cs==='cost'||(ld&&ld.rule==='geo_full'))?t('الأرضية = مرتكز الكلفة (أرض + بناء مُهلَك) · السقف = وسيط صفقات السوق','Floor = the cost anchor (land + depreciated building) · Ceiling = the market sales median'):'';
+  const _anchorLegend=(cs==='cost'||(ld&&ld.rule==='geo_full'))?t('الأرضية = مرتكز الكلفة (أرض + قيمة البناء بعد الإهلاك) · السقف = وسيط صفقات السوق','Floor = the cost anchor (land + depreciated building) · Ceiling = the market sales median'):'';
   h+='<div class="thmr-hero lux" style="background:var(--thmr-navy);border:none">';
   if(_scarce){
     h+='<span class="lbl" style="color:var(--gold)">'+t('القيمة المتوقّعة بين','Expected value between')+'</span>';
@@ -2869,7 +2869,7 @@ function show(d){
     // red→AMBER (--bad→--warn) — material uncertainty is a CAUTION, not an error. The FULL RICS
     // clause (`muc` buffer) stays always-visible immediately below TIER-1 — never collapsed.
     if(muc_ar&&MUC_LEVEL_AR[(mu||{}).level]){
-      t1+='<div style="display:inline-block;padding:3px 10px;background:var(--warn-bg);color:var(--warn);border-radius:12px;font-size:.74rem;margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('تحفظ مادي: ','Material uncertainty: ')+(LANG==='en'?MUC_LEVEL_EN:MUC_LEVEL_AR)[mu.level]+'</div>';
+      t1+='<div style="display:inline-block;padding:3px 10px;background:var(--warn-bg);color:var(--warn);border-radius:12px;font-size:.74rem;margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('عدم اليقين الجوهري: ','Material uncertainty: ')+(LANG==='en'?MUC_LEVEL_EN:MUC_LEVEL_AR)[mu.level]+'</div>';
     }
     // DEBUG-fix #4 (cost_led hero clarity): when the COST leads (leader='cost'), the big
     // central figure is the COST anchor — the market median is only the muted range-HIGH.
@@ -2933,13 +2933,13 @@ function show(d){
     if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
       const _vc=v.value_stack.cost;
       how+='<div class="rn" style="margin-top:8px;font-size:.76rem"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+pick(_vc,'label')+': '+fmt(_vc.value)+t(' ر.ق',' QAR')+' — '+pick(_vc,'sub')+'</div>';
-      // Sprint 2.22.0b.37 (DEF-UX9): surface the DRC cost MECHANICS (BUA × كلفة الإحلال × معامل الاحتفاظ →
+      // Sprint 2.22.0b.37 (DEF-UX9): surface the DRC cost MECHANICS (BUA × كلفة الإحلال × نسبة القيمة المتبقية للبناء →
       // depreciated building + land) for the المهندس/المثمّن — all BROADCAST in value_stack.cost, previously
       // visible ONLY on the full/short report (showReport :1672 / showShortReport :1904), not on the result
       // screen. Lands inside «كيف وصلنا» (the appraiser-detail accordion, b34 density-open for investor/valuer).
       // Display-only / value-invariant. Numbers in dir=ltr islands (Rule #25).
       if(_vc.bua_m2&&_vc.rcn_qar_per_m2&&_vc.retention!=null){
-        how+='<div class="rn" style="margin-top:4px;font-size:.72rem;color:var(--muted)"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+t('آليّة الكلفة (نهج DRC): مساحة البناء BUA ≈ ','Cost mechanics (DRC): built-up area BUA ≈ ')+'<span dir="ltr">'+_vc.bua_m2+'</span>'+t(' م² · كلفة الإحلال ',' m² · replacement cost ')+fmt(_vc.rcn_qar_per_m2)+t(' ر.ق/م² · معامل الاحتفاظ ',' QAR/m² · retention ')+'<span dir="ltr">'+_vc.retention+'</span>'+t(' ← البناء المُهلَك ≈ ',' ← depreciated building ≈ ')+fmt(_vc.building_value)+t(' ر.ق + الأرض ',' QAR + land ')+fmt(_vc.land_floor)+t(' ر.ق',' QAR')+'</div>';
+        how+='<div class="rn" style="margin-top:4px;font-size:.72rem;color:var(--muted)"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+t('آليّة الكلفة (نهج DRC): مساحة البناء BUA ≈ ','Cost mechanics (DRC): built-up area BUA ≈ ')+'<span dir="ltr">'+_vc.bua_m2+'</span>'+t(' م² · كلفة الإحلال ',' m² · replacement cost ')+fmt(_vc.rcn_qar_per_m2)+t(' ر.ق/م² · نسبة القيمة المتبقية للبناء ',' QAR/m² · retention ')+'<span dir="ltr">'+_vc.retention+'</span>'+t(' ← البناء المُهلَك ≈ ',' ← depreciated building ≈ ')+fmt(_vc.building_value)+t(' ر.ق + الأرض ',' QAR + land ')+fmt(_vc.land_floor)+t(' ر.ق',' QAR')+'</div>';
         if(_vc.assumptions_ar)how+='<div class="rn" style="font-size:.7rem;color:var(--muted);margin-top:2px">'+pick(_vc,'assumptions')+'</div>';
       }
     }
@@ -2955,7 +2955,7 @@ function show(d){
     if(v.comparables&&v.comparables.rows&&v.comparables.rows.length){
       var _kc=v.comparables, _kcGeo=(_kc.basis==='geo_widened');
       how+='<div class="rn" style="margin-top:10px;font-size:.76rem;border-right:3px solid var(--bronze);background:var(--alt)">';
-      how+='<div style="font-weight:600;margin-bottom:5px"><svg class=ic aria-hidden=true><use href=#ic-key></use></svg> '+(_kcGeo?t('صفقات في منطقتك ضمن حوض المقارنة الموسَّع جغرافياً','Transactions in your area within the geographically widened comparison pool'):t((_kc.n||_kc.rows.length)+' صفقة في شريحتك ومنطقتك — هي ما قرّر رقمك',(_kc.n||_kc.rows.length)+' transactions in your bracket and area — these set your number'))+(_kc.window_label?(' <span style="color:var(--muted);font-weight:400;font-size:.9em">('+_kc.window_label+')</span>'):'')+'</div>';
+      how+='<div style="font-weight:600;margin-bottom:5px"><svg class=ic aria-hidden=true><use href=#ic-key></use></svg> '+(_kcGeo?t('صفقات في منطقتك ضمن نطاق المقارنة الموسَّع جغرافياً','Transactions in your area within the geographically widened comparison pool'):t((_kc.n||_kc.rows.length)+' صفقة في شريحتك ومنطقتك — هي ما قرّر رقمك',(_kc.n||_kc.rows.length)+' transactions in your bracket and area — these set your number'))+(_kc.window_label?(' <span style="color:var(--muted);font-weight:400;font-size:.9em">('+_kc.window_label+')</span>'):'')+'</div>';
       _kc.rows.forEach(function(c){
         how+='<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px solid #e6ddd0;direction:ltr">'
            +'<span style="color:var(--muted)">'+(c.date||'').slice(0,10)+'</span>'
@@ -3261,7 +3261,7 @@ function show(d){
     // The «تحفّظ مادي: {level}» chip + the «ليس تقييماً معتمداً» line stay always-visible in t1 (the user
     // is warned at a glance); the full VPGA-10 clause is one click away. Placed first among the folds.
     // Value-invariant — display reorganization only; the clause text is unchanged and still reachable.
-    const _mucFold = muc ? _acc('<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> التحفّظ المادي والمعايير (RICS / IVS)', muc, false) : '';
+    const _mucFold = muc ? _acc('<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('عدم اليقين الجوهري والمعايير (RICS / IVS)','Material uncertainty and the standards (RICS / IVS)'), muc, false) : '';
     h=head+alerts+t1+_mucFold+t2+t3+foot;
   }else{
     h=head+muc+a8acc+alerts+flat+foot;

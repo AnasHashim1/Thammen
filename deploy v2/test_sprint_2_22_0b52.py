@@ -43,7 +43,7 @@ check('full MVU clause STILL built via _mucCardHtml (not deleted)',
 # ── 3. The DECISION-relevant compliance signposts STAY always-visible in TIER-1 ──
 check('MUC level chip STAYS in TIER-1 (amber token + level text)',
       "t1+='<div style=\"display:inline-block;padding:3px 10px;background:var(--warn-bg);color:var(--warn);" in HTML
-      and " '+t('تحفظ مادي: ','Material uncertainty: ')+(LANG==='en'?MUC_LEVEL_EN:MUC_LEVEL_AR)[mu.level]+'</div>';" in HTML)
+      and " '+t('عدم اليقين الجوهري: ','Material uncertainty: ')+(LANG==='en'?MUC_LEVEL_EN:MUC_LEVEL_AR)[mu.level]+'</div>';" in HTML)
 check('«ليس تقييماً معتمداً» STAYS in TIER-1 (a20 status appended)',
       "t1+='<div class=\"rn\" style=\"margin-top:10px;font-size:.82rem;color:#8a6d3b;background:#fcf8e3" in HTML
       and 'تقييم سوقيّ آليّ — ليس تقييماً معتمداً' in HTML  # b54 R6: تقدير→تقييم (identity lock)
