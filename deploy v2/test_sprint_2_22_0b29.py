@@ -62,19 +62,20 @@ chk("run(): valuer/refusal fallback go('results') intact",
 chk("run(): does NOT short-land (no showShortReport in run())",
     "showShortReport" not in run_fn)
 
-# ── (3) the signed two buttons + the wrapper relabel ─────────────────────────
-mbtn = re.search(r"<div class=\"thmr-btns\">.*?</div>';", HTML[HTML.find("function showShortReport"):], re.S)
-# the VALUED body's button row (the refusal stub has its own single-button row)
-rows = re.findall(r"thmr-btns(?:\\?'|\")>(.*?)</div>'", HTML, re.S)
-valued_row = next((r for r in rows if "التفاصيل الكاملة" in r), "")
-chk("short report: «التفاصيل الكاملة» button present in the thmr-btns row", bool(valued_row))
+# ── (3) the signed actions (b103 R6: the 4-button row → 2 buttons [PDF primary + refine]
+#        + a compact links row; «التفاصيل الكاملة» / «التقرير الكامل» moved into thmr-links,
+#        same onclick targets, both still reachable — the b29 intent preserved) ──────────────
+_sr_after = HTML[HTML.find("function showShortReport"):]
+links_row = (re.search(r"thmr-links no-print\">(.*?)</div>'", _sr_after, re.S) or [None, ""])[1] if re.search(r"thmr-links no-print\">(.*?)</div>'", _sr_after, re.S) else ""
+btn_rows = re.findall(r"thmr-btns[^>]*\">(.*?)</div>'", _sr_after, re.S)
+valued_btn = next((r for r in btn_rows if "حسّن التقييم" in r), "")
+chk("short report: «التفاصيل الكاملة» present in the compact links row (b103)", "التفاصيل الكاملة" in links_row)
 chk("short report: «التفاصيل الكاملة» targets go('results') (the b15 screen)",
-    "onclick=\"go('results')\">'+t('التفاصيل الكاملة','Full details')" in valued_row.replace("\\'", "'"))  # b80 R6: التفاصيل الكاملة now t()-wrapped (still → go('results'))
+    "onclick=\"go('results')\">'+t('التفاصيل الكاملة','Full details')" in links_row.replace("\\'", "'"))
 chk("short report: «التقرير الكامل» (الكامل) still targets openReport()",
-    "openReport()" in valued_row and "التقرير الكامل" in valued_row)
-chk("short report: button order الملحق -> التفاصيل -> الكامل -> طباعة",
-    valued_row.find("الملحق المتخصص") < valued_row.find("التفاصيل الكاملة")
-    < valued_row.find("التقرير الكامل") < valued_row.find("طباعة"))
+    "openReport()" in links_row and "التقرير الكامل" in links_row)
+chk("short report: the primary CTA row = PDF + «حسّن التقييم» (b103 architecture)",
+    bool(valued_btn) and "printShortReport()" in valued_btn and "go('refine')" in valued_btn.replace("\\'", "'"))
 chk("short report: refusal stub still routes to openReport (untouched)",
     re.search(r"لم يصدر تقدير لهذا العقار.*?openReport\(\)", HTML, re.S))
 

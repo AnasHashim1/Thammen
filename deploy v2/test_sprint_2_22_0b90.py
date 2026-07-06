@@ -99,8 +99,8 @@ check('§١-٥ + footer still present (verbatim, now inside the fold)',
 check('.thmr-fold CSS present (summary marker hidden + arrow rotate)',
       '.thmr-fold{' in HTML and '.thmr-fold>summary::-webkit-details-marker{display:none}' in HTML and
       '.thmr-fold[open]>summary .farr{transform:rotate(180deg)}' in HTML)
-check('printShortReport force-opens srFold (print parity, b52 pattern)',
-      "const _f=document.getElementById('srFold'); const _was=_f?_f.open:null; if(_f)_f.open=true;" in HTML)
+check('printShortReport force-opens the fold(s) for print parity (b52 pattern; b103 R6 re-point: srFold-only → ALL #srOut details)',
+      "document.querySelectorAll('#srOut details')" in HTML and '_ds.forEach(x=>{x.open=true;})' in HTML)
 
 # ── (6) VALUE-INVARIANCE: only the three disclosed multipliers ──
 _muls = sorted(set(re.findall(r'v\.amount\s*\*\s*[\d.]+', SR)))

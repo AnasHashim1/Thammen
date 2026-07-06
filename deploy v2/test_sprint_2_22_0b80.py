@@ -29,7 +29,7 @@ check('section titles wired (§1 cost story / §2 / §4 / §9 / §8)',
       "t('الأرقام الثلاثة التي تهمّك','The three numbers that matter to you')" in HTML and
       "t('من أين جاء الرقم؟','Where did the number come from?')" in HTML and
       "t('الإطار القانوني والمحاسبي','Legal and accounting framework')" in HTML and
-      "t('شفافية الدليل — بلا تجميل','Evidence transparency — no gloss')" in HTML)
+      "t('شفافية الأدلّة','Evidence transparency')" in HTML)  # b104 R6: §٨ register fix «— بلا تجميل» dropped
 check('asset label routed through ASSET_AR/ASSET_EN via t()',
       "t(ASSET_AR[d.asset_type]||'عقار',ASSET_EN[d.asset_type]||'Property')" in HTML)
 check('section number chips wired (Arabic-Indic ١..٩ -> 1..9)',
@@ -79,7 +79,7 @@ check('EN coverage markers (page 1 + page 2)',
 check('AR report literals kept verbatim (byte-identical AR render)',
       'القيمة السوقية التقديرية' in HTML and 'الأرقام الثلاثة التي تهمّك' in HTML and  # b90 R6: hero label neutralized «قيمة بيتك التقديرية اليوم»→«القيمة السوقية التقديرية»
       'المصدر: وزارة العدل — صفقات مسجلة حتى ديسمبر 2025' in HTML and
-      'الملحق المتخصص ↓' in HTML and 'موقعك في نطاق المتر' in HTML)
+      'ملحق المختصّين' in HTML and 'موقعك في نطاق المتر' in HTML)  # b103 R6: the «الملحق المتخصص ↓» scroll-button became the srFold2 «ملحق المختصّين» summary
 check('b54 locked identity intact (التقييم السوقي)', 'التقييم السوقي' in HTML)
 check('EN revealed (EN_ENABLED=true, b88) + b77 primitives intact',
       'var EN_ENABLED=true;' in HTML and 'function t(ar,en)' in HTML and 'function pick(o,base)' in HTML)

@@ -432,6 +432,22 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .thmr-fold>summary .farr{margin-inline-start:auto;color:var(--thmr-bronze);font-size:.8rem;transition:transform .2s}
 .thmr-fold[open]>summary .farr{transform:rotate(180deg)}
 .thmr-fold>*:not(summary){margin-left:12px;margin-right:12px}
+/* b103 (R1): guarantee a CLOSED fold hides its content (the measured Chromium <details>
+   quirk — author CSS computes the children as block when closed; the b46 precedent).
+   Scoped to .thmr-fold so it never bleeds to other <details> on the page. */
+.thmr-fold:not([open])>*:not(summary){display:none}
+/* b103 (R1): the srFold2 summary content-hint line + wrap; the compact links row under the 2 CTAs */
+.thmr-fold>summary{flex-wrap:wrap}
+.thmr-fold>summary .fnote{flex-basis:100%;font-weight:400;font-size:.72rem;color:var(--thmr-ink2);line-height:1.7;margin-top:2px}
+.thmr-links{display:flex;gap:22px;justify-content:center;margin-top:10px}
+.thmr-links a{color:var(--thmr-bronze);font-size:.8rem;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+/* b104 (R2): the skeptic's-proof comparables mini-table inside «عرض التفاصيل» */
+.thmr-proof{margin-top:12px;padding-top:10px;border-top:1px dashed var(--thmr-line)}
+.thmr-proof .pl{font-weight:700;font-size:.82rem;color:var(--thmr-navy);margin-bottom:6px}
+.thmr-ptab{width:100%;border-collapse:collapse;font-size:.78rem}
+.thmr-ptab th{text-align:right;font-weight:600;color:var(--thmr-ink2);border-bottom:1px solid var(--thmr-line);padding:4px 6px}
+.thmr-ptab td{padding:4px 6px;border-bottom:1px solid var(--thmr-line)}
+.thmr-ptab .n{text-align:left}
 
 /* Sprint 2.4d: Print / Save-as-PDF styles */
 @media print {
@@ -2152,10 +2168,12 @@ function bcRecalc(){
 }
 function openShortReport(){const d=window._lastResult; if(!d)return; showShortReport(d); go('shortReport');}
 function printShortReport(){
-  // b90: force-open the «عرض التفاصيل» fold so the details print (a closed <details> is not printed); restore after.
-  const _f=document.getElementById('srFold'); const _was=_f?_f.open:null; if(_f)_f.open=true;
+  // b90 → b103: force-open ALL folds inside the short report so everything prints (a closed
+  // <details> is not printed) — srFold + the b103 srFold2 specialist appendix + the financing
+  // toggle (the b28 print contract carries the financing line); restore each to its prior state.
+  const _ds=Array.from(document.querySelectorAll('#srOut details')); const _st=_ds.map(x=>x.open); _ds.forEach(x=>{x.open=true;});
   document.body.classList.add('printing-short');
-  setTimeout(()=>{window.print();setTimeout(()=>{document.body.classList.remove('printing-short');if(_f&&_was===false)_f.open=false;},500);},50);
+  setTimeout(()=>{window.print();setTimeout(()=>{document.body.classList.remove('printing-short');_ds.forEach((x,i)=>{x.open=_st[i];});},500);},50);
 }
 // Sprint 2.22.0b.28 (م2 print-contract alignment): the PO delivered the GOVERNING print
 // contract docs/ثمن_التقرير_المختصر_v2_امريخ.pdf — the surface re-rendered to its two-page
@@ -2310,7 +2328,9 @@ function showShortReport(d){
     if(_lowFt&&_highFt)h+='<div style="color:#C9D4DF;font-size:.82rem;font-weight:600;margin-top:3px"><span dir="ltr">~'+fmt(_lowFt)+' — ~'+fmt(_highFt)+'</span>'+t(' ر.ق / قدم²',' QAR / ft²')+'</div>';
   }else{
     h+='<span class="lbl" style="color:var(--gold)">'+t('القيمة السوقية التقديرية','Estimated market value')+'</span>';
-    h+='<div class="num" style="color:#fff">'+fmt(v.amount)+' <small>'+t('ريال','QAR')+'</small></div>';
+    // b104 micro-delight: the hero value counts up ~800ms on reveal (the reveal is the product's
+    // emotional peak). data-countup carries the true amount; JS animates it (reduced-motion → static).
+    h+='<div class="num" style="color:#fff"><span id="srHeroNum" data-countup="'+v.amount+'">'+fmt(v.amount)+'</span> <small>'+t('ريال','QAR')+'</small></div>';
     if(_ppf)h+='<div style="color:#C9D4DF;font-size:.82rem;font-weight:600;margin-top:3px"><span dir="ltr">'+fmt(_ppf)+'</span>'+t(' ر.ق / قدم²',' QAR / ft²')+'</div>';
   }
   h+='<div style="display:inline-block;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:2px 14px;margin-top:8px;font-size:.74rem;color:#EAF0F6">'+t('تقدير استرشادي — وليس تقييماً معتمداً','An indicative estimate — not a certified valuation')+'</div>';
@@ -2360,7 +2380,24 @@ function showShortReport(d){
   }
   // §١ — the leader story paragraph (the PDF cost-led title; matrix stories otherwise).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('١','1')+'</span>'+(cs==='cost'?t('لماذا أقل مما تسمعه عن بيوت حولك؟','Why is this lower than what you hear about homes around you?'):t('على ماذا يرتكز الرقم؟','What is the number based on?'))+'</div>';
-  h+='<div class="thmr-lay" style="margin-bottom:0;border:none;padding:2px 0 0">'+neigh+'</div></div>';
+  h+='<div class="thmr-lay" style="margin-bottom:0;border:none;padding:2px 0 0">'+neigh+'</div>';
+  // ════ Sprint 2.22.0b.104 (R2 — THE SKEPTIC'S PROOF, the 5-seat re-study's biggest find): the actual
+  // MoJ transactions behind the median (the b38-b41 keystone rows) rendered ONLY on the old result
+  // screen — now surfaced right here, one tap into «عرض التفاصيل», answering «من أين جئتم بالرقم؟».
+  // DISPLAY-ONLY: reuses the SAME broadcast v.comparables / v.considered_comparables the engine already
+  // gates (market-led → «هي ما قرّر رقمك» / cost-led → «اطّلعنا عليها ولم تقُد الرقم»); anonymized (E12). ════
+  {const _kc=v.comparables||v.considered_comparables;
+   if(_kc&&_kc.rows&&_kc.rows.length){
+    const _cons=!!(v.considered_comparables&&!v.comparables);
+    h+='<div class="thmr-proof"><div class="pl">'+(_cons
+        ?t('صفقاتٌ في منطقتك اطّلعنا عليها — ولم تقُد الرقم','Transactions in your area we reviewed — they did not set the number')
+        :t('صفقاتٌ مسجّلة مثل بيتك — هي مرجع الرقم','Registered sales like yours — the reference behind the number'))+'</div>';
+    h+='<table class="thmr-ptab"><thead><tr><th>'+t('التاريخ','Date')+'</th><th class="n">'+t('المساحة (م²)','Area (m²)')+'</th><th class="n">'+t('السعر (ر.ق)','Price (QAR)')+'</th></tr></thead><tbody>';
+    _kc.rows.slice(0,6).forEach(r=>{h+='<tr><td dir="ltr">'+r.date+'</td><td class="n" dir="ltr">'+fmt(r.area_m2)+'</td><td class="n" dir="ltr">'+fmt(r.total_price)+'</td></tr>';});
+    h+='</tbody></table>';
+    h+='<div class="thmr-micro" style="font-size:.68rem;margin-top:3px">'+t('عرض ','Showing ')+Math.min(6,_kc.rows.length)+t(' من ',' of ')+(_kc.n!=null?_kc.n:_kc.rows.length)+t(' صفقة (الأحدث أولاً، مجهولة الهوية) — المصدر: وزارة العدل، ',' transactions (newest first, anonymized) — source: Ministry of Justice, ')+'<span dir="ltr">CC BY 4.0</span></div></div>';
+   }}
+  h+='</div>';
   // §٢ — الأرقام الثلاثة التي تهمّك (the PDF three-card row).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('٢','2')+'</span>'+t('الأرقام الثلاثة التي تهمّك','The three numbers that matter to you')+'</div>';
   h+='<div class="thmr-row"><span class="k">'+(cs==='land'?t('التقدير المركزي لأرضك اليوم','Your land\'s central estimate today'):t('التقدير المركزي لبيتك اليوم','Your home\'s central estimate today'))+(d.plot_area_m2?(' · ≈ <span dir="ltr">'+fmt(Math.round(v.amount/d.plot_area_m2))+'</span>'+t(' ر.ق/م² أرض',' QAR/m² of land')):'')+'</span><span class="v">'+fmt(v.amount)+'</span></div>';
@@ -2417,15 +2454,21 @@ function showShortReport(d){
   h+='<div class="thmr-fpline">'+(vUrl?'<span class="thmr-qr" id="srQr1"></span>':'')
     +'<span>'+(d.report_fp?(t('البصمة ','Fingerprint ')+'<span class="fp" dir="ltr">'+d.report_fp+'</span> · '):'')+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a> · '):'')+t('بيانات وزارة العدل عبر بوابة قطر للبيانات المفتوحة (','Ministry of Justice data via Qatar Open Data (')+'<span dir="ltr">CC BY 4.0</span>'+t(') — التقدير مُشتق وليس تقييماً رسمياً',') — the estimate is derived and is not an official valuation')+'</span></div>';
   h+='</details>';  // b90: close the «عرض التفاصيل» fold (financing + §١-٥ + footer folded under the 5-second face)
-  // b29 (إتمام D6): زرّا الشريحة الموقَّعان — «التفاصيل الكاملة» → شاشة النتيجة (b15،
-  // مبثوثة دائماً لأن show() يسبق هذا العرض) · «التقرير الكامل» → الكامل (قائم من b25).
-  h+='<div class="thmr-btns"><button class="thmr-btn" onclick="document.getElementById(\'srPage2\').scrollIntoView({behavior:\'smooth\'})">'+t('الملحق المتخصص ↓','Specialist appendix ↓')+'</button>'
-    +'<button class="thmr-btn alt" onclick="go(\'results\')">'+t('التفاصيل الكاملة','Full details')+'</button>'
-    +'<button class="thmr-btn alt" onclick="openReport()">'+t('التقرير الكامل','Full report')+'</button>'
-    +'<button class="thmr-btn alt no-print" onclick="printShortReport()">'+t('طباعة / PDF','Print / PDF')+'</button></div>';
+  // ════ Sprint 2.22.0b.103 (R1 — the plan's card landing; PO-picked primary CTA): the PRIMARY
+  // action = «حفظ / مشاركة PDF» (the owner's instinct after seeing the number — document + share
+  // to a bank/buyer); SECONDARY = «حسّن التقييم» (feeds accuracy + the S7 flywheel); the rest
+  // demoted to compact text links. The old scroll-to-appendix button is REMOVED — the
+  // (now-collapsed) srFold2 summary right below IS the opener. ════
+  h+='<div class="thmr-btns"><button class="thmr-btn no-print" onclick="printShortReport()">'+t('حفظ / مشاركة PDF','Save / share PDF')+'</button>'
+    +'<button class="thmr-btn alt" onclick="go(\'refine\')">'+t('حسّن التقييم','Refine the valuation')+'</button></div>';
+  h+='<div class="thmr-links no-print"><a onclick="openReport()">'+t('التقرير الكامل','Full report')+'</a><a onclick="go(\'results\')">'+t('التفاصيل الكاملة','Full details')+'</a></div>';
   h+='</div>';
   // ════ Page 2 — ملحق المختصّين (the PDF contract §٦–٩) ════
+  // Sprint 2.22.0b.103 (R1): page-2 now FOLDS by default — the exact b90/srFold pattern.
+  // Nothing is deleted: §٦–٩ + the legal block + the QR line all live INSIDE the fold, one tap
+  // away (the r10 #4 approved content-hint rides the summary). Print force-opens (printShortReport).
   h+='<div class="thmr-page" id="srPage2">';
+  h+='<details class="thmr-fold" id="srFold2"><summary><span>'+t('ملحق المختصّين','Specialist appendix')+'</span><span class="farr">▾</span><span class="fnote">'+t('للبنك والمثمّن والمحامي — السيناريوهات والأدلة والإطار القانوني','For the bank, the valuer, and the lawyer — scenarios, evidence, and the legal framework')+'</span></summary>';
   h+='<div class="thmr-head"><div class="b1">'+t('ثمّن — ملحق المختصّين','Thammen — Specialist Appendix')+'<small>'+t('للمستثمر · البنك · المحامي · المثمّن','For the investor · the bank · the lawyer · the valuer')+'</small></div>';
   h+='<div class="meta">'+(d.report_ref?(t('المرجع ','Reference ')+'<b dir="ltr">'+d.report_ref+'</b><br>'):'')+(d.report_fp?(t('بصمة المحتوى: ','Content fingerprint: ')+'<b dir="ltr">'+d.report_fp+'</b>'):'')+'</div></div>';
   // §٦ — جدول السيناريوهات «ماذا لو؟» (the b23 broadcast + the PDF idea column).
@@ -2439,14 +2482,19 @@ function showShortReport(d){
     h+='<div class="thmr-micro">'+t('القيم من محاكاة المحرّك الفعلية لهذا العقار — وتتدقّق أكثر بمعلوماتك الحقيقية عبر «حسّن التقييم».','The values come from the engine’s actual simulation for this property — and they refine further with your real information via “Refine the valuation”.')+'</div></div>';
   }
   // §٧ — للمستثمر: منظور الدخل (broadcast-only; folded when absent).
+  // b104 (PO-raised + RICS): a valuer ESTIMATES, never ADVISES. The FACTUAL market metric (net-yield
+  // benchmark 5–6% = market data) is KEPT; the old directive tail (excitement-vs-scrutiny) is
+  // neutralized to benchmark language, and «ليست توصيةً استثماريّة» is stated (lawyer persona).
   if(inc.income_value||inc.monthly_rent){
     h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('٧','7')+'</span>'+t('للمستثمر — منظور الدخل','For the investor — the income view')+'</div>';
     h+='<div class="thmr-micro" style="font-size:.8rem">'+(inc.monthly_rent?((inc.rent_source==='actual_provided'?t('إيجارك الفعلي: ','Your actual rent: '):t('إيجار شهري متّسق مع هذه القيمة: ','A monthly rent consistent with this value: '))+'≈ <b><span dir="ltr">'+fmt(inc.monthly_rent)+'</span>'+t(' ر.ق',' QAR')+'</b>'):'')
       +(_capPct?(t(' (معدل رسملة مُعايَر <b>'+_capPct+'%</b>',' (a calibrated cap rate of <b>'+_capPct+'%</b>')+(_capN!=null?t(' من '+_capN+' عقد إيجار في المنطقة',' from '+_capN+' lease contracts in the area'):'')+').'):'.')
-      +t(' وتذكير ثمّن الدائم: <b>قِس صافي العائد بعد المصاريف</b> (صيانة، إدارة، شواغر) لا الإجمالي — الطبيعي في قطر للسكني <b>5–6% صافياً</b>؛ ما دونه ضعيف وما فوق 6% يستحق التدقيق لا الفرح.',' Thammen’s standing reminder: <b>measure the net yield after costs</b> (maintenance, management, vacancy), not the gross — the norm in Qatar for residential is <b>5–6% net</b>; below that is weak, and above 6% deserves scrutiny rather than excitement.')+'</div></div>';
+      +t(' والمعيار: <b>صافي العائد بعد المصاريف</b> (صيانة، إدارة، شواغر) لا الإجمالي — الطبيعي في قطر للسكني <b>5–6% صافياً</b>؛ ما دونه ضعيف، وما فوق 6% يستدعي التحقّق من سبب ارتفاعه.',' The benchmark: <b>net yield after costs</b> (maintenance, management, vacancy), not the gross — the norm in Qatar for residential is <b>5–6% net</b>; below that is weak, and above 6% warrants checking the reason for the elevated figure.')+'</div>';
+    h+='<div class="thmr-micro" style="font-size:.72rem;color:var(--thmr-ink2);margin-top:6px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('مقاييس سوقية استرشاديّة، وليست توصيةً استثماريّة.','Indicative market metrics — not an investment recommendation.')+'</div></div>';
   }
-  // §٨ — شفافية الدليل — بلا تجميل (the PDF three cards; leader-aware middle card).
-  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('٨','8')+'</span>'+t('شفافية الدليل — بلا تجميل','Evidence transparency — no gloss')+'</div>';
+  // §٨ — شفافية الأدلّة (b104 register fix: «— بلا تجميل» was a marketing/colloquial tail → dropped;
+  // formal «شفافية الأدلّة». The PDF three cards; leader-aware middle card).
+  h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('٨','8')+'</span>'+t('شفافية الأدلّة','Evidence transparency')+'</div>';
   if(_n!=null)h+='<div class="thmr-row"><span class="k"><b>'+_n+t(' صفقة</b> في شريحة مساحتك',' sales</b> in your size bracket')+(v.window_used?(' ('+v.window_used+')'):'')+t(' — والمثالي إحصائياً 20+',' — the statistical ideal is 20+')+'</span><span class="v" style="font-weight:400">'+t('لذلك تجد كلمة «استرشادي»','that is why you see the word “indicative”')+'</span></div>';
   if(cs==='cost'){
     h+='<div class="thmr-row"><span class="k"><b>'+(_mn!=null?_mn:'—')+t(' فقط</b> تشبه بيتك فعلاً (عمراً وفئة)',' only</b> truly resemble your home (age and class)')+'</span><span class="v" style="font-weight:400">'+t('ولهذا قادت الكلفةُ الرقمَ لا أسعار الجيران','which is why cost led the number, not neighbours’ prices')+'</span></div>';
@@ -2467,6 +2515,7 @@ function showShortReport(d){
   h+='<div class="thmr-micro" style="margin-top:8px">'+t('أي نسخة من هذا الملف بمرجعٍ أو بصمةٍ مختلفَين ليست النسخة الصادرة بهذا التاريخ.','Any copy of this file carrying a different reference or fingerprint is not the version issued on this date.')+'</div></div>';
   h+='<div class="thmr-fpline">'+(vUrl?'<span class="thmr-qr" id="srQr2"></span>':'')
     +'<span>'+t('تحقق من سلامة هذا التقرير: ','Verify the integrity of this report: ')+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a>'):'<span>'+t('التحقّق غير مُفعَّل','Verification not enabled')+'</span>')+(d.report_fp?(t(' · البصمة ',' · Fingerprint ')+'<span class="fp" dir="ltr">'+d.report_fp+'</span>'):'')+(d.report_ref?(t(' · المرجع ',' · Reference ')+'<span dir="ltr">'+d.report_ref+'</span>'):'')+'</span></div>';
+  h+='</details>';  // b103: close the srFold2 specialist-appendix fold (§٦–٩ + the QR line all inside)
   h+='</div>';
   o.innerHTML=h;
   // the verify QR (LOCAL lib — no CDN); rendered post-injection into both pages.
@@ -2476,6 +2525,23 @@ function showShortReport(d){
       new QRCode(document.getElementById('srQr2'),{text:vUrl,width:84,height:84,correctLevel:QRCode.CorrectLevel.M});
     }catch(e){}
   }
+  _srCountUp();  // b104 micro-delight: animate the hero value on reveal (reduced-motion safe)
+}
+// b104: hero value count-up (~800ms). Reduced-motion → no-op (the value is already the final fmt()).
+// Value-invariant: animates ONLY the display digits toward data-countup; the DOM ends on fmt(amount).
+function _srCountUp(){
+  try{
+    const el=document.getElementById('srHeroNum'); if(!el)return;
+    const target=parseFloat(el.getAttribute('data-countup')); if(!isFinite(target))return;
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const dur=800, t0=performance.now();
+    const step=(now)=>{
+      const p=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-p,3);  // easeOutCubic
+      el.textContent=fmt(Math.round(target*e));
+      if(p<1)requestAnimationFrame(step); else el.textContent=fmt(target);
+    };
+    requestAnimationFrame(step);
+  }catch(e){}
 }
 
 function show(d){
