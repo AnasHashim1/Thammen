@@ -1908,6 +1908,10 @@ function showReport(d){
     h+='<div class="rc"><div class="rt" style="margin-bottom:10px">'+t('القيمة السوقية (MV)','Market value (MV)')+'</div>';
     const _tierR=(LANG==='en'?TIER_LABEL_EN:TIER_LABEL_AR)[d.tier_label]||'';
     if(_tierR)h+='<div style="display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px">'+_tierR+'</div>';
+    // Sprint 2.22.0b.106 (S1 R-1) — the BASIS OF VALUE stated WITH the reported value (RICS VPS 2 /
+    // IVS 102). RICS requires the basis to be reported alongside the figure; this is the Market Value
+    // definition, verbatim in intent, on the professional artifact. «ليس معتمداً» kept adjacent (no new claim).
+    h+='<div class="rn" style="font-size:.76rem;color:var(--muted);margin-bottom:10px;line-height:1.6">'+t('أساس القيمة: القيمة السوقية (&lrm;RICS VPS 2 / IVS 102&lrm;) — المبلغ المُقدَّر لتبادُل العقار في تاريخ التقييم بين بائعٍ وشارٍ راغبَين، في معاملةٍ محايدة بعد تسويقٍ مناسب، يتصرّف فيها كلٌّ منهما بمعرفةٍ وحصافةٍ ودون إكراه. وهو تقييمٌ سوقيٌّ آليّ استرشاديّ — ليس تقييماً معتمداً.','Basis of value: Market Value (&lrm;RICS VPS 2 / IVS 102&lrm;) — the estimated amount for which the property would exchange on the valuation date between a willing buyer and a willing seller in an arm\'s-length transaction after proper marketing, where each party acts knowledgeably, prudently and without compulsion. This is an indicative automated market valuation — not a certified valuation.')+'</div>';
     if(v.low!=null&&v.high!=null){
       h+='<div class="ri full"><div class="rl">'+t('النطاق التقديري السوقي','Estimated market range')+'</div><div class="rv hl" style="font-size:1.4rem">'+fmt(v.low)+' – '+fmt(v.high)+t(' ر.ق',' QAR')+'</div></div>';
       h+='<div class="rn" style="font-size:.84rem">'+_midR+' ≈ <strong>'+fmt(v.amount)+'</strong>'+t(' ر.ق',' QAR')+'</div>';
@@ -1985,6 +1989,16 @@ function showReport(d){
       cData+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> '+t('حوض المقارنات: وسيط ','Comparables pool: median ')+fmt(v.value_stack.market.median)+t(' ر.ق · تشتت 36 شهراً ',' QAR · 36-month dispersion ')+'<span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span>'+((v.value_stack.market.bracket_n_36!=null)?' <span dir="ltr">(n='+v.value_stack.market.bracket_n_36+')</span>':'')+'</div>';
     }
     if(d.moj_sample_size)cData+='<div class="rn" style="margin-top:8px;font-size:.78rem">'+t('صفقات البيع المسجلة لعقارات مشابهة: ','Registered sales of comparable properties: ')+d.moj_sample_size+t(' صفقة',' sales')+'</div>';
+    // Sprint 2.22.0b.106 (S1) — RICS data disclosures in «حول البيانات»:
+    // C-4 evidence hierarchy (VPS 3 / IVS 103 — comparable evidence is registered sales, not asking prices).
+    cData+='<div class="rn" style="margin-top:8px;font-size:.76rem">'+t('طبيعة الأدلّة: صفقاتٌ فعليّة مسجَّلة لدى وزارة العدل — لا أسعار إعلاناتٍ ولا عروض.','Nature of the evidence: actual sales registered with the Ministry of Justice — not asking prices or listings.')+'</div>';
+    // R-2 the latest MoJ record date + age (VPS 6 report-data disclosure; threaded from data_freshness, no new API call).
+    const _dfR=d.data_freshness||{};
+    if(_dfR.latest_record_ar)cData+='<div class="rn" style="margin-top:6px;font-size:.76rem">'+t('أحدث سجلّ صفقات لدى وزارة العدل: ','Latest transaction record at the Ministry of Justice: ')+'<span dir="ltr">'+esc(_dfR.latest_record_ar)+'</span>'+(_dfR.days_old!=null?(t(' (منذ ',' (')+'<span dir="ltr">'+_dfR.days_old+'</span>'+t(' يوماً)',' days ago)')):'')+'</div>';
+    // R-3 (disclosure half) the honest time-adjustment posture — the villa/house median is a plain
+    // percentile (NOT time-normalised); the land grid IS time-normalised (disclosed in its own panel),
+    // so this line is scoped OUT for raw_land to stay code-truthful (fact #2).
+    if(d.asset_type!=='raw_land')cData+='<div class="rn" style="margin-top:6px;font-size:.74rem">'+t('النافذة الزمنيّة للأدلّة تمتدّ حتى ٢٤ شهراً (وتتّسع إلى ٣٦ عند قلّة العيّنة)؛ ولا يُطبَّق تعديلٌ زمنيّ صريح على الوسيط — وقِدَمُ البيانات سببٌ مُعلَن لعدم اليقين الجوهري.','The evidence window extends up to 24 months (widening to 36 when the sample is thin); no explicit time adjustment is applied to the median — and the age of the data is a stated reason for material uncertainty.')+'</div>';
     // emit non-empty clusters in order (number → property → data); each carries ONE bronze label.
     // The DEF-12 three-value block (above, b51 reorder) still LEADS with the key numbers; these
     // grouped clusters follow — the reader meets the value first, then «كيف/عن ماذا/من أين».
@@ -1994,6 +2008,10 @@ function showReport(d){
     // م3/D8 — the ONE MUC block, AFTER the number (ص1 + ص9 merged; the brief MU
     // section is skipped in the annex loop below).
     h+=_mucCardHtml(m_ar,m_b,m_r);
+    // Sprint 2.22.0b.106 (S1 C-7) — declare the FUNCTION of the range next to the MUC clause: the
+    // low–high band IS the quantitative expression of the valuation uncertainty (the bank credit
+    // officer's re-study ask). Honest — the range already exists; we only state what it means. No new math.
+    if(v.low!=null&&v.high!=null)h+='<div class="rn" style="font-size:.76rem;margin-top:8px;color:var(--muted)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+t('النطاق المعروض (','The stated range (')+'<span dir="ltr">'+fmt(v.low)+' – '+fmt(v.high)+'</span>'+t(' ر.ق) هو التعبير الكمّي عن عدم اليقين في هذا التقييم؛ والقيمة المركزيّة هي التقدير الأرجح ضمنه.',' QAR) is the quantitative expression of the uncertainty in this valuation; the central figure is the most likely estimate within it.')+'</div>';
     // (3b) Sprint 2.22.0b.23 «بثّ المختصر» — scenarios panel (villa/house; DRC what-ifs).
     // Additive/display-only: the headline above is the certified estimate; these show the
     // effect of condition/finish/teardown on the SAME plot + footprint.
@@ -2511,6 +2529,8 @@ function showShortReport(d){
   h+='</div>';
   // §٩ — الإطار القانوني والمحاسبي (the PDF FULL legal block + the tamper line).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('٩','9')+'</span>'+t('الإطار القانوني والمحاسبي','Legal and accounting framework')+'</div>';
+  // Sprint 2.22.0b.106 (S1 R-1, compact) — the basis of value stated on the short report too (RICS VPS 2 / IVS 102).
+  h+='<div class="thmr-micro" style="margin-top:0;margin-bottom:6px"><b>'+t('أساس القيمة: ','Basis of value: ')+'</b>'+t('القيمة السوقية (&lrm;RICS VPS 2 / IVS 102&lrm;) — قيمة تبادُل العقار بين بائعٍ وشارٍ راغبَين، بعد تسويقٍ مناسب ودون إكراه.','Market Value (&lrm;RICS VPS 2 / IVS 102&lrm;) — the exchange value between a willing buyer and a willing seller, after proper marketing and without compulsion.')+'</div>';
   h+='<div class="thmr-legal" style="margin-top:0">'+t('هذا <b>تقدير آلي استرشادي</b> صادر بتاريخه وفق البيانات المتاحة حينه، و<b>ليس تقييماً عقارياً معتمداً</b> وفق التنظيم القطري لمزاولة التقييم. لا يصلح حجةً قضائية أو مصرفية، ولا لأغراض التقارير المالية (','This is an <b>automated indicative estimate</b> issued on its date, based on the data available at the time, and is <b>not a certified real-estate valuation</b> under Qatari regulation of the valuation profession. It is not valid as judicial or banking evidence, nor for financial-reporting purposes (')+'<span dir="ltr">IFRS 13</span>'+t(')، ولا لقسمة التركات دون تراضي الأطراف، <b>ولا ينشئ أي التزام أو مسؤولية على المنصة</b>. ما ورد في «الخلاصة العملية» إرشادٌ تفاوضي عام لا توصية فردية — والقرار وتبعته لصاحبه. للقرارات الرسمية: معاينة ميدانية ومقيّم مرخّص.','), nor for dividing an estate without the agreement of the parties, <b>and creates no obligation or liability on the platform</b>. What appears under “The practical takeaway” is general negotiation guidance, not individual advice — the decision and its consequences rest with the owner. For official decisions: a field inspection and a licensed valuer.')+'</div>';
   h+='<div class="thmr-micro" style="margin-top:8px">'+t('أي نسخة من هذا الملف بمرجعٍ أو بصمةٍ مختلفَين ليست النسخة الصادرة بهذا التاريخ.','Any copy of this file carrying a different reference or fingerprint is not the version issued on this date.')+'</div></div>';
   h+='<div class="thmr-fpline">'+(vUrl?'<span class="thmr-qr" id="srQr2"></span>':'')
