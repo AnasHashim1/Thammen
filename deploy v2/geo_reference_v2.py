@@ -344,8 +344,14 @@ def _get_area_transactions(
                 continue
         elif category != 'all' and _categorize(r) != category:
             continue
-        # Sprint 2.22.0a.11 (A1): residential-usage filter on the VILLA pool only (land untouched).
-        if category == 'villa' and not _is_residential_usage(r):
+        # Sprint 2.22.0a.11 (A1): residential-usage filter on the VILLA pool.
+        # Sprint 2.22.0b.109 (S4): the b102 sibling — extend it to the LAND geo pool too, so a
+        # residential-land subject is valued/compared on residential land comps (apartment-development
+        # / commercial land has a different HBU + buyer pool). This mirrors moj_reference.py (already
+        # b102-filtered on BOTH land + villa); it closes the geo↔bracket asymmetry (fact #3). Affects the
+        # geo-widened LAND headline (thin-primary land routes here) + cleans the comparable-grid display;
+        # villa path byte-identical (this clause never fires for non-land/villa categories).
+        if category in ('villa', 'land') and not _is_residential_usage(r):
             continue
         d = _parse_date(r.get(date_col, ''))
         if not d or d < cutoff:
