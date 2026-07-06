@@ -1332,25 +1332,26 @@ async function run(){
   let bd;
   if(inputTab==='land'){
     const pinV=(document.getElementById('pin').value||'').trim();
-    if(!/^\d{7,9}$/.test(pinV)){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">يرجى إدخال رقم قطعة صحيح (7 إلى 9 أرقام)</div>';return}
+    if(!/^\d{7,9}$/.test(pinV)){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">'+t('يرجى إدخال رقم قطعة صحيح (7 إلى 9 أرقام)','Please enter a valid plot number (7 to 9 digits)')+'</div>';return}
     bd={pin:pinV,audience};
   }else{
     const z=document.getElementById('zone').value,s=document.getElementById('street').value,b=document.getElementById('building').value;
-    if(!z||!s||!b){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">يرجى إدخال رقم المنطقة والشارع والمبنى</div>';return}
+    if(!z||!s||!b){document.getElementById('fRes').innerHTML='<div class="err" style="margin-top:14px">'+t('يرجى إدخال رقم المنطقة والشارع والمبنى','Please enter the zone, street and building numbers')+'</div>';return}
     bd={zone:+z,street:+s,building:+b,audience};
   }
   // Sprint 2.22.0b.33 (DEF-UX14): remember this identity locally (value-invariant —
   // bd is already built/validated above; this only persists the fields for next time).
   _saveIdentity();
-  const btn=document.getElementById('sBtn');btn.disabled=true;btn.innerHTML='جاري التقييم... <span class="sp"></span>';
-  // Sprint D: progressive loading with elapsed time
+  const btn=document.getElementById('sBtn');btn.disabled=true;btn.innerHTML=t('جاري التقييم...','Valuing...')+' <span class="sp"></span>';
+  // Sprint D: progressive loading with elapsed time. Sprint 2.22.0b.107 (S2): t()-wrapped so EN
+  // users stop seeing Arabic during the 6–20s wait (EN reveal since b88).
   const fRes=document.getElementById('fRes');
   const t0=Date.now();
-  const steps=['نتحقق من العنوان في خرائط GIS...','نبحث في سجل وزارة العدل عن صفقات مماثلة...','نحلّل الموقع والمعالم القريبة...','نُجهّز التقرير...'];
+  const steps=[t('نتحقق من العنوان في خرائط GIS...','Verifying the address on the GIS maps...'),t('نبحث في سجل وزارة العدل عن صفقات مماثلة...','Searching the Ministry of Justice registry for comparable sales...'),t('نحلّل الموقع والمعالم القريبة...','Analysing the location and nearby landmarks...'),t('نُجهّز التقرير...','Preparing the report...')];
   let stepIdx=0;
   const renderLoading=()=>{
     const el=Math.round((Date.now()-t0)/1000);
-    fRes.innerHTML='<div class="lprog"><div class="lstep">'+steps[Math.min(stepIdx,steps.length-1)]+'</div><div class="lelapsed">منذ '+el+' ثانية</div><div class="lbar"></div></div>';
+    fRes.innerHTML='<div class="lprog"><div class="lstep">'+steps[Math.min(stepIdx,steps.length-1)]+'</div><div class="lelapsed">'+t('منذ ','')+el+t(' ثانية',' s')+'</div><div class="lbar"></div></div>';
   };
   renderLoading();
   const stepTimer=setInterval(()=>{stepIdx++;if(stepIdx<steps.length)renderLoading();},6000);
@@ -1364,7 +1365,7 @@ async function run(){
     // accept override_land_area (§20.26), so the bare endpoint is safe here.
     window._lastSubmit={endpoint:'/api/evaluate', body:JSON.parse(JSON.stringify(bd))};
     const r=await fetch(API+'/api/evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
-    if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
+    if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||(t('خطأ من السيرفر — رقم ','Server error — code ')+r.status))}
     const data=await r.json();
     window._lastResult=data;
     show(data);
@@ -1377,10 +1378,10 @@ async function run(){
     if(audience!=='valuer'&&_cgv.amount!=null&&_cgv.amount>0){showConfirm(data);go('confirm');}
     else{go('results');}
   }catch(e){
-    fRes.innerHTML='<div class="err" style="margin-top:14px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||'حدث خطأ')+'<br><span style="font-size:.78rem;color:var(--muted);display:block;margin-top:8px">لو استمرت المشكلة، تأكد من الاتصال أو حاول بعد دقيقة.</span></div>';
+    fRes.innerHTML='<div class="err" style="margin-top:14px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||t('حدث خطأ','An error occurred'))+'<br><span style="font-size:.78rem;color:var(--muted);display:block;margin-top:8px">'+t('لو استمرت المشكلة، تأكد من الاتصال أو حاول بعد دقيقة.','If the problem persists, check your connection or try again in a minute.')+'</span></div>';
   }finally{
     clearInterval(stepTimer);clearInterval(elapsedTimer);
-    btn.disabled=false;btn.innerHTML='ثمّن';
+    btn.disabled=false;btn.innerHTML=t('ثمّن','Value it');
   }
 }
 
@@ -1406,7 +1407,7 @@ async function thammenReEvalOverride(area){
   }catch(_){}
   try{
     const r=await fetch(API+window._lastSubmit.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
-    if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
+    if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||(t('خطأ من السيرفر — رقم ','Server error — code ')+r.status))}
     const data=await r.json();
     window._lastResult=data;
     window._lastSubmit={endpoint:window._lastSubmit.endpoint, body:bd};
@@ -1474,7 +1475,7 @@ async function thammenReEvalGeometry(){
   try{document.body.appendChild(banner);}catch(_){}
   try{
     const r=await fetch(API+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
-    if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||'خطأ من السيرفر — رقم '+r.status)}
+    if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||(t('خطأ من السيرفر — رقم ','Server error — code ')+r.status))}
     const data=await r.json();
     window._lastResult=data;
     window._lastSubmit={endpoint:endpoint, body:bd};
@@ -1503,16 +1504,22 @@ function openMapPicker(lat,lon){
   // Each link uses its native URL scheme; on mobile the OS routes to the app.
   const m=document.createElement('div');
   m.className='map-modal';
+  // Sprint 2.22.0b.107 (S2): the one modal b70 missed — add dialog a11y (role/aria-modal/aria-label)
+  // + Escape-to-close (the b70 pattern) + t()-wrap the 3 user-facing strings (EN reveal since b88).
+  m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');
+  m.setAttribute('aria-label',t('اختر تطبيق الخرائط','Choose a maps app'));
   m.onclick=e=>{if(e.target===m)m.remove()};
-  const label=encodeURIComponent('موقع العقار');
+  const _mapEsc=e=>{if(e.key==='Escape'){m.remove();document.removeEventListener('keydown',_mapEsc);}};
+  document.addEventListener('keydown',_mapEsc);
+  const label=encodeURIComponent(t('موقع العقار','Property location'));
   m.innerHTML='<div class="map-modal-content">'+
-    '<div class="map-modal-header">اختر التطبيق</div>'+
+    '<div class="map-modal-header">'+t('اختر التطبيق','Choose the app')+'</div>'+
     '<div class="map-modal-list">'+
       '<a href="https://maps.apple.com/?ll='+lat+','+lon+'&q='+label+'" target="_blank" rel="noopener">Apple Maps</a>'+
       '<a href="https://www.google.com/maps?q='+lat+','+lon+'" target="_blank" rel="noopener">Google Maps</a>'+
       '<a href="https://waze.com/ul?ll='+lat+','+lon+'&navigate=yes" target="_blank" rel="noopener">Waze</a>'+
     '</div>'+
-    '<button class="map-modal-close" onclick="this.closest(\'.map-modal\').remove()">إلغاء</button>'+
+    '<button class="map-modal-close" onclick="this.closest(\'.map-modal\').remove()">'+t('إلغاء','Cancel')+'</button>'+
     '</div>';
   document.body.appendChild(m);
 }
@@ -2447,8 +2454,12 @@ function showShortReport(d){
     h+='<div class="thmr-row"><span class="k">'+t('البناء بعد العمر — كلفة بنائه اليوم بعد خصم إهلاك ','Building after age — its build cost today, less depreciation for ')+(_ageY?(_ageY+t('+ سنة','+ years')):t('عمره','its age'))+((cost.bua_m2&&cost.rcn_qar_per_m2&&cost.retention!=null)?(' (<span dir="ltr">BUA '+cost.bua_m2+' × '+fmt(cost.rcn_qar_per_m2)+' × '+cost.retention+'</span>)'):'')+'</span><span class="v">≈ '+fmt(cost.building_value)+'</span></div>';
   }else{
     const vd=v.value_decomposition||{};
-    if(vd.land&&vd.land.value!=null)h+='<div class="thmr-row"><span class="k">'+t('مكوّن الأرض الاسترشادي','Indicative land component')+'</span><span class="v">'+fmt(vd.land.value)+'</span></div>';
-    if(vd.building_implied&&vd.building_implied.value!=null)h+='<div class="thmr-row"><span class="k">'+t('مساهمة البناء الضمنية','Implied building contribution')+'</span><span class="v">'+fmt(vd.building_implied.value)+'</span></div>';
+    // Sprint 2.22.0b.107 (S2 bug-fix): the engine emits land.estimated_qar / building_implied.qar
+    // (evaluate_unified.py:1708/:1716) — this block had read the non-existent .value keys, so the
+    // short report's «من أين جاء الرقم؟» decomposition rendered EMPTY. Now reads the real keys
+    // (the full report at :1602/:1630 already does), negative-safe like the full report.
+    if(vd.land&&vd.land.estimated_qar!=null)h+='<div class="thmr-row"><span class="k">'+t('مكوّن الأرض الاسترشادي','Indicative land component')+'</span><span class="v">'+fmt(vd.land.estimated_qar)+'</span></div>';
+    if(vd.building_implied&&vd.building_implied.qar!=null)h+='<div class="thmr-row"><span class="k">'+t('مساهمة البناء الضمنية','Implied building contribution')+'</span><span class="v">'+(vd.building_implied.qar<0?'−':'')+fmt(Math.abs(vd.building_implied.qar))+'</span></div>';
     if(cs==='land'&&vf.land_floor)h+='<div class="thmr-row"><span class="k">'+t('قيمة الأرض (وسيط المنطقة × المساحة)','Land value (area median × area)')+'</span><span class="v">'+fmt(vf.land_floor)+'</span></div>';
   }
   h+='<div class="thmr-row"><span class="k">'+t('المصدر: وزارة العدل — صفقات مسجلة حتى ديسمبر 2025','Source: Ministry of Justice — registered transactions through December 2025')+'</span><span class="v" style="font-weight:400">'+t('لا أسعار إعلانات ولا «كلام سوق»','no listing prices, no "market talk"')+'</span></div>';

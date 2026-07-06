@@ -83,8 +83,8 @@ check('C-7 gated on the range existing (v.low/v.high) — no new math',
 check('all 5 disclosures are additive `h+=`/`cData+=` (no figure/method/rule touched)',
       "h+='<div class=\"rn\" style=\"font-size:.76rem;color:var(--muted);margin-bottom:10px" in REP)
 check('EN reveal + b54 locked identity intact', 'var EN_ENABLED=true;' in HTML and 'تقييم سوقيّ آليّ' in HTML)
-check('engine bumped to a valid b-series tag (no exact pin)',
-      "SPRINT_TAG = '2.22.0b." in ENG and 'thammen-sprint2p22p0b' in ENG and 'rics-report-disclosures' in ENG)
+check('engine is a valid b-series tag (no exact pin — Lesson-2)',
+      "SPRINT_TAG = '2.22.0b." in ENG and 'thammen-sprint2p22p0b' in ENG)
 
 print('\nb106:', passed, 'passed,', failed, 'failed')
 raise SystemExit(1 if failed else 0)
