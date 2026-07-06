@@ -521,6 +521,21 @@ def query_trend(conn: sqlite3.Connection, area: str,
             WHERE area=? AND price_ft2 > 0 AND year IS NOT NULL
             ORDER BY year
         """, (area_norm,)).fetchall()
+    elif category in ('villa', 'land'):
+        # Sprint 2.22.0b.110 (S5) parity: match compute_trend's PURE comp-pool filter
+        # (built_type STANDALONE_VILLA/LAND + residential usage) instead of the coarse DB
+        # `category` label (which lumps فيلتان/بيت into 'villa' and is usage-blind). The DB
+        # stores property_type + usage, so the same shared filters apply post-query.
+        from built_type import matches_category as _btm
+        from usage_filter import _is_residential_usage as _resu
+        raw = conn.execute("""
+            SELECT year, price_ft2, price_m2, property_type, usage FROM transactions
+            WHERE area=? AND price_ft2 > 0 AND year IS NOT NULL
+            ORDER BY year
+        """, (area_norm,)).fetchall()
+        rows = [r for r in raw
+                if _btm({'نوع العقار': r['property_type'] or ''}, category)
+                and _resu({'الاستخدام': r['usage'] or ''})]
     else:
         rows = conn.execute("""
             SELECT year, price_ft2, price_m2 FROM transactions

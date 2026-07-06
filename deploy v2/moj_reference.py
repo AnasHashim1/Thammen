@@ -248,11 +248,16 @@ def compute_trend(rows, area, max_d, category='all'):
     if not area_rows:
         return None
 
-    # Filter by category
+    # Filter by category — Sprint 2.22.0b.110 (S5): align the trend pool to the COMP pool so the
+    # area-trend panel can no longer contradict the value's pool. Was the legacy `categorize()`:
+    # villa included 'dwelling' (بيت/مسكن → HOUSE, excluded from the a12/built_type villa comp pool),
+    # and land was type-only (mixing non-residential land the b102/S4 comp pool now excludes). Now uses
+    # the SAME pure filter as build_reference: built_type STANDALONE_VILLA/LAND + residential usage.
+    # VALUE-INVARIANT — the trend is presentation only (label/figures); it never feeds amount/range/method.
     if category == 'land':
-        filtered = [r for r in area_rows if categorize(r) == 'land']
+        filtered = [r for r in area_rows if _bt_matches(r, 'land') and _is_residential_usage(r)]
     elif category == 'villa':
-        filtered = [r for r in area_rows if categorize(r) in ('villa', 'dwelling')]
+        filtered = [r for r in area_rows if _bt_matches(r, 'villa') and _is_residential_usage(r)]
     else:
         filtered = area_rows
 
