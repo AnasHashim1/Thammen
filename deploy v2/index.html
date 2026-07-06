@@ -2046,6 +2046,10 @@ function showReport(d){
       h+='<div class="rep-def12-row"><span>'+t('الأرض (مرجع وزارة العدل)','Land (Ministry of Justice reference)')+'</span><strong>'+fmt(_cR.land_floor)+t(' ر.ق',' QAR')+'</strong></div>';
       h+='<div class="rep-def12-row"><span>'+t('البناء المُهلَك','Depreciated building')+((_cR.bua_m2&&_cR.rcn_qar_per_m2&&_cR.retention!=null)?(' (<span dir="ltr">BUA '+_cR.bua_m2+' × '+fmt(_cR.rcn_qar_per_m2)+' × '+_cR.retention+'</span>)'):'')+'</span><strong>'+fmt(_cR.building_value)+t(' ر.ق',' QAR')+'</strong></div>';
       if(_cR.sub_ar)h+='<div class="rn" style="font-size:.72rem;margin-top:4px">'+pick(_cR,'sub')+'</div>';
+      // Sprint 2.22.0b.108 (S3) — the actionable floors nudge right where the owner reads the cost figure
+      // (the 56/565/21 case: villa 21 = G+1+penthouse ≈ 2.5 floors, invisible to QARS → the default 2 floors
+      // under-states the BUA). Only when the floor count was not provided. Value-invariant (a prompt, not a change).
+      if(!(d.user_inputs&&d.user_inputs.floors))h+='<div class="rn" style="font-size:.72rem;margin-top:4px;color:var(--bronze)"><svg class=ic aria-hidden=true><use href=#ic-edit></use></svg> '+t('يفترض هذا الرقم طابقين؛ إن كان لبيتك بنتهاوس أو طابقٌ إضافيّ، أدخِل عدد الطوابق في «حسّن التقييم» لتدقيق مرتكز الكلفة.','This figure assumes two floors; if your home has a penthouse or an extra floor, enter the floor count under “Refine the valuation” to refine the cost anchor.')+'</div>';
       h+='</div>';
     }
     h+=_substHtml(d,v,hasValuation);
@@ -2069,6 +2073,32 @@ function showReport(d){
     const _gR=v.geometry||{};
     if(_gR.footprint_basis==='confirmed'&&_gR.effective_footprint_m2)h+=ri(t('مساحة البناء المعتمدة','Confirmed built-up area'),'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg> '+fmt(_gR.effective_footprint_m2)+t(' م²',' m²'));
     else if(_gR.max_buildable_footprint_m2)h+=ri(t('مساحة البناء الأرضي (تقدير أقصى)','Ground-floor footprint (max estimate)'),'≈ '+fmt(_gR.max_buildable_footprint_m2)+t(' م²',' m²'));
+    h+='</div></div>';
+    // ════ Sprint 2.22.0b.108 (S3) — the UNIFIED ASSUMPTIONS REGISTER (RICS VPS 2 / IVS 102 assumptions
+    // & special assumptions), Layer 3 (the professional artifact). One numbered annex assembled from
+    // ALREADY-BROADCAST fields + the disclosed engine constants (built-ratio 0.77, floors-default,
+    // 50-yr straight-line depreciation, the RCN ladder, E26 age basis). VALUE-INVARIANT — pure disclosure
+    // of what the engine already assumed; no figure/method/rule touched. Closes C-1/C-2/C-3.
+    h+=_ax();
+    h+='<div class="rc"><div class="rt" style="margin-bottom:8px">'+t('الافتراضات والافتراضات الخاصّة (&lrm;RICS VPS 2 / IVS 102&lrm;)','Assumptions and special assumptions (&lrm;RICS VPS 2 / IVS 102&lrm;)')+'</div><div class="rn" style="line-height:1.8">';
+    // standing assumptions (every valued report)
+    h+='• '+t('<b>الحالة والتشطيب:</b> افتراضٌ قائم — لم يُعايَن العقار ميدانياً؛ تفترض القيمة حالةً متوسّطة متّسقة مع سِنّ المبنى (التفصيل في «حول العقار» أعلاه).','<b>Condition and finish:</b> an assumption — the property was not inspected on site; the value assumes an average condition consistent with the building\'s age (detailed under “About the property” above).')+'<br>';
+    h+='• '+t('<b>الاستخدام:</b> أعلى وأفضل استخدامٍ سكنيّ ضمن التنظيم القائم؛ لم تُقيَّم إمكاناتٌ تطويريّة أعلى.','<b>Use:</b> residential highest-and-best-use under the current zoning; no higher development potential has been assessed.')+'<br>';
+    h+='• '+t('<b>نافذة الأدلّة:</b> صفقاتٌ مسجَّلة حتى ٢٤ شهراً (وتتّسع إلى ٣٦ عند قلّة العيّنة)، دون تعديلٍ زمنيّ صريح على الوسيط.','<b>Evidence window:</b> registered sales up to 24 months (widening to 36 when the sample is thin), with no explicit time adjustment to the median.')+'<br>';
+    // cost-led additions (BUA / floors-default / RCN ladder / depreciation / E26 age basis)
+    if(v.leadership&&v.leadership.leader==='cost'&&v.value_stack&&v.value_stack.cost){
+      const _aC=v.value_stack.cost;
+      const _finMap={'shell':t('شِلّ','shell'),'ordinary':t('عاديّ','ordinary'),'good':t('جيّد','good'),'high':t('عالٍ','high'),'luxury':t('فاخر','luxury')};
+      if(_aC.bua_m2)h+='• '+t('<b>مساحة البناء (BUA):</b> مُقدَّرة ≈ ','<b>Built-up area (BUA):</b> estimated ≈ ')+'<span dir="ltr">'+_aC.bua_m2+t(' م²',' m²')+'</span>'+t(' = مساحة البناء الأرضي × نسبة صافٍ-إلى-إجماليّ ٠٫٧٧ × عدد الطوابق.',' = ground footprint × a net-to-gross ratio of 0.77 × the number of floors.')+'<br>';
+      if(!(d.user_inputs&&d.user_inputs.floors))h+='• '+t('<b>عدد الطوابق:</b> يُفترَض طابقان (أرضيّ + أوّل) ما لم تُدخِل عددها؛ فإن كان لبيتك بنتهاوس أو طابقٌ إضافيّ فالقيمة أعلى — أدخِل عدد الطوابق في «حسّن التقييم» لتدقيق مرتكز الكلفة.','<b>Number of floors:</b> two floors (ground + first) are assumed unless you enter the count; if your home has a penthouse or an extra floor the value is higher — enter the floor count under “Refine the valuation” to refine the cost anchor.')+'<br>';
+      h+='• '+t('<b>كلفة الإحلال (RCN):</b> سُلَّمٌ بحسب مستوى التشطيب (شِلّ ١٬٢٠٠ · عاديّ ٢٬٢٠٠ · جيّد ٢٬٥٠٠ · عالٍ ٣٬٠٠٠ · فاخر ٣٬٥٠٠ ر.ق/م²)','<b>Replacement cost (RCN):</b> a ladder by finish level (shell 1,200 · ordinary 2,200 · good 2,500 · high 3,000 · luxury 3,500 QAR/m²)')+(_aC.finish?(t(' — المُطبَّق هنا: ',' — applied here: ')+(_finMap[_aC.finish]||esc(_aC.finish))):'')+'.<br>';
+      h+='• '+t('<b>الإهلاك:</b> خطٌّ مستقيمٌ على عمرٍ نافعٍ ٥٠ سنة، يجمع التقادم الماديّ والوظيفيّ والاقتصاديّ','<b>Depreciation:</b> straight-line over a 50-year useful life, combining physical, functional and economic obsolescence')+(_aC.retention!=null?(t(' — نسبة القيمة المتبقية للبناء ',' — the building\'s remaining-value ratio ')+'<span dir="ltr">'+_aC.retention+'</span>'):'')+'.<br>';
+      h+='• '+t('<b>أساس العمر:</b> العمر الموثَّق في النظام (CGIS) هو أساس الاحتساب (المعيار E26)؛ وأيّ عمرٍ فعليّ تُدخِله يظهر كحساسيّة، ولا يُحرِّك الرقم الرئيس.','<b>Age basis:</b> the system-documented (CGIS) age is the basis of calculation (E26); any actual age you enter appears as a sensitivity — it does not move the headline.')+'<br>';
+      h+='• '+t('<b>معايرة الكلفة:</b> مُعايَرة على تقييمٍ معتمدٍ واحدٍ حتى الآن (V001، ضمن ±١٪)؛ وتزداد دقّةً مع كلّ تقييمٍ حقيقيّ يصلنا.','<b>Cost calibration:</b> calibrated on one certified valuation so far (V001, within ±1%); it grows more accurate with every real valuation we receive.')+'<br>';
+    }
+    // income-led addition (cap-rate source)
+    const _ildAsm=((v.income_triangulation||{}).mode==='income_led')||v.method==='income_approach_only';
+    if(_ildAsm){const _cp=d.cap_rate_provenance||{};h+='• '+t('<b>معدّل الرسملة:</b> من خليّة ','<b>Cap rate:</b> from the ')+esc(_cp.district||d.district||'—')+(_cp.size_bracket?(' / '+esc(_cp.size_bracket)):'')+t(' — صافٍ بعد المصاريف (صيانة، إدارة، شواغر).',' cell — net of costs (maintenance, management, vacancy).')+'<br>';}
     h+='</div></div>';
   }else{
     h+='<div class="rc"><div class="rn">'+(pick(v,'reason')||t('لا تتوفر بيانات كافية لتقييم هذا العقار حالياً — لا يصدر تقرير قيمة.','Not enough data to value this property right now — no value report is issued.'))+'</div></div>';
