@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b113-condition-stratum-lead'
-SPRINT_TAG = '2.22.0b.113'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b114-latency-parsedate-memoize'
+SPRINT_TAG = '2.22.0b.114'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -4286,8 +4286,11 @@ def evaluate_thammen(
                         _check_output_sanity(result, listing_price)
                     return result
     except Exception as e:
-        # Lite path failed — fall through to full pipeline (defensive)
-        print(f"[fast-classify] failed: {e}", file=sys.stderr)
+        # Lite path failed — fall through to full pipeline (defensive). b114: the module-level `sys`
+        # (line 30) is SHADOWED by later local `import sys` in this function → `file=sys.stderr` here
+        # raised UnboundLocalError, turning a recoverable fast-path GIS flake into a hard crash. Log to
+        # stdout (Heroku captures it) so the defensive fall-through actually runs. Value-invariant.
+        print(f"[fast-classify] failed: {e}")
 
     # ── Step 1: v2 baseline ──
     has_reno, full_reno = _condition_to_reno(condition)

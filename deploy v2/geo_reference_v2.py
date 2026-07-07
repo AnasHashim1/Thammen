@@ -40,6 +40,7 @@ import re
 import urllib.parse
 import urllib.request
 import ssl
+from functools import lru_cache
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Tuple
 
@@ -94,7 +95,8 @@ def _to_float(s):
         return None
 
 
-def _parse_date(s):
+@lru_cache(maxsize=8192)   # perf (latency audit): MoJ dates repeat massively across ~26K rows; memoizing the
+def _parse_date(s):        # pure parse turns ~27K redundant strptime calls into O(1) lookups — value-invariant (same datetime out)
     try:
         return datetime.strptime(_norm(s), '%Y-%m-%d')
     except (ValueError, TypeError):
