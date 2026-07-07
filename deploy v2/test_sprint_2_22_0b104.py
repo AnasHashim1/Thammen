@@ -36,7 +36,7 @@ check('SR scope extracted', bool(SR))
 # ── (1) the skeptic's proof: keystone comparables inside srFold, after §١ ──
 check('proof block reuses the broadcast v.comparables/v.considered_comparables (no new methodology)',
       'const _kc=v.comparables||v.considered_comparables;' in SR and
-      'if(_kc&&_kc.rows&&_kc.rows.length){' in SR)
+      'if(_kc&&_kc.rows&&_kc.rows.length&&!_isCondLead){' in SR)   # b113 R6: gated off for a condition-led card (stale cost-led framing); the proof block otherwise unchanged
 check('proof header is leader-aware (market «مرجع الرقم» / cost-led «لم تقُد الرقم»)',
       'صفقاتٌ مسجّلة مثل بيتك — هي مرجع الرقم' in SR and
       'اطّلعنا عليها — ولم تقُد الرقم' in SR)

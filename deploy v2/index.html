@@ -758,6 +758,9 @@ body.lang-en #rOut .br-l,body.lang-en #rOut .rl,body.lang-en #rOut .ev1lbl{text-
             <div class="fg"><label>تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="">— اختر —</option><option value="0">لا</option><option value="1">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
             <div class="fg"></div>
           </div>
+          <!-- Sprint 2.22.0b.113 (S7 / الجوهر): the neutral opt-in note + the Gemini-C2 inspection-consequence
+               friction (an honest deterrent against over-claiming — NOT a «unlock your higher value» dark pattern). -->
+          <div class="br-note" style="margin-top:2px;line-height:1.7">◆ حالتك تُغيّر الرقم: إقرارٌ إيجابيّ (جيدة/مُرمّم/جديد) قد يرفع التقدير إلى شريحة عقارك السوقيّة، وإقرارٌ أدنى قد يخفضه — والرقم يبقى <strong>استرشاديّاً</strong>. وأيّ عدم دقّةٍ في إقرارك تجعله غير صالحٍ عند الفحص الميدانيّ من البنوك أو المشترين.</div>
         </div>
       </details>
       <details class="thmr-grp">
@@ -2255,6 +2258,11 @@ function showShortReport(d){
   // ── bindings (the matrix skeleton + the PDF-contract figures, all broadcast-bound) ──
   const _n=v.n_transactions, _mn=(ld?ld.matched_n:null), _d36=(ld&&ld.dispersion_36!=null)?ld.dispersion_36:null;
   const _gn=(ld?ld.geo_full_n:null), _gd=(ld&&ld.geo_full_dispersion!=null)?ld.geo_full_dispersion:null;
+  // Sprint 2.22.0b.113 (S7): a CONDITION-STRATUM-LED number came from the owner's attested condition mapped to
+  // the reliable price-position stratum — NOT from matched sales. The market basisLn/neigh («N مطابقة، وسيطها
+  // مرجعك») + the cost-led «اطّلعنا عليها ولم تقُد الرقم» proof rows would BOTH misstate the basis → S7 overrides
+  // them with the honest attestation basis (gated on this rule only → every other short report byte-identical).
+  const _isCondLead=!!(ld&&ld.rule==='condition_stratum_led'), _sLbl=_isCondLead?pick(ld,'stratum_label'):'', _sN=_isCondLead?ld.stratum_n:null;
   const _capPct=(inc.cap_rate!=null)?(inc.cap_rate*100).toFixed(2).replace(/\.?0+$/,''):null;
   const _capN=(d.cap_rate_provenance||{}).sample_size!=null?d.cap_rate_provenance.sample_size:null;
   const _mkt=stack.market||{}, _domShare=(_mkt.dominant_share_pct!=null)?Math.round(_mkt.dominant_share_pct):null;
@@ -2262,12 +2270,15 @@ function showShortReport(d){
   // the PDF hero: one warm label; the leader story rides the BASIS line (the matrix
   // hero labels survive as the basis qualifiers for the non-cost leaders).
   let basisLn='';
-  if(cs==='cost')basisLn=t('محسوبة من قيمة الأرض + قيمة البناء بعد عمره، لأن صفقات بيوتٍ مثل بيتك في المنطقة قليلة','Computed from land value + depreciated building value, because sales of homes like yours in the area are few')+(_mn!=null?t(' ('+_mn+' فقط)',' (only '+_mn+')'):'');
+  if(_isCondLead)basisLn=t('بناءً على إقرارك بحالة العقار (استرشاديّ — لم يُعايَن ميدانياً): قِيسَ الرقم على «','Based on your condition declaration (indicative — not inspected on site): the figure is set to the “')+_sLbl+t('» في منطقتك','” in your area')+(_sN!=null?t(' (عيّنة سوقيّة موثوقة، عددها '+_sN+')',' (a reliable market sample, n='+_sN+')'):'');
+  else if(cs==='cost')basisLn=t('محسوبة من قيمة الأرض + قيمة البناء بعد عمره، لأن صفقات بيوتٍ مثل بيتك في المنطقة قليلة','Computed from land value + depreciated building value, because sales of homes like yours in the area are few')+(_mn!=null?t(' ('+_mn+' فقط)',' (only '+_mn+')'):'');
   else if(cs==='market')basisLn=t('وسيط شريحتك: ','Your bracket median: ')+(_mn!=null?_mn:(_n!=null?_n:'—'))+t(' صفقة مطابقة لنوعك وعمرك، تشتت ',' matched sales for your type and age, dispersion ')+(_d36!=null?_d36:'—');
   else if(cs==='income')basisLn=t('متّسقة مع إيجارك الفعلي ÷ رسملة معايَرة','Consistent with your actual rent ÷ a calibrated cap rate')+(_capPct?(' '+_capPct+t('% صافٍ','% net')):'')+(_capN!=null?(' (n='+_capN+')'):'')+(tri.bracket_borrowed?t(' — معدل مُستعار من شريحة مجاورة (مُفصَح)',' — rate borrowed from an adjacent bracket (disclosed)'):'');
   else basisLn=t('قيمة الأرض: وسيط أراضي منطقتك','Land value: the land median for your area')+(vf.land_per_m2_qar?(' '+fmt(vf.land_per_m2_qar)+t(' ر.ق/م²',' QAR/m²')):'')+(d.plot_area_m2?(' × '+fmt(d.plot_area_m2)+t(' م²',' m²')):'')+(vf.land_n_transactions?(' (n='+vf.land_n_transactions+')'):'');
   let neigh='';
-  if(cs==='cost'){
+  if(_isCondLead){
+    neigh=t('أقررتَ بحالة بيتك، فقِيسَ الرقم على شريحته السوقيّة «','You declared your home\'s condition, so the figure is set to its market tier “')+_sLbl+t('» في منطقتك (عيّنة موثوقة'+(_sN!=null?('، عددها '+_sN):'')+') بدل مرتكز الكلفة المحافظ. تقديرٌ ','” in your area (a reliable sample'+(_sN!=null?(', n='+_sN):'')+') instead of the conservative cost anchor. An ')+t('استرشاديٌّ يعتمد على إقرارك — وأيّ عدم دقّةٍ فيه تجعله غير صالحٍ عند الفحص الميدانيّ من البنوك أو المشترين.','indicative estimate that relies on your declaration — and any inaccuracy in it makes it invalid under a field inspection by banks or buyers.');
+  }else if(cs==='cost'){
     neigh=t('أغلب ما بِيع غالياً في منطقتك بيعت بأعلى بكثير من قيمة الأرض (شريحةٌ أعلى سعراً — قد تكون أحدث أو أكبر أو أرقى تشطيباً؛ استدلالاً بالسعر لا معاينةً)','Most of what sold at high prices in your area sold well above the land value (a higher-priced tier — possibly newer, larger, or better-finished; inferred from price, not inspected)')+(_domShare!=null?t(' — نحو '+_domShare+'% من الصفقات —',' — about '+_domShare+'% of sales —'):' —')
       +((ld&&ld.market_value)?t(' ووصلت أسعارها إلى '+fmt(ld.market_value)+'.',' reaching '+fmt(ld.market_value)+'.'):'.')
       +(_ageY?t(' بيتك عمره فوق '+_ageY+' سنة، ومثل أغلب الفلل في قطر بعد العاشرة، اعتمدنا تقديراً محافظاً ≈ قيمة أرضه + قيمة البناء بعد إنقاص استهلاكه بحسب عمره — وقد تعلو قيمته إن كان بناؤه مُصاناً.',' Your home is over '+_ageY+' years old, and like most villas in Qatar past the ten-year mark, we used a conservative estimate ≈ its land value + the building value after depreciation for its age — and its value may be higher if the building is well-maintained.'):'')
@@ -2442,7 +2453,7 @@ function showShortReport(d){
   // DISPLAY-ONLY: reuses the SAME broadcast v.comparables / v.considered_comparables the engine already
   // gates (market-led → «هي ما قرّر رقمك» / cost-led → «اطّلعنا عليها ولم تقُد الرقم»); anonymized (E12). ════
   {const _kc=v.comparables||v.considered_comparables;
-   if(_kc&&_kc.rows&&_kc.rows.length){
+   if(_kc&&_kc.rows&&_kc.rows.length&&!_isCondLead){  // b113: suppress the cost-led «reviewed, didn't lead» proof rows on a condition-led number (stale framing — the stratum DID lead)
     const _cons=!!(v.considered_comparables&&!v.comparables);
     h+='<div class="thmr-proof"><div class="pl">'+(_cons
         ?t('صفقاتٌ في منطقتك اطّلعنا عليها — ولم تقُد الرقم','Transactions in your area we reviewed — they did not set the number')

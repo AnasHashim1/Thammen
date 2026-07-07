@@ -1,6 +1,6 @@
-# DRAFT BRIEF — S7 (b111) «نافذة أسئلة حالة العقار — الرقم يتكيّف مع الحالة» (الجوهر / B-2)
+# BRIEF — S7 (built as b113) «نافذة أسئلة حالة العقار — الرقم يتكيّف مع الحالة» (الجوهر / B-2)
 
-**Status:** 🔴 **DRAFT — awaiting PO signature BEFORE build** (Gate-2 value-affecting; the plan gates S7 on a signed brief).
+**Status:** ✅ **PO-SIGNED + BUILT (b113, local — not deployed).** PO signature: «لنبنيه وقع» (2026-07-07). §3 mapping + §4 guards + the indicative posture SIGNED; built value-affecting-but-guarded (blind byte-identical). **The DEPLOY still awaits the PO's sign-off of the opt-in blast-radius table** `docs/GATE2_b113_condition_axis_optin.md` (same Gate-2 discipline as S4). Build verification: isolated 33/33 · DoD 395/16/45 · broad 167/167 · R14 AR+EN 0 console · CHANGELOG_v193 · §3.2 note: shipped stratum from the b100 price-position lexicon (C3), ordinary-Assumption disclosure (C1), inspection-friction (C2), indicative-not-beta (C4).
 **Live now:** b110 (local; not deployed). **Design source:** `docs/CONSULT_gemini_r9_median_vs_cost.md` (Path A, Rule-#54-adjudicated).
 **Why held:** S7 lets a user's condition attestation move the HEADLINE (e.g. Marikh 2.4M cost-floor → 3.36M market-stratum, +40%). That is a methodology change (HARD GATE 2) + the (condition→stratum) mapping is a decision only the PO signs.
 

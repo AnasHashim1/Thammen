@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b112-gemini-disclosure-refine'
-SPRINT_TAG = '2.22.0b.112'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b113-condition-stratum-lead'
+SPRINT_TAG = '2.22.0b.113'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -5325,43 +5325,92 @@ def evaluate_thammen(
                                 _lead20['resurvey_note_en'] = LEAD_RESURVEY_NOTE_EN
                             _mu20 = output.get('material_uncertainty')
                             if _gate['rule'] == 'cost_led':
-                                # F3(b) — the COST leads: range [cost … market-muted], MUC high.
-                                output['valuation']['amount'] = _r100k(_cv20)
-                                output['valuation']['low'] = _r100k(_gate['low'])
-                                output['valuation']['high'] = _r100k(_gate['high'])
-                                output['valuation']['range_is_headline'] = True
-                                output['valuation']['central_estimate'] = _r100k(_cv20)
-                                _lead20['note_ar'] = LEAD_COST_NOTE_AR.format(
-                                    n=_n20, d=_d20, cost=f'{_r10k(_cv20):,}',
-                                    comp=f'{_r10k(_mkt20):,}')
-                                _lead20['note_en'] = LEAD_COST_NOTE_EN.format(
-                                    n=_n20, d=_d20, cost=f'{_r10k(_cv20):,}',
-                                    comp=f'{_r10k(_mkt20):,}')
-                                if _gate.get('band') == 'old' or (_age_ct or 0) >= 10:
-                                    # SESSION_CLOSE §6-b: age-graded cost honesty — the cost
-                                    # leads here BY ELIMINATION (the pool failed), not precision.
-                                    _lead20['age_honesty_note_ar'] = LEAD_COST_AGE_HONESTY_AR
-                                    _lead20['age_honesty_note_en'] = LEAD_COST_AGE_HONESTY_EN
-                                if isinstance(_mu20, dict):
-                                    _mu20['level'] = 'high'
-                                # ISS-A07 coherence (the b16 pattern): recompute the
-                                # decomposition + B-1 floor on the new central + re-run b14.
+                                # Sprint 2.22.0b.111 (S7 / الجوهر): a POSITIVE user-attested condition
+                                # leads with the matching RELIABLE market stratum instead of the
+                                # conservative cost floor (indicative, disclosed). The blind default
+                                # (no attestation) → _s7 is None → the cost floor keeps the lead
+                                # BYTE-IDENTICAL (the 5-fixture gate holds). Gate-2, signed brief.
                                 try:
-                                    _decomp20 = _decompose_value(
-                                        valuation_amount=output['valuation']['amount'],
-                                        plot_area_m2=ev.plot_area_m2, bua_m2=bua,
-                                        moj_ref_dict=moj_ref)
-                                    if _decomp20:
-                                        output['valuation']['value_decomposition'] = _decomp20
-                                        _reconcile_decomposition_narrative(output)
-                                    _vf20 = _villa_value_floor(
-                                        output['valuation']['amount'],
-                                        getattr(ev, 'plot_area_m2', None), moj_ref, _decomp20)
-                                    if _vf20:
-                                        output['valuation']['value_floor'] = _vf20
-                                        _inject_value_floor_into_brief(output.get('brief'), _vf20)
+                                    _s7 = _condition_stratum_lead(
+                                        condition, is_luxury,
+                                        getattr(ev, 'plot_area_m2', None), _ss20, _cv20)
                                 except Exception:
-                                    pass
+                                    _s7 = None
+                                if _s7:
+                                    _s7v = _r100k(_s7['value'])
+                                    output['valuation']['amount'] = _s7v
+                                    output['valuation']['central_estimate'] = _s7v
+                                    output['valuation']['low'] = _r100k(_cv20)          # cost floor = the low
+                                    output['valuation']['high'] = _r100k(max(_s7['value'], _gate['high']))
+                                    output['valuation'].pop('range_is_headline', None)  # the attested central leads
+                                    _lead20['leader'] = 'condition_stratum'
+                                    _lead20['rule'] = 'condition_stratum_led'
+                                    _lead20['stratum'] = _s7['stratum']
+                                    _lead20['stratum_n'] = _s7['n']
+                                    _lead20['stratum_label_ar'] = _s7['label_ar']   # b113 short-report card basis line (b100 price-position)
+                                    _lead20['stratum_label_en'] = _s7['label_en']
+                                    _lead20['cost_floor'] = _cv20
+                                    _lead20['note_ar'] = CONDITION_STRATUM_NOTE_AR.format(
+                                        label=_s7['label_ar'], n=_s7['n'], floor=f'{_r10k(_cv20):,}')
+                                    _lead20['note_en'] = CONDITION_STRATUM_NOTE_EN.format(
+                                        label=_s7['label_en'], n=_s7['n'], floor=f'{_r10k(_cv20):,}')
+                                    if isinstance(_mu20, dict):
+                                        _mu20['level'] = 'high'   # indicative + self-attested
+                                    # ISS-A07 coherence: recompute decomposition + floor on the new central.
+                                    try:
+                                        _decompS7 = _decompose_value(
+                                            valuation_amount=output['valuation']['amount'],
+                                            plot_area_m2=ev.plot_area_m2, bua_m2=bua,
+                                            moj_ref_dict=moj_ref)
+                                        if _decompS7:
+                                            output['valuation']['value_decomposition'] = _decompS7
+                                            _reconcile_decomposition_narrative(output)
+                                        _vfS7 = _villa_value_floor(
+                                            output['valuation']['amount'],
+                                            getattr(ev, 'plot_area_m2', None), moj_ref, _decompS7)
+                                        if _vfS7:
+                                            output['valuation']['value_floor'] = _vfS7
+                                            _inject_value_floor_into_brief(output.get('brief'), _vfS7)
+                                    except Exception:
+                                        pass
+                                else:
+                                    # F3(b) — the COST leads: range [cost … market-muted], MUC high.
+                                    output['valuation']['amount'] = _r100k(_cv20)
+                                    output['valuation']['low'] = _r100k(_gate['low'])
+                                    output['valuation']['high'] = _r100k(_gate['high'])
+                                    output['valuation']['range_is_headline'] = True
+                                    output['valuation']['central_estimate'] = _r100k(_cv20)
+                                    _lead20['note_ar'] = LEAD_COST_NOTE_AR.format(
+                                        n=_n20, d=_d20, cost=f'{_r10k(_cv20):,}',
+                                        comp=f'{_r10k(_mkt20):,}')
+                                    _lead20['note_en'] = LEAD_COST_NOTE_EN.format(
+                                        n=_n20, d=_d20, cost=f'{_r10k(_cv20):,}',
+                                        comp=f'{_r10k(_mkt20):,}')
+                                    if _gate.get('band') == 'old' or (_age_ct or 0) >= 10:
+                                        # SESSION_CLOSE §6-b: age-graded cost honesty — the cost
+                                        # leads here BY ELIMINATION (the pool failed), not precision.
+                                        _lead20['age_honesty_note_ar'] = LEAD_COST_AGE_HONESTY_AR
+                                        _lead20['age_honesty_note_en'] = LEAD_COST_AGE_HONESTY_EN
+                                    if isinstance(_mu20, dict):
+                                        _mu20['level'] = 'high'
+                                    # ISS-A07 coherence (the b16 pattern): recompute the
+                                    # decomposition + B-1 floor on the new central + re-run b14.
+                                    try:
+                                        _decomp20 = _decompose_value(
+                                            valuation_amount=output['valuation']['amount'],
+                                            plot_area_m2=ev.plot_area_m2, bua_m2=bua,
+                                            moj_ref_dict=moj_ref)
+                                        if _decomp20:
+                                            output['valuation']['value_decomposition'] = _decomp20
+                                            _reconcile_decomposition_narrative(output)
+                                        _vf20 = _villa_value_floor(
+                                            output['valuation']['amount'],
+                                            getattr(ev, 'plot_area_m2', None), moj_ref, _decomp20)
+                                        if _vf20:
+                                            output['valuation']['value_floor'] = _vf20
+                                            _inject_value_floor_into_brief(output.get('brief'), _vf20)
+                                    except Exception:
+                                        pass
                             elif _gate['rule'] == 'geo_full':
                                 # RULE 2 — market leads via the unmatched geo-full pool:
                                 # disclosure + MUC one notch + the cost value as the range floor.
@@ -6606,6 +6655,52 @@ LEAD_E25_NOTE_EN = ('Approach divergence: the cost value ({cost} QAR) sits ABOVE
                     'the comparison pool failed the reliability test; uncertainty is high.')
 LEAD_RESURVEY_NOTE_AR = 'عمر مُعاد تسجيله — غير موثوق'          # F2=B verbatim
 LEAD_RESURVEY_NOTE_EN = 'Re-registered survey age — unreliable'
+
+# ── Sprint 2.22.0b.111 (S7 / الجوهر — B-2 condition axis; SIGNED brief) ──
+# On a POSITIVE, USER-attested condition, a cost-led villa leads with the matching RELIABLE market
+# stratum (b100 price-position) instead of the conservative cost floor — indicative + disclosed. The
+# blind default (no attestation) keeps the cost floor BYTE-IDENTICAL (the 5-fixture gate holds).
+_S7_POSITIVE_CONDITIONS = frozenset({'good', 'renovated', 'new', 'excellent', 'very-good', 'very_good'})
+CONDITION_STRATUM_NOTE_AR = (
+    'بناءً على إقرارك بحالة العقار (لم يُعايَن ميدانياً)، قِيسَ الرقم على «{label}» في منطقتك '
+    '(عيّنةٌ سوقيّةٌ موثوقة، عددها {n}) بدل مرتكز الكلفة المحافظ ({floor} ر.ق). تقديرٌ استرشاديٌّ '
+    'يعتمد على إقرارك؛ وأيّ عدم دقّةٍ فيه تجعله غير صالحٍ عند الفحص الميدانيّ من البنوك أو المشترين.')
+CONDITION_STRATUM_NOTE_EN = (
+    'Based on your condition declaration (the property was not inspected on site), the figure is set to '
+    'the “{label}” in your area (a reliable market sample, n={n}) instead of the conservative cost anchor '
+    '({floor} QAR). An indicative estimate that relies on your declaration; any inaccuracy in it makes it '
+    'invalid under a field inspection by banks or buyers.')
+
+def _condition_stratum_lead(condition, is_luxury, plot_area_m2, stock_strata, cost_floor):
+    """S7 (الجوهر / B-2): on a POSITIVE user-attested condition, return the matching RELIABLE market
+    stratum (b100 price-position) value to LEAD a cost-led villa, or None. None → the blind default keeps
+    the cost floor BYTE-IDENTICAL. Guards (signed brief §4): positive attestation only (teardown /
+    maintenance / None → None); reliable stratum (n≥10); value ≥ the informed cost floor (never below).
+    The finish attestation selects the stratum: luxury finish → luxury_new; else → modern_stock."""
+    cond = (condition or '').strip().lower()
+    if cond not in _S7_POSITIVE_CONDITIONS:
+        return None
+    if not plot_area_m2 or plot_area_m2 <= 0 or not cost_floor:
+        return None
+    strata = (stock_strata or {}).get('strata')
+    if not isinstance(strata, dict):
+        return None
+    target = 'luxury_new' if is_luxury else 'modern_stock'
+    s = strata.get(target)
+    if not isinstance(s, dict) or not s.get('reliable') or not s.get('median_per_m2'):
+        return None
+    value = s['median_per_m2'] * plot_area_m2
+    if value < cost_floor:                       # never below the informed floor (E25/R7 rail)
+        return None
+    try:
+        from stock_strata import STRATUM_LABELS_AR as _SLA, STRATUM_LABELS_EN as _SLE
+    except Exception:
+        _SLA = _SLE = {}
+    return {
+        'stratum': target, 'value': value,
+        'n': s.get('n'), 'median_per_m2': s.get('median_per_m2'),
+        'label_ar': _SLA.get(target, target), 'label_en': _SLE.get(target, target),
+    }
 LEAD_COST_UNAVAILABLE_AR = 'قيمة التكلفة غير متاحة — {reason}'
 _MUC_LADDER = ('low', 'moderate', 'high', 'critical')
 
