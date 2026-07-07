@@ -54,16 +54,19 @@ check('R-2 reads data_freshness.latest_record_ar + days_old (no new API call)',
       'd.data_freshness||{}' in REP and '_dfR.latest_record_ar' in REP and '_dfR.days_old' in REP)
 
 # ── R-3 honest no-time-adjustment posture (code-truthful; scoped OUT for raw_land) ──
-check('R-3 no-time-adjustment disclosure AR + EN',
-      'لا يُطبَّق تعديلٌ زمنيّ صريح على الوسيط' in REP and
-      'no explicit time adjustment is applied to the median' in REP)
+# b112 R6: the wording was softened (Gemini A1 — VPGA 10 «material uncertainty» is a crisis term,
+# over-invoked for routine staleness); the FACT (no time adjustment) is preserved, the scary tie dropped.
+check('R-3 no-time-adjustment disclosure AR + EN (b112 softened)',
+      'دون تعديلٍ زمنيّ صريح على الوسيط' in REP and
+      'without an explicit time adjustment to the median' in REP)
 check('R-3 states the 24/36-month window',
       '٢٤ شهراً' in REP and '٣٦' in REP and 'up to 24 months' in REP and '36' in REP)
 check('R-3 scoped OUT for raw_land (land grid time-normalises separately — fact #2)',
       "if(d.asset_type!=='raw_land')cData+=" in REP and
       REP.count("if(d.asset_type!=='raw_land')cData+=") >= 1)
-check('R-3 ties the data age to material uncertainty (the b105 register term)',
-      'سببٌ مُعلَن لعدم اليقين الجوهري' in REP and 'a stated reason for material uncertainty' in REP)
+check('R-3 states the honest consequence (accuracy may be affected by recent movements) — no over-scary VPGA-10 tie',
+      'قد تتأثّر الدقّة بتقلّبات السوق الأخيرة' in REP and 'accuracy may be affected by recent market movements' in REP and
+      'سببٌ مُعلَن لعدم اليقين الجوهري' not in REP)
 
 # ── C-4 evidence hierarchy (registered sales, not asking prices) ──
 check('C-4 evidence-hierarchy line AR + EN',

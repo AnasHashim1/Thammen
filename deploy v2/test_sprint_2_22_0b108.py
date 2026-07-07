@@ -46,9 +46,9 @@ check('C-3: BUA + built-ratio 0.77 justification (reads broadcast bua_m2)',
 check('the FLOORS-default assumption (2 floors, the 56/565/21 case) — only when floors not provided',
       "if(!(d.user_inputs&&d.user_inputs.floors))h+='• '+t('<b>عدد الطوابق:</b> يُفترَض طابقان" in REP and
       "<b>Number of floors:</b> two floors (ground + first) are assumed unless you enter the count" in REP)
-check('C-2: RCN ladder + finish-level (reads broadcast finish)',
-      '<b>كلفة الإحلال (RCN):</b> سُلَّمٌ بحسب مستوى التشطيب (شِلّ ١٬٢٠٠ · عاديّ ٢٬٢٠٠' in REP and
-      '_finMap[_aC.finish]' in REP)
+check('C-2: RCN methodology + range + finish-level (b112: exact ladder numbers trimmed per Gemini A2 — IP + VPS 2 wants method not coefficients)',
+      '<b>كلفة الإحلال (RCN):</b> تُقدَّر وفق متوسّط أسعار البناء المحليّة السائدة، بسُلَّمٍ يتدرّج من التشطيب العاديّ إلى الفاخر' in REP and
+      '_finMap[_aC.finish]' in REP and 'شِلّ ١٬٢٠٠ · عاديّ ٢٬٢٠٠' not in REP)
 check('C-2: 50-yr straight-line depreciation combining physical/functional/economic obsolescence',
       'خطٌّ مستقيمٌ على عمرٍ نافعٍ ٥٠ سنة، يجمع التقادم الماديّ والوظيفيّ والاقتصاديّ' in REP and
       'straight-line over a 50-year useful life, combining physical, functional and economic obsolescence' in REP)
