@@ -50,6 +50,13 @@ _REAL_URLOPEN = urllib.request.urlopen
 
 def install_fake(behaviour):
     """behaviour(timeout) -> bytes, or raises. Records timeouts in .timeouts."""
+    # Sprint 2.22.0b.116: clear the GIS-response cache so each budget sub-test exercises the network/budget
+    # path (the sub-tests share one URL; an earlier success would otherwise be served from cache — a cache
+    # hit correctly bypasses the budget, which is the b116 behaviour under test elsewhere, not here).
+    try:
+        import gis_cache; gis_cache.clear()
+    except Exception:
+        pass
     rec = {'timeouts': [], 'calls': 0}
 
     def fake(req, timeout=None, context=None):

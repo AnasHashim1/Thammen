@@ -27,6 +27,7 @@ import json
 import math
 import urllib.request
 import urllib.parse
+import gis_cache          # Sprint 2.22.0b.116 — dedupe repeated GIS layer fetches (value-invariant)
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, asdict
 from typing import Optional
@@ -148,6 +149,13 @@ def _query_gis(layer_url: str, params: dict, timeout: int = TIMEOUT) -> list:
     params.setdefault('f', 'json')
     params.setdefault('returnGeometry', 'false')
     url = layer_url + '/query?' + urllib.parse.urlencode(params)
+    _ck = gis_cache.make_key(url)   # b116: a repeated layer+location query returns the cached text (fresh parse → mutation-safe)
+    _c = gis_cache.get_text(_ck)
+    if _c is not None:
+        try:
+            return json.loads(_c).get('features', [])
+        except Exception:
+            return []
     req = urllib.request.Request(url, headers={'User-Agent': 'property-factors/1.0'})
     # Sprint 2.22.0a.5 (Bug A14): honour the per-request I/O budget set in
     # qatar_gis (propagated into these worker threads via copy_context() in
@@ -167,7 +175,10 @@ def _query_gis(layer_url: str, params: dict, timeout: int = TIMEOUT) -> list:
         eff = timeout
     try:
         with urllib.request.urlopen(req, timeout=eff) as r:
-            data = json.loads(r.read())
+            _raw = r.read()
+        _txt = _raw.decode('utf-8') if isinstance(_raw, (bytes, bytearray)) else _raw
+        data = json.loads(_txt)
+        gis_cache.put_text(_ck, _txt)   # b116
         return data.get('features', [])
     except Exception as e:
         return []

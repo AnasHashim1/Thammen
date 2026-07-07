@@ -40,6 +40,7 @@ import math
 import sys
 import urllib.parse
 import urllib.request
+import gis_cache          # Sprint 2.22.0b.116 — dedupe repeated GIS layer fetches (value-invariant)
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, asdict
 from enum import Enum
@@ -311,6 +312,12 @@ def _http_get_json(url, params=None, timeout=30):
     # or a future QARS-in-polygon query — exceed GET limits; ESRI /query and the
     # Geometry server accept the same params via form-encoded POST. Small queries
     # stay GET → zero behaviour change. (Audit-driven defensive fix; Anas-approved.)
+    # Sprint 2.22.0b.116 — GIS-response cache: a repeated URL (same layer, same location — the ~29% dupes)
+    # returns the cached raw text, re-parsed fresh per hit (mutation-safe + byte-identical). Failures uncached.
+    _ck = gis_cache.make_key(url, params)
+    _cached = gis_cache.get_text(_ck)
+    if _cached is not None:
+        return json.loads(_cached)
     headers = {'User-Agent': 'qatar-gis-py/2.0'}
     if params:
         _encoded = urllib.parse.urlencode(params)
@@ -335,7 +342,9 @@ def _http_get_json(url, params=None, timeout=30):
                 raw = resp.read()
             if raw[:3] == b'\xef\xbb\xbf':
                 raw = raw[3:]
-            return json.loads(raw.decode('utf-8'))
+            _txt = raw.decode('utf-8')
+            gis_cache.put_text(_ck, _txt)   # b116
+            return json.loads(_txt)
         except urllib.error.URLError as e:
             last_err = e
             # Handle SSL cert "not yet valid" (system clock skew) with fallback
@@ -349,7 +358,9 @@ def _http_get_json(url, params=None, timeout=30):
                         raw = resp.read()
                     if raw[:3] == b'\xef\xbb\xbf':
                         raw = raw[3:]
-                    return json.loads(raw.decode('utf-8'))
+                    _txt = raw.decode('utf-8')
+                    gis_cache.put_text(_ck, _txt)   # b116
+                    return json.loads(_txt)
                 except Exception as e2:
                     last_err = e2
             # Sprint 2.22.0a.5 (A14): budget-aware backoff — never sleep past the

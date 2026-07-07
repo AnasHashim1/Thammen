@@ -19,6 +19,7 @@ import json
 import math
 import urllib.parse
 import urllib.request
+import gis_cache          # Sprint 2.22.0b.116 — dedupe repeated GIS layer fetches (value-invariant)
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
@@ -51,9 +52,15 @@ TIMEOUT = 4
 def _http_get_json(url: str, params: dict) -> Optional[dict]:
     try:
         full = url + '?' + urllib.parse.urlencode(params)
+        _ck = gis_cache.make_key(full)   # b116: cache repeated layer+location queries (fresh parse per hit)
+        _c = gis_cache.get_text(_ck)
+        if _c is not None:
+            return json.loads(_c)
         req = urllib.request.Request(full, headers={'User-Agent': 'thammen-avm/2.0'})
         with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-            return json.loads(r.read().decode())
+            _txt = r.read().decode()
+        gis_cache.put_text(_ck, _txt)   # b116
+        return json.loads(_txt)
     except Exception as e:
         print(f"[geometric_factors] HTTP error: {e}")
         return None

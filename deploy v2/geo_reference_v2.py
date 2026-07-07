@@ -40,6 +40,7 @@ import re
 import urllib.parse
 import urllib.request
 import ssl
+import gis_cache          # Sprint 2.22.0b.116 — dedupe repeated GIS layer fetches (value-invariant)
 from functools import lru_cache
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Tuple
@@ -205,8 +206,16 @@ def _query_gis_districts_radius(lat: float, lon: float, distance_m: int) -> List
     url = DISTRICTS_URL + '?' + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={'User-Agent': 'Thammen/3.0'})
     try:
-        with urllib.request.urlopen(req, timeout=15, context=_ssl_ctx()) as r:
-            data = json.loads(r.read())
+        _ck116 = gis_cache.make_key(url)   # b116: dedupe the repeated district/zoning fetch (fresh parse per hit)
+        _c116 = gis_cache.get_text(_ck116)
+        if _c116 is not None:
+            data = json.loads(_c116)
+        else:
+            with urllib.request.urlopen(req, timeout=15, context=_ssl_ctx()) as r:
+                _raw116 = r.read()
+            _t116 = _raw116.decode('utf-8') if isinstance(_raw116, (bytes, bytearray)) else _raw116
+            data = json.loads(_t116)
+            gis_cache.put_text(_ck116, _t116)
         return [
             {
                 'aname': _norm(f['attributes'].get('ANAME', '')),
@@ -241,8 +250,16 @@ def _query_district_centroid(dist_no: int) -> Optional[Tuple[float, float]]:
     url = DISTRICTS_URL + '?' + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={'User-Agent': 'Thammen/3.0'})
     try:
-        with urllib.request.urlopen(req, timeout=15, context=_ssl_ctx()) as r:
-            data = json.loads(r.read())
+        _ck116 = gis_cache.make_key(url)   # b116: dedupe the repeated district/zoning fetch (fresh parse per hit)
+        _c116 = gis_cache.get_text(_ck116)
+        if _c116 is not None:
+            data = json.loads(_c116)
+        else:
+            with urllib.request.urlopen(req, timeout=15, context=_ssl_ctx()) as r:
+                _raw116 = r.read()
+            _t116 = _raw116.decode('utf-8') if isinstance(_raw116, (bytes, bytearray)) else _raw116
+            data = json.loads(_t116)
+            gis_cache.put_text(_ck116, _t116)
         for f in data.get('features', []):
             geom = f.get('geometry', {})
             if 'rings' in geom and geom['rings']:
@@ -276,8 +293,16 @@ def _query_zoning_at_centroid(dist_no: int) -> Optional[str]:
     url = ZONING_URL + '?' + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={'User-Agent': 'Thammen/3.0'})
     try:
-        with urllib.request.urlopen(req, timeout=15, context=_ssl_ctx()) as r:
-            data = json.loads(r.read())
+        _ck116 = gis_cache.make_key(url)   # b116: dedupe the repeated district/zoning fetch (fresh parse per hit)
+        _c116 = gis_cache.get_text(_ck116)
+        if _c116 is not None:
+            data = json.loads(_c116)
+        else:
+            with urllib.request.urlopen(req, timeout=15, context=_ssl_ctx()) as r:
+                _raw116 = r.read()
+            _t116 = _raw116.decode('utf-8') if isinstance(_raw116, (bytes, bytearray)) else _raw116
+            data = json.loads(_t116)
+            gis_cache.put_text(_ck116, _t116)
         for f in data.get('features', []):
             return _norm(f['attributes'].get('ZONING', ''))
     except Exception:
