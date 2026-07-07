@@ -1,5 +1,7 @@
 # S4 (b109) — LAND geo-pool residential-filter blast radius (Gate-2 before/after)
 
+**Status:** ✅ **PO-SIGNED FOR DEPLOY (2026-07-07, «وقع الجدولين وانشر الدفعة كاملة»).** Deployed with the full R1→S7 batch. **Gemini-B2 pre-deploy check PASSED (measured on b113):** a MIXED-usage land area still values on residential comps — الوعب (55010236, 31/56 non-residential) → **5,700,000** `comparison_preliminary` (NOT a hard refusal); only genuinely non-residential downtown areas refuse (the honest, classifier-consistent outcome already in the table below).
+
 MoJ 24-month window, latest 2025-12-31. Metric = the land POOL ppm² median (per the b101 lesson, the % change in the pool median == the % change in the headline for a geo-widened-land subject; for a subject whose PRIMARY bracket is sufficient, b102 already governs the headline and S4 only cleans the comparable-grid display).
 
 **36 of 115 land areas** carry a non-residential-contaminated geo pool. Direction is always de-inflating or neutral (residential ⊆ all). Villa 5-fixture byte-gate byte-identical (the villa clause is unchanged).

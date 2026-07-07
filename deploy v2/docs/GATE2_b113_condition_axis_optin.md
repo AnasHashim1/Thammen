@@ -1,6 +1,6 @@
 # Gate-2 sign-off — Sprint 2.22.0b.113 (S7 / الجوهر / B-2): the condition-axis opt-in blast radius
 
-**Status:** 🔴 **awaiting the PO's sign-off BEFORE deploy** (same Gate-2 discipline as S4/b109). The build is complete + all-gates-green LOCALLY; **nothing is deployed.**
+**Status:** ✅ **PO-SIGNED FOR DEPLOY (2026-07-07, «وقع الجدولين وانشر الدفعة كاملة»).** The opt-in matrix (§2) + the indicative posture (§4) are signed; deployed with the full R1→S7 batch.
 **What the PO is signing:** that the opt-in behavior below (the only value-affecting surface) is correct + honest to ship. The blind default is byte-identical, so **live no-attestation traffic is unaffected** — this sign-off is purely about what happens when an owner *explicitly attests* a condition.
 
 ---
