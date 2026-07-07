@@ -1,6 +1,35 @@
-# §5 audit + design — backend GIS-chain parallelization (the ACTUAL-latency latency sprint)
+# §5 audit + design — backend GIS latency (the ACTUAL-latency sprint)
 
-**Status:** 🔎 **AUDIT + DESIGN (the «ابدأ» step). BUILD = a separate Gate-2 / determinism-gated sprint (next session).**
+## 🔴 CORRECTION (recon on the actual code — the premise was FALSIFIED, §20.26 pattern)
+**«Tier-1» (overlap `geometric_factors` + landmarks with `geo_v2`) ALREADY EXISTS** — `evaluate_unified.py:4408-4488` fires the enrichment trio (`geometric_factors` + `geo_v2` + `listings`) in a `ThreadPoolExecutor(max_workers=3)` ("Sprint A.3+", ~6s→~3s). **geo_v2 is INSIDE that parallel block**, so even the higher-risk "Tier-2" overlap is effectively done. My design-doc premise below (built from Branch-B §20.2 *memory*) was wrong; the CODE shows the enrichment is already parallel. The `ev` build (full_property_lookup identity chain + the MoJ valuation) is the serial prefix, and the enrichment genuinely depends on it (needs pin/gps/district) → **not overlappable.** Prior work already parallelized: `property_factors` 5-way (2.18.0) · `_expand_extent` BFS (2.18.1) · `geometric_factors` internally (Branch-B/A14) · the enrichment trio (A.3+). **There is no safe, material top-level parallelization left to build — building "Tier-1" would be a no-op.**
+
+## 🟢 THE REAL LEVER (measured): a GIS-response dedup cache
+A URL-spy on one warm villa eval: **35 GIS calls, of which 10 are EXACT duplicates within the single request** (25 distinct). The same layer is fetched 2–3× because `classify` + `factors` + `geometric` + `geo_v2` each independently re-query it for the same location:
+| layer | ×/request |
+|---|---|
+| QARS_Point (same ZONE) | 3 |
+| Zoning (same geometry) | 3 |
+| Districts (same geometry) | 3 |
+| CadastrePlots (same PIN) | 2 |
+| GeometryServer/project (same coords) | 2 |
+| Commercial_StreetsA (same geometry) | 2 |
+| Districts (DIST_NO) | 2 |
+
+**~29% of the network is redundant.** A **per-request GIS-response cache** (keyed on the full URL) returns the identical response for a repeated URL → **value-invariant** (same URL → same bytes) and kills ~10/35 calls. This is the b114 `_parse_date`-memoize pattern, for the GIS fetch — the honest, high-ROI, safe latency lever (better than the already-done parallelization).
+
+### Design (b116 candidate)
+- A **per-request** cache (cleared per eval) via `contextvars` (the same pattern the request-deadline already uses, §19.2 — propagated to the enrichment threads via `copy_context()`), so it dedupes both in-line AND across the 3 enrichment threads with **zero cross-request staleness risk**.
+- **Surface (the catch):** the GIS fetch is in MULTIPLE modules (`qatar_gis._http_get_json`/`_query_gis` · `property_factors._query_gis` · `geometric_factors` raw-urllib · `geo_reference_v2` raw-urllib · `property_geo` · `get_tile` — §20.2). A shared cache helper (a small module) imported + consulted by each fetch site → covers all 35. Start with the base wrappers (biggest share) + measure.
+- **Verify:** the 5-fixture byte-gate + a "same-URL → identical response" test + the redundant-call count drops from 10→0 (a re-run of the URL-spy). Value-invariant → deploy-on-green (still confirm the byte-gate). Determinism is trivial vs parallelization (a cache returns identical bytes; no reordering of the value compute).
+- **Expected:** ~10 fewer serial network round-trips → a real cut on the cold/live path (the exact seconds need a live re-measure, Rule #51 step 3).
+
+## 7. Recommendation
+Build **the GIS-response dedup cache (b116)**, NOT a redundant "Tier-1". It is the measured, value-invariant, high-ROI lever; parallelization is already done. Cold-start + the irreducible serial identity chain (find the property before valuing it) are the residual, largely inherent to live-GIS valuation (b115's skeleton already softens the perceived side).
+
+---
+## (superseded design that assumed Tier-1 didn't exist — kept for the record)
+
+**Status:** 🔎 **AUDIT + DESIGN (the «ابدأ» step). BUILD = a separate sprint (next session).**
 **Context:** b114 removed the compute hotspot (`_parse_date`); b115 covers perceived latency (skeleton). This closes the loop on **actual** latency: the ~7s of serial GIS network per heavy request.
 **Discipline:** Rule #51 (audit-driven perf) + the Branch-B/§20.2–20.4 determinism lessons + Rule #60 (measure-gate for lever sequencing).
 
