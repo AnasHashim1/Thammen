@@ -250,6 +250,20 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .lprog .lbar{height:3px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden;position:relative}
 .lprog .lbar::after{content:'';position:absolute;height:100%;background:var(--bronze);border-radius:2px;animation:lprog-anim 2s ease-in-out infinite}
 @keyframes lprog-anim{0%{width:0;right:0}50%{width:60%;right:20%}100%{width:0;right:100%}}
+/* Sprint 2.22.0b.115 — skeleton screen during the GIS wait (perceived-latency): a shimmering silhouette of
+   the incoming result card (navy hero + range bar + chips), so the user sees STRUCTURE not a bare spinner.
+   Reads faster than a spinner + matches the premium brand. Reduced-motion falls back to a static pulse. */
+.skl{margin-top:14px;animation:fu .3s}
+.skl-hero{background:var(--primary);border-radius:var(--r);padding:22px 18px 20px;position:relative;overflow:hidden}
+.skl-line{background:rgba(255,255,255,.14);border-radius:6px;margin:0 auto}
+.skl-line.lbl{width:40%;height:11px;margin-bottom:13px}
+.skl-line.big{width:60%;height:30px;margin-bottom:15px}
+.skl-line.bar{width:82%;height:8px;border-radius:5px}
+.skl-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:13px}
+.skl-chip{background:var(--alt);border-radius:20px;height:26px;width:88px}
+.skl-sh{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent);transform:translateX(-100%);animation:skl-sweep 1.4s ease-in-out infinite}
+@keyframes skl-sweep{100%{transform:translateX(100%)}}
+@media(prefers-reduced-motion:reduce){.skl-sh{animation:none;opacity:.45}.lprog .lbar::after{animation:none;width:45%;right:28%}}
 /* Copy button */
 .copy-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-family:'IBM Plex Sans Arabic';font-size:.85rem;cursor:pointer;margin-bottom:14px;transition:all .2s;float:left}
 .copy-btn:hover{border-color:var(--bronze);color:var(--bronze)}
@@ -1354,7 +1368,14 @@ async function run(){
   let stepIdx=0;
   const renderLoading=()=>{
     const el=Math.round((Date.now()-t0)/1000);
-    fRes.innerHTML='<div class="lprog"><div class="lstep">'+steps[Math.min(stepIdx,steps.length-1)]+'</div><div class="lelapsed">'+t('منذ ','')+el+t(' ثانية',' s')+'</div><div class="lbar"></div></div>';
+    // Sprint 2.22.0b.115 — a skeleton of the incoming result card (navy hero + range bar + chips) above the
+    // honest step narrative + elapsed. Value-invariant (loading state only): the real result still renders via show().
+    fRes.innerHTML='<div class="skl">'
+      +'<div class="skl-hero"><div class="skl-line lbl"></div><div class="skl-line big"></div><div class="skl-line bar"></div><div class="skl-sh"></div></div>'
+      +'<div class="skl-chips"><div class="skl-chip"></div><div class="skl-chip"></div><div class="skl-chip"></div></div>'
+      +'<div class="lprog" style="margin-top:12px"><div class="lstep">'+steps[Math.min(stepIdx,steps.length-1)]+'</div>'
+      +'<div class="lelapsed">'+t('منذ ','')+el+t(' ثانية · نفحص كلّ صفقةٍ مسجّلة',' s · we check every registered sale')+'</div><div class="lbar"></div></div>'
+      +'</div>';
   };
   renderLoading();
   const stepTimer=setInterval(()=>{stepIdx++;if(stepIdx<steps.length)renderLoading();},6000);

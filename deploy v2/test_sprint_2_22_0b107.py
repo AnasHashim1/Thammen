@@ -38,7 +38,7 @@ check('the 4 loading steps t()-wrapped',
       "t('نبحث في سجل وزارة العدل عن صفقات مماثلة...','Searching the Ministry of Justice registry for comparable sales...')" in HTML and
       "t('نحلّل الموقع والمعالم القريبة...','Analysing the location and nearby landmarks...')" in HTML and
       "t('نُجهّز التقرير...','Preparing the report...')" in HTML)
-check('elapsed-time line t()-wrapped', "t('منذ ','')+el+t(' ثانية',' s')" in HTML)
+check('elapsed-time line t()-wrapped', "t('منذ ','')+el+t(' ثانية · نفحص كلّ صفقةٍ مسجّلة',' s · we check every registered sale')" in HTML)   # b115 R6: elapsed line kept t()-wrapped; the honest «نفحص كلّ صفقة» line merged into it (skeleton)
 check('the button label + valuing state t()-wrapped',
       "btn.innerHTML=t('جاري التقييم...','Valuing...')" in HTML and "btn.innerHTML=t('ثمّن','Value it')" in HTML)
 check('server-error throw t()-wrapped (all 3 eval paths)',
