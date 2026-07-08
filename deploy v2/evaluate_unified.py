@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b116-gis-response-cache'
-SPRINT_TAG = '2.22.0b.116'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b117-en-report-notes'
+SPRINT_TAG = '2.22.0b.117'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -7002,6 +7002,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             # to honest comparable scope (district + bracket match, not
             # property-level similarity).
             'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة في وزارة العدل لعقارات قريبة في النوع والمساحة ضمن نفس المنطقة.',
+            'explanation_en': f'Based on {n} actual sale transactions registered with the Ministry of Justice for properties close in type and size within the same area.',
         }
     elif primary and primary['method'] in ('comparison_bracket', 'comparison_widened') and n >= 20:
         output['accuracy'] = {
@@ -7010,6 +7011,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'tier': 'high',
             # Sprint 2.22.0a.2 §9 precision pass.
             'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة (مع توسيع النطاق الجغرافي للعثور على عدد كافٍ من الصفقات القريبة في النوع والمساحة).',
+            'explanation_en': f'Based on {n} actual registered sale transactions (with the geographic pool widened to find enough transactions close in type and size).',
         }
     elif primary and n >= 10:
         output['accuracy'] = {
@@ -7017,6 +7019,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'label': 'شواهد محدودة',
             'tier': 'medium',
             'explanation_ar': f'مبني على {n} صفقة فقط — أقل من المعدل الإحصائي المثالي (20). النتيجة قد تنحرف ±10-15% عن السعر الفعلي. يُفضّل التحقق ميدانياً.',
+            'explanation_en': f'Based on {n} transactions only — below the ideal statistical count (20). The result may deviate ±10-15% from the actual price; a field check is recommended.',
         }
     elif primary:
         output['accuracy'] = {
@@ -7024,6 +7027,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'label': 'تقدير تقريبي',
             'tier': 'low',
             'explanation_ar': f'مبني على {n} صفقة فقط — عينة صغيرة جداً. النتيجة تقريبية، لا تعتمد عليها لقرار شراء/بيع بدون فحص ميداني أو مُقيِّم معتمد.',
+            'explanation_en': f'Based on {n} transactions only — a very small sample. The result is approximate; do not rely on it for a buy/sell decision without a field inspection or a certified valuer.',
         }
     else:
         output['accuracy'] = {
@@ -7032,6 +7036,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'tier': 'none',
             # Sprint 2.22.0a.2 §9 precision pass.
             'explanation_ar': 'لا توجد صفقات بيع كافية لعقارات قريبة في النوع والمساحة ضمن نفس المنطقة في وزارة العدل. لم يتم إنتاج تقييم.',
+            'explanation_en': 'There are not enough sale transactions for properties close in type and size within the same area at the Ministry of Justice. No valuation was produced.',
         }
 
     # ── Trend (only if sample sizes support it — RICS data quality standard) ──
@@ -7536,6 +7541,12 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                     'تقدير إرشادي بنطاق واسع: المقارنات المتاحة تختلف في نوع البناء والحالة، '
                     'ونوع بناء هذا العقار وحالته غير مؤكدين بعد. اعتمد النطاق المعروض لا الرقم '
                     'المفرد؛ المعاينة الميدانية تضيّق النطاق.'
+                ),
+                'explanation_en': (
+                    'An indicative estimate with a wide range: the available comparables differ '
+                    'in built type and condition, and this property\'s built type and condition '
+                    'are not yet confirmed. Rely on the range shown, not the single figure; '
+                    'a field inspection narrows the range.'
                 ),
             }
             # (3) MVU → widen / do not downgrade; state that the spread is real

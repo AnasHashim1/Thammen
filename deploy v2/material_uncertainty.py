@@ -274,18 +274,37 @@ def regime_muc(regime=None) -> dict:
         )
         + 'بالتالي قد لا تعكس البيانات الأساسية آخر تحركات السوق.'
     )
+    # Sprint 2.22.0b.117 — EN twin (this dynamic note has interpolated date/days →
+    # the b78 catalog can't match it; it fell back to AR in EN mode). Value-invariant.
+    muc_basis_en = (
+        f'The registered Ministry of Justice data ends at '
+        f'{moj_last.isoformat() if moj_last else "?"}'
+        + (
+            f' — i.e. {_d4_days} days before the date of this estimate '
+            f'(as shown by the data-freshness bar). '
+            if _d4_days is not None else '. '
+        )
+        + 'So the underlying data may not reflect the latest market movements.'
+    )
 
     muc_review_recommendation_ar = (
         'هذا التقدير يجب أن يُراجَع عند: (أ) استئناف نشر بيانات وزارة العدل، '
         'أو (ب) ظهور صفقات حقيقية مؤكَّدة من قطاع الوساطة في نفس الفئة، '
         'أيهما أسبق.'
     )
+    muc_review_recommendation_en = (
+        'This estimate should be reviewed when: (a) the Ministry of Justice resumes '
+        'publishing data, or (b) confirmed real transactions in the same category '
+        'appear from the brokerage sector — whichever comes first.'
+    )
 
     return {
         'muc_clause_ar': muc_clause_ar,
         'muc_clause_en': muc_clause_en,
         'muc_basis_ar': muc_basis_ar,
+        'muc_basis_en': muc_basis_en,
         'muc_review_recommendation_ar': muc_review_recommendation_ar,
+        'muc_review_recommendation_en': muc_review_recommendation_en,
     }
 
 
