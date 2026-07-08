@@ -62,7 +62,9 @@ class UncertaintyLevel:
     muc_clause_ar: Optional[str] = None
     muc_clause_en: Optional[str] = None
     muc_basis_ar: Optional[str] = None    # what makes the MVU applicable
+    muc_basis_en: Optional[str] = None    # Sprint 2.22.0b.117 — EN twin (dynamic; en_localize can't catalog it)
     muc_review_recommendation_ar: Optional[str] = None
+    muc_review_recommendation_en: Optional[str] = None  # Sprint 2.22.0b.117
 
 
 # ── Sprint 2.22.0a.20 (A7) — honest companion label for the rics_compliant bool ──
@@ -176,7 +178,9 @@ def regime_muc(regime=None) -> dict:
                 'muc_clause_ar': None,
                 'muc_clause_en': None,
                 'muc_basis_ar': None,
+                'muc_basis_en': None,
                 'muc_review_recommendation_ar': None,
+                'muc_review_recommendation_en': None,
             }
 
     # Normal regime → no MVU
@@ -185,7 +189,9 @@ def regime_muc(regime=None) -> dict:
             'muc_clause_ar': None,
             'muc_clause_en': None,
             'muc_basis_ar': None,
+            'muc_basis_en': None,
             'muc_review_recommendation_ar': None,
+            'muc_review_recommendation_en': None,
         }
 
     # Build the formal MVU text — Sprint 2.22.0a/12 Phase 1.5b multi-AI
@@ -490,5 +496,7 @@ def assess_uncertainty(
         muc_clause_ar=muc['muc_clause_ar'],
         muc_clause_en=muc['muc_clause_en'],
         muc_basis_ar=muc['muc_basis_ar'],
+        muc_basis_en=muc.get('muc_basis_en'),
         muc_review_recommendation_ar=muc['muc_review_recommendation_ar'],
+        muc_review_recommendation_en=muc.get('muc_review_recommendation_en'),
     )

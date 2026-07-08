@@ -465,7 +465,9 @@ def evaluate_v3(
             'muc_clause_ar': uncertainty.muc_clause_ar,
             'muc_clause_en': uncertainty.muc_clause_en,
             'muc_basis_ar': uncertainty.muc_basis_ar,
+            'muc_basis_en': uncertainty.muc_basis_en,  # Sprint 2.22.0b.117 — valued-path EN twin (dynamic; en_localize can't catalog it)
             'muc_review_recommendation_ar': uncertainty.muc_review_recommendation_ar,
+            'muc_review_recommendation_en': uncertainty.muc_review_recommendation_en,  # Sprint 2.22.0b.117
         }
 
     # ── Step 6: Generate brief ──

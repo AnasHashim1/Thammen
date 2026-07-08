@@ -30,6 +30,13 @@ ck('the pre-existing muc_clause_en is intact (not broken)', bool(d.get('muc_clau
 # value-invariance: no _ar key got an EN value / clobbered
 ck('every *_ar value is still Arabic (additive-only)',
    all(re.search(r'[؀-ۿ]', v) for k, v in d.items() if k.endswith('_ar') and isinstance(v, str)))
+# valued-path threading (the b117-fix): assess_uncertainty -> UncertaintyLevel carries the EN twins,
+# so the main valued path (evaluate_v3 reads uncertainty.muc_basis_en) surfaces it — not just the fast/_enrich path.
+_u = mu.assess_uncertainty(moj_n=37, asset_type='standalone_villa')
+ck('UncertaintyLevel.muc_basis_en threaded (valued path)',
+   bool(getattr(_u, 'muc_basis_en', None)) and 'Ministry of Justice' in (_u.muc_basis_en or ''))
+ck('UncertaintyLevel.muc_review_recommendation_en threaded', bool(getattr(_u, 'muc_review_recommendation_en', None)))
+ck('UncertaintyLevel muc_basis_ar UNCHANGED (AR)', bool(_u.muc_basis_ar) and re.search(r'[؀-ۿ]', _u.muc_basis_ar))
 
 # ── (2) accuracy.explanation — 5 EN tiers beside the 5 AR tiers ──
 EU = io.open('evaluate_unified.py', encoding='utf-8').read()
