@@ -2706,8 +2706,11 @@ def _enrich_material_uncertainty(mu: dict) -> dict:
         from material_uncertainty import regime_muc, rics_compliant_status_fields
         muc = regime_muc()
         out = dict(mu)
+        # Sprint 2.22.0b.117 — fill None/absent slots (was `k not in out`): a caller's
+        # None must not shadow regime_muc()'s authoritative value. Fixes muc_basis_en
+        # being dropped on the main valued path (a None slot pre-existed in the merged mu).
         for k, v in muc.items():
-            if v is not None and k not in out:
+            if v is not None and out.get(k) is None:
                 out[k] = v
         # Sprint 2.22.0a.20 (A7): honest "review pending" label next to rics_compliant
         # (display/label only — the bool and all values are untouched). setdefault so a
