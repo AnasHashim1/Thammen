@@ -43,7 +43,8 @@ check('htag preserved',  'تقييم عقارك في قطر' in _home)
 check('hsub preserved',  'تقييم سوقيّ آليّ للفلل والأراضي في قطر' in _home)
 check('refined MoJ credibility line present', 'استناداً إلى صفقات وزارة العدل المسجّلة.' in _home)
 check('«ابدأ التقييم» wired to go(form)', "onclick=\"go('form')\"" in _home and 'ابدأ التقييم' in _home)
-check('#dfSubtitle id preserved (freshness wiring)', 'id="dfSubtitle"' in _home)
+# b119.1 (PO-directed): the hero recency line #dfSubtitle was removed from the home (moved to Terms).
+check('hero recency line removed (moved to Terms §2)', 'id="dfSubtitle"' not in _home)
 check('scope link preserved', 'openScope()' in _home)
 check('terms link preserved', 'openTerms()' in _home)
 

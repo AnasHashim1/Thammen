@@ -54,7 +54,8 @@ check('b118 elevated hero (.lp-top) present; cert/3-step/duplicate-trust-strip s
       'class="lp-top"' in _home
       and 'class="lp-cert"' not in _home and 'نتيجتك فوراً' not in _home
       and 'class="lp-trust"' not in _home)
-check('start CTA + freshness id intact', "onclick=\"go('form')\"" in _home and 'id="dfSubtitle"' in _home)
+# b119.1 (PO-directed): the hero recency line #dfSubtitle was removed (moved to Terms §2).
+check('start CTA intact; hero recency line removed', "onclick=\"go('form')\"" in _home and 'id="dfSubtitle"' not in _home)
 
 print('b119: %d passed / %d failed' % (_p,_f))
 raise SystemExit(1 if _f else 0)

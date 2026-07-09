@@ -54,9 +54,14 @@ check('CTA = «ابدأ التقييم»', 'ابدأ التقييم' in HTML)  #
 check('old CTA «ابدأ التقدير» gone', 'ابدأ التقدير' not in HTML)  # b54 R6: تقدير→تقييم (identity lock)
 
 print('\n[2] Data-recency line (signed صيغة)')
-check('static default = «البيانات محدّثة حتى ديسمبر 2025»',
-      'البيانات محدّثة حتى ديسمبر 2025' in HTML)
-from data_freshness import _render_subtitle  # production fn (E14)
+# b119.1 (PO-directed 2026-07-09): the hero recency line «البيانات محدّثة حتى …» + the top
+# freshness banner were REMOVED from the home (visually uncomfortable); the data-recency
+# disclosure now lives in the Terms of Use (§2). The result-screen freshness caveat is untouched.
+check('data-recency disclosure moved to Terms §2 (AR + EN)',
+      'أحدث صفقات وزارة العدل المتاحة (حتى ديسمبر 2025)' in HTML
+      and 'latest available Ministry of Justice transactions (through December 2025)' in HTML)
+check('hero recency line removed from the home', 'id="dfSubtitle"' not in HTML)
+from data_freshness import _render_subtitle  # production fn (E14) — engine string kept (unused on home)
 check("_render_subtitle('ديسمبر 2025') == the recency line (b119: MoJ named once, in the hero)",
       _render_subtitle('ديسمبر 2025') == 'البيانات محدّثة حتى ديسمبر 2025',
       repr(_render_subtitle('ديسمبر 2025')))

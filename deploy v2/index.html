@@ -628,6 +628,8 @@ body.lang-en #homeScreen.home{text-align:left}
 .lp-foot .lnk{display:flex;gap:22px;font-size:.9rem;flex-wrap:wrap}
 .lp-foot .lnk a{color:#C9D2D8;cursor:pointer}
 .lp-foot .fine{font-size:.75rem;color:#7C8B96;line-height:1.95;margin-top:16px}
+/* b119 follow-up: stack the footer on narrow phones so the 3 links wrap (no horizontal cut). */
+@media(max-width:520px){.lp-foot .top{flex-direction:column;align-items:flex-start;gap:14px}.lp-foot .lnk{gap:10px 18px;width:100%}}
 @media(max-width:760px){.lp-cards2{grid-template-columns:1fr}.lp-why{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:no-preference){.lp-card,.lp-why>div{transition:transform .3s,box-shadow .3s}.lp-card:hover{transform:translateY(-3px);box-shadow:var(--sh-lg)}.lp-why>div:hover .wi{transform:scale(1.08)}.lp-why .wi{transition:transform .3s}}
 /* b119 — simplified centered hero (logo + title + CTA; sample card + 3-step removed, PO-directed) */
@@ -678,8 +680,11 @@ body.lang-en #homeScreen.home{text-align:left}
 </div>
 <script>(function(){try{if(sessionStorage.getItem('thammen_beta_ack')==='1'||window._betaAck){var g=document.getElementById('betaGate');if(g)g.style.display='none';}}catch(e){}})();</script>
 
-<!-- Sprint 2.7: Data Freshness sticky banner — populated by JS on page load -->
-<div class="dfb" id="dfBanner" role="status" aria-live="polite" hidden></div>
+<!-- Sprint 2.7: Data Freshness sticky banner + b24 hero recency line — REMOVED from the home
+     per PO (2026-07-09): the "last MoJ-data update" indicator was visually uncomfortable on the
+     first frame. The data-recency disclosure now lives in the Terms of Use (§2); the always-visible
+     result-screen freshness caveat (.dfc) is untouched. The loadFreshness() JS + data_freshness
+     engine strings are kept (no-op DOM guards) so this is trivially reversible. -->
 
 <!-- HOME -->
 <div class="home screen active thmr" id="homeScreen">
@@ -694,17 +699,8 @@ body.lang-en #homeScreen.home{text-align:left}
   <div class="hrule"></div>
   <button class="hbtn" onclick="go('form')" data-en="Start the valuation">ابدأ التقييم</button>
   <div class="hcred" data-en="Based on registered Ministry of Justice transactions.">استناداً إلى صفقات وزارة العدل المسجّلة.</div>
-  <div class="lp-fresh" id="dfSubtitle">البيانات محدّثة حتى ديسمبر 2025</div>
-  <!-- Sprint 2.14.0 — RICS VPS 1 Scope link -->
-  <div style="margin-top:14px;font-size:.85rem;color:var(--muted);position:relative;z-index:1">
-    <a href="#" onclick="openScope();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer" data-en="What Thammen supports and what it doesn't ↓">
-      ما يدعمه ثمّن وما لا يدعمه ↓
-    </a>
-  </div>
-  <!-- Sprint 2.22.0a.24 — Terms & Privacy footer link -->
-  <div style="margin-top:8px;font-size:.8rem;color:var(--muted);position:relative;z-index:1">
-    <a href="#" onclick="openTerms();return false;" style="color:var(--muted);text-decoration:underline;cursor:pointer" data-en="Terms &amp; Privacy Notice">الشروط وإشعار الخصوصية</a>
-  </div>
+  <!-- b119 follow-up (PO 2026-07-09): the scope + Terms links were moved OFF the hero (premium,
+       decluttered above-the-fold) → they live in the footer, next to the privacy link. -->
   </div><!-- /lp-top -->
 
   <!-- b119 slice-2: data sources -->
@@ -765,6 +761,7 @@ body.lang-en #homeScreen.home{text-align:left}
     <div class="top">
       <div class="brand">ثمّن</div>
       <div class="lnk">
+        <!-- Sprint 2.14.0 — RICS VPS 1 Scope link (scope of service); moved to the footer per PO b119 follow-up -->
         <a onclick="openScope();return false;" data-en="What we cover">ما نغطّيه</a>
         <a onclick="openTerms();return false;" data-en="Terms &amp; Privacy">الشروط والخصوصية</a>
         <a href="mailto:info@thammen.qa" data-en="Contact: info@thammen.qa">تواصل: info@thammen.qa</a>
@@ -3954,7 +3951,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
       <h3>1) الموافقة على الاستخدام</h3>
       <p>هذه خدمة مجانية. باستخدامك للأداة تُقرّ بفهمك لما ورد أدناه وتوافق طوعاً على الاستخدام. الاستخدام اختياري ويمكنك التوقف في أي وقت.</p>
       <h3>2) ما هي الخدمة وما حدودها</h3>
-      <p>ثمّن تقييم سوقيّ آليّ للفلل والأراضي مبني على بيانات معاملات وزارة العدل ومصادر السوق. هذا تحليل معلوماتي للقرار، وليس تقييماً رسمياً ولا تقريراً معتمداً صادراً عن مُقيِّم مُرخّص وفق معايير &lrm;RICS/IVS&lrm;. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد. وثمّن خدمة مستقلّة غير منتسبة لوزارة العدل؛ تستخدم بياناتها المفتوحة فقط. ويغطّي الفلل والأراضي فقط في هذه المرحلة (الشقق والأبراج غير مشمولة بعد)، ولا يأخذ بعدُ حالة العقار الداخلية وتشطيباته — لذلك قد ينخفض السعر الفعليّ نحو قيمة الأرض (عقار قديم/بسيط) أو يتجاوز التقدير (جديد/فاخر).</p>
+      <p>ثمّن تقييم سوقيّ آليّ للفلل والأراضي مبني على بيانات معاملات وزارة العدل ومصادر السوق. هذا تحليل معلوماتي للقرار، وليس تقييماً رسمياً ولا تقريراً معتمداً صادراً عن مُقيِّم مُرخّص وفق معايير &lrm;RICS/IVS&lrm;. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد. وثمّن خدمة مستقلّة غير منتسبة لوزارة العدل؛ تستخدم بياناتها المفتوحة فقط. ويغطّي الفلل والأراضي فقط في هذه المرحلة (الشقق والأبراج غير مشمولة بعد)، ولا يأخذ بعدُ حالة العقار الداخلية وتشطيباته — لذلك قد ينخفض السعر الفعليّ نحو قيمة الأرض (عقار قديم/بسيط) أو يتجاوز التقدير (جديد/فاخر). وتعتمد التقديرات على أحدث صفقات وزارة العدل المتاحة (حتى ديسمبر 2025)، وقد لا تعكس أحدث تغيّرات السوق بعد ذلك التاريخ.</p>
       <h3>3) بياناتك في هذه الخدمة</h3>
       <p>• نحتفظ بنسخة من تقرير تقييمك (تشمل عنوان العقار وبياناته العقاريّة: الرقم المساحيّ والمنطقة والموقع والتقدير) في سجلّات فريق ثمّن، لأغراض حفظ السجلّات وتحسين دقّة التقييم. لا حساب، ولا تسجيل دخول، ولا ملفات تتبّع أو تحليلات.</p>
       <p>• لا نجمع بيانات تواصل شخصيّة (اسم أو هاتف أو بريد أو رقم هويّة)، وتُزال أرقام حسابات الكهرباء والماء من النسخة المحفوظة.</p>
@@ -3975,7 +3972,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
         <h4>1) Consent to participate</h4>
         <p>A free service. By using the tool you acknowledge the points below and voluntarily agree to use it. Use is optional; you may stop at any time.</p>
         <h4>2) What the service is, and its limits</h4>
-        <p>Thammen is an automated market valuation for villas and land, built on Ministry of Justice transaction data and market sources. It is an informational decision analysis — NOT an official or certified valuation by a licensed valuer under RICS/IVS. Official purposes (loans, courts, accounting) require an accredited valuer. Thammen is an independent service, not affiliated with the Ministry of Justice; it uses its open data only. It covers villas and land only for now (apartments and towers are not yet included), and does not yet account for interior condition/finishes — so the actual price may fall toward the land value (older/basic) or exceed the estimate (newer/luxury).</p>
+        <p>Thammen is an automated market valuation for villas and land, built on Ministry of Justice transaction data and market sources. It is an informational decision analysis — NOT an official or certified valuation by a licensed valuer under RICS/IVS. Official purposes (loans, courts, accounting) require an accredited valuer. Thammen is an independent service, not affiliated with the Ministry of Justice; it uses its open data only. It covers villas and land only for now (apartments and towers are not yet included), and does not yet account for interior condition/finishes — so the actual price may fall toward the land value (older/basic) or exceed the estimate (newer/luxury). Estimates rely on the latest available Ministry of Justice transactions (through December 2025) and may not reflect market changes after that date.</p>
         <h4>3) Your data</h4>
         <p>• We keep a copy of your valuation report (including the property address and its parcel data: cadastral PIN, district, location, and the estimate) in the Thammen team's records, for record-keeping and to improve estimate accuracy. No account, no login, no tracking or analytics cookies.</p>
         <p>• We do not collect personal contact data (no name, phone, email, or national ID), and the electricity/water account numbers are removed from the retained copy.</p>
