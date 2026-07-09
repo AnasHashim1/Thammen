@@ -3,8 +3,9 @@
 
 Isolated checks against the REAL production files (Rule #40 / E14):
   1. Home surface: تقدير (not تقييم) on the hero tag + CTA button.
-  2. Data-recency line: signed static default + the production _render_subtitle
-     emits the same صيغة («بيانات وزارة العدل حتى {الشهر}»).
+  2. Data-recency line: static default + the production _render_subtitle emit the same صيغة.
+     b119 (PO-directed 2026-07-09): «العدل» is named once above the fold (the hero credibility
+     line), so this recency line drops the redundant source-name → «البيانات محدّثة حتى {الشهر}».
   3. Audience selector: signed label («من أنت؟ … الرقم واحد للجميع») + «مالك»
      restored as the DEFAULT first option; api boundary ACCEPTS owner/مالك; the
      engine normalizes owner→buyer (presentation only — zero value axis).
@@ -53,11 +54,11 @@ check('CTA = «ابدأ التقييم»', 'ابدأ التقييم' in HTML)  #
 check('old CTA «ابدأ التقدير» gone', 'ابدأ التقدير' not in HTML)  # b54 R6: تقدير→تقييم (identity lock)
 
 print('\n[2] Data-recency line (signed صيغة)')
-check('static default = «بيانات وزارة العدل حتى ديسمبر 2025»',
-      'بيانات وزارة العدل حتى ديسمبر 2025' in HTML)
+check('static default = «البيانات محدّثة حتى ديسمبر 2025»',
+      'البيانات محدّثة حتى ديسمبر 2025' in HTML)
 from data_freshness import _render_subtitle  # production fn (E14)
-check("_render_subtitle('ديسمبر 2025') == the signed line",
-      _render_subtitle('ديسمبر 2025') == 'بيانات وزارة العدل حتى ديسمبر 2025',
+check("_render_subtitle('ديسمبر 2025') == the recency line (b119: MoJ named once, in the hero)",
+      _render_subtitle('ديسمبر 2025') == 'البيانات محدّثة حتى ديسمبر 2025',
       repr(_render_subtitle('ديسمبر 2025')))
 check('dynamic refresh keeps the same صيغة (no «آخر تحديث» drift)',
       'آخر تحديث' not in _render_subtitle('ديسمبر 2025'))

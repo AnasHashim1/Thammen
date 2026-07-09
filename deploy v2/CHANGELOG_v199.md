@@ -1,0 +1,38 @@
+# CHANGELOG v199 — Sprint 2.22.0b.119 «الرئيسيّة التسويقيّة» (marketing home — deep sections + honest, premium centered hero)
+
+**Engine:** `thammen-sprint2p22p0b119-marketing-home-sections` · **api-health:** `3.1.0-sprint2.22.0b.119`
+**Date:** 2026-07-09 · **Files:** `index.html`, `data_freshness.py` (recency-line copy), `evaluate_unified.py` (2 version lines), `test_sprint_2_22_0b119.py` (new), `test_sprint_2_22_0b118.py` / `test_sprint_2_22_0b79.py` / `test_sprint_2_22_0b56.py` / `test_sprint_2_22_0b24.py` (re-points)
+**Class:** 🟢 FRONTEND + display-copy / **VALUE-INVARIANT** — `api.py` UNTOUCHED; the valuation engine UNTOUCHED (`data_freshness` change is the home recency string only, never part of a valuation).
+
+## 1. Why this matters
+b118 elevated the hero (a 2-column layout with an illustrative range-as-lead **certificate-preview card** + a **3-step trust band** + a source **trust strip**). The PO reviewed it live and asked for: **(a)** the rest of the approved landing («باقي ما اتفقنا عليه») — the deeper informational + credibility sections; and **(b)** a set of honesty/refinement fixes to the hero: **remove the fabricated «مثال توضيحيّ» number** (it can be mistaken for a real result — against the product's honesty discipline), **remove the 3-step band**, keep a clean **centered** hero (logo + «تقييم عقارك في قطر» in the middle), reduce «وزارة العدل» from **three stacked mentions to exactly one** above the fold, and drop the casual **«لا أسعار إعلانات»** («لا تليق بموقع فاخر»). b119 delivers all of it.
+
+## 2. Root cause
+b118 was slice-1 (above-the-fold hero). Its hero put a fabricated number + a step band + three repeated source mentions above the fold — heavier, more repetitive, and less premium/honest than the product warrants; and the informational body was deferred.
+
+## 3. What this patch does
+**(A) Honest, premium, centered hero.** `#homeScreen`'s 2-column `.lp-hero` → a single **centered `.lp-top`** column: logo + «تقييم عقارك في قطر» + sub + bronze rule + «ابدأ التقييم» → `go('form')` + **one** refined credibility line **«استناداً إلى صفقات وزارة العدل المسجّلة.»** (was «من صفقات وزارة العدل المسجّلة — لا أسعار إعلانات.») + a source-free recency line **«البيانات محدّثة حتى ديسمبر 2025»** + scope/terms links. **Removed:** the illustrative certificate-preview card (`.lp-cert` + the «مثال توضيحيّ» number, range/median/bar/stats), the 3-step band (`.htrust`), and the **duplicate source trust strip** (`.lp-trust`: «مصادر البيانات: وزارة العدل · GIS» — fully repeated by the dedicated «مصادر البيانات» section below). Their now-dead CSS is deleted.
+**«وزارة العدل» above the fold = exactly ONE** (the credibility line); the recency line + the removed trust strip no longer repeat it. `data_freshness._render_subtitle` (the live `/api/freshness` hero string) → «البيانات محدّثة حتى {الشهر}». The casual «لا أسعار إعلانات» is dropped everywhere in the home, and its refined form «لا الأسعار المُعلَنة» is dropped too (a bare negation as a headline reads ambiguous/unrefined — PO): the Sources-section headline → the **positive** «أرقامٌ حقيقيّة من صفقاتٍ مسجّلة» and the FAQ answer's trailing negation is removed. The differentiator (registered SALE transactions vs. advertised prices) is kept **once, fully explained in context**, in the «وزارة العدل» source card («…المسجّلة رسمياً — لنقيس السوق بأرقامه الحقيقية لا بالأسعار المعلنة»). The reports are a separate surface and keep their own copy (out of scope).
+**(B) Deep sections (after the hero):** مصادر البيانات (2 cards + full CC BY 4.0 attribution) · لماذا ثمّن (4 pillars, SVG-sprite icons, zero emoji) · التغطية (villa + land + «الشقق والأبراج — غير مشمولة بعد») · الأسئلة الشائعة (5-item `<details>` with the honesty framing: RICS/IVS not-certified · CC BY source · condition caveat · coverage · data policy + deletion right) · دعوة → `go('form')` · تذييل (brand + links + full CC BY 4.0 + «غير منتسبة» attribution).
+**(C) Fluidity.** Scroll-based reveal (getBoundingClientRect — robust to the home's scroll container) fades in `.lp-top`, each section, CTA + footer; reduced-motion-safe.
+On live tokens, **local IBM Plex**, **zero CDN**, **bilingual** (`data-en`). `api.py` = ∅; `evaluate_unified.py` = the 2 version lines.
+
+## 4. Verification — empirical
+- **Value-invariance (structural):** `git diff api.py` = ∅; `evaluate_unified.py` = the 2 version lines only; `data_freshness.py` = the home recency string only (never touches amount/low/high/method/rule) → the 5-fixture value byte-gate holds by construction.
+- **Isolated:** `b119` **24/24** · `b118` **22/22** · `b56` **30/30** · `b79` **19/19** · `b24` **58/58** — real files, E14.
+- **DoD:** aggregator **395/395 (ALL COUNTS MATCH)** · security **16/16** · surface honesty **45/45** · broad walk **173/173 ALL GREEN** · py_compile OK · node --check inline JS OK.
+- **R14 (live preview):** centered hero (logo + «تقييم عقارك في قطر» in the middle, perfectly centered) · **«وزارة العدل» above the fold = 1** (the refined credibility line) · recency line «البيانات محدّثة حتى ديسمبر 2025» (no source repeat) · cert card + 3-step + trust strip **GONE** · «لا أسعار إعلانات» AND the ambiguous «لا الأسعار المُعلَنة» removed from home (Sources headline is the positive «أرقامٌ حقيقيّة من صفقاتٍ مسجّلة»; the differentiator kept once, contextualized, in the source card) · MoJ/GIS still named in the Sources section + FAQ + footer · all 6 sections render · EN toggle flips hero+sections → English (dir=ltr, coverage `<b>` intact), AR restores · **no overflow** (desktop/mobile) · reveal fires · **0 console errors**.
+- **Re-points (R6/Lesson-2, PO-directed, zero assertion weakened):** `b118` (cert/3-step/duplicate-trust-strip superseded + their REMOVAL asserted + MoJ-once-above-fold + refined credibility line) · `b119` (data-sources H2 + trust-strip supersession) · `b56` (refined credibility line; the 3-step reduction) · `b79` (hero credit `data-en` → «Based on registered Ministry of Justice transactions.») · `b24` (recency line → «البيانات محدّثة حتى {الشهر}»).
+
+## 5. Deployment
+`git add index.html data_freshness.py evaluate_unified.py test_sprint_2_22_0b119.py test_sprint_2_22_0b118.py test_sprint_2_22_0b79.py test_sprint_2_22_0b56.py test_sprint_2_22_0b24.py CHANGELOG_v199.md`
+`git commit` · `git push origin master` · `git -C "C:/Thammen" subtree push --prefix "deploy v2" heroku master`
+
+## 6. Verification curl (post-deploy)
+`curl -s https://thammen.qa/api/health` → `3.1.0-sprint2.22.0b.119`
+`curl -s --compressed https://thammen.qa/ | grep -c "lp-top\|lp-faq\|lp-foot"` → present · `grep -c "lp-cert\|lp-trust\|مثال توضيحيّ\|لا أسعار إعلانات"` → 0 in the home
+`curl -s https://thammen.qa/api/freshness` → `subtitle_ar` = «البيانات محدّثة حتى {الشهر}»
+5-fixture byte-gate (browser-UA #61) → byte-identical to v283.
+
+## 7. What's NOT in this patch
+The result screen + both reports keep their live look (option «أ» = additive; no reversal of b48/b92/b93) — and the **reports still carry «لا أسعار إعلانات»** (a separate, signed surface; refining it there is its own pass if the PO wants it). The api.py `/api/freshness` **error-only fallback** string is left untouched (rare edge case, not the visible repetition). Lawyer + linguist personas: **APPROVE** — removing the fabricated front-page number RAISES honesty/defensibility; naming «وزارة العدل» once (in the strongest credibility slot) keeps the #1 trust signal while ending the repetition; the differentiator (registered transactions, not advertised prices) is preserved in formal language in the Sources section + FAQ; «استناداً إلى صفقات وزارة العدل المسجّلة» + «لا الأسعار المُعلَنة» are فصيح, premium, and register-consistent.

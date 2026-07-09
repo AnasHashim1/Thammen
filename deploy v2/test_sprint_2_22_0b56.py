@@ -52,17 +52,23 @@ check('coverage + not-affiliated preserved in Terms (EN)',
 check('home hsub no longer «مبنيّ على بيانات وزارة العدل»',
       'class="hsub"' in HTML and 'تقييم سوقيّ آليّ للفلل والأراضي في قطر</div>' in HTML
       and 'مبنيّ على بيانات وزارة العدل المفتوحة</div>' not in HTML)  # b79: data-en attr added to the hsub tag
-check('home step-2 no longer «صفقات العدل»',
-      'نحلّل الصفقات المسجّلة' in HTML and 'نحلّل صفقات العدل' not in HTML)
-check('home hcred trust line KEPT (the one legitimate العدل credit)',
-      'من صفقات وزارة العدل المسجّلة — لا أسعار إعلانات.' in HTML)
-# b118 (elevated marketing home): the landing adds a source-attribution trust strip that names
-# «وزارة العدل» ONCE (a deliberate credibility anchor, PO-approved via the b118 design). The b56
-# anti-redundancy intent is PRESERVED — the exact hcred duplicate sentence was removed from the
-# strip; the home now carries three legitimate mentions (hcred + JS recency line + source strip),
-# still «مرة أو مرتين» in spirit (no redundant repeat). R6/Lesson-2 re-point: ≤2 → ≤3.
+# b56 reduced the home «العدل» repeats: step-2 «نحلّل صفقات العدل» → «نحلّل الصفقات المسجّلة».
+# b119 (PO-directed 2026-07-09) then removed the whole 3-step band from the simplified hero, so
+# «العدل» is reduced even further. b56's REAL intent — no «صفقات العدل» repeat on home — survives.
+check('home has no «نحلّل صفقات العدل» العدل-repeat (b56 reduction; b119 dropped the 3-step band)',
+      'نحلّل صفقات العدل' not in HTML)
+# b119 (PO-directed 2026-07-09): the credibility line is refined to a premium voice (drops the
+# casual «— لا أسعار إعلانات») and stays the ONE legitimate «العدل» credit above the fold.
+check('home MoJ credibility line KEPT (the one legitimate العدل credit, refined b119)',
+      'استناداً إلى صفقات وزارة العدل المسجّلة.' in HTML)
+# b119 (full marketing home): the home is now a full landing (data-sources + FAQ + footer +
+# attribution) that legitimately DISCUSSES the open-data source — naming «وزارة العدل» is the
+# credibility story, not the b56 minimal-home redundancy. The raw «≤N» count is obsolete for a
+# marketing landing; b56's REAL intent survives as the ANTI-REDUNDANCY check below (the specific
+# duplicated sentence/repeats it removed stay gone). R6/Lesson-2 re-point: count-cap → no-duplicate.
 _homeBlock = HTML[HTML.index('id="homeScreen"'):HTML.index('id="formScreen"')]
-check('home العدل count ≤ 3 (PO «مرة أو مرتين» + b118 source strip)', _homeBlock.count('العدل') <= 3)
+check('home MoJ credibility line not duplicated (b56 anti-redundancy + b119 «مرة واحدة»)',
+      _homeBlock.count('استناداً إلى صفقات وزارة العدل المسجّلة.') <= 1)
 
 # ── 4. SHORT report — formal register ──
 check('الزبدة → الخلاصة (head + §3 + legal caveat)',

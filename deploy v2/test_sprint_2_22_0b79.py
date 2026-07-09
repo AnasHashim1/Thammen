@@ -32,11 +32,14 @@ check('_mountLangToggle mounts a gate toggle (#betaGate .bgate-head)',
       "document.querySelector('#betaGate .bgate-head')" in HTML and "className='gate-lang'" in HTML)
 
 # ---- (3) home wired ----
-check('home tag/sub/steps/cta/cred carry data-en',
+# b119 (PO-directed 2026-07-09) removed the 3-step trust band («Enter the address» …) from the
+# simplified centered hero. The surviving hero copy (title/sub/CTA/credit) keeps its bilingual
+# data-en; b79's real intent (the home hero is EN-toggle-wired) holds.
+check('home tag/sub/cta/cred carry data-en',
       'class="htag" data-en="Value your property in Qatar"' in HTML and
       'data-en="Automated market valuation for villas and land in Qatar"' in HTML and
-      'data-en="Enter the address"' in HTML and 'data-en="Start the valuation"' in HTML and
-      'data-en="From registered Ministry of Justice transactions' in HTML)
+      'data-en="Start the valuation"' in HTML and
+      'data-en="Based on registered Ministry of Justice transactions."' in HTML)
 
 # ---- (4) form wired (labels, placeholders, tabs, audience, submit) ----
 check('form tabs + labels + placeholders carry data-en / data-en-ph',
