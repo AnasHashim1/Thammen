@@ -66,7 +66,8 @@ en_localize.attach_en(obj2)
 ck('attach_en never clobbers an existing _en', obj2['x_en'] == 'PRESET')
 
 # ── (4) version ──
-ck('engine version is b117', "SPRINT_TAG = '2.22.0b.117'" in EU)
+# R6/Lesson-2 re-point (b118): no exact-version pins — assert the version FORMAT, not the literal.
+ck('engine version format valid', "ENGINE_VERSION = 'thammen-sprint2p22p0b" in EU and "SPRINT_TAG = '2.22.0b." in EU)
 
 print('\nb117 (EN report notes): %d passed, %d failed' % (_p, _f))
 sys.exit(1 if _f else 0)
