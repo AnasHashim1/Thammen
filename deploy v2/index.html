@@ -159,25 +159,45 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
    Evolves b3 range-as-lead: leads with a confident central figure (the median = v.amount) on a
    navy band + a slim low↔high range bar marking the median, KEEPING the range + the RICS clause
    below. VALUE-INVARIANT — presents amount/low/high, never recomputes. Unified b45 tokens. */
-.rhero{text-align:center;background:var(--primary);border-radius:14px;padding:20px 16px 16px;margin-bottom:14px;box-shadow:0 6px 22px rgba(22,50,79,.18)}
-.rhero .lbl{display:block;font-size:.85rem;font-weight:700;color:var(--gold);margin-bottom:6px}
-.rhero .num{font-size:2.1rem;font-weight:700;color:#fff;line-height:1.15;font-feature-settings:"tnum" 1;font-variant-numeric:tabular-nums}
-.rhero .num small{font-size:.95rem;font-weight:600;opacity:.85}
-.rhero .rng{font-size:.84rem;color:#EAF0F6;margin-top:9px}
-.rhero .rng b{color:#fff;font-weight:700}
-.rbar{margin-top:13px}
-.rbar .track{position:relative;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--bronze),rgba(255,255,255,.32))}
-.rbar .dot{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;border:2.5px solid var(--primary);box-shadow:0 0 0 1.5px rgba(255,255,255,.55);transform:translate(50%,-50%)}
-.rbar .dot.c{background:var(--gold)}
-.rbar .lbls{display:flex;justify-content:space-between;font-size:.68rem;color:#C7D2DE;margin-top:8px}
-@media(max-width:480px){.rhero .num{font-size:1.85rem}}
+/* Sprint 2.22.0b.124 (S4a, redesign v2) — the WHITE value card (design handoff). The result-screen
+   hero moves from a navy band to a clean white card with a bronze top-rule: figure in navy, range
+   secondary, a confidence meter from accuracy.score. The class name .rhero is KEPT (calc_visual pins
+   it) — only its skin changes. b3 range-as-lead + b92 tiered bracket render inside it verbatim; the
+   navy luxury chrome (b93) now lives ONLY on the report heroes (.thmr-hero.lux). VALUE-INVARIANT. */
+.rhero{text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:clamp(24px,4vw,38px) clamp(20px,4vw,40px) 26px;margin-bottom:14px;box-shadow:0 4px 18px rgba(22,50,79,.06);position:relative;overflow:hidden}
+.rhero::before{content:'';position:absolute;top:0;right:0;left:0;height:3px;background:linear-gradient(90deg,transparent,var(--bronze),transparent)}
+.rhero .lbl{display:block;font-size:var(--fs-14);font-weight:600;color:var(--muted);letter-spacing:.5px;margin-bottom:10px}
+.rhero .num{font-size:clamp(44px,7vw,52px);font-weight:700;color:var(--primary);line-height:1.05;letter-spacing:-1px;font-feature-settings:"tnum" 1;font-variant-numeric:tabular-nums}
+.rhero .num small{font-size:.42em;font-weight:600;color:var(--bronze);letter-spacing:0}
+.rhero .rng{font-size:var(--fs-14);color:var(--muted);margin-top:12px}
+.rhero .rng b{color:var(--primary);font-weight:700}
+.rbar{margin-top:15px;max-width:460px;margin-left:auto;margin-right:auto}
+.rbar .track{position:relative;height:8px;border-radius:99px;background:var(--alt)}
+.rbar .track::after{content:'';position:absolute;inset:0;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--bronze));transform-origin:right;animation:rbarfill 1s .35s both cubic-bezier(.22,.61,.36,1)}
+.rbar .dot{position:absolute;top:50%;width:15px;height:15px;border-radius:50%;background:var(--primary);border:3px solid var(--surface);box-shadow:0 2px 7px rgba(22,50,79,.28);transform:translate(50%,-50%);z-index:1}
+.rbar .dot.c{background:var(--primary)}
+.rbar .lbls{display:flex;justify-content:space-between;font-size:var(--fs-12);color:var(--muted);margin-top:9px}
+@keyframes rbarfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+/* confidence meter (from accuracy.score) — the card foot */
+.rconf{border-top:1px solid var(--alt);margin:22px -1px -4px;padding:16px clamp(4px,2vw,10px) 4px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.rconf .cw{display:flex;align-items:center;gap:11px}
+.rconf .cdot{width:9px;height:9px;border-radius:50%;background:var(--ok)}
+.rconf .clbl{font-weight:600;color:var(--primary);font-size:var(--fs-14)}
+.rconf .cbar{width:110px;height:7px;background:var(--alt);border-radius:5px;overflow:hidden}
+.rconf .cbar>i{display:block;height:100%;background:var(--ok);border-radius:5px;transform-origin:right;animation:rbarfill 1s .5s both cubic-bezier(.22,.61,.36,1)}
+.rconf .cscore{font-size:var(--fs-14);color:var(--muted)}
+.rconf .cnote{font-size:var(--fs-12);color:var(--muted);max-width:430px;line-height:1.7;text-align:left}
+.rconf .cnote b{color:var(--primary)}
+@media(max-width:480px){.rhero .num{font-size:38px}}
+@media(prefers-reduced-motion:reduce){.rbar .track::after,.rconf .cbar>i{animation:none}}
 /* b93 luxury (Gemini r7 #3): cadastral watermark (~4% opacity, local SVG — zero CDN, b45 lock)
-   + a champagne-gold hairline ring with a slow sheen, on BOTH navy heroes (one نسق). */
-.rhero,.thmr-hero.lux{position:relative;overflow:hidden}
-.rhero::before,.thmr-hero.lux::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='230'%20height='230'%3E%3Cg%20fill='none'%20stroke='white'%20stroke-width='1'%3E%3Cpath%20d='M8%2034h86v64H8zM94%208h64v90H94zM158%2030h66v72h-66zM22%2098h108v62H22zM130%2098h94v96h-94zM8%20160h122v62H8zM94%2034v64M52%2098v62'/%3E%3C/g%3E%3C/svg%3E");background-size:230px}
-.rhero::after,.thmr-hero.lux::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;border:1px solid transparent;background:linear-gradient(115deg,rgba(232,201,154,.7),rgba(232,201,154,.14) 30%,rgba(232,201,154,.8) 50%,rgba(232,201,154,.14) 70%,rgba(232,201,154,.7)) border-box;background-size:250% 100%;-webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);mask-composite:exclude;animation:luxsheen 9s linear infinite}
+   + a champagne-gold hairline ring with a slow sheen. b124: the WHITE result card no longer carries
+   this navy chrome — it now lives ONLY on the navy REPORT hero (.thmr-hero.lux), one نسق per surface. */
+.thmr-hero.lux{position:relative;overflow:hidden}
+.thmr-hero.lux::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='230'%20height='230'%3E%3Cg%20fill='none'%20stroke='white'%20stroke-width='1'%3E%3Cpath%20d='M8%2034h86v64H8zM94%208h64v90H94zM158%2030h66v72h-66zM22%2098h108v62H22zM130%2098h94v96h-94zM8%20160h122v62H8zM94%2034v64M52%2098v62'/%3E%3C/g%3E%3C/svg%3E");background-size:230px}
+.thmr-hero.lux::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;border:1px solid transparent;background:linear-gradient(115deg,rgba(232,201,154,.7),rgba(232,201,154,.14) 30%,rgba(232,201,154,.8) 50%,rgba(232,201,154,.14) 70%,rgba(232,201,154,.7)) border-box;background-size:250% 100%;-webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);mask-composite:exclude;animation:luxsheen 9s linear infinite}
 @keyframes luxsheen{0%{background-position:0% 0}100%{background-position:250% 0}}
-@media(prefers-reduced-motion:reduce){.rhero::after,.thmr-hero.lux::after{animation:none}}
+@media(prefers-reduced-motion:reduce){.thmr-hero.lux::after{animation:none}}
 /* Sprint 2.22.0a/8 — adjustment_ledger_directional placeholder badge (Q4 α + Anas refinement) */
 .alg-placeholder-badge{display:inline-block;padding:3px 10px;background:var(--alt);color:var(--muted);border-radius:12px;font-size:.74rem;margin-bottom:10px;font-weight:600}
 .alg-placeholder-note{font-size:.86rem;color:var(--muted);line-height:1.8;padding:12px 14px;background:var(--alt);border-radius:8px}
@@ -3121,7 +3141,9 @@ function show(d){
     // .thmr-hero). VALUE-INVARIANT — amount/low/high are PRESENTED, never recomputed (b24).
     t1+='<div class="rc">';
     t1+='<div class="rhero"><span class="lbl">'+t('التقييم السوقي','Market valuation')+'</span>';
-    t1+='<div class="num">'+fmt(v.amount)+' <small>'+t('ر.ق','QAR')+'</small></div>';
+    // b124 (S4a): the figure counts up from 0 to v.amount (data-countup) — _countUp lands on fmt(target),
+    // reduced-motion snaps. VALUE-INVARIANT: display-only, amount never recomputed (b24).
+    t1+='<div class="num"><span data-countup="'+(v.amount||0)+'">'+fmt(v.amount)+'</span> <small>'+t('ر.ق','QAR')+'</small></div>';
     if(v.low!=null&&v.high!=null){
       // central-estimate (median) position within [low,high] — DISPLAY-only, clamped to [0,100].
       var _hpct=(v.high>v.low)?Math.max(0,Math.min(100,Math.round((v.amount-v.low)/(v.high-v.low)*100))):50;
@@ -3141,6 +3163,15 @@ function show(d){
       t1+='<div class="rbar"><div class="track"><span class="dot c" style="right:'+_hpct+'%"></span></div>';
       t1+='<div class="lbls"><span>'+t('الأدنى ','Low ')+fmt(v.low)+'</span><span>'+t('الأعلى ','High ')+fmt(v.high)+'</span></div></div>';
       }
+    }
+    // b124 (S4a): the CONFIDENCE METER — from the REAL accuracy.score / accuracy.label the engine
+    // broadcasts (previously unshown). Honest: rendered ONLY when a numeric score is present; no score
+    // → no meter (never an invented number). explanation_ar carries «مبني على N صفقة …». Value-invariant.
+    if(acc&&typeof acc.score==='number'&&isFinite(acc.score)){
+      var _cscore=Math.max(0,Math.min(100,Math.round(acc.score)));
+      var _clbl=acc.label||'';                    // engine broadcasts a bare `label` (AR)
+      var _cexp=pick(acc,'explanation')||'';       // explanation_ar (+ _en when it lands, b117-class)
+      t1+='<div class="rconf"><div class="cw"><span class="cdot"></span>'+(_clbl?'<span class="clbl">'+_clbl+'</span>':'')+'<span class="cbar"><i style="width:'+_cscore+'%"></i></span><span class="cscore"><span data-countup="'+_cscore+'">'+_cscore+'</span>/100</span></div>'+(_cexp?'<div class="cnote">'+esc(_cexp)+'</div>':'')+'</div>';
     }
     t1+='</div>'; // .rhero
     // TYPE tier badge — quiet, below the hero.
@@ -3550,6 +3581,9 @@ function show(d){
     h=head+muc+a8acc+alerts+flat+foot;
   }
   o.innerHTML=h;
+  // b124 (S4a): drive the hero count-up (figure + confidence score) after the DOM is in place.
+  // _countUp is value-invariant (lands on fmt(target)) + reduced-motion-safe. Display-only.
+  try{o.querySelectorAll('[data-countup]').forEach(function(el){_countUp(el,parseFloat(el.getAttribute('data-countup')),1300);});}catch(e){}
 }
 
 // Sprint D: Section renderer for brief.sections

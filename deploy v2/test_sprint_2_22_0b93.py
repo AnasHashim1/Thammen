@@ -21,7 +21,14 @@ def check(name, cond):
     else:    failed += 1; print('FAIL |', name)
 
 # ── (a) luxury chrome ──
-check('shared luxury selectors on BOTH navy heroes', '.rhero,.thmr-hero.lux{position:relative;overflow:hidden}' in HTML)
+# b124 (S4a redesign) re-point (R6/Lesson-2): the RESULT hero moved from a navy band to a WHITE
+# value card (design handoff, PO-signed) → the navy luxury chrome (cadastral watermark + champagne
+# sheen) no longer fits it and now lives ONLY on the navy REPORT hero (.thmr-hero.lux). The white
+# card carries a bronze top-rule instead. Zero value/compliance weakened — this is a deliberate
+# design evolution, not a removal (the chrome is intact on .thmr-hero.lux, asserted below at 25-30).
+check('luxury chrome selector on the navy REPORT hero (.thmr-hero.lux)', '.thmr-hero.lux{position:relative;overflow:hidden}' in HTML)
+check('white result card carries a bronze top-rule instead of navy chrome',
+      '.rhero::before{content:\'\';position:absolute;top:0;right:0;left:0;height:3px;background:linear-gradient(90deg,transparent,var(--bronze),transparent)}' in HTML)
 check('cadastral watermark = LOCAL data-URI SVG (no CDN)', 'background-image:url("data:image/svg+xml,' in HTML)
 check('watermark subtle (opacity .04)', 'pointer-events:none;opacity:.04;background-image' in HTML)
 check('champagne hairline ring (gradient border, gold rgba)', 'rgba(232,201,154,.7)' in HTML and 'mask-composite:exclude' in HTML)
