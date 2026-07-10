@@ -1298,6 +1298,15 @@ async def serve_logo():
     return FileResponse("logo.png", media_type="image/png")
 
 
+# ── Sprint 2.22.0b.120 (S0, redesign v2) — the transparent-background logo ──
+# logo.png carries a cream box that shows on non-cream surfaces; the redesigned
+# hero needs the transparent variant. Static asset, deliberately unrated (same
+# posture as /logo.png; the security suite excludes statics — s173-174).
+@app.get("/logo_t.png")
+async def serve_logo_transparent():
+    return FileResponse("logo_t.png", media_type="image/png")
+
+
 # ── Sprint 2.22.0b.25 (م2) — the thm-report LOCAL assets (no CDN) ──
 # The app deliberately has NO blanket StaticFiles mount (docs are locked down,
 # Sprint 2.16.17) — every static asset is an explicit whitelisted route. The

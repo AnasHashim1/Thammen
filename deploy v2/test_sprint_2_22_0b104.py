@@ -65,9 +65,18 @@ check('§٨ header = «شفافية الأدلّة» (formal); «— بلا تج
 # ── (4) count-up micro-delight ──
 check('hero value carries data-countup + id srHeroNum',
       'id="srHeroNum" data-countup="' in SR)
-check('_srCountUp defined: ~800ms, reduced-motion no-op, ends on fmt(target)',
-      'function _srCountUp(){' in HTML and 'prefers-reduced-motion: reduce' in HTML and
-      "el.textContent=fmt(target);" in HTML and 'const dur=800' in HTML)
+# b120 (S0 redesign) re-point (R6/Lesson-2): _srCountUp is now a thin wrapper over the
+# shared _countUp(el,target,dur) primitive (DRY). Behaviour is UNCHANGED — the same
+# ~800ms easeOutCubic, reduced-motion no-op, and exact-fmt(target) landing now live in
+# _countUp. Zero value/compliance/methodology assertion weakened: every behavioural
+# guarantee below is still asserted, just against the generalised primitive.
+check('_srCountUp defined as a thin wrapper delegating to _countUp(...,800)',
+      'function _srCountUp(){' in HTML and
+      "_countUp(el,parseFloat(el.getAttribute('data-countup')),800)" in HTML)
+check('_countUp: ~800ms path, reduced-motion snaps to final, ends on exact fmt(target)',
+      'function _countUp(el,target,dur)' in HTML and 'prefers-reduced-motion: reduce' in HTML and
+      'const final=fmt(Math.round(target));' in HTML and 'el.textContent=final;' in HTML and
+      'e=1-Math.pow(1-p,3)' in HTML)
 check('_srCountUp invoked after the QR render in showShortReport',
       '_srCountUp();' in SR)
 check('the scarce (n<5) range-only hero keeps its two static figures (no count-up on the range)',

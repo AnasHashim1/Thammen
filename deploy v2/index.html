@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ثمّن — تقييم العقارات في قطر</title>
 <style>
-:root{--bg:#FBF8F2;--surface:#FFF;--alt:#F3F0EB;--border:#E2DDD5;--primary:#16324F;--bronze:#A4814A;--bronze-h:#BB955A;--bronze-g:rgba(164,129,74,.15);--gold:#E8C99A;--text:#1A1A1A;--muted:#6B7280;--light:#9CA3AF;--ok:#047857;--ok-bg:rgba(4,120,87,.08);--warn:#B45309;--warn-bg:rgba(180,83,9,.08);--bad:#B91C1C;--bad-bg:rgba(185,28,28,.08);--r:12px;--sh:0 2px 10px rgba(22,50,79,.07)}
+:root{--bg:#FBF8F2;--surface:#FFF;--alt:#F3F0EB;--border:#E2DDD5;--primary:#16324F;--bronze:#A4814A;--bronze-h:#BB955A;--bronze-g:rgba(164,129,74,.15);--gold:#E8C99A;--text:#1A1A1A;--muted:#6B7280;--light:#9CA3AF;--ok:#047857;--ok-bg:rgba(4,120,87,.08);--warn:#B45309;--warn-bg:rgba(180,83,9,.08);--bad:#B91C1C;--bad-bg:rgba(185,28,28,.08);--r:12px;--sh:0 2px 10px rgba(22,50,79,.07);--sh-lg:0 20px 50px rgba(22,50,79,.13);--sh-hero:0 24px 55px rgba(22,50,79,.30);--navy-d:#0E2438;--paper-d:#E6DFD2;--text2:#5B6670;--ok2:#22C55E;--fs-12:12px;--fs-14:14px;--fs-16:16px;--fs-20:20px;--fs-25:25px;--fs-31:31px;--fs-44:44px;--fs-52:52px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl;-webkit-font-smoothing:antialiased}
 .screen{display:none;min-height:100vh}.screen.active{display:block}
@@ -642,6 +642,12 @@ body.lang-en #homeScreen.home{text-align:left}
 @media(prefers-reduced-motion:no-preference){
   .lp-reveal{opacity:0;transform:translateY(22px)}
   .lp-reveal.lp-in{opacity:1;transform:none;transition:opacity .8s cubic-bezier(.22,.61,.36,1),transform .8s cubic-bezier(.22,.61,.36,1)}
+}
+/* b120 (S0, redesign v2) — the shared reveal-on-scroll primitive (JS: _revealOnScroll adds .rv-in).
+   Under reduced-motion the base .rv is NOT hidden (JS adds .rv-in immediately) — no motion, no flash. */
+@media(prefers-reduced-motion:no-preference){
+  .rv{opacity:0;transform:translateY(18px)}
+  .rv.rv-in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1)}
 }
 </style>
 </head>
@@ -2767,18 +2773,44 @@ function showShortReport(d){
 }
 // b104: hero value count-up (~800ms). Reduced-motion → no-op (the value is already the final fmt()).
 // Value-invariant: animates ONLY the display digits toward data-countup; the DOM ends on fmt(amount).
-function _srCountUp(){
+// ── Sprint 2.22.0b.120 (S0, redesign v2) — shared motion primitives ──
+// VALUE-INVARIANT / DISPLAY-ONLY: _countUp animates ONLY the on-screen digits and
+// ALWAYS lands on fmt(target) (never on a computed value). reduced-motion snaps to
+// the final number instantly. The redesign heroes reuse this (DRY).
+function _countUp(el,target,dur){
   try{
-    const el=document.getElementById('srHeroNum'); if(!el)return;
-    const target=parseFloat(el.getAttribute('data-countup')); if(!isFinite(target))return;
-    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-    const dur=800, t0=performance.now();
+    if(!el||!isFinite(target))return;
+    const final=fmt(Math.round(target));
+    if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=final;return;}
+    const t0=performance.now(); dur=dur||1300;
     const step=(now)=>{
       const p=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-p,3);  // easeOutCubic
       el.textContent=fmt(Math.round(target*e));
-      if(p<1)requestAnimationFrame(step); else el.textContent=fmt(target);
+      if(p<1)requestAnimationFrame(step); else el.textContent=final;  // exact target, always
     };
     requestAnimationFrame(step);
+  }catch(e){}
+}
+// _revealOnScroll: fade-up elements matching `sel` as they enter the viewport
+// (IntersectionObserver, the design-token spec). reduced-motion → reveal all at once,
+// no observer. Presentation only.
+function _revealOnScroll(sel){
+  try{
+    const els=[].slice.call(document.querySelectorAll(sel)); if(!els.length)return;
+    if(!('IntersectionObserver' in window)||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+      els.forEach(el=>el.classList.add('rv-in')); return;
+    }
+    const io=new IntersectionObserver((ents)=>{
+      ents.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('rv-in'); io.unobserve(en.target); } });
+    },{threshold:0.12});
+    els.forEach(el=>io.observe(el));
+  }catch(e){ try{ document.querySelectorAll(sel).forEach(el=>el.classList.add('rv-in')); }catch(_){} }
+}
+// _srCountUp — the b25 short-report hero count-up, now a thin wrapper over _countUp (DRY).
+function _srCountUp(){
+  try{
+    const el=document.getElementById('srHeroNum'); if(!el)return;
+    _countUp(el,parseFloat(el.getAttribute('data-countup')),800);
   }catch(e){}
 }
 
