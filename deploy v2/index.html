@@ -18,11 +18,11 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
    + a navy 3-step trust band (Sprint C slice 3 — the missing «dark field» depth) + credibility line. */
 .hsub{font-size:.95rem;color:var(--bronze);font-weight:500;line-height:1.6;max-width:420px;position:relative;z-index:1}
 .hrule{width:64px;height:3px;background:var(--bronze);border-radius:99px;margin:16px 0 22px;position:relative;z-index:1}
-.htrust{position:relative;z-index:1;width:100%;max-width:360px;background:var(--primary);border-radius:14px;padding:15px 12px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:4px;box-shadow:0 6px 22px rgba(22,50,79,.18)}
-.htrust .hstep{flex:1;text-align:center}
-.htrust .hstep .n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:0 auto 7px;border-radius:50%;background:rgba(232,201,154,.16);color:var(--gold);font-size:.85rem;font-weight:700}
-.htrust .hstep .t{display:block;font-size:.78rem;color:#fff;line-height:1.4}
-.htrust .hsep{color:#6E8198;font-size:.95rem;flex:0 0 auto}
+.hchips{position:relative;z-index:1;width:100%;max-width:360px;background:var(--primary);border-radius:14px;padding:15px 12px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:4px;box-shadow:0 6px 22px rgba(22,50,79,.18)}
+.hchips .hstep{flex:1;text-align:center}
+.hchips .hstep .n{display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:0 auto 7px;border-radius:50%;background:rgba(232,201,154,.16);color:var(--gold);font-size:.85rem;font-weight:700}
+.hchips .hstep .t{display:block;font-size:.78rem;color:#fff;line-height:1.4}
+.hchips .hsep{color:#6E8198;font-size:.95rem;flex:0 0 auto}
 .hcred{position:relative;z-index:1;margin-top:18px;font-size:.82rem;color:var(--muted);max-width:360px;line-height:1.6}
 .hbtn{background:var(--bronze);color:#fff;border:none;padding:18px 64px;font-family:'IBM Plex Sans Arabic';font-weight:700;font-size:1.2rem;border-radius:50px;cursor:pointer;transition:all .3s;box-shadow:0 4px 15px rgba(164,129,74,.3);position:relative;z-index:1}
 .hbtn:hover{background:var(--bronze-h);box-shadow:0 6px 25px rgba(164,129,74,.4);transform:translateY(-2px)}
@@ -638,6 +638,14 @@ body.lang-en #homeScreen.home{text-align:left}
 .lp-top .htag{max-width:none;font-size:clamp(1.7rem,4vw,2.55rem);line-height:1.3}
 .lp-top .hsub{max-width:540px}
 .lp-top .hcred{max-width:540px}
+/* b121 (S1, redesign v2) — hero additions: bronze kicker · inline acknowledgement · trust chips */
+.lp-top .hkick{font-size:var(--fs-12);letter-spacing:3px;color:var(--bronze);font-weight:600;margin-bottom:14px}
+.lp-top .hack{max-width:470px;font-size:var(--fs-12);line-height:1.7;color:var(--muted);margin-top:16px}
+.lp-top .hack b{color:var(--muted);font-weight:600}
+.lp-top .hack a{color:var(--bronze);text-decoration:underline}
+.lp-top .hchips{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;margin-top:16px;font-size:var(--fs-14);color:var(--text2);font-weight:500}
+.lp-top .hchips>span{display:flex;align-items:center;gap:6px}
+.lp-top .hchips .ic{width:15px;height:15px;color:var(--ok)}
 /* b119 — scroll-reveal fluidity (JS adds .lp-reveal, then .lp-in on enter) + seal float; reduced-motion-safe */
 @media(prefers-reduced-motion:no-preference){
   .lp-reveal{opacity:0;transform:translateY(22px)}
@@ -695,18 +703,23 @@ body.lang-en #homeScreen.home{text-align:left}
 <!-- HOME -->
 <div class="home screen active thmr" id="homeScreen">
   <div class="lp-top">
-  <div class="hlogo"><img src="logo.png" alt="ثمّن"></div>
-  <!-- Sprint 2.22.0b.24 (R13 text bundle, م0): تقدير not تقييم + the data-recency default.
-       Sprint 2.22.0b.48 — elevated home: confident navy title + bronze rule + a navy 3-step
-       trust band (Sprint C slice 3) + a registered-transactions credibility line. The b24 copy
-       (title + recency) is PRESERVED verbatim; presentation only, value-invariant. -->
+  <!-- Sprint 2.22.0b.121 (S1, redesign v2) — the design-handoff hero. logo_t.png (transparent,
+       no cream box) · a bronze kicker · title + sub PRESERVED verbatim (b24 copy) · an INLINE
+       acknowledgement line under the CTA (the design's «بالمتابعة تُقرّ…» — the consent gate is
+       UNCHANGED for now; S3 decides its fate) · trust chips. Presentation only, value-invariant. -->
+  <div class="hlogo"><img src="logo_t.png" alt="ثمّن"></div>
+  <div class="hkick" data-en="Indicative property valuation · Qatar">تقييم عقاريّ استرشاديّ · قطر</div>
   <div class="htag" data-en="Value your property in Qatar">تقييم عقارك في قطر</div>
   <div class="hsub" data-en="Automated market valuation for villas and land in Qatar">تقييم سوقيّ آليّ للفلل والأراضي في قطر</div>
   <div class="hrule"></div>
   <button class="hbtn" onclick="go('form')" data-en="Start the valuation">ابدأ التقييم</button>
   <div class="hcred" data-en="Based on registered Ministry of Justice transactions.">استناداً إلى صفقات وزارة العدل المسجّلة.</div>
-  <!-- b119 follow-up (PO 2026-07-09): the scope + Terms links were moved OFF the hero (premium,
-       decluttered above-the-fold) → they live in the footer, next to the privacy link. -->
+  <div class="hack" data-en="By continuing you acknowledge this is an &lt;b&gt;indicative estimate&lt;/b&gt; to support your decision — not a certified valuation. &lt;a onclick=&quot;openTerms();return false;&quot;&gt;Terms &amp; Privacy&lt;/a&gt;.">بالمتابعة تُقرّ بأنه <b>تقديرٌ استرشاديّ</b> لدعم القرار لا تقييمٌ معتمد — <a onclick="openTerms();return false;">الشروط والخصوصية</a>.</div>
+  <div class="hchips">
+    <span><svg class=ic aria-hidden=true><use href=#ic-check></use></svg><span data-en="Free">مجاني</span></span>
+    <span><svg class=ic aria-hidden=true><use href=#ic-check></use></svg><span data-en="No account">بلا حساب</span></span>
+    <span><svg class=ic aria-hidden=true><use href=#ic-check></use></svg><span data-en="No tracking">بلا تتبّع</span></span>
+  </div>
   </div><!-- /lp-top -->
 
   <!-- b119 slice-2: data sources -->
