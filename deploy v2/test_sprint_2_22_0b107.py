@@ -33,22 +33,26 @@ check('pin-format error t()-wrapped',
       "t('يرجى إدخال رقم قطعة صحيح (7 إلى 9 أرقام)','Please enter a valid plot number (7 to 9 digits)')" in HTML)
 check('zone/street/building error t()-wrapped',
       "t('يرجى إدخال رقم المنطقة والشارع والمبنى','Please enter the zone, street and building numbers')" in HTML)
-check('the 4 loading steps t()-wrapped',
-      "t('نتحقق من العنوان في خرائط GIS...','Verifying the address on the GIS maps...')" in HTML and
-      "t('نبحث في سجل وزارة العدل عن صفقات مماثلة...','Searching the Ministry of Justice registry for comparable sales...')" in HTML and
-      "t('نحلّل الموقع والمعالم القريبة...','Analysing the location and nearby landmarks...')" in HTML and
-      "t('نُجهّز التقرير...','Preparing the report...')" in HTML)
-check('elapsed-time line t()-wrapped', "t('منذ ','')+el+t(' ثانية · نفحص كلّ صفقةٍ مسجّلة',' s · we check every registered sale')" in HTML)   # b115 R6: elapsed line kept t()-wrapped; the honest «نفحص كلّ صفقة» line merged into it (skeleton)
+# b127 R6/Lesson-2 (S2): the loading steps + elapsed line were superseded by the «لحظة الكشف» reveal —
+# its 4 milestone stages + headline + reassurance are ALL t()-wrapped (the EN-reveal intent preserved).
+check('the 4 reveal-moment stages t()-wrapped',
+      "t('نقرأ سجلّ العقار…','Reading the property record…')" in HTML and
+      "t('نطابق الصفقات المشابهة…','Matching comparable sales…')" in HTML and
+      "t('نحسب الوسيط الشريحيّ…','Computing the bracket median…')" in HTML and
+      "t('نتحقّق بالتكلفة والدخل…','Cross-checking cost and income…')" in HTML)
+check('reveal headline + reassurance t()-wrapped', "t('القيمة السوقيّة التقديريّة','Estimated market value')" in HTML and "t('ما زلنا نطابق…','Still matching…')" in HTML)
 check('the button label + valuing state t()-wrapped',
       "btn.innerHTML=t('جاري التقييم...','Valuing...')" in HTML and "btn.innerHTML=t('ثمّن','Value it')" in HTML)
 check('server-error throw t()-wrapped (all 3 eval paths)',
       "t('خطأ من السيرفر — رقم ','Server error — code ')+r.status" in HTML and
       HTML.count("t('خطأ من السيرفر — رقم ','Server error — code ')") == 3)
-check('catch generic error + retry sub-line t()-wrapped',
-      "e.message||t('حدث خطأ','An error occurred')" in HTML and
-      "t('لو استمرت المشكلة، تأكد من الاتصال أو حاول بعد دقيقة.','If the problem persists, check your connection or try again in a minute.')" in HTML)
-check('the run() steps array no longer holds bare literals (uses t() throughout)',
-      "steps=['نتحقق" not in HTML and "steps=[t(" in HTML)
+# b127 R6/Lesson-2 (S2): run()'s old catch + steps array were replaced by the reveal's failure state
+# (the _fail() card) — its strings are t()-wrapped too.
+check('reveal failure state t()-wrapped (title + retry + try-later)',
+      "t('تعذّر إكمال الحساب الآن','Could not complete the valuation now')" in HTML and
+      "t('أعِد المحاولة','Retry')" in HTML and "t('جرّب لاحقاً','Try later')" in HTML)
+check('the old bare-literal loading is gone (no steps=[ array; reveal uses t() throughout)',
+      "steps=['نتحقق" not in HTML and "steps=[t(" not in HTML)
 
 # ── (3) map modal a11y ──
 _ms = HTML.find('function openMapPicker(lat,lon){')

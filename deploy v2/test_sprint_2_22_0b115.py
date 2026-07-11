@@ -27,20 +27,18 @@ ck('.skl-sh shimmer + skl-sweep keyframe', '.skl-sh{' in H and '@keyframes skl-s
 ck('reduced-motion fallback: shimmer→static + lbar→static',
    '@media(prefers-reduced-motion:reduce){.skl-sh{animation:none' in H and '.lprog .lbar::after{animation:none' in H)
 
-# ── (2) renderLoading renders the skeleton + keeps the honest narrative ──
-ck('renderLoading builds the .skl block (hero + chips)',
-   "fRes.innerHTML='<div class=\"skl\">'" in H and 'skl-hero' in H and 'skl-chips' in H)
-ck('the honest step narrative + elapsed are KEPT under the skeleton',
-   "'<div class=\"lprog\" style=\"margin-top:12px\"><div class=\"lstep\">'+steps[Math.min(stepIdx,steps.length-1)]" in H)
-ck('the honest «نفحص كلّ صفقةٍ مسجّلة» line (bilingual — the wait is the accuracy, not fake progress)',
-   'نفحص كلّ صفقةٍ مسجّلة' in H and 'we check every registered sale' in H)
-ck('the 4 honest GIS steps are unchanged (GIS/MoJ/location/report)',
-   'نتحقق من العنوان في خرائط GIS' in H and 'نبحث في سجل وزارة العدل عن صفقات مماثلة' in H)
+# ── (2) R6/Lesson-2 (b127, S2): the skeleton loading was SUPERSEDED by the «لحظة الكشف» reveal moment.
+#    run() no longer builds .skl / renderLoading / the lprog narrative — the milestone-driven reveal card
+#    (.rvl) is the loading UI now (the .skl CSS above is retained dormant). See test_sprint_2_22_0b127.py.
+ck('(b127) run() builds the «لحظة الكشف» reveal card (.rvl), not the .skl skeleton',
+   'fRes.innerHTML=\'<div class="rvl">' in H and 'class="rvl-card"' in H)
+ck('(b127) the 4 milestone stages ARE the honest narrative (record → match → median → cost/income)',
+   'نقرأ سجلّ العقار' in H and 'نطابق الصفقات المشابهة' in H and 'نحسب الوسيط الشريحيّ' in H and 'نتحقّق بالتكلفة والدخل' in H)
 
-# ── (3) value-invariance: the result path + clear are untouched ──
-ck('the result still renders via show(data) then clears the loading (fRes.innerHTML=\'\')',
-   'show(data);' in H and "fRes.innerHTML='';" in H)
-ck('api.py / engine untouched is a backend claim — here we only assert the loading is display-only (no fetch/body change)',
+# ── (3) value-invariance: the result still renders via show() + value-neutral loading ──
+ck('the result still renders via show(d) then clears the loading (fRes.innerHTML=\'\')',
+   'show(d);' in H and "fRes.innerHTML='';" in H)
+ck('api.py / engine untouched — the loading is display-only (no fetch/body change)',
    "window._lastSubmit={endpoint:'/api/evaluate'" in H and "body:JSON.stringify(bd)" in H)
 
 print(f'\nb115 (skeleton): {_p} passed, {_f} failed')

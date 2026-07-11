@@ -284,6 +284,56 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .skl-sh{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent);transform:translateX(-100%);animation:skl-sweep 1.4s ease-in-out infinite}
 @keyframes skl-sweep{100%{transform:translateX(100%)}}
 @media(prefers-reduced-motion:reduce){.skl-sh{animation:none;opacity:.45}.lprog .lbar::after{animation:none;width:45%;right:28%}}
+/* b127 (S2, redesign v2) — «لحظة الكشف» the animated reveal moment (replaces the b115 skeleton on run()).
+   VALUE-NEUTRAL (loading/reveal state): the number reveals ONLY from the real response; show() still renders
+   the result. Milestone-driven (designer Q15/Q16): stages advance while the fetch is in flight, the number
+   reveals on the real data, >15s → reassurance, failure → retry. All motion is reduced-motion-guarded. */
+.rvl{margin-top:14px;animation:fu .3s}
+.rvl-head{display:flex;justify-content:flex-start;margin-bottom:12px}
+.rvl-chip{background:var(--primary);color:var(--gold);font-weight:700;font-size:var(--fs-12);padding:5px 13px;border-radius:8px}
+.rvl-card{background:var(--primary);border-radius:18px;box-shadow:var(--sh-hero);overflow:hidden;position:relative;min-height:440px}
+.rvl-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.rvl-in{padding:34px 26px 30px;color:#fff}
+.rvl-ident{text-align:center;font-size:var(--fs-12);color:#9DB0C2;margin-bottom:26px}
+.rvl-spin{display:flex;justify-content:center;margin-bottom:26px}
+.rvl-spin>span{position:relative;width:90px;height:90px;display:flex;align-items:center;justify-content:center}
+.rvl-ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--gold);animation:thRing 1.8s infinite}
+.rvl-ring.d{animation-delay:.9s}
+.rvl-core{width:52px;height:52px;border-radius:50%;border:3px solid rgba(232,201,154,.25);border-top-color:var(--gold);animation:thSpin 1s linear infinite}
+.rvl-status{text-align:center;font-size:var(--fs-16);font-weight:600;color:#fff;min-height:24px;margin-bottom:7px}
+.rvl-sub{text-align:center;font-size:var(--fs-12);color:#9DB0C2;min-height:19px;margin-bottom:24px;line-height:1.6}
+.rvl-track{height:8px;background:rgba(255,255,255,.12);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.rvl-fill{height:100%;width:0;background:linear-gradient(90deg,var(--bronze),var(--gold));border-radius:6px;transition:width .6s cubic-bezier(.22,.61,.36,1)}
+.rvl-steps{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+.rvl-step{display:flex;align-items:center;gap:11px;opacity:.4;transition:opacity .4s}
+.rvl-step.on{opacity:1}
+.rvl-dot{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.3);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.rvl-dot.done{background:var(--ok2);border-color:var(--ok2)}
+.rvl-step .lb{font-size:var(--fs-14);color:#C9D6E2}
+.rvl-res{text-align:center;padding-top:4px}
+.rvl-pop{width:60px;height:60px;margin:0 auto 16px;border-radius:50%;background:rgba(34,197,94,.15);display:flex;align-items:center;justify-content:center;animation:thPop .5s both}
+.rvl-vlbl{font-size:var(--fs-12);color:#9DB0C2;margin-bottom:6px}
+.rvl-num{font-size:clamp(38px,8vw,52px);font-weight:700;color:#fff;letter-spacing:-1.5px;line-height:1.05;font-feature-settings:"tnum" 1;font-variant-numeric:tabular-nums}
+.rvl-num small{font-size:.36em;color:var(--gold);font-weight:600}
+.rvl-range{max-width:340px;margin:20px auto 0}
+.rvl-range .lh{display:flex;justify-content:space-between;font-size:var(--fs-12);color:#9DB0C2;margin-bottom:8px}
+.rvl-rtrack{position:relative;height:8px;background:rgba(255,255,255,.14);border-radius:6px;overflow:hidden}
+.rvl-rfill{position:absolute;inset:0;background:linear-gradient(90deg,var(--bronze),var(--gold));transform-origin:left;transform:scaleX(0);transition:transform 1s cubic-bezier(.22,.61,.36,1)}
+.rvl-nchip{display:inline-flex;align-items:center;gap:8px;margin-top:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:9px 15px;font-size:var(--fs-12);color:#EAF0F6}
+.rvl-nchip .g{width:9px;height:9px;border-radius:50%;background:var(--ok2)}
+.rvl-auto{font-size:var(--fs-12);color:#9DB0C2;margin-top:16px}
+.rvl-err{background:#fff;border:1px solid #EDD9D2;border-radius:13px;padding:18px 20px;display:flex;align-items:flex-start;gap:13px}
+.rvl-err .ei{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:var(--warn-bg);display:flex;align-items:center;justify-content:center}
+.rvl-err .et{font-size:var(--fs-14);font-weight:600;color:var(--primary)}
+.rvl-err .es{font-size:var(--fs-12);color:var(--muted);line-height:1.6;margin-top:2px}
+.rvl-err .eb{display:flex;gap:10px;margin-top:12px}
+.rvl-err button{border-radius:9px;padding:9px 18px;font-size:var(--fs-12);font-weight:700;font-family:inherit;cursor:pointer}
+.rvl-err .retry{background:var(--bronze);color:#fff;border:none}
+.rvl-err .later{background:#fff;color:var(--primary);border:1px solid #D9D2C6;font-weight:600}
+@keyframes thSpin{to{transform:rotate(360deg)}}
+@keyframes thRing{0%{transform:scale(.6);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+@keyframes thPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.rvl-ring{animation:none;opacity:0}.rvl-core{animation:none;border-top-color:var(--gold);opacity:.75}.rvl-pop{animation:none}.rvl-fill,.rvl-rfill{transition:none}}
 /* Copy button */
 .copy-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-family:'IBM Plex Sans Arabic';font-size:.85rem;cursor:pointer;margin-bottom:14px;transition:all .2s;float:left}
 .copy-btn:hover{border-color:var(--bronze);color:var(--bronze)}
@@ -1662,51 +1712,83 @@ async function run(){
   // bd is already built/validated above; this only persists the fields for next time).
   _saveIdentity();
   const btn=document.getElementById('sBtn');btn.disabled=true;btn.innerHTML=t('جاري التقييم...','Valuing...')+' <span class="sp"></span>';
-  // Sprint D: progressive loading with elapsed time. Sprint 2.22.0b.107 (S2): t()-wrapped so EN
-  // users stop seeing Arabic during the 6–20s wait (EN reveal since b88).
   const fRes=document.getElementById('fRes');
-  const t0=Date.now();
-  const steps=[t('نتحقق من العنوان في خرائط GIS...','Verifying the address on the GIS maps...'),t('نبحث في سجل وزارة العدل عن صفقات مماثلة...','Searching the Ministry of Justice registry for comparable sales...'),t('نحلّل الموقع والمعالم القريبة...','Analysing the location and nearby landmarks...'),t('نُجهّز التقرير...','Preparing the report...')];
-  let stepIdx=0;
-  const renderLoading=()=>{
-    const el=Math.round((Date.now()-t0)/1000);
-    // Sprint 2.22.0b.115 — a skeleton of the incoming result card (navy hero + range bar + chips) above the
-    // honest step narrative + elapsed. Value-invariant (loading state only): the real result still renders via show().
-    fRes.innerHTML='<div class="skl">'
-      +'<div class="skl-hero"><div class="skl-line lbl"></div><div class="skl-line big"></div><div class="skl-line bar"></div><div class="skl-sh"></div></div>'
-      +'<div class="skl-chips"><div class="skl-chip"></div><div class="skl-chip"></div><div class="skl-chip"></div></div>'
-      +'<div class="lprog" style="margin-top:12px"><div class="lstep">'+steps[Math.min(stepIdx,steps.length-1)]+'</div>'
-      +'<div class="lelapsed">'+t('منذ ','')+el+t(' ثانية · نفحص كلّ صفقةٍ مسجّلة',' s · we check every registered sale')+'</div><div class="lbar"></div></div>'
-      +'</div>';
+  // ── Sprint 2.22.0b.127 (S2, redesign v2) — «لحظة الكشف» the milestone-driven reveal moment.
+  //    Replaces the b115 skeleton on run(). VALUE-NEUTRAL: the 4 stages animate WHILE the fetch is in
+  //    flight, but the number reveals ONLY from the real response (count-up → v.amount [b120 _countUp,
+  //    lands on fmt(target)], range from v.low/high, «N صفقة» from v.n_transactions). Designer Q15/Q16:
+  //    no invented number, >15s reassurance, explicit failure. Retires the confirm gate (reveal →
+  //    show(data) → results; the basis review now lives in the result's «التفاصيل الكاملة» fold;
+  //    showConfirm/confirmScreen stay in source but dormant).
+  const _rd=(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches);
+  const _ident=(bd.pin?(t('رقم القطعة ','Plot ')+bd.pin):(bd.zone+'/'+bd.street+'/'+bd.building));
+  const _stg=[
+    {s:t('نقرأ سجلّ العقار…','Reading the property record…'),b:t('من قاعدة وزارة العدل','from the Ministry of Justice database')},
+    {s:t('نطابق الصفقات المشابهة…','Matching comparable sales…'),b:t('في نفس الحيّ والنوع','same district and type')},
+    {s:t('نحسب الوسيط الشريحيّ…','Computing the bracket median…'),b:t('لعقاراتٍ مماثلة لك','for properties similar to yours')},
+    {s:t('نتحقّق بالتكلفة والدخل…','Cross-checking cost and income…'),b:t('لتأكيد الرقم','to confirm the figure')}
+  ];
+  const _stpLbl=[t('قراءة سجلّ العقار والقطعة','Reading the property and plot record'),t('مطابقة صفقات وزارة العدل','Matching Ministry of Justice sales'),t('حساب الوسيط الشريحيّ','Computing the bracket median'),t('تأكيد بالتكلفة والدخل','Confirming with cost and income')];
+  const _ok='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0E2438" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7"/></svg>';
+  let _stpRows='';for(let _k=0;_k<4;_k++)_stpRows+='<div class="rvl-step" data-step="'+_k+'"><span class="rvl-dot"></span><span class="lb">'+_stpLbl[_k]+'</span></div>';
+  const _computeHtml='<div class="rvl-spin"><span><span class="rvl-ring"></span><span class="rvl-ring d"></span><span class="rvl-core"></span></span></div>'
+    +'<div class="rvl-status">'+_stg[0].s+'</div><div class="rvl-sub">'+_stg[0].b+'</div>'
+    +'<div class="rvl-track"><div class="rvl-fill"></div></div><div class="rvl-steps">'+_stpRows+'</div>';
+  fRes.innerHTML='<div class="rvl"><div class="rvl-head"><span class="rvl-chip">'+t('لحظة الكشف','The reveal')+'</span></div>'
+    +'<div class="rvl-card"><div class="rvl-in"><div class="rvl-ident">'+esc(_ident)+'</div><div class="rvl-body">'+_computeHtml+'</div></div></div></div>';
+  try{fRes.scrollIntoView({behavior:_rd?'auto':'smooth',block:'start'});}catch(e){}   // make «لحظة الكشف» the focus
+  const _body=()=>fRes.querySelector('.rvl-body');
+  const _q=(s)=>fRes.querySelector(s);
+  let _si=0,_stagesDone=false,_data=null,_failed=false,_revealed=false,_sTimer=null;
+  const _step=(i,done)=>{const el=_q('[data-step="'+i+'"]');if(!el)return;if(done){const d=el.querySelector('.rvl-dot');if(d){d.classList.add('done');d.innerHTML=_ok;}}else{el.classList.add('on');}};
+  const _reveal=()=>{
+    if(_revealed||_failed||!_stagesDone||!_data)return;   // reveal only when the stages AND the real data are both ready
+    _revealed=true;clearTimeout(_long);_step(_stg.length-1,true);
+    const d=_data,v=d.valuation||{},bodyEl=_body();
+    if(v.amount==null||!(v.amount>0)){show(d);fRes.innerHTML='';go('results');return;}   // refusal / no amount → straight to the result (refusal card)
+    const _n=(v.n_transactions!=null?v.n_transactions:(d.moj_sample_size!=null?d.moj_sample_size:null));
+    const _nc=(_n!=null)?('<div class="rvl-nchip"><span class="g"></span>'+t('مبنيّ على ','Based on ')+_n+t(' صفقة مسجّلة',' registered sales')+'</div>'):'';
+    const _rg=(v.low!=null&&v.high!=null)?('<div class="rvl-range"><div class="lh"><span dir="ltr">'+fmt(v.low)+'</span><span dir="ltr">'+fmt(v.high)+'</span></div><div class="rvl-rtrack"><div class="rvl-rfill"></div></div></div>'):'';
+    if(bodyEl)bodyEl.innerHTML='<div class="rvl-res"><div class="rvl-pop"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9.5 17.5 20 6.5"/></svg></div>'
+      +'<div class="rvl-vlbl">'+t('القيمة السوقيّة التقديريّة','Estimated market value')+'</div>'
+      +'<div class="rvl-num"><span data-countup="'+v.amount+'">0</span> <small>'+t('ر.ق','QAR')+'</small></div>'+_rg+_nc
+      +'<div class="rvl-auto">'+t('يفتح تلقائياً شاشة النتيجة الكاملة…','Opening the full result screen…')+'</div></div>';
+    try{const el=_q('.rvl-num [data-countup]');if(el)_countUp(el,v.amount,1400);}catch(e){}
+    requestAnimationFrame(()=>{const rf=_q('.rvl-rfill');if(rf)rf.style.transform='scaleX(1)';});
+    show(d);   // render the real result screen underneath, then auto-open it
+    setTimeout(()=>{fRes.innerHTML='';go('results');},_rd?250:1700);
   };
-  renderLoading();
-  const stepTimer=setInterval(()=>{stepIdx++;if(stepIdx<steps.length)renderLoading();},6000);
-  const elapsedTimer=setInterval(renderLoading,1000);
+  const _adv=()=>{
+    if(_si>=_stg.length)return;
+    const g=_stg[_si],st=_q('.rvl-status'),sb=_q('.rvl-sub'),fl=_q('.rvl-fill');
+    if(st)st.textContent=g.s; if(sb)sb.textContent=g.b; if(fl)fl.style.width=Math.round((_si+1)/_stg.length*100)+'%';
+    _step(_si,false); if(_si>0)_step(_si-1,true);
+    _si++;
+    if(_si<_stg.length){_sTimer=setTimeout(_adv,_rd?150:900);}
+    else{_stagesDone=true;_reveal();}   // hold on the last stage (spinner stays live) until data/failure — no fake full-then-frozen bar
+  };
+  const _long=setTimeout(()=>{ if(_data||_failed||_revealed)return; const st=_q('.rvl-status'),sb=_q('.rvl-sub'); if(st)st.textContent=t('ما زلنا نطابق…','Still matching…'); if(sb)sb.textContent=t('الفلل الكبيرة تحتاج صفقاتٍ أكثر للمطابقة — لحظات.','Larger villas need more comparable sales — a moment.'); },15000);
+  const _fail=(msg)=>{
+    if(_revealed)return;_failed=true;clearTimeout(_long);if(_sTimer)clearTimeout(_sTimer);
+    const bodyEl=_body();if(!bodyEl)return;
+    bodyEl.innerHTML='<div class="rvl-err"><span class="ei"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 2.5 17.5A1.6 1.6 0 0 0 3.9 20h16.2a1.6 1.6 0 0 0 1.4-2.5L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/><line x1="12" y1="9" x2="12" y2="13.5"/><line x1="12" y1="16.4" x2="12.01" y2="16.4"/></svg></span>'
+      +'<div style="flex:1"><div class="et">'+t('تعذّر إكمال الحساب الآن','Could not complete the valuation now')+'</div><div class="es">'+(msg||t('مشكلةٌ مؤقّتة في الاتصال بالخدمة.','A temporary problem connecting to the service.'))+'</div>'
+      +'<div class="eb"><button class="retry" onclick="run()">'+t('أعِد المحاولة','Retry')+'</button><button class="later" onclick="document.getElementById(\'fRes\').innerHTML=\'\'">'+t('جرّب لاحقاً','Try later')+'</button></div></div></div>';
+  };
+  _adv();   // start the stage animation immediately, in parallel with the fetch below
   try{
-    // Sprint 2.22.0b.2.1 — formScreen is identification-only; the bare eval posts
-    // /api/evaluate. Optional property details now live on #refineScreen and are
-    // submitted via thammenReEvalGeometry() → /api/evaluate/details (Stage 2).
-    // Sprint 2.21.0.9 — remember this submission so the multi_qars UI + the refine
-    // step can re-submit (override_land_area / building details). Both endpoints
-    // accept override_land_area (§20.26), so the bare endpoint is safe here.
+    // Sprint 2.22.0b.2.1 — formScreen is identification-only; the bare eval posts /api/evaluate.
+    // Optional details live on #refineScreen → thammenReEvalGeometry() → /api/evaluate/details.
+    // Both endpoints accept override_land_area (§20.26), so the bare endpoint is safe here.
     window._lastSubmit={endpoint:'/api/evaluate', body:JSON.parse(JSON.stringify(bd))};
     const r=await fetch(API+'/api/evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
     if(!r.ok){const e=await r.json().catch(()=>null);throw new Error(e?.detail||(t('خطأ من السيرفر — رقم ','Server error — code ')+r.status))}
     const data=await r.json();
     window._lastResult=data;
-    show(data);
-    fRes.innerHTML='';
-    // Sprint 2.22.0b.2.3 — Confirmation Gate (Screen 2). Owner journey + a valued result
-    // pass through the explicit review/confirm step, rendered from THIS response (no 2nd
-    // fetch). Valuer → full report directly (v4 «مُقيّم → التقرير الكامل مباشرة», Rule #39);
-    // refusals (no valuation) → results (refusal card). show() already populated results.
-    const _cgv=data.valuation||{};
-    if(audience!=='valuer'&&_cgv.amount!=null&&_cgv.amount>0){showConfirm(data);go('confirm');}
-    else{go('results');}
+    _data=data;_reveal();   // reveal now if the stages already finished; otherwise the stages call _reveal on completion
   }catch(e){
-    fRes.innerHTML='<div class="err" style="margin-top:14px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||t('حدث خطأ','An error occurred'))+'<br><span style="font-size:.78rem;color:var(--muted);display:block;margin-top:8px">'+t('لو استمرت المشكلة، تأكد من الاتصال أو حاول بعد دقيقة.','If the problem persists, check your connection or try again in a minute.')+'</span></div>';
+    _fail(e&&e.message);
   }finally{
-    clearInterval(stepTimer);clearInterval(elapsedTimer);
     btn.disabled=false;btn.innerHTML=t('ثمّن','Value it');
   }
 }

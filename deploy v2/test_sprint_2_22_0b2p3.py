@@ -38,25 +38,23 @@ chk('function showConfirm(d){' in HTML, '1.3 showConfirm() defined')
 chk('function confirmProceed(){go(\'refine\');}' in HTML, '1.4 confirmProceed() → refine (v4 تأكيد→تحسين)')
 chk('.cg-est{' in HTML, '1.5 cg-est CSS class defined')
 
-# ── 2. routing intercept in run() — no 2nd fetch, result still rendered ───────
-chk("audience!=='valuer'&&_cgv.amount!=null&&_cgv.amount>0" in HTML, '2.1 run() guard: non-valuer + valued')
-chk("showConfirm(data);go('confirm');" in HTML, '2.2 run() → showConfirm + go(confirm)')
-chk("else{go('results');}" in RUN, '2.3 run() else → results (valuer/refusal)')
-chk('show(data);' in RUN, '2.4 run() STILL renders the result (value-invariant: full report ready)')
-chk('window._lastResult=data;' in RUN, '2.5 run() still stores _lastResult')
-chk(RUN.count('await fetch(API+\'/api/evaluate\'') == 1, '2.6 exactly ONE fetch in run() (no 2nd call)')
+# ── 2. b127 R6/Lesson-2 (S2): the confirm gate was RETIRED — run() plays the «لحظة الكشف» reveal then
+#       routes to the result directly (reveal → show(d) → go('results')). showConfirm/confirmScreen +
+#       their signed copy (below) stay in source but DORMANT; only run()'s routing changed.
+chk("go('confirm')" not in RUN, '2.1 (b127) run() no longer routes to the confirm gate')
+chk("go('results')" in RUN, '2.2 (b127) run() → results (via the reveal)')
+chk('show(d);' in RUN, '2.3 (b127) run() STILL renders the result (value-invariant: show(d))')
+chk('window._lastResult=data;' in RUN, '2.4 run() still stores _lastResult')
+chk(RUN.count('await fetch(API+\'/api/evaluate\'') == 1, '2.5 exactly ONE fetch in run() (no 2nd call)')
+chk("_data=data;_reveal();" in RUN.replace(' ', ''), '2.6 (b127) run() reveals from the real data (milestone-driven)')
 
-# ── 3. mirror the routing guard (E14 — same logic, asserted on cases) ─────────
+# ── 3. b127: routing is now uniform — every path opens the result (the reveal is the transition) ──
 def route(audience, amount):
-    if audience != 'valuer' and amount is not None and amount > 0:
-        return 'confirm'
-    return 'results'
-chk(route('buyer', 2400000) == 'confirm', '3.1 buyer + valued → confirm')
-chk(route('seller', 5400000) == 'confirm', '3.2 seller + valued → confirm')
-chk(route('investor', 2600000) == 'confirm', '3.3 investor + valued → confirm')
-chk(route('valuer', 2400000) == 'results', '3.4 valuer → results (skip gate, v4 two-path)')
-chk(route('buyer', None) == 'results', '3.5 refusal (amount None) → results')
-chk(route('buyer', 0) == 'results', '3.6 zero amount → results')
+    return 'results'  # b127: reveal → results for all; refusals skip the number reveal, straight to results
+chk(route('buyer', 2400000) == 'results', '3.1 (b127) buyer + valued → results (via reveal)')
+chk(route('valuer', 2400000) == 'results', '3.2 valuer → results')
+chk(route('buyer', None) == 'results', '3.3 refusal (amount None) → results')
+chk(route('buyer', 0) == 'results', '3.4 zero amount → results')
 
 # ── 4. signed copy (verbatim) ────────────────────────────────────────────────
 chk('تقدير مبدئي (نطاق)' in SHOWCONFIRM, '4.1 range label')

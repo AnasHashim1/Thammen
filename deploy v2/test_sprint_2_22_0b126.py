@@ -65,9 +65,11 @@ check('_revealOnScroll keeps the IntersectionObserver for the scroll-reveal UX',
 # ── value-neutral: the hotfix is CSS scope only; no engine/logic touched ──
 check('no result-screen JS mutates v.amount/low/high (value-neutral)',
       not re.search(r'\bv\.(amount|low|high)\s*=[^=]', HTML))
-check('ENGINE_VERSION bumped to b126 (format)',
-      re.search(r"ENGINE_VERSION = 'thammen-sprint2p22p0b126", ENG) is not None)
-check('SPRINT_TAG is 2.22.0b.126', "SPRINT_TAG = '2.22.0b.126'" in ENG)
+# b127 R6/Lesson-2: version-agnostic format checks (the b126 hotfix is live from v290 onward; don't hard-pin the tag).
+check('ENGINE_VERSION has the canonical format',
+      re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)
+check('SPRINT_TAG has the canonical dotted format',
+      re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
 
 passed = sum(1 for _, ok in results if ok)
 for name, ok in results:

@@ -54,11 +54,12 @@ chk("landing: else branch keeps go('results')",
 mrun = re.search(r"async function run\(\)\{.*?\n\}", HTML, re.S)
 run_fn = mrun.group(0) if mrun else ""
 chk("run() found", bool(mrun))
-chk("run(): confirm gate verbatim (valued non-valuer -> confirm)",
-    "if(audience!=='valuer'&&_cgv.amount!=null&&_cgv.amount>0){showConfirm(data);go('confirm');}" in run_fn)
-chk("run(): valuer/refusal fallback go('results') intact",
-    "else{go('results');}" in run_fn.replace(" ", "").replace("\n", "")
-    or re.search(r"else\{go\('results'\);\}", run_fn))
+# b127 R6/Lesson-2 (S2): the confirm gate was RETIRED — run() now plays the «لحظة الكشف» reveal then
+# routes to the result directly (reveal → show(d) → go('results')); showConfirm stays dormant in source.
+chk("run(): retired confirm — reveal routes to the result (go('results'), no go('confirm'))",
+    "go('results')" in run_fn and "go('confirm')" not in run_fn)
+chk("run(): the reveal reveals from the real data (milestone-driven _reveal/_data)",
+    "_data=data;_reveal();" in run_fn.replace(" ", ""))
 chk("run(): does NOT short-land (no showShortReport in run())",
     "showShortReport" not in run_fn)
 
