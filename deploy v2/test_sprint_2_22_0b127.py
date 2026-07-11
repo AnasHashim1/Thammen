@@ -42,11 +42,14 @@ ck('reduced-motion guard on the reveal animations', '@media(prefers-reduced-moti
 # ── (2) run() builds the reveal card + the 4 milestone stages (t()-wrapped) ──
 ck('run() builds the «لحظة الكشف» reveal card (.rvl / .rvl-card / .rvl-body)',
    'fRes.innerHTML=\'<div class="rvl">' in RUN and 'class="rvl-card"' in RUN and 'class="rvl-body"' in RUN)
-ck('the 4 milestone stages are t()-wrapped (bilingual)',
+ck('the 4 milestone stages are t()-wrapped (bilingual) — honest for EVERY leader/asset',
    "t('نقرأ سجلّ العقار…','Reading the property record…')" in RUN and
-   "t('نطابق الصفقات المشابهة…','Matching comparable sales…')" in RUN and
-   "t('نحسب الوسيط الشريحيّ…','Computing the bracket median…')" in RUN and
-   "t('نتحقّق بالتكلفة والدخل…','Cross-checking cost and income…')" in RUN)
+   "t('نطابق صفقات وزارة العدل…','Matching Ministry of Justice sales…')" in RUN and
+   "t('نحسب التقدير من الشواهد…','Computing the estimate from the evidence…')" in RUN and
+   "t('نوازن الأدلّة ونُحكِم النطاق…','Weighing the evidence and finalizing the range…')" in RUN)
+ck('honesty (owner-caught): stages do NOT claim a cost/income cross-check nor a bracket-median lead '
+   '(false for cost-led 54% / land / refusal)',
+   'نتحقّق بالتكلفة والدخل' not in RUN and 'الوسيط الشريحيّ' not in RUN)
 ck('the identity line is value-neutral (from the submitted address/PIN, esc-wrapped)',
    'esc(_ident)' in RUN and 'bd.pin?' in RUNc)  # _ident derives from bd (zone/street/building or PIN)
 

@@ -1722,13 +1722,18 @@ async function run(){
   //    showConfirm/confirmScreen stay in source but dormant).
   const _rd=(window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches);
   const _ident=(bd.pin?(t('رقم القطعة ','Plot ')+bd.pin):(bd.zone+'/'+bd.street+'/'+bd.building));
+  // b127 honesty (owner-caught): the stages must be TRUE for EVERY leader/asset — the reveal plays during
+  // the fetch, before we know the case. Cost is computed only for villa/house (not land/refusal), income
+  // only with a subject rent, and cost-led (54%) does not lead with the median — so the old cost+income
+  // cross-check / bracket-median stages (built on the market-led case only) over-claimed. Generic,
+  // method-agnostic wording instead (see the CHANGELOG for the removed phrases).
   const _stg=[
-    {s:t('نقرأ سجلّ العقار…','Reading the property record…'),b:t('من قاعدة وزارة العدل','from the Ministry of Justice database')},
-    {s:t('نطابق الصفقات المشابهة…','Matching comparable sales…'),b:t('في نفس الحيّ والنوع','same district and type')},
-    {s:t('نحسب الوسيط الشريحيّ…','Computing the bracket median…'),b:t('لعقاراتٍ مماثلة لك','for properties similar to yours')},
-    {s:t('نتحقّق بالتكلفة والدخل…','Cross-checking cost and income…'),b:t('لتأكيد الرقم','to confirm the figure')}
+    {s:t('نقرأ سجلّ العقار…','Reading the property record…'),b:t('من السجلّ الرسميّ للعقار','from the property\'s official record')},
+    {s:t('نطابق صفقات وزارة العدل…','Matching Ministry of Justice sales…'),b:t('الصفقات المسجّلة في حيّك','registered sales in your district')},
+    {s:t('نحسب التقدير من الشواهد…','Computing the estimate from the evidence…'),b:t('من الصفقات المطابقة','from the matched sales')},
+    {s:t('نوازن الأدلّة ونُحكِم النطاق…','Weighing the evidence and finalizing the range…'),b:t('لرقمٍ ونطاقٍ استرشاديّ','for an indicative figure and range')}
   ];
-  const _stpLbl=[t('قراءة سجلّ العقار والقطعة','Reading the property and plot record'),t('مطابقة صفقات وزارة العدل','Matching Ministry of Justice sales'),t('حساب الوسيط الشريحيّ','Computing the bracket median'),t('تأكيد بالتكلفة والدخل','Confirming with cost and income')];
+  const _stpLbl=[t('قراءة سجلّ العقار والقطعة','Reading the property and plot record'),t('مطابقة صفقات وزارة العدل','Matching Ministry of Justice sales'),t('حساب التقدير من الشواهد','Computing the estimate from the evidence'),t('موازنة الأدلّة وإحكام النطاق','Weighing the evidence and finalizing the range')];
   const _ok='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0E2438" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17 19 7"/></svg>';
   let _stpRows='';for(let _k=0;_k<4;_k++)_stpRows+='<div class="rvl-step" data-step="'+_k+'"><span class="rvl-dot"></span><span class="lb">'+_stpLbl[_k]+'</span></div>';
   const _computeHtml='<div class="rvl-spin"><span><span class="rvl-ring"></span><span class="rvl-ring d"></span><span class="rvl-core"></span></span></div>'

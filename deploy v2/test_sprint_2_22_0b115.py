@@ -32,8 +32,8 @@ ck('reduced-motion fallback: shimmer→static + lbar→static',
 #    (.rvl) is the loading UI now (the .skl CSS above is retained dormant). See test_sprint_2_22_0b127.py.
 ck('(b127) run() builds the «لحظة الكشف» reveal card (.rvl), not the .skl skeleton',
    'fRes.innerHTML=\'<div class="rvl">' in H and 'class="rvl-card"' in H)
-ck('(b127) the 4 milestone stages ARE the honest narrative (record → match → median → cost/income)',
-   'نقرأ سجلّ العقار' in H and 'نطابق الصفقات المشابهة' in H and 'نحسب الوسيط الشريحيّ' in H and 'نتحقّق بالتكلفة والدخل' in H)
+ck('(b127) the 4 milestone stages ARE the honest narrative (record → MoJ sales → estimate → weigh+range)',
+   'نقرأ سجلّ العقار' in H and 'نطابق صفقات وزارة العدل' in H and 'نحسب التقدير من الشواهد' in H and 'نوازن الأدلّة ونُحكِم النطاق' in H)
 
 # ── (3) value-invariance: the result still renders via show() + value-neutral loading ──
 ck('the result still renders via show(d) then clears the loading (fRes.innerHTML=\'\')',

@@ -35,11 +35,11 @@ check('zone/street/building error t()-wrapped',
       "t('يرجى إدخال رقم المنطقة والشارع والمبنى','Please enter the zone, street and building numbers')" in HTML)
 # b127 R6/Lesson-2 (S2): the loading steps + elapsed line were superseded by the «لحظة الكشف» reveal —
 # its 4 milestone stages + headline + reassurance are ALL t()-wrapped (the EN-reveal intent preserved).
-check('the 4 reveal-moment stages t()-wrapped',
+check('the 4 reveal-moment stages t()-wrapped (b127 honesty: generic, true for every leader/asset)',
       "t('نقرأ سجلّ العقار…','Reading the property record…')" in HTML and
-      "t('نطابق الصفقات المشابهة…','Matching comparable sales…')" in HTML and
-      "t('نحسب الوسيط الشريحيّ…','Computing the bracket median…')" in HTML and
-      "t('نتحقّق بالتكلفة والدخل…','Cross-checking cost and income…')" in HTML)
+      "t('نطابق صفقات وزارة العدل…','Matching Ministry of Justice sales…')" in HTML and
+      "t('نحسب التقدير من الشواهد…','Computing the estimate from the evidence…')" in HTML and
+      "t('نوازن الأدلّة ونُحكِم النطاق…','Weighing the evidence and finalizing the range…')" in HTML)
 check('reveal headline + reassurance t()-wrapped', "t('القيمة السوقيّة التقديريّة','Estimated market value')" in HTML and "t('ما زلنا نطابق…','Still matching…')" in HTML)
 check('the button label + valuing state t()-wrapped',
       "btn.innerHTML=t('جاري التقييم...','Valuing...')" in HTML and "btn.innerHTML=t('ثمّن','Value it')" in HTML)
