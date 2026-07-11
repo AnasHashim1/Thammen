@@ -33,10 +33,15 @@ check('methodology bare line → how (NOT always-visible)',
       "margin:10px 0 0;font-size:.78rem;color:#666;line-height:1.5\">'+pick(d,'methodology')" in HTML)
 
 # ── 2. The FULL MUC legal clause folds behind its chip via _mucFold (was always-visible) ──
-check('_mucFold collapses the full clause via _acc(…, muc, false)',
-      'const _mucFold = muc ? _acc(' in HTML and ', muc, false) : \'\';' in HTML)
-check('valued assembly folds MUC: head+alerts+t1+_mucFold+t2+t3+foot',
-      'h=head+alerts+t1+_mucFold+t2+t3+foot;' in HTML)
+# b125 R6: the b52 _mucFold accordion is superseded — the full MUC clause now folds INSIDE the LIMITS
+# section (_s4bLimits, a <details open> that carries the «تحفّظ متوسط» chip). Still NOT always-visible
+# (the chip + «ليس معتمداً» line remain in t1); the full VPGA-10 clause is one click away. Same intent.
+check('the full MUC clause folds inside the LIMITS section (was the _mucFold accordion)',
+      'if(muc)h+=muc;' in HTML and 'function _s4bLimits(d,muc){' in HTML and "details class=\"rs-lim\" open" in HTML)
+check('valued assembly places LIMITS (with the folded MUC) after the sections',
+      'h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;' in HTML)
+check('the MUC level CHIP + «ليس تقييماً معتمداً» line stay always-visible in t1 (not folded)',
+      'عدم اليقين الجوهري: ' in HTML and 'ليس تقييماً معتمداً' in HTML)
 check('full MVU clause STILL built via _mucCardHtml (not deleted)',
       'muc+=_mucCardHtml(muc_ar,muc_basis,muc_review);' in HTML)
 

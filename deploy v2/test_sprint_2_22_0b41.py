@@ -121,21 +121,21 @@ check("D5 the b40 cost-led considered key is UNCHANGED + distinct (no neighbours
 check("D6 adjusted derived from DISPLAYED raw × DISPLAYED factor in the builder (value-invariant + self-consistent)",
       "_ppm_disp * _adj_disp" in _eu and "price_per_m2_adjusted" in _eu)
 
-print("\n── E. index.html render (structural — E14 reads the REAL file) ──")
+print("\n── E. index.html render — b125 R6: the geo NEIGHBOUR rows moved from the result-screen keystone")
+print("      into the full-report table (_repComparables), reachable via «عرض الكل في التقرير ›». The engine")
+print("      still broadcasts comparables.neighbours; the honest neighbour disclosure is preserved verbatim. ──")
 _html = open('index.html', encoding='utf-8').read()
-# the neighbour block lives inside the geo branch of the comparables render, before the b40 considered block
-_seg = _html.split('if(_kcGeo&&_kc.neighbours', 1)
-check("E1 the neighbour render block exists", len(_seg) == 2)
-_seg = _seg[1].split('if(v.considered_comparables', 1)[0]
-check("E2 header «الصفقات المجاورة المُعدَّلة الموقع»", 'الصفقات المجاورة المُعدَّلة الموقع' in _seg)
-check("E3 source-area shown (ic-pin icon) + ×adjustment factor",  # b48 de-emoji: 📍 → #ic-pin; b57 R6: esc(g.source_area)
-      '#ic-pin' in _seg and 'esc(g.source_area)' in _seg and '×\'+(g.adjustment_factor' in _seg)
-check("E4 BOTH raw and adjusted ppm² shown (raw → adjusted)", 'g.price_per_m2_raw' in _seg and 'g.price_per_m2_adjusted' in _seg and '→' in _seg)
+_seg = _html[_html.index('function _repComparables(v){'):_html.index('function _repLandGrid(')]
+check("E1 the neighbour render block exists (report comparables table)", 'const nb=c.neighbours;' in _seg)
+check("E2 header «صفقات مجاورة مُعدَّلة الموقع»", 'صفقات مجاورة مُعدَّلة الموقع' in _seg)
+check("E3 source-area shown (esc) + ×adjustment factor",
+      'esc(r.source_area' in _seg and '×\'+r.adjustment_factor' in _seg)
+check("E4 BOTH raw and adjusted ppm² shown (raw → adjusted)",
+      'r.price_per_m2_raw' in _seg and 'r.price_per_m2_adjusted' in _seg)
 check("E5 honest disclosure: the neighbour did NOT sell for the adjusted number",
       'لم تُبَع بالرقم المُعدَّل' in _seg)
-check("E6 the numeric line is dir=ltr (Rule #25 — bidi-safe), area name in its own RTL flow",
-      'direction:ltr' in _seg)
-check("E7 lives in the `how` buffer (value-invariant; never t1)", 'how+=' in _seg and 't1+=' not in _seg)
+check("E6 the numeric cells are dir=ltr (Rule #25 — bidi-safe)", 'dir="ltr"' in _seg)
+check("E7 lives in the report builder (value-invariant; never t1)", 't1+=' not in _seg)
 
 print(f"\n{'='*60}")
 if _fails:

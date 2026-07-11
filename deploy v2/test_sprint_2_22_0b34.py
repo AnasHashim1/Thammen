@@ -46,10 +46,12 @@ check('owner is NOT a dense role (stays folded)', 'owner' not in _dense_expr.spl
 check('buyer/seller NOT dense (only investor+valuer are)',
       "'buyer'" not in _dense_expr and "'seller'" not in _dense_expr)
 
-# ── 2. the «كيف وصلنا» accordion gets _dense as its open arg ──
-check('«كيف وصلنا» accordion passes _dense as the open arg',
-      # b48 de-emoji: the 🔍 became an inline-SVG icon; the Arabic title + the _dense open-arg are unchanged.
-      re.search(r"كيف وصلنا لهذا الرقم؟','How we got to this number'\), how\+evidencePanelHtml\(d,acc\), *_dense\)", SHOW) is not None)
+# ── 2. density-driven surface — b125 R6: the b31 «كيف وصلنا» accordion became the flat _s4bHow section;
+#       _dense is now passed to _s4bHow(d,v,acc,how,_dense) and opens the methodology fold (the appraiser
+#       detail + evidence-quality panel) for investor/valuer. Same single-purpose density intent. ──
+check('_dense drives the HOW methodology fold via _s4bHow(d,v,acc,how,_dense)',
+      'secHow+=_s4bHow(d,v,acc,how,_dense)' in SHOW and
+      re.search(r"<details class=\"rs-mfold\"'\+\(dense\?' open':''\)", HTML) is not None)
 # _acc() already supports a third `open` arg (no helper change needed)
 check('_acc(title,inner,open) helper still supports the open arg',
       re.search(r"function _acc\(title,inner,open\)", HTML) is not None and "(open?' open':'')" in HTML)
@@ -58,10 +60,10 @@ check('_acc(title,inner,open) helper still supports the open arg',
 check('no v.amount / low / high mutation in show()', not re.search(r'v\.(amount|low|high)\s*=[^=]', SHOW))
 # only the «كيف وصلنا» accordion is density-driven this sprint (single-purpose); the other
 # accordions are NOT forced open (basic-info / report / full-details stay folded for everyone).
-check('basic-info accordion NOT density-forced (single-purpose)',
-      # b48 de-emoji: the 🏠 became an inline-SVG icon; re-anchor to the stable Arabic title.
-      # basic-info passes ONLY _info (no _dense) → it stays folded for everyone (single-purpose density).
-      "بيانات العقار الأساسية','Property basics'),_info)" in SHOW and "بيانات العقار الأساسية','Property basics'),_info,_dense)" not in SHOW)
+check('basic-info NOT density-forced (single-purpose) — b125: _info moves into the FULL-details fold',
+      # b125 R6: the basic-info accordion became part of the collapsed FULL-details fold (secFull), which
+      # is NOT density-driven (folded for everyone). Only the HOW methodology fold respects _dense.
+      '+_info' in SHOW and 'secFull=' in SHOW and re.search(r"secFull[^\n]*_dense", SHOW) is None)
 check('engine broadcasts audience (the recon premise: no server change needed)',
       "'audience': audience" in ENG)
 check('no api.py change implied — frontend-only (engine diff = the 2 version lines; checked via git separately)', True)

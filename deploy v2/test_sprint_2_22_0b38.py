@@ -145,22 +145,18 @@ check("D3 comparables NOT stashed in the thin/preliminary returns (Cases 4-5)",
 check("D4 the attach reads primary.get('comparables') (the stashed rows)",
       "primary.get('comparables')" in _eu and "_keystone_comparables(" in _eu)
 
-print("\n── E. index.html render (structural — E14 reads the REAL file) ──")
+print("\n── E. index.html render — b125 R6: the keystone moved from the `how` accordion into the flat")
+print("      _s4bEvidence table (comparables + honest framing + CC BY). Same content, new home. ──")
 _html = open('index.html', encoding='utf-8').read()
-check("E1 render block gated on v.comparables.rows.length",
-      'if(v.comparables&&v.comparables.rows&&v.comparables.rows.length){' in _html)
-check("E2 keystone header «هي ما قرّر رقمك»", 'هي ما قرّر رقمك' in _html)
-check("E3 numeric rows in a dir=ltr table (Rule #25)",
-      'direction:ltr' in _html.split('if(v.comparables', 1)[1].split('// Sprint 2.22.0b.18', 1)[0])
-check("E4 renders the CC BY 4.0 source line (_kc.source_ar)",
-      '_kc.source_ar' in _html)
-# E5 — lives in `how` (the b31 accordion) → density-gated + value-invariant (NOT t1).
-# Scope to the keystone block only (it ends right before the b18 age-sensitivity line).
-_seg = _html.split('if(v.comparables', 1)[1].split('// Sprint 2.22.0b.18', 1)[0]
-check("E5 appends to `how` (b31 accordion), not t1 (value-invariant, density-gated)",
-      'how+=' in _seg and 't1+=' not in _seg)
-check("E6 window_label surfaced when present", '_kc.window_label' in _html)
-check("E7 'shown of n' disclosure when capped", '_kc.shown' in _html and '_kc.n' in _html)
+_ev = _html[_html.index('function _s4bEvidence(d,v){'):_html.index('function _s4bHow(d,v,acc')]
+check("E1 render gated on the comparables/considered rows",
+      'const _cmp=v.comparables||v.considered_comparables;' in _ev and 'const rows=(_cmp&&_cmp.rows)||[]' in _ev)
+check("E2 matched-market header «قرّرت رقمك»", 'قرّرت رقمك' in _ev)
+check("E3 numeric rows in a dir=ltr table (Rule #25)", 'dir="ltr"' in _ev and 'rs-ctab' in _ev)
+check("E4 renders the CC BY 4.0 source line", 'CC BY 4.0' in _ev)
+check("E5 lives in the _s4bEvidence section builder (value-invariant, not t1)", 't1+=' not in _ev)
+check("E6 window_label surfaced when present", '_cmp.window_label' in _ev)
+check("E7 'shown of n' disclosure when capped", 'shown' in _ev and '_cmp.n' in _ev)
 
 print("\n── F. privacy contract (E12) — end-to-end anonymity ──")
 _e2e = _keystone_comparables(_mv_tx.bracket_transactions, _mv_tx.bracket_n, None)

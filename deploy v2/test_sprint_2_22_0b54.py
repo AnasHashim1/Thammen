@@ -83,10 +83,13 @@ check('home footer disclaimer → هذا التقييم السوقيّ الآل�
 check('refine group tag → يحرّك التقييم (old absent)',
       '<span class="tagfx move">يحرّك التقييم</span>' in HTML
       and '<span class="tagfx move">يحرّك التقدير</span>' not in HTML)
-check('refine-feature name → حسّن التقييم (rendered, old rendered absent)',
-      'حسّن التقييم — أضف تفاصيل مبناك' in HTML
+check('refine-feature name → حسّن التقييم (rendered, old رendered absent)',
+      # b125 R6: the S4b sticky action bar shortened the refine CTA to «حسّن التقييم» (was «… — أضف تفاصيل
+      # مبناك», too long beside 2 other buttons). The b54 terminology lock (تقييم, NOT تقدير) is preserved.
+      "t('حسّن التقييم','Refine')" in HTML
       and 'حسّن التقييم (المرحلة 2)' in HTML
       and 'زر «حسّن التقييم» في الموقع' in HTML
+      and "t('حسّن التقدير','Refine')" not in HTML
       and 'حسّن التقدير — أضف تفاصيل مبناك' not in HTML
       and 'حسّن التقدير (المرحلة 2)' not in HTML)
 

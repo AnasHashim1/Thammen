@@ -195,7 +195,13 @@ check('pure calculators KEPT (superseded)', 'def _cost_triangulation(' in src
       and 'def _old_stock_reanchor(' in src and 'def _income_triangulation(' in src)
 check('land DRC one-liner emitted', "cost_note_ar" in src and 'لا مكوّن بناء لقطعة فضاء' in src)
 html = io.open('index.html', encoding='utf-8').read()
-check('TIER-1 + report render leadership.note_ar (x2)', html.count('v.leadership.note_ar') >= 2)
+# b125 R6 (S4b): the result screen now renders the leadership verdict via the `ld=v.leadership` alias
+# (`if(ld.note_ar)h+=…pick(v.leadership,'note')` inside _s4bHow) instead of the literal
+# `v.leadership.note_ar){how+=`. The verdict still renders in BOTH surfaces — the result screen (visible
+# narrative) AND the full report (`v.leadership.note_ar){cNum+=…`). Same field, same signed note, 2 places.
+check('result screen + report both render the leadership verdict note (pick, x2)',
+      "if(ld.note_ar)h+='" in html and "if(v.leadership&&v.leadership.note_ar){cNum+=" in html
+      and html.count("pick(v.leadership,'note')") >= 2)
 check('cost stack line rendered (x2)', html.count('v.value_stack.cost.value') >= 2)
 check('dispersion rendered (G2 visible)', html.count('v.value_stack.market.dispersion_36') >= 2)
 # R6/Lesson-2: NO exact version pins — b19 (the report slice) legitimately bumps after b20.

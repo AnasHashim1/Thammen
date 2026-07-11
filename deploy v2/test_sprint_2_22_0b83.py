@@ -95,12 +95,14 @@ check('financing calculator wired for ALL (b89 Option A — un-gated toggle)',
       "t('دفعة أولى ','Down payment ')" in SHOW)
 check('not-certified TIER-1 line wired',
       "t('تقييم سوقيّ آليّ — ليس تقييماً معتمداً','An automated market valuation — not a certified valuation')" in SHOW)
-check('the two TIER-2 accordion titles wired',
-      "t('كيف وصلنا لهذا الرقم؟','How we got to this number')" in SHOW and
-      "t('بيانات العقار الأساسية','Property basics')" in SHOW)
-check('keystone + considered comparables wired',
-      "t('صفقات في منطقتك ضمن نطاق المقارنة الموسَّع جغرافياً','Transactions in your area within the geographically widened comparison pool')" in SHOW and
-      "t('صفقات السوق في منطقتك — اطّلعنا عليها ولم تقُد الرقم','Market transactions in your area — we reviewed them but they did not set the number')" in SHOW)
+# b125 R6: the b31 TIER-2 accordions became the flat S4b design sections; the EN wiring lives on the new
+# section headers (in the _s4b* builders, which show() calls). Same EN-wiring intent, new structure.
+check('the flat design section headers wired (EN)',
+      "t('كيف وصلنا للرقم','How we got to this number')" in HTML and
+      "t('الأدلّة — صفقاتٌ مقارِنة','Evidence — comparable transactions')" in HTML)
+check('keystone + considered comparables framing wired (EN)',
+      "t('صفقات منطقتك ضمن نطاق المقارنة الموسَّع جغرافياً" in HTML and
+      "اطّلعنا على صفقات السوق في منطقتك لكنّها لم تقُد الرقم" in HTML)
 check('refusal path wired (h2 + facts + CTA)',
       "t('تعذّر تحديد نوع العقار','Could not determine the property type')" in SHOW and
       "t('العنوان:','Address:')" in SHOW and

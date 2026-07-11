@@ -71,8 +71,11 @@ check('the new line appends to the `how` buffer (the «كيف وصلنا» accor
       and "آليّة الكلفة (نهج DRC): مساحة البناء BUA" in SHOW)
 # the cost-VALUE line that precedes it is preserved (R6/Lesson-2 — re-pointed at b48 de-emoji: the
 # 🏗️ emoji is now an inline-SVG icon; the load-bearing JS composition is unchanged → pin it WITHOUT the emoji)
-check('the original cost-value label line is preserved',
-      "'+pick(_vc,'label')+': '+fmt(_vc.value)+t(' ر.ق',' QAR')+' — '+pick(_vc,'sub')" in SHOW)
+check('the cost VALUE + label is preserved — b125: moved from the `how` line to the 3-value stack card',
+      # b125 R6: the cost label+value+sub line moved OUT of `how` into the visible «التكلفة (DRC)» stack
+      # card in _s4bHow (fmt(cst.value) + the land/building sub). The DRC mechanics stay in `how` (above).
+      "t('التكلفة (DRC)','Cost (DRC)')" in HTML and "h+='<div class=\"sv\">'+fmt(cst.value)+'</div>'" in HTML
+      and "cSub.push(t('أرض ','land ')+fmt(cst.land_floor))" in HTML)
 # the unavailable-reason else-branch still chains
 check('the cost-unavailable else-branch still chains (else if … unavailable_reason_ar)',
       "else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar)" in SHOW)

@@ -69,18 +69,20 @@ check("C4 the why-scalar geo_full_dispersion rides the block (for the honest «�
       "_cc['dispersion'] = _gate.get('geo_full_dispersion')" in _eu)
 check("C5 pool_n = the considered geo-full pool size", "pool_n=_gate.get('geo_full_n')" in _eu)
 
-print("\n── D. index.html render (structural — E14 reads the REAL file) ──")
+print("\n── D. index.html render — b125 R6: the cost-led «considered» pool moved into the flat _s4bEvidence")
+print("      table; the honest «لم تقُد الرقم» framing + the «why» disclosure are preserved. ──")
 _html = open('index.html', encoding='utf-8').read()
-_seg = _html.split('if(v.considered_comparables', 1)[1].split('// Sprint 2.22.0b.18', 1)[0]
-check("D1 honest header «اطّلعنا عليها ولم تقُد الرقم»", 'اطّلعنا عليها ولم تقُد الرقم' in _seg)
-check("D2 NO b38 overclaim «هي ما قرّر رقمك» in the considered block (cost-led must not claim it led)",
-      'هي ما قرّر رقمك' not in _seg)
+_seg = _html[_html.index('function _s4bEvidence(d,v){'):_html.index('function _s4bHow(d,v,acc')]
+check("D1 honest cost-led frame «لم تقُد الرقم»",
+      'اطّلعنا على صفقات السوق في منطقتك لكنّها لم تقُد الرقم' in _seg)
+check("D2 the considered branch is separate from the matched «قرّرت رقمك» branch (no overclaim when cost led)",
+      "if(considered){" in _seg and 'لم تقُد الرقم' in _seg)
 check("D3 the «why it didn't lead» disclosure (reliability bar failed + DRC led)",
       'فشل حدّ الموثوقيّة' in _seg and 'منهجُ الكلفة' in _seg)
-check("D4 rows in a dir=ltr table + CC BY source + lives in `how` (value-invariant; never t1)",
-      'direction:ltr' in _seg and '_cc.source_ar' in _seg and 'how+=' in _seg and 't1+=' not in _seg)
-check("D5 muted border distinguishes «considered» from the bronze «decided» keystone",
-      'border-right:3px solid var(--muted)' in _seg)
+check("D4 rows in a dir=ltr table + CC BY source + lives in the section builder (value-invariant; never t1)",
+      'dir="ltr"' in _seg and 'CC BY 4.0' in _seg and 't1+=' not in _seg)
+check("D5 the honest «لم تقُد الرقم» + «فشل حدّ الموثوقيّة» framing distinguishes «considered» from «decided»",
+      'لم تقُد الرقم' in _seg and 'فشل حدّ الموثوقيّة' in _seg)
 
 print(f"\n{'='*60}")
 if _fails:

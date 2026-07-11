@@ -500,6 +500,12 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   .thmr-card, .thmr-hero, .thmr-legal, .thmr-fpline { page-break-inside: avoid; }
   .rep-def12, .rep-cover, .rep-foot, .rep-qrwrap, .rep-comp { page-break-inside: avoid; }
   .rep-cl { page-break-inside: avoid; }
+  /* b125 (S4b) — result-screen print parity (F1): the reveal-on-scroll sections that were never
+     scrolled into view stay .rv (opacity:0); force every .rv visible for print, and drop the
+     sticky action bar. printReport() also force-opens every #rOut <details> before window.print(). */
+  body.printing .rv { opacity: 1 !important; transform: none !important; }
+  body.printing .rs-bar { display: none !important; }
+  body.printing .rs-sec { page-break-inside: avoid; }
   /* Hide everything not part of the report */
   .hero, .fcard, .sbtn, .bbtn, .copy-btn, .map-btn-main, .map-popup, .aud-row,
   #loading, #error, .skiph, .hbtn,
@@ -677,6 +683,113 @@ body.lang-en #homeScreen.home{text-align:left}
   .rv{opacity:0;transform:translateY(18px)}
   .rv.rv-in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1)}
 }
+/* ── Sprint 2.22.0b.125 (S4b, redesign v2) — result-screen EVIDENCE sections: the lower half of
+   the result rebuilds from accordions → flat scroll-revealed sections (the design handoff).
+   Every colour = an existing token (matches the design model). Scoped to #rOut. ── */
+.rs-sec{margin-top:34px}
+.rs-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.rs-h h2{font-size:1.25rem;color:var(--primary);font-weight:700;margin:0}
+.rs-h .meta{font-size:.86rem;color:var(--muted)}
+.rs-rule{width:44px;height:3px;background:var(--bronze);border-radius:2px;margin-bottom:18px}
+/* estimate-position viz (navy) — market-led only */
+.rs-viz{background:var(--primary);border-radius:14px;padding:20px 22px;color:#fff;margin-bottom:14px;position:relative;overflow:hidden}
+.rs-viz::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.rs-viz .vh{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:.86rem}
+.rs-viz .vh .u{font-size:.74rem;color:#9DB0C2}
+.rs-viz .vtrack{position:relative;height:42px;margin:0 6px;direction:ltr}
+.rs-viz .vbase{position:absolute;top:20px;left:0;right:0;height:4px;background:rgba(255,255,255,.14);border-radius:3px}
+.rs-viz .vfill{position:absolute;top:20px;height:4px;background:linear-gradient(90deg,var(--bronze),var(--gold));border-radius:3px}
+.rs-viz .vstem{position:absolute;top:8px;width:2px;height:28px;background:var(--gold);transform:translateX(-1px)}
+.rs-viz .vmk{position:absolute;top:-3px;transform:translateX(-50%);font-size:.72rem;font-weight:700;color:var(--gold);white-space:nowrap}
+.rs-viz .vlo{position:absolute;bottom:-2px;left:0;font-size:.72rem;color:#9DB0C2}
+.rs-viz .vhi{position:absolute;bottom:-2px;right:0;font-size:.72rem;color:#9DB0C2}
+.rs-viz .vnote{font-size:.72rem;color:#9DB0C2;text-align:center;margin-top:10px}
+/* comparables table (design grid) */
+.rs-ctab{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.rs-ctab .row{display:grid;grid-template-columns:1.15fr 1fr 1.25fr 1fr;gap:8px;padding:12px 18px;font-size:.84rem;align-items:center}
+.rs-ctab .head{background:var(--alt);font-size:.72rem;font-weight:700;color:var(--text2)}
+.rs-ctab .body{border-top:1px solid #F0EBE2}
+.rs-ctab .body .d{color:var(--primary);font-weight:500}
+.rs-ctab .body .a{text-align:center;color:var(--muted)}
+.rs-ctab .body .p{text-align:center;color:var(--primary);font-weight:600}
+.rs-ctab .body .m{text-align:left;color:var(--bronze);font-weight:600}
+.rs-ctab .head .a,.rs-ctab .head .p{text-align:center}
+.rs-ctab .head .m{text-align:left}
+.rs-ctab .foot{padding:12px 18px;border-top:1px solid #F0EBE2;background:#FCFAF6;font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.rs-ctab .foot a{color:var(--bronze);font-weight:600;cursor:pointer}
+/* trend sparkline card */
+.rs-trend{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 22px;margin-top:14px}
+.rs-trend .th{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.86rem;font-weight:600;color:var(--primary)}
+.rs-trend svg{width:100%;height:80px;overflow:visible;display:block}
+.rs-trend .tx{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-top:4px}
+/* reconciliation chip */
+.rs-chip{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;padding:5px 12px;border-radius:20px}
+.rs-chip.ok{color:var(--ok);background:var(--ok-bg)}
+.rs-chip.warn{color:var(--warn);background:var(--warn-bg)}
+/* 3-value stack */
+.rs-stack{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.rs-scard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative}
+.rs-scard.lead{border-color:#d9c7a8}
+.rs-scard.lead::before{content:'';position:absolute;top:0;right:20px;left:20px;height:3px;background:var(--bronze);border-radius:0 0 3px 3px}
+.rs-scard .st{display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap}
+.rs-scard .st b{font-size:.9rem;font-weight:700;color:var(--primary)}
+.rs-scard .st .tag{font-size:.68rem;background:var(--primary);color:var(--gold);padding:3px 9px;border-radius:20px;font-weight:600}
+.rs-scard .sv{font-size:1.5rem;font-weight:700;color:var(--primary);margin-bottom:4px;font-feature-settings:'tnum'}
+.rs-scard.mut .sv{color:var(--text2)}
+.rs-scard .ss{font-size:.74rem;color:var(--muted);line-height:1.65}
+.rs-narr{display:flex;gap:9px;align-items:flex-start;margin-top:14px;font-size:.84rem;color:var(--muted);line-height:1.8}
+.rs-narr .ic{flex-shrink:0;margin-top:2px;color:var(--bronze)}
+.rs-mfold{margin-top:12px;border:1px solid var(--border);border-radius:10px;background:var(--alt);overflow:hidden}
+.rs-mfold>summary{list-style:none;cursor:pointer;padding:11px 14px;font-weight:600;font-size:.8rem;color:var(--primary)}
+.rs-mfold>summary::-webkit-details-marker{display:none}
+.rs-mfold .mb{padding:0 14px 12px}
+/* scenarios */
+.rs-scn{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.rs-c2{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:18px}
+.rs-c2.as{background:var(--primary);border-color:var(--primary)}
+.rs-c2 .k{font-size:.74rem;color:var(--muted);margin-bottom:8px;line-height:1.5;min-height:2.4em}
+.rs-c2.as .k{color:#9DB0C2}
+.rs-c2 .val{font-size:1.25rem;font-weight:700;color:var(--primary);font-feature-settings:'tnum'}
+.rs-c2.as .val{color:var(--gold)}
+.rs-c2.td .val{color:var(--warn)}
+.rs-c2 .rg{font-size:.72rem;color:var(--muted);margin-top:6px}
+.rs-c2.as .rg{color:#9DB0C2}
+.rs-honesty{display:flex;gap:8px;align-items:flex-start;margin-top:14px;font-size:.78rem;color:var(--muted);line-height:1.75}
+.rs-honesty .ic{flex-shrink:0;margin-top:2px;color:var(--bronze)}
+/* limits + full-details folds */
+.rs-lim{background:#FDFBF6;border:1px solid #EDE3CE;border-radius:14px;overflow:hidden}
+.rs-lim>summary,.rs-full>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 22px}
+.rs-lim>summary::-webkit-details-marker,.rs-full>summary::-webkit-details-marker{display:none}
+.rs-lim>summary .lt,.rs-full>summary .lt{display:flex;align-items:center;gap:10px;font-size:1rem;font-weight:700;color:var(--primary)}
+.rs-lim .lchip{font-size:.7rem;background:var(--warn-bg);color:var(--warn);padding:3px 10px;border-radius:20px;font-weight:600}
+.rs-lim .plus,.rs-full .plus{color:var(--bronze);font-weight:400;font-size:20px;line-height:1}
+.rs-lim[open]>summary .plus::after,.rs-full[open]>summary .plus::after{content:"\2212"}
+.rs-lim>summary .plus::after,.rs-full>summary .plus::after{content:"+"}
+.rs-lim .lbody{padding:0 22px 22px}
+.rs-lim .l2{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:6px}
+.rs-lim .l2 .lh{font-size:.72rem;font-weight:700;color:var(--primary);margin-bottom:9px}
+.rs-lim .l2 .li{font-size:.82rem;color:var(--muted);display:flex;gap:8px;margin-bottom:7px;line-height:1.6}
+.rs-lim .l2 .li .b{flex-shrink:0}
+.rs-lim .lrics{margin-top:16px;padding:12px 15px;background:var(--alt);border-radius:10px;font-size:.72rem;color:var(--muted);line-height:1.8}
+.rs-lim .lrics b{color:var(--primary);font-weight:600}
+.rs-full{margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+.rs-full .fbody{padding:4px 20px 16px}
+/* sticky action bar */
+.rs-bar{position:sticky;bottom:0;z-index:40;margin:16px -4px -4px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--border);padding:12px 6px;display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.rs-bar .amt{margin-inline-end:auto;font-size:.86rem;color:var(--muted)}
+.rs-bar .amt b{color:var(--primary)}
+.rs-bar button{border-radius:10px;padding:11px 18px;font-size:.86rem;font-weight:700;font-family:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--primary)}
+.rs-bar button.pri{background:var(--bronze);color:#fff;border-color:var(--bronze);box-shadow:0 6px 16px rgba(164,129,74,.24)}
+@media(max-width:560px){
+  .rs-stack{grid-template-columns:1fr;gap:10px}
+  .rs-scn{grid-template-columns:1fr 1fr;gap:10px}
+  .rs-lim .l2{grid-template-columns:1fr;gap:16px}
+  .rs-ctab .row{grid-template-columns:1.1fr .8fr 1.1fr .9fr;padding:11px 12px;gap:6px;font-size:.78rem}
+  .rs-bar{gap:8px;padding:11px 4px}
+  .rs-bar button{padding:10px 13px;font-size:.8rem}
+  .rs-bar .amt{flex-basis:100%;margin-bottom:2px}
+}
+body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:ltr}
 </style>
 </head>
 <body>
@@ -2003,7 +2116,10 @@ function _strataHtml(d){
 // so the printed report keeps the full stack, then restore the on-screen collapsed state after.
 function printReport(){
   document.body.classList.add('printing');
-  const _accs=Array.from(document.querySelectorAll('#rOut details.t2acc'));
+  // b125 (S4b): the result screen's lower half is flat scroll-revealed sections whose folds are
+  // .rs-mfold / .rs-full / .rs-lim (the legacy .t2acc accordions are gone). Force ALL result-screen
+  // <details> open before print so no folded content is lost (F1 print parity).
+  const _accs=Array.from(document.querySelectorAll('#rOut details'));
   const _wasOpen=_accs.map(a=>a.open);
   _accs.forEach(a=>{a.open=true;});
   setTimeout(()=>{
@@ -2076,6 +2192,164 @@ function _repTrend(d){
   if(tr.suppressed_reason_ar)h+='<div class="rn" style="font-size:.72rem;margin-top:6px">'+pick(tr,'suppressed_reason')+'</div>';
   else if(tr.label)h+='<div class="rn" style="font-size:.74rem;margin-top:6px">'+t('الاتجاه العام: ','Overall trend: ')+esc(tr.label)+'</div>';
   return h+'</div>';
+}
+// ── Sprint 2.22.0b.125 (S4b) — result-screen EVIDENCE section builders. Flat, scroll-revealed (.rv),
+// matching the design handoff. VALUE-INVARIANT: every number is read from a broadcast field or omitted
+// (no invented figure); every honest frame + compliance line is preserved verbatim. Reused by show() only.
+function _s4bTrendSpark(d){
+  const tr=d.trend; if(!tr||!tr.years||!tr.years.length)return '';
+  const ys=tr.years, mds=ys.map(y=>y.median_m2||0), mx=Math.max.apply(null,mds)||1, mn=Math.min.apply(null,mds), span=(mx-mn)||1;
+  const W=500,H=68,pad=12;
+  const pts=ys.map((y,i)=>{const x=ys.length>1?(pad+i*(W-2*pad)/(ys.length-1)):W/2; const yy=H-4-((((y.median_m2||0)-mn)/span)*(H-12)); return Math.round(x)+','+Math.round(yy);});
+  const last=pts[pts.length-1].split(',');
+  const _tl=tr.label||''; const _tcls=/استقرار|مستقر|ارتفاع|صاعد/.test(_tl)?'ok':/متذبذب|انخفاض|هابط|تراجع/.test(_tl)?'warn':'';
+  const _bg=_tcls==='ok'?'var(--ok-bg)':_tcls==='warn'?'var(--warn-bg)':'var(--alt)', _fg=_tcls==='ok'?'var(--ok)':_tcls==='warn'?'var(--warn)':'var(--muted)';
+  let h='<div class="rs-trend"><div class="th"><span>'+t('اتجاه سعر المتر','Per-m² price trend')+(tr.historical_window_ar?(' · <span style="font-weight:400;color:var(--muted)">'+pick(tr,'historical_window')+'</span>'):'')+'</span>'+(_tl?'<span style="font-size:.72rem;font-weight:600;color:'+_fg+';background:'+_bg+';padding:4px 11px;border-radius:20px">'+esc(_tl)+'</span>':'')+'</div>';
+  h+='<svg viewBox="0 0 '+W+' '+H+'" dir="ltr" preserveAspectRatio="none"><polyline points="'+pts.join(' ')+'" fill="none" stroke="var(--bronze)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><circle cx="'+last[0]+'" cy="'+last[1]+'" r="4.5" fill="var(--primary)"/></svg>';
+  h+='<div class="tx" dir="ltr">';ys.forEach(y=>{h+='<span>'+y.year+'</span>';});h+='</div>';
+  if(tr.suppressed_reason_ar)h+='<div class="rn" style="font-size:.72rem;margin-top:8px">'+pick(tr,'suppressed_reason')+'</div>';
+  return h+'</div>';
+}
+function _s4bViz(d,v,rows,considered){
+  // estimate-position bar — the subject's implied ppm² between the comparable rows' min/max.
+  // est ppm² = amount / effective area (multi-QARS share or plot). HONEST: rendered only when the
+  // comparable rows carry ppm² AND the market led (cost-led considered rows did NOT set the number),
+  // and the «within-range» assertion is CONDITIONAL on min ≤ est ≤ max. No invented number.
+  try{
+    if(considered)return '';
+    const ppm=rows.map(r=>r.price_per_m2).filter(x=>typeof x==='number'&&isFinite(x)&&x>0);
+    if(ppm.length<2)return '';
+    const mn=Math.min.apply(null,ppm), mx=Math.max.apply(null,ppm); if(!(mx>mn))return '';
+    const eff=(d.multi_qars&&d.multi_qars.detected&&d.multi_qars.effective_per_villa)||d.plot_area_m2;
+    if(!eff||!v.amount)return '';
+    const est=Math.round(v.amount/eff), within=(est>=mn&&est<=mx);
+    const pct=Math.max(4,Math.min(96,Math.round((est-mn)/(mx-mn)*100)));
+    let h='<div class="rs-viz"><div class="vh"><span>'+t('موقع تقديرنا بين الصفقات','Where our estimate sits among the sales')+'</span><span class="u">'+t('سعر المتر (ر.ق/م²)','QAR per m²')+'</span></div>';
+    h+='<div class="vtrack"><div class="vbase"></div><div class="vfill" style="left:0;width:'+pct+'%"></div>';
+    h+='<div class="vstem" style="left:'+pct+'%"></div><div class="vmk" style="left:'+pct+'%">'+fmt(est)+'</div>';
+    h+='<div class="vlo">'+fmt(mn)+'</div><div class="vhi">'+fmt(mx)+'</div></div>';
+    h+='<div class="vnote">'+(within?t('تقديرنا يقع ضمن مدى الصفقات الفعليّة — لا في طرفه','Our estimate sits within the range of the actual sales — not at its edge'):t('مقارنةً بمدى سعر المتر في الصفقات الفعليّة','Compared with the per-m² range of the actual sales'))+'</div>';
+    return h+'</div>';
+  }catch(e){return '';}
+}
+function _s4bEvidence(d,v){
+  const _cmp=v.comparables||v.considered_comparables;
+  const rows=(_cmp&&_cmp.rows)||[];
+  if(!rows.length){
+    const _tr=_s4bTrendSpark(d);
+    return _tr?('<div class="rs-sec rv"><div class="rs-h"><h2>'+t('الأدلّة — اتجاه المنطقة','Evidence — area trend')+'</h2></div><div class="rs-rule"></div>'+_tr+'</div>'):'';
+  }
+  const geo=(_cmp.basis==='geo_widened'), considered=!!(v.considered_comparables&&!v.comparables);
+  const n=_cmp.n||rows.length, shown=_cmp.shown||rows.length;
+  const cnt=_cmp.window_label||(n+t(' معاملة',' transactions'));
+  // Honest framing — market-led «قرّر رقمك» vs cost-led-considered «لم تقُد الرقم» (compliance, preserved
+  // verbatim from the b38/b39/b40 keystone). The cost-led «why» (dispersion failed the reliability bar) +
+  // the geo pool size are surfaced here so nothing methodological is lost when the keystone became a table.
+  let frame;
+  if(considered){
+    frame=t('اطّلعنا على صفقات السوق في منطقتك لكنّها لم تقُد الرقم — قاد التقديرَ منهجُ الكلفة (DRC).','We reviewed market transactions in your area, but they did not set the number — the cost approach (DRC) led the estimate.');
+    if(_cmp.dispersion!=null&&_cmp.pool_n)frame+=' '+t('(الحوض الجغرافيّ فشل حدّ الموثوقيّة: تشتّت ','(the geographic pool failed the reliability bar: dispersion ')+'<span dir="ltr">'+_cmp.dispersion.toFixed(3)+'</span> &gt; <span dir="ltr">0.30</span>'+t('، n=',', n=')+_cmp.pool_n+')';
+  }else if(geo){
+    frame=t('صفقات منطقتك ضمن نطاق المقارنة الموسَّع جغرافياً؛ ووُسِّع الحوض لمناطقَ مجاورة (مُعدَّلة الموقع في الحساب) لاكتمال العيّنة.','Transactions in your area within the geographically widened comparison pool; the pool was widened to neighbouring areas (location-adjusted in the calculation) to complete the sample.')+(_cmp.pool_n?(' '+t('(إجمالي ','(total ')+_cmp.pool_n+t(' صفقة)',' transactions)')):'');
+  }else{
+    frame=t('هذه الصفقاتُ المطابقة لشريحتك ومنطقتك هي التي قرّرت رقمك.','These transactions — matched to your bracket and area — are the ones that set your number.');
+  }
+  let h='<div class="rs-sec rv"><div class="rs-h"><h2>'+t('الأدلّة — صفقاتٌ مقارِنة','Evidence — comparable transactions')+'</h2><span class="meta">'+cnt+'</span></div><div class="rs-rule"></div>';
+  h+='<div style="font-size:.82rem;color:var(--muted);line-height:1.7;margin:-6px 0 14px">'+frame+'</div>';
+  h+=_s4bViz(d,v,rows,considered);
+  h+='<div class="rs-ctab"><div class="row head"><span>'+t('التاريخ','Date')+'</span><span class="a">'+t('المساحة','Area')+'</span><span class="p">'+t('السعر (ر.ق)','Price (QAR)')+'</span><span class="m">'+t('ر.ق/م²','QAR/m²')+'</span></div>';
+  rows.forEach(function(c){
+    h+='<div class="row body" data-comp><span class="d" dir="ltr">'+((c.date||'').slice(0,10))+'</span><span class="a" dir="ltr">'+fmt(c.area_m2)+t(' م²',' m²')+'</span><span class="p" dir="ltr">'+fmt(c.total_price)+'</span><span class="m" dir="ltr">'+fmt(c.price_per_m2)+'</span></div>';
+  });
+  h+='<div class="foot"><span>'+t('عرض ','Showing ')+shown+t(' من ',' of ')+n+t(' · بيانات وزارة العدل (',' · Ministry of Justice data (')+'<span dir="ltr">CC BY 4.0</span>'+t(') — مجموعة عامّة بلا عناوين فرديّة',') — a public dataset with no individual addresses')+'</span><a onclick="openReport()">'+t('عرض الكل في التقرير ›','View all in the report ›')+'</a></div></div>';
+  h+=_s4bTrendSpark(d);
+  return h+'</div>';
+}
+function _s4bHow(d,v,acc,how,dense){
+  const vs=v.value_stack||{}, ld=v.leadership||{}, leader=ld.leader;
+  const rec=d.reconciliation||{}; let chip='';
+  if(rec.status==='strong_convergence'){
+    chip='<span class="rs-chip ok"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg> '+t('تقاربٌ قويّ','Strong convergence')+((typeof rec.spread_pct==='number'&&isFinite(rec.spread_pct))?(t(' · فارق ',' · gap ')+rec.spread_pct.toFixed(1)+'%'):'')+'</span>';
+  }else if(rec.status==='divergence'){
+    chip='<span class="rs-chip warn"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('تباعد المنهجين','Approaches diverge')+'</span>';
+  }
+  let h='<div class="rs-sec rv"><div class="rs-h"><h2>'+t('كيف وصلنا للرقم','How we got to this number')+'</h2>'+chip+'</div><div class="rs-rule"></div>';
+  h+='<div class="rs-stack">';
+  // market
+  const mkt=vs.market||{}, mLead=(leader==='market');
+  h+='<div class="rs-scard'+(mLead?' lead':' mut')+'"><div class="st"><b>'+t('السوق','Market')+'</b>'+(mLead?'<span class="tag">'+t('الأساس المعتمد','The adopted basis')+'</span>':'')+'</div>';
+  h+='<div class="sv">'+(mkt.median!=null?fmt(mkt.median):'—')+'</div>';
+  const mSub=[];
+  if(mkt.n!=null)mSub.push(t('وسيط ','median of ')+mkt.n+t(' صفقة',' sales'));
+  if(mkt.matched_stratum_n!=null)mSub.push(mkt.matched_stratum_n+t(' مطابقة للشريحة',' matched to the bracket'));
+  if(mkt.dispersion_36!=null)mSub.push(t('التشتّت ','dispersion ')+Math.round(mkt.dispersion_36*100)+'%');
+  h+='<div class="ss">'+mSub.join(' · ')+'</div></div>';
+  // cost
+  const cst=vs.cost||{}, cLead=(leader==='cost');
+  h+='<div class="rs-scard'+(cLead?' lead':' mut')+'"><div class="st"><b>'+t('التكلفة (DRC)','Cost (DRC)')+'</b>'+(cLead?'<span class="tag">'+t('الأساس المعتمد','The adopted basis')+'</span>':'')+'</div>';
+  if(cst.value!=null){
+    h+='<div class="sv">'+fmt(cst.value)+'</div>';
+    const cSub=[];
+    if(cst.land_floor!=null)cSub.push(t('أرض ','land ')+fmt(cst.land_floor));
+    if(cst.building_value!=null)cSub.push(t('بناءٌ مُهلَك ','depreciated building ')+fmt(cst.building_value));
+    if(cst.retention!=null)cSub.push(t('نسبة الاحتفاظ ','retention ')+'<span dir="ltr">'+cst.retention+'</span>');
+    h+='<div class="ss">'+cSub.join(' · ')+'</div>';
+  }else{ h+='<div class="sv">—</div><div class="ss">'+(cst.unavailable_reason_ar?pick(cst,'unavailable_reason'):t('غير متاح','not available'))+'</div>'; }
+  h+='</div>';
+  // income
+  const inc=d.income_approach||{}, iLead=(leader==='income');
+  h+='<div class="rs-scard'+(iLead?' lead':' mut')+'"><div class="st"><b>'+t('الدخل','Income')+'</b>'+(iLead?'<span class="tag">'+t('الأساس المعتمد','The adopted basis')+'</span>':'')+'</div>';
+  if(inc&&inc.income_value){
+    h+='<div class="sv" style="font-size:1.2rem">'+(iLead?fmt(inc.income_value):t('متاح','Available'))+'</div><div class="ss">'+(iLead?t('مبنيٌّ على الإيجار الفعليّ (منهج الدخل)','Based on the actual rent (income approach)'):t('فحصٌ دخليّ متقاطع يدعم النطاق · التفصيل في التقرير الكامل','A cross-check income analysis supports the range · details in the full report'))+'</div>';
+  }else{ h+='<div class="sv">—</div><div class="ss">'+t('لا يتوفّر إيجارٌ لهذا العقار','No rent is available for this property')+'</div>'; }
+  h+='</div></div>';
+  // leadership narrative (visible) — the b19/b20-signed verdict, via the same pick(v.leadership,'note')
+  if(ld.note_ar)h+='<div class="rs-narr"><svg class=ic aria-hidden=true style="width:16px;height:16px"><use href=#ic-bulb></use></svg><span>'+pick(v.leadership,'note')+'</span></div>';
+  // methodology fold — the appraiser `how` notes + the full evidence-quality panel (b34 density-open)
+  const mbody=how+evidencePanelHtml(d,acc);
+  if(mbody.replace(/\s/g,''))h+='<details class="rs-mfold"'+(dense?' open':'')+'><summary><svg class=ic aria-hidden=true><use href=#ic-search></use></svg> '+t('تفاصيل منهجيّة للمختصّ','Methodology detail (for specialists)')+'</summary><div class="mb">'+mbody+'</div></details>';
+  return h+'</div>';
+}
+function _s4bScenarios(v){
+  const sc=v.scenarios; if(!sc||!sc.items||sc.items.length<2)return '';
+  let h='<div class="rs-sec rv"><div class="rs-h"><h2>'+t('ماذا لو؟ أثر الحالة والتشطيب','What if? Condition and finish')+'</h2></div><div class="rs-rule"></div>';
+  h+='<p style="font-size:.84rem;color:var(--muted);margin:-6px 0 16px;line-height:1.7">'+t('سيناريوهاتٌ استرشاديّة (منهج التكلفة) على نفس الأرض والبصمة — لا تُغيّر التقدير المعتمد أعلاه؛ تُظهر فقط أثر الحالة/التشطيب.','Indicative scenarios (cost approach) on the same land and footprint — they do NOT change the adopted estimate above; they only show the effect of condition/finish.')+'</p><div class="rs-scn">';
+  sc.items.forEach(function(it){
+    const isAs=(it.key==='as_is'), isTd=(it.key==='teardown_land');
+    const rg=(it.low!=null&&it.high!=null&&it.low!==it.high)?(fmt(it.low)+' – '+fmt(it.high)):'';
+    h+='<div class="rs-c2'+(isAs?' as':'')+(isTd?' td':'')+'"><div class="k">'+pick(it,'label')+'</div><div class="val">'+fmt(it.value)+'</div>'+(rg?'<div class="rg">'+rg+'</div>':'')+'</div>';
+  });
+  h+='</div>';
+  // honesty line (answer 8 — MANDATORY): classification by inference, not inspection (b100/b113).
+  h+='<div class="rs-honesty"><svg class=ic aria-hidden=true style="width:16px;height:16px"><use href=#ic-alert></use></svg><span>'+t('تصنيفٌ استدلالاً بالسعر المسجَّل، لا معاينةً للتشطيب أو الحالة الفعليّة.','Classified by inference from the registered price, not by inspecting the finish or the actual condition.')+(sc.note_ar?(' '+pick(sc,'note')):'')+'</span></div>';
+  return h+'</div>';
+}
+function _s4bLimits(d,muc){
+  const mu=d.material_uncertainty||{}, lvl=(LANG==='en'?MUC_LEVEL_EN:MUC_LEVEL_AR)[mu.level]||'';
+  const ku=((d.reasoning_trace||{}).known_unknowns)||[];
+  // «أسئلةٌ قبل الشراء» — generic buyer-education (matches the design); the property-tailored due_diligence
+  // brief section stays in the FULL-details fold (renderSection), so nothing broadcast is lost.
+  const ddQ=[
+    t('اطلب بياناً عقارياً من وزارة العدل (يكشف الرهونات والقيود)','Request a property statement from the Ministry of Justice (reveals mortgages and encumbrances)'),
+    t('اسأل عن عمر البناء الحقيقيّ وتاريخ آخر تجديد','Ask about the true building age and the date of the last renovation'),
+    t('تحقّق من تصنيف المنطقة (R1 / R2 / R3)','Check the zoning class (R1 / R2 / R3)'),
+    t('اطلب فواتير الخدمات لآخر سنة','Request the last year’s utility bills')
+  ];
+  let h='<div class="rs-sec rv"><details class="rs-lim" open><summary><span class="lt"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('حدود هذا التقدير','Limits of this estimate')+(lvl?(' <span class="lchip">'+t('عدم اليقين: ','Uncertainty: ')+lvl+'</span>'):'')+'</span><span class="plus"></span></summary><div class="lbody">';
+  if(muc)h+=muc;  // the full RICS MUC clause (was the b52 _mucFold; compliance — never collapsed away, folds with its own section)
+  h+='<div class="l2">';
+  if(ku.length){
+    h+='<div><div class="lh">'+t('ما لا نراه بعد','What we don\'t see yet')+'</div>';
+    ku.slice(0,6).forEach(function(u){h+='<div class="li"><span class="b" style="color:var(--warn)">·</span><span>'+esc(u)+'</span></div>';});
+    h+='</div>';
+  }
+  h+='<div><div class="lh">'+t('أسئلةٌ قبل الشراء','Questions before buying')+'</div>';
+  ddQ.forEach(function(q){h+='<div class="li"><span class="b" style="color:var(--ok)">◦</span><span>'+q+'</span></div>';});
+  h+='</div></div>';
+  // «دون تسويةٍ زمنيّة» (answer 4) + RICS/IVS + the data window.
+  h+='<div class="lrics">'+t('عدم اليقين الجوهريّ وفق ','Material uncertainty per ')+'<b>RICS Red Book (VPGA 10 / VPS 6)</b>'+t(' و','and ')+'<b>IVS 106</b>'+t(' — على وسيط الصفقات دون تسويةٍ زمنيّة، والبيانات المتاحة حتى ',' — on the sales median without time-adjustment, with data available to ')+'<span dir="ltr">31 '+t('ديسمبر','December')+' 2025</span>'+t('. أدخِل تفاصيل عقارك في «حسّن التقييم» لدقّةٍ أعلى.','. Enter your property details under “Refine the valuation” for higher accuracy.')+'</div>';
+  h+='</div></details></div>';
+  return h;
 }
 function showReport(d){
   const o=document.getElementById('repOut'); if(!o)return;
@@ -2898,6 +3172,16 @@ function show(d){
   let t1='';      // TIER-1 — the figure + tier badge + MUC chip + not-certified line + evidence one-row
   let t2='';      // TIER-2 — collapsed accordions (valued path)
   let t3='';      // TIER-3 — refine + report CTAs
+  // Sprint 2.22.0b.125 (S4b) — flat scroll-revealed design sections (replace the b15/b31/b52 accordions
+  // on the VALUED path only; refusal path unchanged). Declared here so they are in scope at the final
+  // assembly (outside the hasValuation block). VALUE-INVARIANT — presentation reorganization; every
+  // compliance / methodology / value string is preserved verbatim, just moved from a fold to a section.
+  let secEv='';   // EVIDENCE — comparables viz + table + trend
+  let secHow='';  // HOW WE GOT HERE — reconciliation chip + 3-value stack + leadership narrative + methodology fold
+  let secScn='';  // SCENARIOS — what-if cards + the «استدلالاً بالسعر لا معاينةً» honesty line
+  let secLim='';  // LIMITS — MUC clause + known-unknowns + due-diligence + «دون تسوية زمنية» + RICS
+  let secFull=''; // FULL DETAILS fold — the analytical blocks + brief + basics + evidence panel (nothing lost)
+  let _info='';   // property-basics card (built inside the valued block; consumed by the FULL-details fold)
   let flat='';    // refusal path: shared panels rendered FLAT (byte-equivalent to pre-b15)
   let foot='';    // ALWAYS-VISIBLE compliance foot (freshness / disclaimer / verification)
 
@@ -3115,7 +3399,7 @@ function show(d){
   if(hasValuation){
     // Basic property data → TIER-2 accordion (b15: removed from BEFORE the number; the title now
     // lives on the accordion summary, so the inner card drops its own header). Inner HTML verbatim.
-    let _info='<div class="rc"><div class="rg">';
+    _info='<div class="rc"><div class="rg">';
     if(d.address)_info+=ri(t('العنوان','Address'),esc(d.address),0,1);
     if(d.district)_info+=ri(t('المنطقة','District'),esc(d.district));
     if(d.plot_area_m2)_info+=ri(t('مساحة الأرض','Plot area'),fmt(d.plot_area_m2)+t(' م²',' m²'));
@@ -3220,10 +3504,12 @@ function show(d){
       t1+='<details class="rn fin-toggle" style="margin-top:12px;border-right:3px solid var(--bronze);background:var(--alt)"><summary style="cursor:pointer;font-weight:600;font-size:.82rem;color:var(--primary)"><svg class=ic aria-hidden=true><use href=#ic-coins></use></svg> '+t('حاسبة التمويل الاسترشاديّة','Indicative financing calculator')+'</summary>'
         +'<div style="font-size:.82rem;line-height:2;margin-top:8px">'+t('دفعة أولى ','Down payment ')+'<span dir="ltr"><input id="bcDown" type="number" value="20" min="0" max="90" oninput="bcRecalc()" style="width:46px;padding:2px 4px"></span>'+t('% · ','% · ')+'<input id="bcYears" type="number" value="25" min="1" max="35" oninput="bcRecalc()" style="width:46px;padding:2px 4px">'+t(' سنة · ',' years · ')+'<input id="bcRate" type="number" value="4.5" step="0.1" min="0.1" max="15" oninput="bcRecalc()" style="width:52px;padding:2px 4px">'+t('% فائدة → القسط الشهريّ ≈ ','% interest → monthly payment ≈ ')+'<b id="bcPay">'+(_bcInit?(fmt(_bcInit)+t(' ر.ق/شهر',' QAR/mo')):'—')+'</b> <span style="color:var(--muted);font-size:.76rem">'+t('— تقديريّ، استشر بنكك','— indicative, consult your bank')+'</span></div></details>';
     }
-    // ── DEF-UX11: the «9-note parade» (value-floor · HBU · old-stock · cost-triangulation · leadership ·
-    // age-honesty · resurvey · cost-value-line · market-dispersion) → `how`, NOT `t1`. Every condition +
-    // HTML string is VERBATIM (only the buffer prefix changed) → value byte-identical (b24). The `how`
-    // buffer becomes the body of ONE collapsed «<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> كيف وصلنا لهذا الرقم؟» accordion (built below). ──
+    // ── Sprint 2.22.0b.125 (S4b): `how` now holds ONLY the appraiser METHODOLOGY notes (value-floor ·
+    // HBU · old-stock · cost-triangulation · age-honesty · resurvey · cost-MECHANICS · age-sensitivity ·
+    // methodology) — the body of a collapsed «تفاصيل منهجيّة» fold inside the HOW section (built below).
+    // The keystone comparables move to the visible EVIDENCE table; the leadership narrative, the 3-value
+    // stack, and the market-dispersion move to visible HOW cards — all from the SAME broadcast fields.
+    // Every kept note string is VERBATIM (moved, not changed) → value byte-identical (b24). ──
     let how='';
     if(v.value_floor){
       const vf=v.value_floor;
@@ -3238,15 +3524,15 @@ function show(d){
     // + the b11/b13 cost-triangulation notes (previously JSON-only; same honest surface, signed copy).
     if(v.old_stock_reanchor&&v.old_stock_reanchor.note_ar){how+='<div class="rn" style="margin-top:10px;font-size:.8rem;border-right:3px solid var(--warn);background:var(--warn-bg)"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+pick(v.old_stock_reanchor,'note')+'</div>';}
     if(v.cost_triangulation&&v.cost_triangulation.note_ar){how+='<div class="rn" style="margin-top:10px;font-size:.78rem">'+pick(v.cost_triangulation,'note')+'</div>';}
-    // Sprint 2.22.0b.20 — EVIDENCE-CONDITIONAL LEADERSHIP (Gate-2 SIGNED 2026-06-11):
-    // the leadership verdict + the three-value stack lines (cost line = the b19-signed label;
-    // dispersion shown = G2 auditability). Cost-led/E25 notes are warn-styled like the OSR note was.
-    if(v.leadership&&v.leadership.note_ar){how+='<div class="rn" style="margin-top:8px;font-size:.78rem'+((v.leadership.rule==='cost_led'||v.leadership.rule==='e25_capped')?';border-right:3px solid var(--warn);background:var(--warn-bg)':'')+'"><svg class=ic aria-hidden=true><use href=#ic-scale></use></svg> '+pick(v.leadership,'note')+'</div>';}
+    // Sprint 2.22.0b.20 — EVIDENCE-CONDITIONAL LEADERSHIP (Gate-2 SIGNED 2026-06-11): the leadership
+    // verdict (b19-signed label) is the VISIBLE narrative in the HOW section (built below, from the same
+    // pick(v.leadership,'note')); the age-honesty / resurvey qualifiers stay in the methodology fold.
     if(v.leadership&&v.leadership.age_honesty_note_ar){how+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clock></use></svg> '+pick(v.leadership,'age_honesty_note')+'</div>';}
     if(v.leadership&&v.leadership.resurvey_note_ar){how+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-clipboard></use></svg> '+pick(v.leadership,'resurvey_note')+'</div>';}
     if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.value){
       const _vc=v.value_stack.cost;
-      how+='<div class="rn" style="margin-top:8px;font-size:.76rem"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+pick(_vc,'label')+': '+fmt(_vc.value)+t(' ر.ق',' QAR')+' — '+pick(_vc,'sub')+'</div>';
+      // S4b — the cost VALUE + label + sub move to the visible 3-value stack card (HOW section); the
+      // methodology fold keeps only the DRC MECHANICS (BUA × replacement × retention) for the appraiser.
       // Sprint 2.22.0b.37 (DEF-UX9): surface the DRC cost MECHANICS (BUA × كلفة الإحلال × نسبة القيمة المتبقية للبناء →
       // depreciated building + land) for the المهندس/المثمّن — all BROADCAST in value_stack.cost, previously
       // visible ONLY on the full/short report (showReport :1672 / showShortReport :1904), not on the result
@@ -3259,72 +3545,12 @@ function show(d){
     }
     else if(v.value_stack&&v.value_stack.cost&&v.value_stack.cost.unavailable_reason_ar){how+='<div class="rn" style="margin-top:8px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+pick(v.value_stack.cost,'unavailable_reason')+'</div>';}
     if(v.value_stack&&v.value_stack.market&&v.value_stack.market.dispersion_36!=null){how+='<div class="rn" style="margin-top:6px;font-size:.74rem"><svg class=ic aria-hidden=true><use href=#ic-chart></use></svg> '+t('حوض المقارنات: وسيط ','Comparables pool: median ')+fmt(v.value_stack.market.median)+t(' ر.ق · تشتت 36 شهراً ',' QAR · 36-month dispersion ')+'<span dir="ltr">'+v.value_stack.market.dispersion_36.toFixed(3)+'</span></div>';}
-    // Sprint 2.22.0b.38 (DEF-UX1) + b39 (DEF-UX1.1): keystone comparables — the MoJ transactions behind
-    // the displayed median. The engine attaches v.comparables ONLY when the MARKET led: basis='matched_bracket'
-    // (b38 — the subject-bracket rows that PRODUCED the median, «هذه قرّرت رقمك») OR basis='geo_widened'
-    // (b39 — the subject's PRIMARY-area raw rows within the geo-widened pool; the panel discloses that
-    // location-adjusted NEIGHBOUR rows were also pooled, so it never overclaims for the geo case).
-    // Anonymous (no address — E12), CC BY 4.0 public. Numeric rows in a dir=ltr table (Rule #25). Lives
-    // in «كيف وصلنا» (b34 density-open for investor/valuer). DISPLAY-ONLY → appends to `how`, value byte-identical.
-    if(v.comparables&&v.comparables.rows&&v.comparables.rows.length){
-      var _kc=v.comparables, _kcGeo=(_kc.basis==='geo_widened');
-      how+='<div class="rn" style="margin-top:10px;font-size:.76rem;border-right:3px solid var(--bronze);background:var(--alt)">';
-      how+='<div style="font-weight:600;margin-bottom:5px"><svg class=ic aria-hidden=true><use href=#ic-key></use></svg> '+(_kcGeo?t('صفقات في منطقتك ضمن نطاق المقارنة الموسَّع جغرافياً','Transactions in your area within the geographically widened comparison pool'):t((_kc.n||_kc.rows.length)+' صفقة في شريحتك ومنطقتك — هي ما قرّر رقمك',(_kc.n||_kc.rows.length)+' transactions in your bracket and area — these set your number'))+(_kc.window_label?(' <span style="color:var(--muted);font-weight:400;font-size:.9em">('+_kc.window_label+')</span>'):'')+'</div>';
-      _kc.rows.forEach(function(c){
-        how+='<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px solid #e6ddd0;direction:ltr">'
-           +'<span style="color:var(--muted)">'+(c.date||'').slice(0,10)+'</span>'
-           +'<span>'+fmt(c.area_m2)+t(' م²',' m²')+'</span>'
-           +'<span style="font-weight:600">'+fmt(c.total_price)+t(' ر.ق',' QAR')+'</span>'
-           +'</div>';
-      });
-      if(_kcGeo)how+='<div style="color:var(--muted);font-size:.7rem;margin-top:4px">'+t('وُسِّع الحوض لمناطق مجاورة (مُعدَّلة الموقع في الحساب) لاكتمال العيّنة','The pool was widened to neighbouring areas (location-adjusted in the calculation) to complete the sample')+(_kc.pool_n?(t(' — إجمالي ',' — total ')+_kc.pool_n+t(' صفقة',' transactions')):'')+'</div>';
-      else if(_kc.shown&&_kc.n&&_kc.shown<_kc.n)how+='<div style="color:var(--muted);font-size:.7rem;margin-top:4px">'+t('عرض ','Showing ')+_kc.shown+t(' من ',' of ')+_kc.n+t(' معاملة (الأحدث)',' transactions (most recent)')+'</div>';
-      // Sprint 2.22.0b.41 (DEF-UX1.1b): the geo NEIGHBOUR rows that were location-adjusted into the
-      // subject's area (the b39 sibling — b39 disclosed only the pool size). Geo-led only (_kcGeo).
-      // 2-line row: «<svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> area · ×factor» (RTL name + LTR factor island) over «date · م² · raw→adjusted ر.ق/م²»
-      // (dir=ltr). Shows BOTH the raw sale ppm² and the DERIVED location-adjusted ppm² (rates, never a
-      // "sold-for" price). E12: area name + ratio only. DISPLAY-ONLY → value byte-identical.
-      if(_kcGeo&&_kc.neighbours&&_kc.neighbours.rows&&_kc.neighbours.rows.length){
-        var _kn=_kc.neighbours;
-        how+='<div style="margin-top:7px;padding-top:5px;border-top:1px dashed #d8ccb8">';
-        how+='<div style="font-weight:600;font-size:.72rem;margin-bottom:4px">'+t('الصفقات المجاورة المُعدَّلة الموقع (دخلت الحوض)','Location-adjusted neighbouring transactions (entered the pool)')+'</div>';
-        _kn.rows.forEach(function(g){
-          how+='<div style="padding:4px 0;border-top:1px solid #e6ddd0">'
-             +'<div style="display:flex;justify-content:space-between;gap:8px;font-size:.72rem"><span><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> '+esc(g.source_area)+'</span><span dir="ltr" style="color:var(--muted)">×'+(g.adjustment_factor!=null?g.adjustment_factor:'—')+'</span></div>'
-             +'<div style="display:flex;justify-content:space-between;gap:8px;direction:ltr;font-size:.7rem;color:var(--muted);margin-top:1px"><span>'+(g.date||'').slice(0,10)+'</span><span>'+fmt(g.area_m2)+t(' م²',' m²')+'</span><span>'+(g.price_per_m2_raw!=null?fmt(g.price_per_m2_raw):'—')+' → <span style="color:var(--primary);font-weight:600">'+(g.price_per_m2_adjusted!=null?fmt(g.price_per_m2_adjusted):'—')+'</span>'+t(' ر.ق/م²',' QAR/m²')+'</span></div>'
-             +'</div>';
-        });
-        if(_kn.shown&&_kn.total_n&&_kn.shown<_kn.total_n)how+='<div style="color:var(--muted);font-size:.68rem;margin-top:3px">'+t('عرض ','Showing ')+_kn.shown+t(' من ',' of ')+_kn.total_n+t(' صفقة مجاورة (',' neighbouring transactions (')+_kn.areas_n+t(' مناطق · الأحدث)',' areas · most recent)')+'</div>';
-        how+='<div style="color:var(--muted);font-size:.66rem;margin-top:3px">'+t('السعر المعروض هو سعر البيع الفعليّ في منطقة الجار؛ ×التعديل يُحوّله إلى مستوى موقعك (لم تُبَع بالرقم المُعدَّل).','The shown price is the actual sale price in the neighbour\'s area; ×adjustment converts it to your location level (it was not sold at the adjusted figure).')+'</div>';
-        how+='</div>';
-      }
-      if(_kc.source_ar)how+='<div style="color:var(--muted);font-size:.68rem;margin-top:5px">'+pick(_kc,'source')+'</div>';
-      how+='</div>';
-    }
-    // Sprint 2.22.0b.40 (DEF-UX1.2a): cost-led «considered» comparables — on a COST-LED villa (rule=='cost_led')
-    // the market pool was CONSIDERED but did NOT lead the number (it failed its reliability bar). The engine
-    // attaches v.considered_comparables (basis='cost_considered') ONLY when the cost led — mutually exclusive
-    // with v.comparables above. Honest frame: «اطّلعنا عليها ولم تقُد الرقم» — NEVER «هي ما قرّر رقمك» (the DRC
-    // decided the number). Same anonymous rows (E12) + CC BY 4.0; muted border (vs the bronze keystone) signals
-    // «considered», not «decided». DISPLAY-ONLY → appends to `how`, value byte-identical.
-    if(v.considered_comparables&&v.considered_comparables.rows&&v.considered_comparables.rows.length){
-      var _cc=v.considered_comparables;
-      how+='<div class="rn" style="margin-top:10px;font-size:.76rem;border-right:3px solid var(--muted);background:var(--alt)">';
-      how+='<div style="font-weight:600;margin-bottom:5px"><svg class=ic aria-hidden=true><use href=#ic-search></use></svg> '+t('صفقات السوق في منطقتك — اطّلعنا عليها ولم تقُد الرقم','Market transactions in your area — we reviewed them but they did not set the number')+'</div>';
-      var _ccWhy=t('قاد التقديرَ منهجُ الكلفة (DRC)','The cost approach (DRC) set the estimate');
-      if(_cc.dispersion!=null&&_cc.pool_n)_ccWhy=t('الحوض الجغرافيّ فشل حدّ الموثوقيّة (تشتّت ','The geographic pool failed the reliability bar (dispersion ')+'<span dir="ltr">'+_cc.dispersion.toFixed(3)+'</span> &gt; <span dir="ltr">0.30</span>'+t('، n=',', n=')+_cc.pool_n+') — '+_ccWhy;
-      how+='<div style="color:var(--muted);font-size:.7rem;margin-bottom:4px">'+_ccWhy+'</div>';
-      _cc.rows.forEach(function(c){
-        how+='<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-top:1px solid #e6ddd0;direction:ltr">'
-           +'<span style="color:var(--muted)">'+(c.date||'').slice(0,10)+'</span>'
-           +'<span>'+fmt(c.area_m2)+t(' م²',' m²')+'</span>'
-           +'<span style="font-weight:600">'+fmt(c.total_price)+t(' ر.ق',' QAR')+'</span>'
-           +'</div>';
-      });
-      if(_cc.shown&&_cc.n&&_cc.shown<_cc.n)how+='<div style="color:var(--muted);font-size:.7rem;margin-top:4px">'+t('عرض ','Showing ')+_cc.shown+t(' من ',' of ')+_cc.n+t(' معاملة (الأحدث)',' transactions (most recent)')+'</div>';
-      if(_cc.source_ar)how+='<div style="color:var(--muted);font-size:.68rem;margin-top:5px">'+pick(_cc,'source')+'</div>';
-      how+='</div>';
-    }
+    // Sprint 2.22.0b.125 (S4b): the keystone comparables (b38/b39 matched/geo) + the cost-led «considered»
+    // pool (b40) + the geo NEIGHBOUR rows (b41) move OUT of the `how` fold → the VISIBLE «الأدلّة» EVIDENCE
+    // table (built at assembly via _s4bCompTable, from the SAME v.comparables / v.considered_comparables /
+    // neighbours fields). Every honest frame is preserved verbatim there — «هي ما قرّر رقمك» (market-led) vs
+    // «اطّلعنا عليها ولم تقُد الرقم» (cost-led considered), the geo widening disclosure, the anonymity note,
+    // and the CC BY 4.0 source line. DISPLAY-ONLY, value byte-identical (b24).
     // Sprint 2.22.0b.18 (§A1): the user-age SENSITIVITY line — TIER-1 (the claimed age never moves the headline).
     // Sprint 2.22.0b.52 (result-screen lean, PO-signed A+B): age-sensitivity · moj sample-size · the
     // methodology bare line move OFF always-visible TIER-1 → into the «كيف وصلنا» fold (appraiser /
@@ -3344,20 +3570,21 @@ function show(d){
     t1+=_evOneRow(d);
     t1+='</div>';
 
-    // ── Sprint 2.22.0b.31 (DEF-UX11): ONE «<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> كيف وصلنا لهذا الرقم؟» accordion (FIRST, right after the
-    // figure + MVU clause) = the folded 9-note parade (`how`) + the full evidence panel (which was its own
-    // «جودة الأدلّة (تفصيل)» accordion). Collapsed by default → its <summary> IS the 5th core element (the
-    // «button»). The TIER-1 evidence one-row pill stays the summary; the full panel lives here. No panel
-    // lost — every note + the panel stay fully reachable. ──
-    t2+=_acc('<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> '+t('كيف وصلنا لهذا الرقم؟','How we got to this number'), how+evidencePanelHtml(d,acc), _dense);  // DEF-UX12: OPEN for investor/valuer
-    t2+=_acc('<svg class=ic aria-hidden=true><use href=#ic-home></use></svg> '+t('بيانات العقار الأساسية','Property basics'),_info);
+    // ── Sprint 2.22.0b.125 (S4b): the b31 «كيف وصلنا» accordion becomes two flat, scroll-revealed design
+    // sections — EVIDENCE (comparables viz + table + trend) and HOW WE GOT HERE (reconciliation chip +
+    // 3-value stack + leadership narrative + the appraiser methodology fold, which still carries the full
+    // `how` notes + the evidence-quality panel — b34 density-open for investor/valuer). The property-basics
+    // (_info) move to the FULL-details fold (built below). No panel lost; value byte-identical (b24). ──
+    secEv+=_s4bEvidence(d,v);
+    secHow+=_s4bHow(d,v,acc,how,_dense);
   }
 
-  // ── BRIEF SECTIONS (Sprint D — was missing entirely) ── valued→TIER-2 accordion; refusal→flat (verbatim) ──
+  // ── BRIEF SECTIONS (Sprint D) ── S4b: valued → the FULL-details fold (built below); refusal → flat (verbatim) ──
   const br=d.brief;
+  let _briefSecs='', _briefTitle='';
   if(br&&br.sections&&br.sections.length>0){
     let _secs=''; br.sections.forEach(sec=>{_secs+=renderSection(sec)});
-    if(hasValuation){ t2+=_acc('<svg class=ic aria-hidden=true><use href=#ic-file></use></svg> '+(pick(br,'title')||t('تفاصيل التقرير','Report details')),_secs); }
+    if(hasValuation){ _briefSecs=_secs; _briefTitle=(pick(br,'title')||t('تفاصيل التقرير','Report details')); }
     else {
       flat+='<div class="rc" style="background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px"><div class="rt" style="font-size:1.15rem;margin-bottom:0">'+(pick(br,'title')||t('التقرير','Report'))+'</div></div>';
       flat+=_secs;
@@ -3533,23 +3760,34 @@ function show(d){
     h+='</div></div>';
   }
 
-  // ── Sprint 2.22.0b.15 — the detail blocks above accumulated into the scratch `h`. Valued path:
-  // collapse them into ONE TIER-2 «التفاصيل الكاملة» accordion (the a8 RICS/IVS note nested at top);
-  // refusal: keep them FLAT (byte-equivalent to pre-b15). No panel is lost — all stay reachable. ──
-  if(hasValuation){ t2+=_acc('<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> التفاصيل الكاملة (التحليل والمقارنات)', a8acc+h); }
+  // ── Sprint 2.22.0b.125 (S4b): build the remaining flat design sections. SCENARIOS (b23 what-ifs, new
+  // to the result screen) + LIMITS (the full MUC clause + known-unknowns + due-diligence + «دون تسوية
+  // زمنية» + RICS — absorbs the b52 _mucFold) are built from `v`/`d`/`muc`. The FULL-details fold keeps
+  // EVERY analytical block accumulated in `h` (decomposition · substantiality · geometry · range-expansion
+  // · geometric findings · location features · strata · known-unknowns) + the a8 RICS/IVS note + property
+  // basics (_info) + the brief sections — nothing lost, just collapsed. Refusal path: flat (byte-equivalent). ──
+  if(hasValuation){
+    secScn=_s4bScenarios(v);
+    secLim=_s4bLimits(d,muc);
+    secFull='<div class="rs-sec rv"><details class="rs-full"><summary><span class="lt"><svg class=ic aria-hidden=true><use href=#ic-search></use></svg> '+t('التفاصيل الكاملة (التحليل والمقارنات)','Full details (analysis and comparables)')+'</span><span class="plus"></span></summary><div class="fbody">'
+      +_info
+      +(_briefSecs?('<div class="rc" style="background:transparent;border:none;box-shadow:none;padding:0;margin:8px 0 4px"><div class="rt" style="font-size:1.05rem">'+_briefTitle+'</div></div>'+_briefSecs):'')
+      +a8acc+h
+      +'</div></details></div>';
+  }
   else { flat+=h; }
   h='';  // scratch consumed → reused for the final assembly below
 
-  // ── TIER-3 actions (valued path): refine (b13 age nudge) + full report (b17 rewires to screen 5) ──
+  // ── Sprint 2.22.0b.125 (S4b): TIER-3 actions → the design's STICKY action bar (position:sticky;bottom:0),
+  // so the CTAs stay reachable through the now-longer flat scroll. «القيمة التقديريّة: {amount}» + refine +
+  // short report + full report. The full report is now one direct click (was reachable only via the short
+  // report, b25/D6 — additive, nothing removed). raw_land hides the building-only refine CTA (b97). ──
   if(hasValuation){
-    t3+='<div class="t3block">';
-    // Sprint 2.22.0b.97 — the refine flow is entirely building fields (floors/basement/
-    // condition/finish/BUA/age/rent); none apply to a vacant plot. Hiding the CTA for
-    // raw_land removes «أضف تفاصيل مبناك» + a hollow entry into a villa-only screen.
-    if(d.asset_type!=='raw_land') t3+='<button class="t3btn t3-primary" onclick="go(\'refine\')"><svg class=ic aria-hidden=true><use href=#ic-edit></use></svg> حسّن التقييم — أضف تفاصيل مبناك</button>';
-    // Sprint 2.22.0b.25 (م2/D6): the SHORT report opens FIRST; the full report is one
-    // click away inside it (its «التقرير الكامل» button → openReport, the b17 screen).
-    t3+='<button class="t3btn t3-secondary" onclick="openShortReport()"><svg class=ic aria-hidden=true><use href=#ic-file></use></svg> التقرير المختصر / حفظ PDF</button>';
+    t3+='<div class="rs-bar">';
+    t3+='<span class="amt">'+t('القيمة التقديريّة: ','Estimated value: ')+'<b>'+fmt(v.amount)+t(' ر.ق',' QAR')+'</b></span>';
+    if(d.asset_type!=='raw_land') t3+='<button onclick="go(\'refine\')"><svg class=ic aria-hidden=true><use href=#ic-edit></use></svg> '+t('حسّن التقييم','Refine')+'</button>';
+    t3+='<button onclick="openShortReport()"><svg class=ic aria-hidden=true><use href=#ic-file></use></svg> '+t('التقرير المختصر','Short report')+'</button>';
+    t3+='<button class="pri" onclick="openReport()"><svg class=ic aria-hidden=true><use href=#ic-book></use></svg> '+t('التقرير الكامل','Full report')+'</button>';
     t3+='</div>';
   }
 
@@ -3568,15 +3806,14 @@ function show(d){
     foot+='</div>';
   }
 
-  // ── Assemble in tier order. Valued: alerts (qualifiers) → TIER-1 figure → full MVU clause →
-  // TIER-2 accordions → TIER-3 actions → compliance foot. Refusal: pre-b15 flat order preserved. ──
+  // ── Sprint 2.22.0b.125 (S4b): assemble the flat, scroll-revealed design order. Valued: alerts
+  // (qualifiers) → TIER-1 hero (S4a) → EVIDENCE → HOW WE GOT HERE → SCENARIOS → LIMITS (the full MUC
+  // clause lives here now, folding with its own section — the b52 _mucFold is superseded) → FULL-details
+  // fold → compliance foot → the STICKY action bar (last). Refusal: pre-b15 flat order preserved verbatim.
+  // The «تحفّظ مادي: {level}» chip + the «ليس تقييماً معتمداً» line stay always-visible in t1; the full
+  // VPGA-10 clause is one click away inside LIMITS. VALUE-INVARIANT — display reorganization only. ──
   if(hasValuation){
-    // Sprint 2.22.0b.52 (result-screen lean, PO-signed): the full MUC clause folds behind its chip.
-    // The «تحفّظ مادي: {level}» chip + the «ليس تقييماً معتمداً» line stay always-visible in t1 (the user
-    // is warned at a glance); the full VPGA-10 clause is one click away. Placed first among the folds.
-    // Value-invariant — display reorganization only; the clause text is unchanged and still reachable.
-    const _mucFold = muc ? _acc('<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('عدم اليقين الجوهري والمعايير (RICS / IVS)','Material uncertainty and the standards (RICS / IVS)'), muc, false) : '';
-    h=head+alerts+t1+_mucFold+t2+t3+foot;
+    h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;
   }else{
     h=head+muc+a8acc+alerts+flat+foot;
   }
@@ -3584,6 +3821,9 @@ function show(d){
   // b124 (S4a): drive the hero count-up (figure + confidence score) after the DOM is in place.
   // _countUp is value-invariant (lands on fmt(target)) + reduced-motion-safe. Display-only.
   try{o.querySelectorAll('[data-countup]').forEach(function(el){_countUp(el,parseFloat(el.getAttribute('data-countup')),1300);});}catch(e){}
+  // Sprint 2.22.0b.125 (S4b): fade-up the flat evidence sections as they scroll into view (S0 primitive;
+  // reduced-motion → reveal all at once). Presentation only — no value/DOM-content change.
+  try{_revealOnScroll('#rOut .rs-sec.rv');}catch(e){}
 }
 
 // Sprint D: Section renderer for brief.sections

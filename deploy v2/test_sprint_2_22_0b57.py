@@ -45,7 +45,10 @@ check('refusal flat address+district via esc',
       "<strong>'+t('العنوان:','Address:')+'</strong> '+esc(d.address)+'</div>" in HTML
       and "<strong>'+t('المنطقة:','District:')+'</strong> '+esc(d.district)+'</div>" in HTML)
 check('assetAr value esc at definition', 'const assetAr=esc(' in HTML)
-check('keystone neighbour area-name via esc', 'esc(g.source_area)' in HTML)
+# b125 R6: the result-screen keystone (with its neighbour rows) became the flat _s4bEvidence table; the
+# geo NEIGHBOUR rows with a source-area name now render only in the full report (_repComparables), where
+# the area name stays esc()-escaped. The XSS-insurance intent (area-name names escaped) is preserved.
+check('comparable/neighbour area-name via esc (report builder)', 'esc(r.source_area' in HTML)
 check('comparable-row area via esc', "row(t('المنطقة','District'),esc(c.area))" in HTML)
 
 # ── 3. The engine-authored *_ar NOTE/CLAUSE fields are LEFT RAW (intended HTML, trusted) ──

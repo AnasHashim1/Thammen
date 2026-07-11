@@ -22,16 +22,18 @@ def check(name, cond):
 
 # ── 1. the `how` buffer + the ONE «كيف وصلنا» accordion ──
 check('show() declares the `how` fold buffer', "let how='';" in HTML)
-check('ONE «كيف وصلنا لهذا الرقم؟» accordion = how + full evidence panel',
-      # b34 (DEF-UX12) added a 3rd `open` arg (role-driven density) — match without the trailing `);`.
-      # b48 (de-emoji): the 🔍 emoji became an inline-SVG icon; the Arabic text is unchanged → re-anchor
-      # on the stable text fragment that ends the summary string.
-      "كيف وصلنا لهذا الرقم؟','How we got to this number'), how+evidencePanelHtml(d,acc)" in HTML)
-# the «كيف وصلنا» accordion is built FIRST (right after the figure+MVU), before basic-info.
-# b48 (de-emoji): the 🔍/🏠 emojis became inline-SVG icons; re-anchor the ORDER check on the stable
-# Arabic-text + `,_info)` fragments that still uniquely identify each `t2+=_acc(...)` call.
-check('«كيف وصلنا» accordion is the FIRST t2 accordion (before basic-info)',
-      HTML.index("كيف وصلنا لهذا الرقم؟','How we got to this number'), how+evidencePanelHtml(d,acc)") < HTML.index("بيانات العقار الأساسية','Property basics'),_info);"))
+# b125 R6 (S4b redesign): the «كيف وصلنا» ACCORDION became a flat scroll-revealed SECTION (_s4bHow).
+# The 9-note parade still builds into `how`, which _s4bHow renders inside its «تفاصيل منهجيّة للمختصّ»
+# fold together with the full evidence panel — the b31 fold-the-notes intent is preserved (density-open
+# via the b34 `dense` arg). Re-anchor on the _s4bHow methodology-fold body (how + evidence panel).
+check('the `how` notes + full evidence panel fold into ONE «تفاصيل منهجيّة» fold (_s4bHow)',
+      'const mbody=how+evidencePanelHtml(d,acc);' in HTML
+      and "تفاصيل منهجيّة للمختصّ" in HTML)
+# b125 R6: «كيف وصلنا» (secHow) is assembled BEFORE secFull (which now holds basic-info) — the b31
+# «evidence-before-basic-info» order is preserved by the flat assembly.
+check('«كيف وصلنا» (secHow) precedes basic-info (now in secFull) in the flat assembly',
+      'secHow+secScn+secLim+secFull' in HTML
+      and "t('بيانات العقار الأساسية','Property basics')" in HTML)
 # the standalone «جودة الأدلّة (تفصيل)» accordion is GONE (folded into «كيف وصلنا»).
 check('standalone «جودة الأدلّة (تفصيل)» accordion REMOVED (folded)',
       "_acc('📊 جودة الأدلّة (تفصيل)',evidencePanelHtml(d,acc))" not in HTML)
@@ -41,15 +43,17 @@ check('note 1/9 value-floor → how', 'if(vf.land_floor_note_ar)how+=' in HTML a
 check('note 2/9 HBU → how', 'if(v.hbu_note_ar){how+=' in HTML)
 check('note 3/9 old-stock re-anchor → how', 'v.old_stock_reanchor.note_ar){how+=' in HTML)
 check('note 4/9 cost-triangulation → how', 'v.cost_triangulation.note_ar){how+=' in HTML)
-check('note 5/9 leadership → how', 'v.leadership.note_ar){how+=' in HTML)
+# b125 R6 (S4b): the leadership verdict note moved from the `how` fold into the VISIBLE _s4bHow narrative
+# (pick(v.leadership,'note') — the b19/b20-signed verdict, now MORE prominent, still disclosed verbatim).
+check('note 5/9 leadership verdict → visible _s4bHow narrative (pick)', "if(ld.note_ar)h+=" in HTML and "pick(v.leadership,'note')" in HTML)
 check('note 6/9 age-honesty → how', 'v.leadership.age_honesty_note_ar){how+=' in HTML)
 check('note 7/9 resurvey → how', 'v.leadership.resurvey_note_ar){how+=' in HTML)
-# R6/Lesson-2 re-point (b37/DEF-UX9): the cost-value line moved into a {const _vc=…; how+='…label_ar…'}
-# block (the cost-mechanics BUA/RCN/retention sibling was added beside it). The cost-value note still lives
-# in `how` (the «كيف وصلنا» accordion), not t1 — proven by the cost label_ar line appending to `how`.
-# b48 (de-emoji): the 🏗️ emoji became an inline-SVG icon (ic-tool); the behaviour (label_ar → how) is the
-# stable pin — re-anchored on the icon-close + `'+_vc.label_ar` fragment.
-check('note 8/9 cost-value-line → how', '</use></svg> \'+pick(_vc,\'label\')' in HTML and 'const _vc=v.value_stack.cost;' in HTML)
+# b125 R6 (S4b): the cost VALUE now leads the visible cost stack card in _s4bHow (fmt(cst.value), with the
+# `.lead` tag when leader==='cost'); the cost MECHANICS (BUA/RCN/retention) + assumptions still FOLD into
+# `how` (the «تفاصيل منهجيّة» fold). Both disclosures preserved — value visible, mechanics folded.
+check('note 8/9 cost mechanics still → how (fold); value leads the visible cost card',
+      "const _vc=v.value_stack.cost;" in HTML and "آليّة الكلفة (نهج DRC)" in HTML and "how+=" in HTML
+      and "if(cst.value!=null){" in HTML)
 check('note 9/9 market-dispersion → how', 'v.value_stack.market.dispersion_36!=null){how+=' in HTML)
 
 # ── 3. the 9 notes are GONE from t1 (no double-render) ──
@@ -75,8 +79,8 @@ check('core 2 — central-estimate hero (median=v.amount) leads on TIER-1',
 check('core 3 — «ليس تقييماً معتمداً» stays t1 (compliance)',
       'ليس تقييماً معتمداً' in HTML and "color:#8a6d3b;background:#fcf8e3" in HTML)
 check('core 4 — evidence ONE-ROW pill stays t1', 't1+=_evOneRow(d);' in HTML)
-# b48 (de-emoji): the 🔍 emoji became an inline-SVG icon; the accordion «button» summary text is unchanged.
-check('core 5 — the accordion «button» summary present', 'كيف وصلنا لهذا الرقم؟' in HTML)
+# b125 R6 (S4b): the accordion «button» summary became the flat _s4bHow section header.
+check('core 5 — the «كيف وصلنا» section header present', 'كيف وصلنا للرقم' in HTML)
 
 # ── 5. boundary: NOT in the named-9 → STAY on t1 (decision-relevant / conditional) ──
 check('condition note STAYS t1', 'if(v.condition_note_ar){t1+=' in HTML)
@@ -97,9 +101,10 @@ check('evidencePanelHtml still in showReport', '_axWrap(evidencePanelHtml(d,acc)
 
 # ── 7. VALUE-INVARIANCE — show() does NOT mutate v.amount/v.low/v.high (b24) ──
 check('no mutation of v.amount/v.low/v.high', not re.search(r'\bv\.(amount|low|high)\s*=[^=]', HTML))
-# Re-pointed for b52 (R6/Lesson-2): the result-screen lean folds the full MUC clause into a collapsed
-# accordion (_mucFold) placed before t2 — the chip + «ليس معتمداً» stay always-visible in t1.
-check('valued assembly (b52: MUC folds into _mucFold before t2)', 'h=head+alerts+t1+_mucFold+t2+t3+foot;' in HTML)
+# b125 R6 (S4b): the valued lower half was rebuilt from accordions into flat scroll-revealed sections;
+# the full MUC clause now folds inside the LIMITS section (secLim / _s4bLimits), not a separate _mucFold.
+check('valued assembly (b125 S4b flat sections)',
+      'h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;' in HTML)
 
 # ── 8. engine version (format only — R6 / Lesson-2: no exact pin) ──
 check('ENGINE_VERSION format (thammen-sprint…)', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)

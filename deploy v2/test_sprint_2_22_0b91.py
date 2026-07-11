@@ -73,7 +73,11 @@ check('de-emoji: proof surfaces use <use href=#ic-clipboard|#ic-chart>, no emoji
       '#ic-clipboard' in HTML and '#ic-chart' in HTML)
 
 # ── (7) VALUE-INVARIANCE: the helpers add no v.amount math; DEF-12 3 conventions untouched ──
-_help = HTML[HTML.find('function _repComparables(v){'):HTML.find('function showReport(d){')]
+# b125 R6: the S4b section builders (_s4bEvidence/_s4bViz/…) were inserted between _repTrend and
+# showReport; the b91 proof helpers end at the first S4b helper. The _s4bViz estimate-position bar
+# derives a DISPLAY ppm² (v.amount / area) — a broadcast-field ratio, NOT a value mutation — so it is
+# legitimately outside this slice. Narrow the slice to the b91 proof helpers as intended.
+_help = HTML[HTML.find('function _repComparables(v){'):HTML.find('function _s4bTrendSpark(d){')]
 check('the proof helpers introduce NO v.amount arithmetic (pure display of broadcast rows)',
       'v.amount' not in _help)
 _sr_muls = sorted(set(re.findall(r'v\.amount(?:\|\|0)?\)?\s*\*\s*[\d.]+', SR)))

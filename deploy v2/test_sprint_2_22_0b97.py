@@ -55,9 +55,11 @@ check('evaluate_property maps raw_land → the raw_land unknowns bucket',
       re.search(r"asset_type in \('RAW_LAND', 'raw_land'\)\s*:\s*\n\s*unknown_asset_type = 'raw_land'", EP) is not None)
 
 # ── 3. Result screen: refine CTA hidden for land ──
-cta_i = SHOW.index('حسّن التقييم — أضف تفاصيل مبناك')
+# b125 R6: the refine CTA moved into the S4b sticky action bar and shortened to «حسّن التقييم»; the
+# raw_land gate is unchanged (a vacant plot has no building fields to refine).
+cta_i = SHOW.index("t('حسّن التقييم','Refine')")
 cta_line = SHOW[SHOW.rfind('\n', 0, cta_i):cta_i]
-check('refine CTA («أضف تفاصيل مبناك») is gated behind d.asset_type!==raw_land',
+check('refine CTA («حسّن التقييم») is gated behind d.asset_type!==raw_land',
       "if(d.asset_type!=='raw_land')" in cta_line)
 
 # ── 4. Result screen: «يفترض بناءً نموذجياً» notice excludes land ──

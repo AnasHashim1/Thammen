@@ -32,9 +32,12 @@ for b in ['let head=', 'let alerts=', 'let muc=', 'let a8acc=', 'let t1=', 'let 
     check('buffer declared once: %s' % b, HTML.count(b) == 1)
 
 # ── TIER ordering (the assembly contract) ──
-# 5. valued assembly: alerts (qualifiers) → TIER-1 figure → folded MVU clause (_mucFold) → TIER-2 → TIER-3 → foot.
-# b52 re-point (R6/Lesson-2): the result-screen lean folds the full MVU clause behind its chip via _mucFold.
-check('valued assembly head+alerts+t1+_mucFold+t2+t3+foot (b52)', 'h=head+alerts+t1+_mucFold+t2+t3+foot;' in HTML)
+# 5. valued assembly.
+# b125 R6 (S4b): the valued lower half was rebuilt from accordions into flat scroll-revealed sections
+# (secEv/secHow/secScn/secLim/secFull); the assembly is now head+alerts+t1+…sections…+foot+t3 (t3 = the
+# sticky action bar). The full MVU clause folds inside the LIMITS section (_s4bLimits(d,muc)).
+check('valued assembly head+alerts+t1+flat-sections+foot+t3 (b125 S4b)',
+      'h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;' in HTML)
 # 6. refusal assembly preserves pre-b15 flat order (compliance still shown).
 check('refusal assembly head+muc+a8acc+alerts+flat+foot', 'h=head+muc+a8acc+alerts+flat+foot;' in HTML)
 
@@ -52,8 +55,10 @@ check('MUC chip in TIER-1 (t1+=… عدم اليقين الجوهري: +MUC_LEVE
 check('full MVU clause still built via _mucCardHtml (same red styling)',
       'muc+=_mucCardHtml(muc_ar,muc_basis,muc_review);' in HTML
       and 'background:var(--bad-bg);border:2px solid var(--bad)' in HTML)
-check('full MVU clause folds behind its chip via _mucFold (b52 lean)',
-      'h=head+alerts+t1+_mucFold+t2+t3+foot;' in HTML and '_mucFold = muc ?' in HTML)
+# b125 R6 (S4b): the full MVU clause now folds inside the LIMITS section (secLim = _s4bLimits(d,muc)),
+# not a standalone _mucFold. The chip + «ليس معتمداً» stay always-visible in TIER-1 (checks 7 + 9).
+check('full MVU clause folds inside the LIMITS section (_s4bLimits(d,muc))',
+      'secLim=_s4bLimits(d,muc);' in HTML and 'function _s4bLimits(d,muc){' in HTML)
 # 9. «ليس تقييماً معتمداً» line is in TIER-1 (always visible), a20 status appended when present.
 check('not-certified line in TIER-1', "t1+='<div class=\"rn\" style=\"margin-top:10px;font-size:.82rem;color:#8a6d3b;background:#fcf8e3" in HTML and 'ليس تقييماً معتمداً' in HTML)
 check('a20 rics_compliant_status appended to not-certified line', 'rics_compliant_status_ar' in HTML and '_statusAr' in HTML)
@@ -72,34 +77,52 @@ check('service-scope badge → alerts', "alerts+='<div style=\"background:'+scop
 # ── NO PANEL LOST (detail blocks accumulate, then wrap) ──
 # 13. the scratch `h` is collapsed into ONE TIER-2 «التفاصيل الكاملة» accordion (valued) / flat (refusal).
 # b48 re-point: the 🔎 emoji in the accordion title became an inline-SVG icon — pin the title text + wiring.
-check('detail scratch → TIER-2 accordion (valued)', "التفاصيل الكاملة (التحليل والمقارنات)', a8acc+h); }" in HTML and 'if(hasValuation){ t2+=_acc(' in HTML)
+# b125 R6 (S4b): the analytical scratch `h` + a8acc now live inside the FULL-DETAILS fold
+# (secFull, <details class="rs-full"> «التفاصيل الكاملة (التحليل والمقارنات)»), not a t2 accordion. Nothing lost.
+check('detail scratch → FULL-DETAILS fold (valued, secFull)',
+      "التفاصيل الكاملة (التحليل والمقارنات)" in HTML and '+a8acc+h' in HTML and 'details class="rs-full"' in HTML)
 check('detail scratch → flat (refusal)', 'else { flat+=h; }' in HTML)
 check('scratch consumed before assembly', "h='';  // scratch consumed" in HTML)
 # 14. basic-info → its own TIER-2 accordion. (b31/DEF-UX11 re-point: the full evidence panel is no
 #     longer a standalone «جودة الأدلّة (تفصيل)» accordion — it now folds INTO the «كيف وصلنا لهذا الرقم؟»
 #     accordion alongside the 9-note parade; assertion below + test_sprint_2_22_0b31.py own the new shape.)
 # b48 re-point: the 🏠 emoji became an inline-SVG icon — pin the title text + wiring.
-check('basic-info → TIER-2 accordion', " '+t('بيانات العقار الأساسية','Property basics'),_info);" in HTML and 't2+=_acc(' in HTML)
-# b48 re-point: the 🔍 emoji became an inline-SVG icon — pin the title text + the how+evidencePanel wiring.
-check('full evidence panel → «كيف وصلنا» accordion (b31 fold)', " '+t('كيف وصلنا لهذا الرقم؟','How we got to this number'), how+evidencePanelHtml(d,acc)" in HTML and 't2+=_acc(' in HTML)  # b34: 3rd open arg → drop trailing );
+# b125 R6 (S4b): basic-info (`_info`) now lives inside the FULL-DETAILS fold (secFull), not a t2 accordion.
+check('basic-info (_info) → FULL-DETAILS fold (secFull)',
+      "t('بيانات العقار الأساسية','Property basics')" in HTML and 'secFull=' in HTML and '+_info' in HTML)
+# b125 R6 (S4b): the full evidence panel now folds inside the _s4bHow «تفاصيل منهجيّة» fold (how + panel).
+check('full evidence panel → _s4bHow methodology fold (b31/b125)',
+      'const mbody=how+evidencePanelHtml(d,acc);' in HTML)
 # 15. brief sections: valued → accordion; refusal → flat (verbatim title card).
 # b48 re-point: the 📄 emoji became an inline-SVG icon — pin the title expression + wiring.
-check('brief sections → TIER-2 accordion (valued)', "'+(pick(br,'title')||t('تفاصيل التقرير','Report details')),_secs);" in HTML and 't2+=_acc(' in HTML)
+# b125 R6 (S4b): the brief sections (valued) now render inside the FULL-DETAILS fold (secFull) via
+# _briefSecs/_briefTitle, not a t2 accordion. The refusal path keeps them flat (check below).
+check('brief sections → FULL-DETAILS fold (valued, _briefSecs)',
+      "pick(br,'title')||t('تفاصيل التقرير','Report details')" in HTML and '_briefSecs=_secs;' in HTML and '+_briefSecs' in HTML)
 check('brief sections → flat (refusal verbatim)', "flat+='<div class=\"rc\" style=\"background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px\"><div class=\"rt\" style=\"font-size:1.15rem;margin-bottom:0\">'+(pick(br,'title')||t('التقرير','Report'))+'</div></div>';" in HTML)
 
 # ── TIER-3 actions ──
 # 16. TIER-3 refine + report CTAs (valued path).
 # b48 re-point: the ✏️ emoji became an inline-SVG icon — pin the t3-primary class + go('refine') + the CTA text.
-check('TIER-3 refine CTA → go(refine)', "t3+='<button class=\"t3btn t3-primary\" onclick=\"go(\\'refine\\')\">" in HTML and ' حسّن التقييم' in HTML)  # b54 R6: تقدير→تقييم (identity lock)
+# b125 R6 (S4b): TIER-3 CTAs moved into the STICKY action bar (.rs-bar). refine → go('refine'), gated off
+# for raw_land (b97). «حسّن التقييم» (b54 identity lock).
+check('TIER-3 refine CTA → sticky bar go(refine)',
+      't3+=\'<div class="rs-bar">' in HTML and "onclick=\"go(\\'refine\\')\"" in HTML and 'حسّن التقييم' in HTML)
 # b17 landed: the report CTA opened screen 5 (openReport); Sprint 2.22.0b.25 (م2/D6)
 # then made the SHORT report the first stop (full report one click away inside it) —
 # the b15 invariant is that the TIER-3 secondary CTA leads to a REPORT surface.
 # b48 re-point: the 📄 emoji became an inline-SVG icon — pin the t3-secondary class + openShortReport() + the CTA text.
-check('TIER-3 report CTA → report surface (b17→b25/D6 chain)', "t3+='<button class=\"t3btn t3-secondary\" onclick=\"openShortReport()\">" in HTML and ' التقرير المختصر' in HTML)
+# b125 R6 (S4b): the report CTAs live in the sticky bar — short report (openShortReport) + full report
+# (openReport, now one direct click; additive, nothing removed).
+check('TIER-3 report CTAs → sticky bar (short + full)',
+      'onclick="openShortReport()"' in HTML and 'التقرير المختصر' in HTML
+      and 'onclick="openReport()"' in HTML and 'التقرير الكامل' in HTML)
 
 # ── Print parity (F1) ──
 # 17. printReport force-opens the accordions before print + restores after.
-check('printReport force-opens accordions', "document.querySelectorAll('#rOut details.t2acc')" in HTML and '_accs.forEach(a=>{a.open=true;});' in HTML)
+# b125 R6 (S4b): printReport force-opens EVERY #rOut <details> (the flat folds are .rs-mfold/.rs-full/
+# .rs-lim now, not .t2acc) + a @media print rule forces the unrevealed .rv sections visible (F1 parity).
+check('printReport force-opens all result folds', "document.querySelectorAll('#rOut details')" in HTML and '_accs.forEach(a=>{a.open=true;});' in HTML)
 check('printReport restores prior open-state', '_accs.forEach((a,i)=>{a.open=_wasOpen[i];});' in HTML)
 
 # ── CSS for the new tier classes ──

@@ -50,8 +50,12 @@ check('NO «تحفظ مادي» / «التحفظ المادي» left in evaluate
       not re.search(r'تحفظ مادي|التحفظ المادي', EU))
 check('index.html MUC chip = «عدم اليقين الجوهري: »',
       "t('عدم اليقين الجوهري: ','Material uncertainty: ')" in HTML)
-check('index.html MUC fold title reframed (bilingual)',
-      "t('عدم اليقين الجوهري والمعايير (RICS / IVS)','Material uncertainty and the standards (RICS / IVS)')" in HTML)
+# b125 R6: the b52 «عدم اليقين الجوهري والمعايير» _mucFold accordion became the flat LIMITS section
+# (_s4bLimits, «حدود هذا التقدير»); the full MUC clause folds inside it and its RICS line uses the
+# b105 term «عدم اليقين الجوهريّ». Same term-lock (NOT «تحفظ مادي»), bilingual.
+check('index.html LIMITS section uses the «عدم اليقين الجوهريّ» term (bilingual)',
+      "t('عدم اليقين الجوهريّ وفق ','Material uncertainty per ')" in HTML
+      and "t('عدم اليقين الجوهري: ','Material uncertainty: ')" in HTML)
 check('the level lexicon (chip) intact: critical→حرج',
       "'critical':'حرج'" in HTML)
 

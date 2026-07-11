@@ -43,11 +43,11 @@ check('showConfirm() no longer calls evidencePanelHtml', 'evidencePanelHtml' not
 check('no pill substitute injected on confirm (study §3 «لا لوحة أدلّة»)', '_evOneRow' not in SHOWCONFIRM)
 # the panel function itself MUST survive — it is still used on the result + the report.
 check('evidencePanelHtml() function still defined', 'function evidencePanelHtml(d,acc){' in HTML)
-check('evidence panel still on the RESULT (b31 «كيف وصلنا» accordion)',
-      # b34 (DEF-UX12) added a 3rd `open` arg (role density) — match without the trailing `);`
-      # b48 (de-emoji) turned the 🔍 prefix into an inline-SVG icon — pin the stable
-      # accordion title + the nested evidence panel, NOT the volatile emoji.
-      "كيف وصلنا لهذا الرقم؟','How we got to this number'), how+evidencePanelHtml(d,acc)" in HTML)
+# b125 R6 (S4b): the result-screen «كيف وصلنا» ACCORDION became the flat _s4bHow section; the evidence
+# panel still renders on the RESULT — inside _s4bHow's «تفاصيل منهجيّة» fold (how + evidence panel). The
+# b32 point (panel DROPPED from the CONFIRM gate, KEPT on the result) is preserved.
+check('evidence panel still on the RESULT (_s4bHow methodology fold)',
+      'const mbody=how+evidencePanelHtml(d,acc);' in HTML)
 check('evidence panel still in the full REPORT (numbered annex)',
       '_axWrap(evidencePanelHtml(d,acc))' in HTML)
 
