@@ -92,7 +92,7 @@ ck('showConfirm / confirmScreen kept in source but dormant (content tests stay g
    'function showConfirm(d){' in H and 'id="confirmScreen"' in H)
 
 # ── (9) version ──
-ck('ENGINE_VERSION bumped to b127', "thammen-sprint2p22p0b127" in ENG and "'2.22.0b.127'" in ENG)
+ck('ENGINE_VERSION is a b-series tag (R6/Lesson-2: version-agnostic since b128)', bool(re.search(r"ENGINE_VERSION\s*=\s*'thammen-sprint2p22p0b\d+", ENG)) and bool(re.search(r"SPRINT_TAG\s*=\s*'2\.22\.0b\.\d+'", ENG)))
 
 print(f'\nb127 (reveal moment): {_p} passed, {_f} failed')
 sys.exit(1 if _f else 0)

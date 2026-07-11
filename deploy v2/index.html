@@ -620,6 +620,18 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .tmodal-body .tm-contact{background:var(--alt);border-radius:8px;padding:10px 12px;font-weight:500}
 .tmodal-body .en{direction:ltr;text-align:left;color:var(--muted);font-size:.82rem;line-height:1.7;margin-top:20px;border-top:1px dashed var(--border);padding-top:14px}
 .tmodal-body .en h4{color:var(--primary);font-size:.9rem;margin:12px 0 4px}
+/* Sprint 2.22.0b.128 (S8ب, redesign v2) — consolidated «الشروط والمنهجيّة» accordion (the lean-report destination) */
+#termsModal .tm-sub{font-size:.78rem;color:var(--text2);margin:-6px 0 14px}
+#termsModal .tm-pinned{background:var(--alt);border:1px solid var(--border);border-radius:11px;padding:14px 16px;font-size:.8rem;line-height:1.9;color:var(--text2);margin-bottom:14px}
+#termsModal details.tm-acc{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface);margin-bottom:10px}
+#termsModal details.tm-acc>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:600;font-size:.92rem;color:var(--primary)}
+#termsModal details.tm-acc>summary::-webkit-details-marker{display:none}
+#termsModal details.tm-acc>summary::after{content:"+";color:var(--bronze);font-size:20px;line-height:1;flex-shrink:0}
+#termsModal details.tm-acc[open]>summary::after{content:"\2212"}
+#termsModal .tm-acc-body{padding:0 16px 16px;font-size:.85rem;line-height:1.9;color:var(--text2)}
+#termsModal .tm-astbl{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:10px}
+#termsModal .tm-astbl .r{display:flex;justify-content:space-between;gap:12px;padding:9px 13px;font-size:.8rem;border-top:1px solid var(--border);color:var(--text2)}
+#termsModal .tm-astbl .r:first-child{border-top:none;background:var(--alt);color:var(--primary)}
 /* Sprint 2.22.0a.25 — MoJ source attribution credit (CC BY 4.0 / Q13) */
 .src-credit{margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:.72rem;line-height:1.75;color:var(--muted);text-align:right;direction:rtl}
 .src-credit a{color:var(--muted);text-decoration:underline}
@@ -4360,13 +4372,38 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
 
 <!-- ── Sprint 2.22.0a.24 — Terms of Use & Privacy Notice (free service). Reachable from the
      entry gate + home + results footer. Frontend-only; no server route, stores nothing. ── -->
-<div id="termsModal" role="dialog" aria-modal="true" aria-label="شروط الاستخدام وإشعار الخصوصية" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2100;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeTerms()">
+<div id="termsModal" role="dialog" aria-modal="true" aria-label="الشروط والمنهجيّة وإشعار الخصوصية" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2100;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeTerms()">
   <div style="background:#fff;max-width:720px;max-height:88vh;overflow-y:auto;border-radius:12px;padding:28px;direction:rtl">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--alt);padding-bottom:12px">
-      <h2 style="margin:0;color:var(--primary);font-size:1.1rem">ثمّن — شروط الاستخدام وإشعار الخصوصية</h2>
+      <h2 style="margin:0;color:var(--primary);font-size:1.1rem" data-en="Thammen — Terms &amp; Methodology">ثمّن — الشروط والمنهجيّة</h2>
       <button onclick="closeTerms()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted)">×</button>
     </div>
     <div class="tmodal-body">
+      <div class="tm-sub" data-en="Everything about the estimate's limits, sources, and how it is computed — in one place.">حدود التقدير ومصادره وطريقة حسابه — في مكانٍ واحد.</div>
+      <div class="tm-pinned" data-en="This is an automated informational analysis to support your decision — not an official valuation, nor a report issued by a licensed valuer under RICS/IVS standards, and not valid for official purposes (loans, courts, accounting reports), nor a fair-value measurement under IFRS 13. Decisions made based on it are the sole responsibility of the decision-maker. Data source: Ministry of Justice (State of Qatar) sale bulletins via Qatar Open Data under CC BY 4.0; Thammen is an independent service, not affiliated with the Ministry of Justice.">هذا تحليلٌ معلوماتيٌّ آليٌّ لدعم القرار، وليس تقييماً رسمياً ولا تقريراً صادراً عن مُقيِّمٍ مرخَّصٍ وفق معايير &lrm;RICS/IVS&lrm;، ولا يصلح للأغراض الرسميّة (قروض، محاكم، تقارير محاسبيّة)، وليس قياساً للقيمة العادلة بموجب &lrm;IFRS 13&lrm;. القرارات المتَّخذة بناءً عليه على مسؤوليّة متّخذها. مصدر البيانات: نشرات بيع وزارة العدل (دولة قطر) عبر بوابة قطر للبيانات المفتوحة بموجب &lrm;CC BY 4.0&lrm;؛ وثمّن خدمةٌ مستقلّةٌ غير منتسبةٍ لوزارة العدل.</div>
+      <details class="tm-acc" open><summary><span data-en="How do we compute the value? (Methodology)">كيف نحسب القيمة؟ (المنهجيّة)</span></summary>
+        <div class="tm-acc-body" data-en="The basis is the &lt;b&gt;sales comparison approach&lt;/b&gt; (RICS VPS 3 / IVS 103): the median of registered Ministry of Justice transactions for properties matching in type, area, and age within the district. We corroborate it with the cost approach (DRC) and the income approach. When matched transactions are few, the cost approach leads — and this is stated on the card.">الأساس <b>منهج المقارنة بالمبيعات</b> (&lrm;RICS VPS 3 / IVS 103&lrm;): وسيط صفقات وزارة العدل المسجّلة لعقاراتٍ مطابقةٍ في النوع والمساحة والعمر ضمن المنطقة. ونؤكّده بمنهج التكلفة (&lrm;DRC&lrm;) ومنهج الدخل. وحين تقلّ الصفقات المطابقة يقود منهجُ التكلفة، ويُصرَّح بذلك على البطاقة.</div>
+      </details>
+      <details class="tm-acc"><summary><span data-en="Basis of value (IVS definition)">أساس القيمة (تعريف IVS)</span></summary>
+        <div class="tm-acc-body" data-en="&lt;b&gt;Market Value&lt;/b&gt; (RICS VPS 2 / IVS 102): the estimated amount for which the property should exchange on the valuation date between a willing buyer and a willing seller in an arm's-length transaction, after proper marketing, where each party acts knowledgeably, prudently, and without compulsion."><b>القيمة السوقيّة</b> (&lrm;RICS VPS 2 / IVS 102&lrm;): المبلغ المُقدَّر لتبادُل العقار في تاريخ التقييم بين بائعٍ وشارٍ راغبَين، في معاملةٍ محايدةٍ بعد تسويقٍ مناسب، يتصرّف فيها كلٌّ بمعرفةٍ وحصافةٍ ودون إكراه.</div>
+      </details>
+      <details class="tm-acc"><summary><span data-en="Cost mechanism &amp; assumptions register">آليّة الكلفة وسجلّ الافتراضات</span></summary>
+        <div class="tm-acc-body">
+          <p style="margin:0 0 10px" data-en="Cost value = built-up area × replacement cost per metre × the building's remaining-value ratio (after depreciation) + land value.">قيمة الكلفة = المساحة المبنيّة × كلفة الإحلال للمتر × نسبة القيمة المتبقية للبناء (بعد الإهلاك) + قيمة الأرض.</p>
+          <div class="tm-astbl">
+            <div class="r"><span data-en="Assumed built ratio">نسبة البناء المفترضة</span><b dir="ltr">0.77</b></div>
+            <div class="r"><span data-en="Depreciation curve">منحنى الإهلاك</span><span data-en="by actual / estimated age">حسب العمر الفعليّ/التقديريّ</span></div>
+            <div class="r"><span data-en="Age basis">أساس العمر</span><span data-en="GIS survey (a floor)">مسح GIS (حدٌّ أدنى)</span></div>
+            <div class="r"><span data-en="Calibration">المعايرة</span><span data-en="one certified valuation (V001)">تقييم معتمد واحد (&lrm;V001&lrm;)</span></div>
+          </div>
+          <p style="margin:10px 0 0;font-size:.75rem;color:var(--muted)" data-en="Per RICS VPS 2 / IVS 102. Price tiers are classified &lt;b&gt;inferred from the registered price, not inspected&lt;/b&gt; for finish.">وفق &lrm;RICS VPS 2 / IVS 102&lrm;. والشرائح السعريّة تُصنَّف <b>استدلالاً بالسعر المسجَّل لا معاينةً</b> للتشطيب.</p>
+        </div>
+      </details>
+      <details class="tm-acc"><summary><span data-en="Estimate limits &amp; data source">حدود التقدير ومصدر البيانات</span></summary>
+        <div class="tm-acc-body" data-en="A desktop valuation without a field inspection (RICS VPGA 10 / IVS 106). We do not time-adjust older transactions onto the median. Evidence hierarchy, strongest to weakest: direct match, then bracket, then geographic pool, then cost. For transactions &lt;b&gt;above 5 million QAR&lt;/b&gt; we recommend engaging a certified valuer. Source: Ministry of Justice via Qatar Open Data (CC BY 4.0).">تقييمٌ مكتبيٌّ دون فحصٍ ميدانيّ (&lrm;RICS VPGA 10 / IVS 106&lrm;). ولا نُسوّي الصفقات القديمة زمنيّاً على الوسيط. وهرميّة الأدلّة من الأقوى إلى الأضعف: مطابقةٌ مباشرة، ثمّ شريحة، ثمّ حوضٌ جغرافيّ، ثمّ تكلفة. وللمعاملات <b>فوق ٥ مليون ريال</b> ننصح بالاستعانة بمثمّنٍ معتمد. المصدر: وزارة العدل عبر بوابة قطر للبيانات المفتوحة (&lrm;CC BY 4.0&lrm;).</div>
+      </details>
+      <details class="tm-acc"><summary><span data-en="Full Terms &amp; Privacy Notice">الشروط الكاملة وإشعار الخصوصية</span></summary>
+      <div class="tm-acc-body">
       <div style="color:var(--bronze);font-weight:500;margin-bottom:10px">الخدمة المجانية</div>
       <h3>1) الموافقة على الاستخدام</h3>
       <p>هذه خدمة مجانية. باستخدامك للأداة تُقرّ بفهمك لما ورد أدناه وتوافق طوعاً على الاستخدام. الاستخدام اختياري ويمكنك التوقف في أي وقت.</p>
@@ -4409,6 +4446,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
         <h4>7) Contact / data controller</h4>
         <p>Thammen team — info@thammen.qa</p>
       </div>
+      </div></details>
     </div>
   </div>
 </div>

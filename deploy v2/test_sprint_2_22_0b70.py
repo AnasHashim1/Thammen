@@ -55,7 +55,7 @@ check('scopeModal aria-label present', 'aria-label="نطاق خدمة ثمّن"'
 tm = _open_tag('termsModal')
 check('termsModal role=dialog', 'role="dialog"' in tm)
 check('termsModal aria-modal=true', 'aria-modal="true"' in tm)
-check('termsModal aria-label present', 'aria-label="شروط الاستخدام وإشعار الخصوصية"' in tm)
+check('termsModal aria-label present', 'aria-label="الشروط والمنهجيّة وإشعار الخصوصية"' in tm)  # b128 R6/Lesson-2: modal now covers Terms + methodology; aria-label present (a11y intent preserved)
 
 # ── 3. Escape handler closes the two dismissable modals ──
 # locate the b70 keydown listener block, bounded to ITS OWN closing }); (so the window
