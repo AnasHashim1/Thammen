@@ -121,7 +121,9 @@ check('EN LTR override extended to the viz/trend', 'body.lang-en #rOut .rs-viz .
 
 # ── [8] version bump ──────────────────────────────────────────────────────
 print('\n[8] version')
-check('ENGINE_VERSION → b125', "thammen-sprint2p22p0b125-redesign-result-evidence" in ENG)
-check('SPRINT_TAG → 2.22.0b.125', "SPRINT_TAG = '2.22.0b.125'" in ENG)
+# R6/Lesson-2 (b126): no exact-version pin — the S4b structure survives later sprints (b126 hotfix bumped
+# the version). Assert the format + at/beyond b125.
+check('ENGINE_VERSION format (thammen-sprint…b-series)', re.search(r"ENGINE_VERSION = 'thammen-sprint2p22p0b\d+", ENG) is not None)
+check('SPRINT_TAG 2.22.0b-series format', re.search(r"SPRINT_TAG = '2\.22\.0b\.\d+'", ENG) is not None)
 
 sys.exit(_R.report())

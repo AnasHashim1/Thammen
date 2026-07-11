@@ -503,7 +503,7 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   /* b125 (S4b) — result-screen print parity (F1): the reveal-on-scroll sections that were never
      scrolled into view stay .rv (opacity:0); force every .rv visible for print, and drop the
      sticky action bar. printReport() also force-opens every #rOut <details> before window.print(). */
-  body.printing .rv { opacity: 1 !important; transform: none !important; }
+  body.printing .rs-sec.rv { opacity: 1 !important; transform: none !important; }
   body.printing .rs-bar { display: none !important; }
   body.printing .rs-sec { page-break-inside: avoid; }
   /* Hide everything not part of the report */
@@ -678,10 +678,15 @@ body.lang-en #homeScreen.home{text-align:left}
   .lp-reveal.lp-in{opacity:1;transform:none;transition:opacity .8s cubic-bezier(.22,.61,.36,1),transform .8s cubic-bezier(.22,.61,.36,1)}
 }
 /* b120 (S0, redesign v2) — the shared reveal-on-scroll primitive (JS: _revealOnScroll adds .rv-in).
-   Under reduced-motion the base .rv is NOT hidden (JS adds .rv-in immediately) — no motion, no flash. */
+   Under reduced-motion the base .rs-sec.rv is NOT hidden (JS adds .rv-in immediately) — no motion, no flash.
+   b126 HOTFIX: the primitive was a BARE `.rv`, which collided with the long-standing INFO-ROW VALUE class
+   `.ri .rv` / `.calc-block .rv` / `.rv hl` (ri() renders the value into `<div class="rv">`) — every info-row
+   VALUE was `opacity:0` (invisible) on the confirm screen + the result «التفاصيل الكاملة» fold. The ONLY
+   reveal target is `.rs-sec.rv` (the single `_revealOnScroll('#rOut .rs-sec.rv')` caller), so scope the
+   primitive to `.rs-sec.rv` — the values are never hidden, the section reveal is unchanged. */
 @media(prefers-reduced-motion:no-preference){
-  .rv{opacity:0;transform:translateY(18px)}
-  .rv.rv-in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1)}
+  .rs-sec.rv{opacity:0;transform:translateY(18px)}
+  .rs-sec.rv.rv-in{opacity:1;transform:none;transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1)}
 }
 /* ── Sprint 2.22.0b.125 (S4b, redesign v2) — result-screen EVIDENCE sections: the lower half of
    the result rebuilds from accordions → flat scroll-revealed sections (the design handoff).
@@ -3104,13 +3109,22 @@ function _countUp(el,target,dur){
 function _revealOnScroll(sel){
   try{
     const els=[].slice.call(document.querySelectorAll(sel)); if(!els.length)return;
+    const show=el=>el.classList.add('rv-in');
     if(!('IntersectionObserver' in window)||(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
-      els.forEach(el=>el.classList.add('rv-in')); return;
+      els.forEach(show); return;
     }
+    // b126: reveal anything already in view IMMEDIATELY (don't wait on the async observer callback), then
+    // observe the rest for scroll-reveal.
+    const vh=window.innerHeight||document.documentElement.clientHeight||844;
+    const pending=els.filter(el=>{ if((el.getBoundingClientRect().top)<vh*0.95){ show(el); return false; } return true; });
     const io=new IntersectionObserver((ents)=>{
-      ents.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('rv-in'); io.unobserve(en.target); } });
-    },{threshold:0.12});
-    els.forEach(el=>io.observe(el));
+      ents.forEach(en=>{ if(en.isIntersecting){ show(en.target); io.unobserve(en.target); } });
+    },{threshold:0.01,rootMargin:'0px 0px -8% 0px'});
+    pending.forEach(el=>io.observe(el));
+    // b126 SAFETY NET — never leave content permanently hidden if the observer never fires (odd viewport,
+    // non-window scroll container, headless, some in-app browsers): reveal any still-hidden element after a
+    // short grace period. Presentation-only; content visibility is never gated solely on the observer.
+    setTimeout(()=>{ els.forEach(el=>{ if(!el.classList.contains('rv-in')) show(el); }); }, 1600);
   }catch(e){ try{ document.querySelectorAll(sel).forEach(el=>el.classList.add('rv-in')); }catch(_){} }
 }
 // _srCountUp — the b25 short-report hero count-up, now a thin wrapper over _countUp (DRY).

@@ -53,10 +53,16 @@ check('_countUp honours reduced-motion (snaps to final)',
       "(prefers-reduced-motion: reduce)').matches){el.textContent=final;return;}" in H)
 check('_countUp uses easeOutCubic', 'e=1-Math.pow(1-p,3)' in H)
 check('_revealOnScroll(sel) defined w/ IntersectionObserver', 'function _revealOnScroll(sel)' in H and 'new IntersectionObserver' in H)
+# b126 R6/Lesson-2: _revealOnScroll gained a `const show=el=>el.classList.add('rv-in')` helper + a
+# defensive in-view-immediate + safety-net path; the reduced-motion branch still reveals ALL at once with
+# no observer (`els.forEach(show); return;`). Behaviour preserved; re-anchor off the literal.
 check('_revealOnScroll reduced-motion → reveal all, no observer',
-      "els.forEach(el=>el.classList.add('rv-in')); return;" in H)
-check('.rv / .rv-in CSS present + reduced-motion-guarded',
-      '.rv{opacity:0' in H and '.rv.rv-in{opacity:1' in H)
+      "els.forEach(show); return;" in H and "const show=el=>el.classList.add('rv-in');" in H)
+# b126 R6: the reveal primitive was SCOPED from a bare `.rv` (which collided with the info-row VALUE class
+# `.ri .rv`, hiding real content) to `.rs-sec.rv`; still reduced-motion-guarded.
+check('reveal CSS scoped to .rs-sec.rv + reduced-motion-guarded',
+      '.rs-sec.rv{opacity:0' in H and '.rs-sec.rv.rv-in{opacity:1' in H
+      and '@media(prefers-reduced-motion:no-preference)' in H)
 # ── 6. _srCountUp is now a THIN WRAPPER (DRY) — behaviour preserved ──
 _sr = H[H.index('function _srCountUp()'):H.index('function _srCountUp()') + 220]
 check('_srCountUp delegates to _countUp (DRY)', '_countUp(el,parseFloat(el.getAttribute(\'data-countup\')),800)' in _sr)
