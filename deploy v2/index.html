@@ -502,6 +502,15 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .thmr-chip .cedit{color:var(--thmr-bronze);opacity:.8}
 .thmr-legalz{display:flex;align-items:flex-start;gap:8px;font-size:.74rem;color:var(--thmr-ink2);line-height:1.85;background:var(--thmr-wash);border:1px solid var(--thmr-line);border-radius:10px;padding:9px 12px;margin:0 0 12px}
 .thmr-legalz .ic{flex:0 0 auto;color:var(--warn);margin-top:2px;width:1em;height:1em}
+/* Sprint 2.22.0b.129 (S7, redesign v2) — the LEAN short report. The full legal block prints only
+   (.legalfull); on screen a compact line + a «الشروط الكاملة ›» link routes to the b128 consolidated
+   «الشروط والمنهجيّة» screen. .sr-screenonly hides on the short-report print path (its counterpart in
+   .legalfull carries the full text into the PDF). thmr-basis = the compact IVS basis-of-value line,
+   relocated adjacent to the number (guard 1). VALUE-NEUTRAL. */
+.legalfull{display:none}
+.sr-terms{color:var(--thmr-bronze);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.thmr-basis{font-size:.74rem;color:var(--thmr-ink2);line-height:1.9;margin:0 0 10px;padding:8px 12px;background:var(--thmr-wash);border:1px solid var(--thmr-line);border-radius:10px}
+.thmr-basis b{color:var(--thmr-navy)}
 /* b94: the accuracy-upgrade block (unknown specs moved off the face) */
 .thmr-upg{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--thmr-ink2);line-height:1.8;background:#FBF6EC;border:1px solid #EADFC8;border-radius:10px;padding:9px 12px;margin:0 0 12px}
 .thmr-upg .ic{flex:0 0 auto;color:var(--thmr-bronze);width:1em;height:1em}
@@ -547,7 +556,11 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
   body.printing-short .tbar, body.printing-short .bbtn, body.printing-short .thmr-btns { display: none !important; }
   body.printing-short .thmr-page { border: none !important; box-shadow: none !important; border-radius: 0 !important; page-break-after: always; }
   body.printing-short .thmr-page:last-child { page-break-after: auto; }
-  .thmr-card, .thmr-hero, .thmr-legal, .thmr-fpline { page-break-inside: avoid; }
+  /* Sprint 2.22.0b.129 (S7): the full legal block is print-only on the short report (guard 2 — the
+     printed PDF contract); the on-screen compact line + terms link drop out of the PDF. */
+  body.printing-short .legalfull { display: block !important; }
+  body.printing-short .sr-screenonly { display: none !important; }
+  .thmr-card, .thmr-hero, .thmr-legal, .thmr-fpline, .legalfull { page-break-inside: avoid; }
   .rep-def12, .rep-cover, .rep-foot, .rep-qrwrap, .rep-comp { page-break-inside: avoid; }
   .rep-cl { page-break-inside: avoid; }
   /* b125 (S4b) — result-screen print parity (F1): the reveal-on-scroll sections that were never
@@ -3000,6 +3013,17 @@ function showShortReport(d){
   }
   h+='<div style="color:#9FB0C0;font-size:.72rem;margin-top:6px">'+t('تاريخ التقييم: ','Valuation date: ')+'<span dir="ltr">'+today+'</span></div>';
   h+='</div>';
+  // ════ Sprint 2.22.0b.129 (S7, redesign v2) — «التقرير المختصر» LEAN: the owner story stays visible;
+  // the methodology/assumptions/cost-mechanism/hierarchy/full-terms move to the b128 consolidated
+  // «الشروط والمنهجيّة» screen (a link routes there). The 3 guards do NOT migrate — they stay here:
+  //   (1) basis of value (IVS 102) adjacent to the number, (2) the full legal block in the printed PDF
+  //   (.legalfull), (3) the «>5M → licensed valuer» note near the number. VALUE-NEUTRAL: presentation
+  //   only; amount/low/high/method/rule untouched. Verified on the 5 fixtures (R-B). ════
+  // GUARD 1 (basis of value, RICS VPS 2 / IVS 102) — relocated ADJACENT to the number (was §٩); the
+  // cover that stops the figure being read as a final price. Leader-agnostic (true for market/cost/income/land).
+  h+='<div class="thmr-basis"><b>'+t('أساس القيمة: ','Basis of value: ')+'</b>'+t('القيمة السوقية (&lrm;RICS VPS 2 / IVS 102&lrm;) — قيمة تبادُل العقار بين بائعٍ وشارٍ راغبَين، بعد تسويقٍ مناسب ودون إكراه.','Market Value (&lrm;RICS VPS 2 / IVS 102&lrm;) — the exchange value between a willing buyer and a willing seller, after proper marketing and without compulsion.')+'</div>';
+  // GUARD 3 (>5M → licensed valuer) — conditional adjacent note (ANSWERS Q1: amount > 5,000,000; shows on land 7.1M / villas > 5M, not the 2.4M/2.8M cases).
+  if(v.amount>5000000)h+='<div class="thmr-legalz"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg><span>'+t('للمعاملات فوق ٥ مليون ريال ننصح بالاستعانة بمثمّنٍ معتمد.','For transactions above QAR 5 million we recommend engaging a certified valuer.')+'</span></div>';
   // ── confidence pill (E4 ladder) ──
   h+='<div class="thmr-conf '+_cCls+'"><svg class=ic aria-hidden=true><use href=#ic-'+(_cCls==='g'?'check':_cCls==='r'?'alert':'chart')+'></use></svg><span>'+_cTxt+(_cSub?' <span class="cnote">— '+_cSub+'</span>':'')+'</span></div>';
   // ── the 5 property chips ──
@@ -3011,7 +3035,7 @@ function showShortReport(d){
   // bases of value + HBU; comparability itself rests on VPS 3 / IVS 103 + IVS 104 data selection).
   if(_isLand&&_area&&_area>=900)h+='<div class="thmr-sub" style="background:#F1F5FA;border-color:#D3E0EE;color:#3C566E"><svg class=ic aria-hidden=true style="color:#5B7CA0"><use href=#ic-file></use></svg><span>'+t('القيمة على أساس الاستخدام السكنيّ للأرض. إن سمح تنظيم القطعة ببناء عمارات وكان ذلك هو الاستخدام الأعلى، فقد تكون قيمتها التطويريّة أعلى — تحقّق من التصنيف.','This value is on a residential-use basis. If the plot\'s zoning permits apartment development and that is the highest-and-best-use, its development value may be higher — verify the zoning.')+'</span></div>';
   // ── compressed legal line (counsel-safe; the FULL block stays in §٩ page-2) ──
-  h+='<div class="thmr-legalz"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg><span>'+t('مؤشّر سعريّ استرشاديّ مبنيّ على صفقات وزارة العدل العلنية — ليس تقييماً عقارياً معتمداً ولا حجّة رسمية.','An indicative price signal based on public Ministry of Justice transactions — not a certified real-estate valuation, nor official evidence.')+'</span></div>';
+  h+='<div class="thmr-legalz"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg><span>'+t('مؤشّر سعريّ استرشاديّ مبنيّ على صفقات وزارة العدل العلنية — ليس تقييماً عقارياً معتمداً ولا حجّة رسمية.','An indicative price signal based on public Ministry of Justice transactions — not a certified real-estate valuation, nor official evidence.')+' <a class="sr-terms sr-screenonly" onclick="openTerms()">'+t('الشروط الكاملة ›','Full terms ›')+'</a></span></div>';  // b129: link → the b128 consolidated «الشروط والمنهجيّة» screen
   // ── b94: the accuracy-upgrade block (Gemini r7 #2) — honest framing: these specs were
   // NOT included in the automated figure; the CTA opens the EXISTING refine screen. ──
   if(_srMiss.length){
@@ -3164,10 +3188,14 @@ function showShortReport(d){
   h+='</div>';
   // §٩ — الإطار القانوني والمحاسبي (the PDF FULL legal block + the tamper line).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('٩','9')+'</span>'+t('الإطار القانوني والمحاسبي','Legal and accounting framework')+'</div>';
-  // Sprint 2.22.0b.106 (S1 R-1, compact) — the basis of value stated on the short report too (RICS VPS 2 / IVS 102).
-  h+='<div class="thmr-micro" style="margin-top:0;margin-bottom:6px"><b>'+t('أساس القيمة: ','Basis of value: ')+'</b>'+t('القيمة السوقية (&lrm;RICS VPS 2 / IVS 102&lrm;) — قيمة تبادُل العقار بين بائعٍ وشارٍ راغبَين، بعد تسويقٍ مناسب ودون إكراه.','Market Value (&lrm;RICS VPS 2 / IVS 102&lrm;) — the exchange value between a willing buyer and a willing seller, after proper marketing and without compulsion.')+'</div>';
+  // b129 (S7): the basis-of-value line moved ADJACENT to the number (guard 1, up in the hero, RICS VPS 2 /
+  // IVS 102). On screen here: a compact line + the «الشروط والمنهجيّة الكاملة ›» link → the b128 consolidated
+  // screen. The FULL legal block prints only (.legalfull, guard 2) — the verbatim text stays in the DOM for
+  // the printed PDF; nothing is deleted.
+  h+='<div class="thmr-micro sr-screenonly" style="margin-top:0;margin-bottom:6px">'+t('تقديرٌ استرشاديّ لدعم القرار — ليس تقييماً عقارياً معتمداً ولا يصلح للأغراض الرسميّة (قروض، محاكم، تقارير محاسبيّة — &lrm;IFRS 13&lrm;). ','An indicative estimate to support your decision — not a certified real-estate valuation, and not valid for official purposes (loans, courts, accounting reports — &lrm;IFRS 13&lrm;). ')+'<a class="sr-terms" onclick="openTerms()">'+t('الشروط والمنهجيّة الكاملة ›','Full Terms &amp; Methodology ›')+'</a></div>';
+  h+='<div class="legalfull">';
   h+='<div class="thmr-legal" style="margin-top:0">'+t('هذا <b>تقدير آلي استرشادي</b> صادر بتاريخه وفق البيانات المتاحة حينه، و<b>ليس تقييماً عقارياً معتمداً</b> وفق التنظيم القطري لمزاولة التقييم. لا يصلح حجةً قضائية أو مصرفية، ولا لأغراض التقارير المالية (','This is an <b>automated indicative estimate</b> issued on its date, based on the data available at the time, and is <b>not a certified real-estate valuation</b> under Qatari regulation of the valuation profession. It is not valid as judicial or banking evidence, nor for financial-reporting purposes (')+'<span dir="ltr">IFRS 13</span>'+t(')، ولا لقسمة التركات دون تراضي الأطراف، <b>ولا ينشئ أي التزام أو مسؤولية على المنصة</b>. ما ورد في «الخلاصة العملية» إرشادٌ تفاوضي عام لا توصية فردية — والقرار وتبعته لصاحبه. للقرارات الرسمية: معاينة ميدانية ومقيّم مرخّص.','), nor for dividing an estate without the agreement of the parties, <b>and creates no obligation or liability on the platform</b>. What appears under “The practical takeaway” is general negotiation guidance, not individual advice — the decision and its consequences rest with the owner. For official decisions: a field inspection and a licensed valuer.')+'</div>';
-  h+='<div class="thmr-micro" style="margin-top:8px">'+t('أي نسخة من هذا الملف بمرجعٍ أو بصمةٍ مختلفَين ليست النسخة الصادرة بهذا التاريخ.','Any copy of this file carrying a different reference or fingerprint is not the version issued on this date.')+'</div></div>';
+  h+='<div class="thmr-micro" style="margin-top:8px">'+t('أي نسخة من هذا الملف بمرجعٍ أو بصمةٍ مختلفَين ليست النسخة الصادرة بهذا التاريخ.','Any copy of this file carrying a different reference or fingerprint is not the version issued on this date.')+'</div></div></div>';  // b129: close .legalfull (print-only) + .thmr-card
   h+='<div class="thmr-fpline">'+(vUrl?'<span class="thmr-qr" id="srQr2"></span>':'')
     +'<span>'+t('تحقق من سلامة هذا التقرير: ','Verify the integrity of this report: ')+(vUrl?('<a href="'+vUrl+'" target="_blank" rel="noopener" style="color:var(--thmr-bronze)">thammen.qa/verify</a>'):'<span>'+t('التحقّق غير مُفعَّل','Verification not enabled')+'</span>')+(d.report_fp?(t(' · البصمة ',' · Fingerprint ')+'<span class="fp" dir="ltr">'+d.report_fp+'</span>'):'')+(d.report_ref?(t(' · المرجع ',' · Reference ')+'<span dir="ltr">'+d.report_ref+'</span>'):'')+'</span></div>';
   h+='</details>';  // b103: close the srFold2 specialist-appendix fold (§٦–٩ + the QR line all inside)

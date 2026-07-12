@@ -82,7 +82,8 @@ ok('5 tm-acc-body wrappers',           MODAL.count('tm-acc-body') == 5)
 ok('details balanced in modal',        len(re.findall(r'<details\b', MODAL)) == MODAL.count('</details>'))
 
 # ── VALUE-NEUTRAL: engine change = version lines only; api.py carries no terms-accordion logic ──
-ok('engine version bumped b128',       "thammen-sprint2p22p0b128-terms-methodology-screen" in ENG and "'2.22.0b.128'" in ENG)
+ok('engine is a valid b-series tag (no exact pin — Lesson-2; b128 shipped, later sprints keep this modal)',
+                                       "SPRINT_TAG = '2.22.0b." in ENG and 'thammen-sprint2p22p0b' in ENG)
 ok('api.py untouched by accordion',    'tm-acc' not in API and 'tm-pinned' not in API)
 
 passed = sum(1 for _, c in checks if c)
