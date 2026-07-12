@@ -40,8 +40,10 @@ check('tiers CSS block present', '.thmr-tiers .tmk .tchip' in HTML and '.thmr-ti
 # ── (b) honesty (#54 adjudications) ──
 check('HONEST legend: floor = the DRC cost anchor, ceiling = the market median',
       "t('الأرضية = مرتكز الكلفة (أرض + قيمة البناء بعد الإهلاك) · السقف = وسيط صفقات السوق'" in SR)
-check('legend gated to the leaders where it is TRUE (cost / geo_full)',
-      "cs==='cost'||(ld&&ld.rule==='geo_full')" in SR.replace(' ', ''))
+check('honest anchor explanation for cost & geo leaders (b130 split: cost-led->_costFaceWhy, geo_full->terse _anchorLegend)',
+      "_costLead=(cs==='cost')" in SR.replace(' ', '')
+      and "_anchorLegend=(ld&&ld.rule==='geo_full')" in SR.replace(' ', '')
+      and "_costFaceWhy=_costLead?t(" in SR.replace(' ', ''))
 _nc = '\n'.join(l for l in HTML.splitlines() if not l.strip().startswith('//'))  # rendered code only (comments excluded — the b29 lesson)
 check("REJECTED Gemini floor attribution «بناءً على الصفقات» absent from rendered strings", 'بناءً على الصفقات' not in _nc)
 check('REJECTED fabricated frontage/street wide-range reason absent',

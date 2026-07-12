@@ -2982,7 +2982,15 @@ function showShortReport(d){
   //     frontage/street-width wide-range justification. ════
   const _scarce=(_confN!=null&&_confN<5&&v.low!=null&&v.high!=null);
   const _skew=(_hpct!=null&&(_hpct<20||_hpct>80));
-  const _anchorLegend=(cs==='cost'||(ld&&ld.rule==='geo_full'))?t('الأرضية = مرتكز الكلفة (أرض + قيمة البناء بعد الإهلاك) · السقف = وسيط صفقات السوق','Floor = the cost anchor (land + depreciated building) · Ceiling = the market sales median'):'';
+  const _costLead=(cs==='cost');
+  const _anchorLegend=(ld&&ld.rule==='geo_full')?t('الأرضية = مرتكز الكلفة (أرض + قيمة البناء بعد الإهلاك) · السقف = وسيط صفقات السوق','Floor = the cost anchor (land + depreciated building) · Ceiling = the market sales median'):'';
+  // Sprint 2.22.0b.130 (persona-panel surgical fix) — on a COST-LED face the floor↔ceiling gap is
+  // wide (amount==floor; e.g. 2.4M vs a 5.4M market ceiling). The terse legend above read as jargon
+  // to the owner AND left the ceiling un-qualified (mis-anchor risk: seller over-asks / reads as
+  // implied worth). Surface ONE plain owner line qualifying BOTH endpoints; the full «لماذا» (basisLn/
+  // neigh) stays folded in «عرض التفاصيل». Ceiling framed price-inferred, NOT «فاخر» as fact (b100
+  // honesty) — a condensation of the existing basisLn+neigh vocabulary. Cost-led ONLY; value-invariant.
+  const _costFaceWhy=_costLead?t('رقمُنا هو الأرضية (كلفةُ إعادة البناء)، لأنّ صفقات بيوتٍ مثل بيتك قليلة؛ والسقف شريحةٌ أعلى سعراً في منطقتك (استدلالاً بالسعر لا معاينةً) — ليس فئةَ بيتك ولا قيمةَ بيعه اليوم.','Our figure is the floor (the rebuild cost), because sales of homes like yours are few; the ceiling is a higher-priced tier in your area (inferred from price, not inspection) — not your home\'s tier or its sale value today.'):'';
   h+='<div class="thmr-hero lux" style="background:var(--thmr-navy);border:none">';
   if(_scarce){
     h+='<span class="lbl" style="color:var(--gold)">'+t('القيمة المتوقّعة بين','Expected value between')+'</span>';
@@ -3004,6 +3012,7 @@ function showShortReport(d){
       h+='<div class="ttrack"><span></span><span></span><span></span></div>';
       h+='<div class="tlbls"><span><b>'+t('الأرضية السعرية','Price floor')+'</b><i dir="ltr">'+fmt(v.low)+'</i></span><span style="text-align:right"><b>'+t('السقف السوقي','Market ceiling')+'</b><i dir="ltr">'+fmt(v.high)+'</i></span></div>';
       if(_anchorLegend)h+='<div class="tleg" dir="auto">'+_anchorLegend+'</div>';
+      if(_costFaceWhy)h+='<div class="tleg" dir="auto">'+_costFaceWhy+'</div>';
       h+='</div>';
     }else{
     h+='<div class="thmr-facebar"><div class="ftrack"><span class="fdot" style="left:'+_hpct.toFixed(1)+'%"></span></div>';

@@ -93,7 +93,7 @@ check('every new/moved string carries an EN twin (basis + >5M + compact legal + 
       'not valid for official purposes' in SR and 'Full terms ›' in SR and 'Full Terms &amp; Methodology ›' in SR)
 check('EN reveal + b54 locked identity intact', 'var EN_ENABLED=true;' in HTML and 'تقييم سوقيّ آليّ' in HTML)
 check('engine is a valid b-series tag (no exact pin — Lesson-2)',
-      "SPRINT_TAG = '2.22.0b." in ENG and 'thammen-sprint2p22p0b' in ENG and 'b129' in ENG)
+      "SPRINT_TAG = '2.22.0b." in ENG and 'thammen-sprint2p22p0b' in ENG)
 
 print('\nb129:', passed, 'passed,', failed, 'failed')
 raise SystemExit(1 if failed else 0)
