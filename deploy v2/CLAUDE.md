@@ -598,6 +598,24 @@ git push origin master
 ```
 > **Rule #43:** the app lives in the `deploy v2/` subdir → deploy is `git subtree push --prefix "deploy v2" heroku master`, **not** plain `git push heroku master` (rejected by the buildpack — no `requirements.txt` at slug root). `git push origin master` keeps the GitHub backup current (R1 deploy ritual).
 
+### Local verification (pre-deploy — no runnable backend on this machine)
+
+**The FastAPI backend cannot run locally** — local Python (`python`/`python3` = pythoncore-3.14, and `py -3`) has `fastapi` but **not `uvicorn`/`slowapi`**. Do **not** attempt `uvicorn api:app`; verify offline, then confirm live after deploy (below).
+
+```
+set PYTHONIOENCODING=utf-8                         REM REQUIRED — Windows console is cp1252; Arabic prints crash otherwise
+python -m py_compile evaluate_unified.py api.py
+python test_sprint_2_22_0b1NN.py                   REM this Sprint's isolated test (E14)
+python run_sprint_2p22p0a_suite.py                 REM expect "ALL COUNTS MATCH" (395/395)
+python test_sprint_2p16p17_security.py             REM 16/16
+python test_sprint_2p22p0a3_surface_honesty.py     REM 45/45
+python 2p22p0_pre\run_regression_2p22p0a.py        REM broad walk, ~185 files, ~180s → "ALL FILES GREEN"
+```
+
+**Visual / interaction smoke** (a static screen needs no backend): serve statically (`python -m http.server 8791` in `deploy v2\`) and drive the Browser pane — activate the screen via JS (`go(...)` / add `.active`), read the DOM/console. `/api/*` returns 404 (statusBar shows «غير متصل» — benign, not a console error). Inject `*{animation:none!important}` before a screenshot, or the raster capture hangs ~30s (DOM measurements are the reliable channel either way).
+
+> **Version-pin gotcha (R6/Lesson-2):** when a Sprint bumps `SPRINT_TAG`, the PRIOR Sprint's isolated test FAILS if it exact-pinned its own version. Relax it to the `b129/b130` **prefix** convention (`'thammen-sprint2p22p0b' in ENG` + `"SPRINT_TAG = '2.22.0b." in ENG`) — a doc/marker fix, never a value/methodology change. Better: write new isolated tests with the prefix check from the start.
+
 ### Post-deploy verification
 
 ```
