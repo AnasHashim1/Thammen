@@ -98,9 +98,10 @@ check('shared .sbtn button reused (not forked)', 'class="sbtn" id="sBtn"' in FOR
 
 # ═══ (9) VALUE-NEUTRALITY — engine/api untouched, only the version marker moved ═══
 check('ENTRY is input-only (never computes a value)', 'v.amount=' not in FORM and 'v.low=' not in FORM)
-check('ENGINE_VERSION -> b132', 'thammen-sprint2p22p0b132-input-redesign' in ENG)
-check('SPRINT_TAG -> 2.22.0b.132', "'2.22.0b.132'" in ENG)
-check('no stale b131 tag left', 'b131-full-report-lean' not in ENG)
+# b133: version-pin relaxed to the b129/b130 prefix convention (superseded when b133 bumped SPRINT_TAG;
+# the b132 markup guards above are what this test protects — the version string is just the deploy tag).
+check('ENGINE_VERSION present (thammen-sprint…)', 'thammen-sprint2p22p0b' in ENG)
+check('SPRINT_TAG present (2.22.0b.…)', "SPRINT_TAG = '2.22.0b." in ENG)
 
 print('\n%d passed, %d failed' % (passed, failed))
 import sys; sys.exit(1 if failed else 0)

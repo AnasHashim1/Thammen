@@ -125,6 +125,14 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .ent-trust{display:flex;justify-content:center;align-items:center;gap:11px;margin-top:15px;font-size:.82rem;color:var(--text2);font-weight:500}
 .ent-trust .entd{color:var(--border)}
 @media(max-width:600px){.ent-card{padding:24px 18px;margin:18px auto}.ent-type .etn{font-size:.82rem}}
+/* b133 (redesign v2 — S6 part 2/2 «التحسين») — the refine-screen honesty adds: the qualitative
+   range promise (ANSWERS #13; «±8%» never existed — the numeric range shows only AFTER recompute,
+   from the real field) + the closing indicative-estimate line. Structure/fields/ids all preserved
+   (b27/b113/b4/b54 pinned): condition keeps all 5 engine values, buildingAge stays an optional field. */
+.ent-promise{display:flex;align-items:flex-start;gap:9px;padding:12px 14px;margin-bottom:16px;background:var(--alt);border:1px solid var(--border);border-radius:10px}
+.ent-promise .ic{width:16px;height:16px;color:var(--bronze);flex-shrink:0;margin-top:2px}
+.ent-promise span{font-size:.8rem;color:var(--text2);line-height:1.65}
+.ent-fine{font-size:.74rem;color:var(--light);text-align:center;line-height:1.7;margin-top:10px;padding:0 8px}
 .sp{display:inline-block;width:16px;height:16px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-left:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 .rwrap{max-width:580px;margin:24px auto;padding:0 20px}
@@ -1149,8 +1157,11 @@ body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:lt
          مرتكز التكلفة / اختياري للإثراء). Every field id is UNCHANGED (the re-eval
          JS reads by id). towerRentSection stays OUTSIDE the groups (the 2.16.10/b22
          tower flow reveals + focuses it — keeping it ungrouped preserves that path). -->
-    <div class="fcard">
+    <div class="ent-card">
       <div class="rn" style="font-size:.85rem;color:var(--muted);margin-bottom:12px;line-height:1.6">أجب بما تعرفه فقط — كل مجموعة موسومة بأثرها الحقيقي، واترك ما لا تعرفه فارغاً.</div>
+      <!-- b133 (redesign v2 «التحسين»): the qualitative range promise — ANSWERS #13. «±8%» never
+           existed; the numeric range appears only AFTER recompute, from the real field. -->
+      <div class="ent-promise"><svg class="ic" aria-hidden="true"><use href="#ic-chart"></use></svg><span data-en="Every detail you add narrows the range and lifts confidence. The updated range appears after recalculation.">كلّما أضفت تفصيلاً، ضاق النطاق وارتفعت الثقة. النطاق المحدَّث يظهر بعد إعادة الحساب.</span></div>
       <!-- Sprint 2.16.10 — tower/compound rental split (revealed by applyAssetToForm
            when the asset is a tower / compound_large / apartment_building). -->
       <div id="towerRentSection" class="tower-only" style="display:none;background:var(--alt);border-right:3px solid var(--bronze);padding:10px 12px;margin-bottom:10px;border-radius:0 6px 6px 0">
@@ -1212,6 +1223,8 @@ body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:lt
       </details>
     </div>
     <button class="sbtn" id="refineBtn" onclick="thammenReEvalGeometry()">احسب التقييم المُحسَّن</button>
+    <!-- b133: closing indicative-estimate line (honesty — aligns with «ليس تقييماً معتمداً»). -->
+    <div class="ent-fine" data-en="The result stays an indicative estimate — details improve its accuracy, they do not make it a certified valuation.">تبقى النتيجة تقديراً استرشاديّاً — التفاصيل تحسّن دقّته لا تجعله تقييماً معتمداً.</div>
     <div id="refineRes"></div>
   </div>
 </div>
