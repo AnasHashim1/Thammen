@@ -7,7 +7,7 @@ e.g. 2.4M vs a 5.4M market ceiling). The terse specialist legend («الأرضي
 surfaces ONE plain owner line qualifying BOTH endpoints, cost-led ONLY; the terse legend now fires
 for geo_full ONLY; the full «لماذا» (basisLn/neigh) stays folded in «عرض التفاصيل». Ceiling framed
 price-inferred, NOT «فاخر» as fact (b100 honesty). amount/low/high/method/rule untouched; api.py untouched."""
-import io
+import io, re
 HTML = io.open('index.html', encoding='utf-8').read()
 ENG  = io.open('evaluate_unified.py', encoding='utf-8').read()
 passed = failed = 0
@@ -81,9 +81,9 @@ check('full neigh «مقارنةٌ غير منصِفة» retained',
 check('endpoints «الأرضية السعرية»/«السقف السوقي» kept',
       "t('الأرضية السعرية','Price floor')" in SR and "t('السقف السوقي','Market ceiling')" in SR)
 
-# 12) version bump
-check('ENGINE_VERSION -> b130', "thammen-sprint2p22p0b130-costled-face-why" in ENG)
-check('SPRINT_TAG -> 2.22.0b.130', "'2.22.0b.130'" in ENG)
+# 12) version bump (R6/Lesson-2: version-agnostic FORMAT checks — b131 bumped past b130)
+check('ENGINE_VERSION format valid', bool(re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG)))
+check('SPRINT_TAG format valid', bool(re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG)))
 
 # 13) api.py untouched contract (this sprint touches only index.html + 2 version lines)
 check('the fix is frontend-only (comment marks it)',
