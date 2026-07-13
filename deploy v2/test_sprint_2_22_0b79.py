@@ -42,16 +42,21 @@ check('home tag/sub/cta/cred carry data-en',
       'data-en="Based on registered Ministry of Justice transactions."' in HTML)
 
 # ---- (4) form wired (labels, placeholders, tabs, audience, submit) ----
+# b132 R6/Lesson-2 re-point (redesign v2 «الإدخال»): the input-mode tab «فيلا/مبنى (عنوان)» became the
+# v2 asset-type card «فيلا أو مبنى» + a «بالعنوان» sub-label — same control (still selTab), restyled,
+# STILL bilingual. Field labels + placeholders + the PIN label are byte-identical. Coverage unchanged.
 check('form tabs + labels + placeholders carry data-en / data-en-ph',
-      'data-en="Villa/building (address)"' in HTML and 'data-en="Zone no."' in HTML and
-      'data-en-ph="e.g. 70"' in HTML and 'data-en="Plot number (PIN)"' in HTML)
+      'data-en="Villa / building"' in HTML and 'data-en="by address"' in HTML and
+      'data-en="Zone no."' in HTML and 'data-en-ph="e.g. 70"' in HTML and 'data-en="Plot number (PIN)"' in HTML)
 # b89 R6 re-point: the «من أنت؟» role selector (5 buttons) was REMOVED (Option A) → the role
 # data-en spans are gone with it. The submit + input-entry titles keep their data-en.
 check('b89: the audience role buttons are REMOVED (no data-en role spans)',
       '<span data-en="Owner">مالك</span>' not in HTML and '<span data-en="Valuer">مثمّن</span>' not in HTML)
-check('submit + entry titles carry data-en («Who are you?» removed with the selector)',
+# b132 R6/Lesson-2 re-point: the «إدخال العقار» / "Property entry" .ftitle was replaced by the v2
+# centered heading «ما العقار الذي نُقدّره؟» / "Which property are we valuing?" — still bilingual.
+check('submit + entry heading carry data-en («Who are you?» stays removed)',
       'onclick="run()" data-en="Value it"' in HTML and
-      'data-en="Property entry"' in HTML and 'data-en="Who are you?"' not in HTML)
+      'data-en="Which property are we valuing?"' in HTML and 'data-en="Who are you?"' not in HTML)
 check('all 5 static top-bar titles carry data-en',
       'data-en="Refine the valuation"' in HTML and 'data-en="Review the data"' in HTML and
       'data-en="Market valuation result"' in HTML and 'data-en="Full report"' in HTML and

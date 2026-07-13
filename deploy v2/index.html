@@ -98,6 +98,33 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .sbtn{width:100%;padding:15px;font-family:'IBM Plex Sans Arabic';font-weight:800;font-size:1.15rem;border:none;border-radius:var(--r);cursor:pointer;background:var(--bronze);color:#fff;box-shadow:0 4px 15px rgba(164,129,74,.3);transition:all .3s;margin-top:6px}
 .sbtn:hover{background:var(--bronze-h);transform:translateY(-1px)}
 .sbtn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
+/* b132 (redesign v2 — S6 «الإدخال») — the ENTRY (identification) card. Reuses the b120 tokens + the
+   v2 handoff look. The two type cards ARE the input-mode selector (فيلا/مبنى→address, أرض→PIN) — they
+   keep the tabAddr/tabLand ids so selTab's .sel toggle + grpAddr/grpLand reveal are UNCHANGED.
+   Value-neutral: same fields/ids/handlers, restyled. Scoped .ent-* only — shared .fcard/.aud-btn/.sbtn
+   are untouched (the refine screen still uses them until b133). */
+.ent-card{position:relative;max-width:480px;margin:28px auto;background:var(--bg);border:1px solid var(--border);border-radius:18px;box-shadow:var(--sh-lg);padding:32px 30px}
+.ent-clear{position:absolute;top:16px;left:18px;font-size:.76rem;color:var(--bronze);cursor:pointer;display:flex;align-items:center;gap:4px;font-weight:600}
+.ent-clear .ic{width:13px;height:13px}
+.ent-head{text-align:center;margin-bottom:22px}
+.ent-logo{width:104px;height:auto;margin:0 auto 12px;display:block}
+.ent-h2{font-size:1.4rem;font-weight:700;color:var(--primary);margin-bottom:6px;line-height:1.35}
+.ent-sub{font-size:.9rem;color:var(--text2);line-height:1.7}
+.ent-lbl{font-size:.82rem;font-weight:600;color:var(--primary);margin-bottom:10px}
+.ent-types{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:20px}
+.ent-type{border:1.5px solid var(--border);background:var(--surface);border-radius:12px;padding:15px 10px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.ent-type:hover:not(.sel){border-color:var(--bronze)}
+.ent-type.sel{border-color:var(--bronze);border-width:2px;background:var(--bronze-g)}
+.ent-type .eti{width:26px;height:26px;display:block;margin:0 auto 7px;color:var(--primary)}
+.ent-type .etn{font-size:.9rem;font-weight:700;color:var(--primary)}
+.ent-type .etm{font-size:.72rem;color:var(--text2);margin-top:3px;font-weight:500}
+.ent-fields{margin-bottom:2px}
+.ent-in{height:54px;border-radius:12px;font-size:1.1rem;font-weight:700;color:var(--primary);text-align:center}
+.ent-card .fg label{font-size:.76rem;color:var(--text2);font-weight:500;margin-bottom:6px}
+.ent-card .br-note{margin-top:10px}
+.ent-trust{display:flex;justify-content:center;align-items:center;gap:11px;margin-top:15px;font-size:.82rem;color:var(--text2);font-weight:500}
+.ent-trust .entd{color:var(--border)}
+@media(max-width:600px){.ent-card{padding:24px 18px;margin:18px auto}.ent-type .etn{font-size:.82rem}}
 .sp{display:inline-block;width:16px;height:16px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-left:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 .rwrap{max-width:580px;margin:24px auto;padding:0 20px}
@@ -1056,48 +1083,55 @@ body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:lt
     <div class="tbar-st" id="statusBar">جارٍ الاتصال...</div>
   </div>
   <div class="fwrap">
-    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> <span data-en="Property entry">إدخال العقار</span> <a id="clrIdent" onclick="clearIdentity()" style="display:none;font-weight:400;font-size:.78rem;color:var(--bronze);cursor:pointer;margin-right:10px"><span data-en="Clear ">مسح </span><svg class=ic aria-hidden=true><use href=#ic-x></use></svg></a></div>
-    <div class="fcard">
-      <!-- Sprint 2.21.0: input mode tabs — address (villa/building) OR land PIN -->
-      <div class="aud-row" style="margin-bottom:12px">
-        <div class="aud-btn sel" id="tabAddr" onclick="selTab('address')" data-en="Villa/building (address)">فيلا/مبنى (عنوان)</div>
-        <div class="aud-btn" id="tabLand" onclick="selTab('land')" data-en="Land / plot (PIN)">أرض / قطعة (PIN)</div>
+    <!-- b132 (redesign v2 — S6 «الإدخال»): ENTRY recreated in the v2 idiom. All ids/handlers + pinned
+         copy PRESERVED — selTab/tabAddr/tabLand, grpAddr/grpLand, zone/street/building/pin, clrIdent/
+         clearIdentity, the verbatim كهرماء help line (b33), the PIN hint, sBtn/run, fRes, audLegacy.
+         The two type cards ARE the input-mode selector: «فيلا/مبنى»→address, «أرض»→PIN. The handoff's
+         disabled «عمارة قريباً» is intentionally dropped (R-E): building IS supported via address
+         (towerRentSection) — a disabled chip would mislead AND regress a live path. Asset type stays
+         engine-determined (QARS-in-polygon reality-check). Value-neutral display-only restyle;
+         `audience` still defaults to 'owner' (b89, value-invariant); `selAud`/.aud-* stay inert. -->
+    <div class="ent-card">
+      <a id="clrIdent" onclick="clearIdentity()" class="ent-clear" style="display:none"><svg class="ic" aria-hidden="true"><use href="#ic-x"></use></svg><span data-en="Clear">مسح</span></a>
+      <div class="ent-head">
+        <img src="logo_t.png" alt="ثمّن" class="ent-logo">
+        <h2 class="ent-h2" data-en="Which property are we valuing?">ما العقار الذي نُقدّره؟</h2>
+        <p class="ent-sub" data-en="Enter the address or plot number — we handle the rest.">أدخِل العنوان أو رقم القطعة — الباقي علينا.</p>
       </div>
-      <div id="grpAddr">
-        <div class="fr3">
-          <div class="fg"><label data-en="Zone no.">رقم المنطقة</label><input type="number" id="zone" placeholder="مثال: 70" data-en-ph="e.g. 70" min="1"></div>
-          <div class="fg"><label data-en="Street no.">رقم الشارع</label><input type="number" id="street" placeholder="مثال: 380" data-en-ph="e.g. 380" min="1"></div>
-          <div class="fg"><label data-en="Building no.">رقم المبنى</label><input type="number" id="building" placeholder="مثال: 25" data-en-ph="e.g. 25" min="1"></div>
+      <div class="ent-lbl" data-en="Property type">نوع العقار</div>
+      <div class="ent-types">
+        <div class="ent-type sel" id="tabAddr" onclick="selTab('address')" data-en="Villa / building">
+          <svg class="eti" aria-hidden="true"><use href="#ic-home"></use></svg>
+          <div class="etn">فيلا أو مبنى</div>
+          <div class="etm" data-en="by address">بالعنوان</div>
         </div>
-        <!-- Sprint 2.22.0b.33 (DEF-UX14): help line — the simple owner sees three
-             bare number fields with no source hint (the PIN field already had one).
-             Tells the Qatari user WHERE the national address comes from. -->
+        <div class="ent-type" id="tabLand" onclick="selTab('land')" data-en="Land / plot">
+          <svg class="eti" aria-hidden="true"><use href="#ic-ruler"></use></svg>
+          <div class="etn">أرض / قطعة</div>
+          <div class="etm" data-en="by plot no. (PIN)">بالرقم المساحي (PIN)</div>
+        </div>
+      </div>
+      <div id="grpAddr" class="ent-fields">
+        <div class="fr3">
+          <div class="fg"><label data-en="Zone no.">رقم المنطقة</label><input class="ent-in" type="number" id="zone" placeholder="مثال: 70" data-en-ph="e.g. 70" min="1"></div>
+          <div class="fg"><label data-en="Street no.">رقم الشارع</label><input class="ent-in" type="number" id="street" placeholder="مثال: 380" data-en-ph="e.g. 380" min="1"></div>
+          <div class="fg"><label data-en="Building no.">رقم المبنى</label><input class="ent-in" type="number" id="building" placeholder="مثال: 25" data-en-ph="e.g. 25" min="1"></div>
+        </div>
+        <!-- Sprint 2.22.0b.33 (DEF-UX14): the كهرماء source hint — VERBATIM, class="br-note", after the
+             building field, inside grpAddr (pinned by the b33 suite; do not alter the class or the copy). -->
         <div class="br-note" style="margin-top:8px;font-size:.78rem;color:var(--muted)" data-en="These numbers are on the building's address plate or your Kahramaa bill (zone, then street, then building number).">هذه الأرقام على لوحة عنوان المبنى أو فاتورة كهرماء (المنطقة، ثم الشارع، ثم رقم المبنى).</div>
       </div>
-      <div id="grpLand" style="display:none">
-        <div class="fg"><label data-en="Plot number (PIN)">رقم القطعة (PIN)</label><input type="text" id="pin" inputmode="numeric" placeholder="مثال: 74328443" data-en-ph="e.g. 74328443" pattern="\d{7,9}"></div>
+      <div id="grpLand" class="ent-fields" style="display:none">
+        <div class="fg"><label data-en="Plot number (PIN)">رقم القطعة (PIN)</label><input class="ent-in" type="text" id="pin" inputmode="numeric" placeholder="مثال: 74328443" data-en-ph="e.g. 74328443" pattern="\d{7,9}"></div>
         <div class="br-note" style="margin-top:6px;font-size:.78rem;color:var(--muted)" data-en="Enter the plot number from the title deed or GIS maps">أدخل رقم القطعة من شهادة الملكية أو خرائط GIS</div>
-        <!-- Sprint 2.21.0.7.1: interim hotfix warning removed — the Asset Type
-             Reality Check (QARS-in-polygon + RULEID) now handles built parcels,
-             non-residential, governmental, commercial and mixed-use PINs with
-             clear stop/reject screens, so the "residential bare only" caveat is
-             superseded. -->
       </div>
+      <input type="hidden" id="audLegacy" value="owner">
+      <button class="sbtn" id="sBtn" onclick="run()" data-en="Value it">ثمّن</button>
+      <div class="ent-trust">
+        <span data-en="Free">مجاني</span><span class="entd">·</span><span data-en="No account">بلا حساب</span><span class="entd">·</span><span data-en="No tracking">بلا تتبّع</span>
+      </div>
+      <div id="fRes"></div>
     </div>
-    <!-- Sprint 2.22.0b.89 (Option A — audience unification, PO + Gemini r6 2026-07-01):
-         the «من أنت؟» role selector was REMOVED → one neutral entry for everyone. The number
-         is audience-invariant (b24) and the hero label is now neutral («القيمة السوقية التقديرية»),
-         so the upfront role step was pure friction that implied the number would change by role.
-         `audience` stays 'owner' by default (engine normalizes owner→buyer → VALUE-INVARIANT).
-         The buyer-only financing calculator is un-gated to an optional toggle for ALL (result +
-         short report). Specialists reach «الأدلّة/كيف وصلنا» (folded, one click) + «التقرير الكامل».
-         `selAud` + the .aud-* CSS are now dead (kept inert; no user path reaches them). -->
-    <input type="hidden" id="audLegacy" value="owner">
-    <!-- Sprint 2.22.0b.2.1 — optional property details relocated to a separate
-         screen (#refineScreen). formScreen is now identification-only; the bare
-         eval posts /api/evaluate, then the user may open «حسّن التقدير» (refine). -->
-    <button class="sbtn" id="sBtn" onclick="run()" data-en="Value it">ثمّن</button>
-    <div id="fRes"></div>
   </div>
 </div>
 

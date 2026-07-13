@@ -104,9 +104,12 @@ check('short-report b129 GUARD 1 thmr-basis still present', '<div class="thmr-ba
 check('short-report b129 GUARD 3 >5M still present', 'if(v.amount>5000000)' in SR)
 check('short-report .legalfull print-only block still present', '<div class="legalfull">' in SR)
 
-# ═══ version bump ═══
-check('ENGINE_VERSION -> b131', 'thammen-sprint2p22p0b131-full-report-lean' in ENG)
-check('SPRINT_TAG -> 2.22.0b.131', "'2.22.0b.131'" in ENG)
+# ═══ version marker ═══
+# b132: the exact b131 pin was superseded when the next sprint bumped SPRINT_TAG. Relaxed to the
+# b129/b130 prefix-convention so this test survives future bumps — the b131 CONTENT guards above
+# (all still present) are what this file actually protects; the version string is just the deploy tag.
+check('ENGINE_VERSION present (thammen-sprint…)', 'thammen-sprint2p22p0b' in ENG)
+check('SPRINT_TAG present (2.22.0b.…)', "SPRINT_TAG = '2.22.0b." in ENG)
 
 print('\n%d passed, %d failed' % (passed, failed))
 import sys; sys.exit(1 if failed else 0)
