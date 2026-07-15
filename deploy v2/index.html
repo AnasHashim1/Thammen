@@ -133,6 +133,30 @@ select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%
 .ent-promise .ic{width:16px;height:16px;color:var(--bronze);flex-shrink:0;margin-top:2px}
 .ent-promise span{font-size:.8rem;color:var(--text2);line-height:1.65}
 .ent-fine{font-size:.74rem;color:var(--light);text-align:center;line-height:1.7;margin-top:10px;padding:0 8px}
+/* b134 (redesign v2 — S2 «نبض السوق») — the contextual recent-deals band on the RESULT screen.
+   Navy card inside #rOut; anonymised MoJ deals (date · total · m² · m²-price). The green pulse dot
+   (thPulse) + staggered card rise (thRise) both honour reduced-motion. Populated by _loadPulse()
+   from /api/pulse — display-only, value-neutral (never renders a computed/valuation number). */
+@keyframes thPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+@keyframes thRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.pulse-band{background:var(--primary);border-radius:14px;padding:26px 22px;margin:14px 0;position:relative;overflow:hidden}
+.pulse-band::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.pulse-hd{display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:4px}
+.pulse-dot{width:9px;height:9px;border-radius:50%;background:var(--ok2);animation:thPulse 2s infinite}
+.pulse-ttl{color:#fff;font-weight:700;font-size:1.15rem}
+.pulse-sub{text-align:center;color:#9DB0C2;font-size:.8rem;margin:0 0 20px;line-height:1.6}
+.pulse-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.pulse-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 14px;text-align:center;animation:thRise .55s both}
+.pulse-card .pd{font-size:.72rem;color:#9DB0C2;margin-bottom:9px}
+.pulse-card .pp{font-size:1.4rem;font-weight:700;color:var(--gold);line-height:1;font-feature-settings:'tnum'}
+.pulse-card .pu{font-size:.72rem;color:#9DB0C2;margin:2px 0 11px}
+.pulse-card .pm{display:flex;justify-content:center;gap:8px;font-size:.72rem;color:#C9D6E2;border-top:1px solid rgba(255,255,255,.08);padding-top:9px}
+.pulse-card .pm .sep{color:#5B7085}
+.pulse-foot{text-align:center;color:#9DB0C2;font-size:.72rem;margin-top:20px;padding-top:15px;border-top:1px solid rgba(232,201,154,.2);line-height:1.7}
+.pulse-foot b{color:#C9D6E2;font-weight:600}
+.pulse-line{text-align:center;color:#9DB0C2;font-size:.85rem;padding:2px 0}
+@media(prefers-reduced-motion:reduce){.pulse-dot{animation:none}.pulse-card{animation:none}}
+body.lang-en #rOut .pulse-band{direction:ltr}
 .sp{display:inline-block;width:16px;height:16px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-left:8px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 .rwrap{max-width:580px;margin:24px auto;padding:0 20px}
@@ -4052,6 +4076,57 @@ function show(d){
   // Sprint 2.22.0b.125 (S4b): fade-up the flat evidence sections as they scroll into view (S0 primitive;
   // reduced-motion → reveal all at once). Presentation only — no value/DOM-content change.
   try{_revealOnScroll('#rOut .rs-sec.rv');}catch(e){}
+  // b134 (S2 «نبض السوق»): inject the contextual band into the DOM after the hero (before the first
+  // evidence .rs-sec), then load it async. Built in the DOM — NOT the pinned assembly string (b15/b31/
+  // b52/b125), so the flat-order pins stay byte-identical. Value-neutral display-only.
+  try{if(d.district&&d.asset_type){var _pb=document.createElement('div');_pb.className='rs-sec';_pb.id='pulseBand';_pb.style.display='none';var _fs=o.querySelector('.rs-sec');if(_fs){_fs.parentNode.insertBefore(_pb,_fs);}else{o.appendChild(_pb);}_loadPulse(d.district,d.asset_type);}}catch(e){}
+}
+
+// b134 (redesign v2 — S2 «نبض السوق»): fetch + render the contextual recent-deals band on the result
+// screen. Anonymised MoJ deals (date · total · m² · m²-price) for the user's OWN district + asset type
+// — the pool behind their number. DISPLAY-ONLY / value-neutral (never renders a computed value). Empty/
+// sparse per ANSWERS Q11: count 0 → band stays hidden (never fabricate); <3 → single count line; >=3 → cards.
+function _pulseDate(iso){
+  if(!iso||iso.length<7)return esc(iso||'');
+  var p=iso.split('-'),y=p[0],m=parseInt(p[1],10),dd=parseInt(p[2],10)||'';
+  var AR=['','يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  var EN=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return (dd?dd+' ':'')+t(AR[m]||'',EN[m]||'')+' '+esc(y);
+}
+function _loadPulse(district,atype){
+  var el=document.getElementById('pulseBand');if(!el)return;
+  fetch('/api/pulse?area='+encodeURIComponent(district)+'&type='+encodeURIComponent(atype))
+    .then(function(r){return r.json();})
+    .then(function(p){
+      if(!p||!p.count||p.count<1)return;                       // no data → stay hidden (never fabricate)
+      var w=p.window||{},from=(w.from||'').slice(0,4),to=(w.to||'').slice(0,4);
+      var foot=t(p.count+' صفقة مسجّلة في هذا الحيّ',p.count+' registered deals in this neighbourhood')
+        +(from?(' · '+t('نافذة ','window ')+from+'–'+to):'')
+        +' · <b>'+t('وزارة العدل (CC BY 4.0)','Ministry of Justice (CC BY 4.0)')+'</b>';
+      var hd='<div class="pulse-hd"><span class="pulse-dot"></span><span class="pulse-ttl">'+t('نبض السوق','Market pulse')+'</span></div>';
+      if(!p.deals||p.deals.length<3){                          // sparse → single count line, no cards (Q11)
+        el.innerHTML='<div class="pulse-band">'+hd+'<div class="pulse-line">'+foot+'</div></div>';
+        el.style.display='';return;
+      }
+      var CATLBL={villa:t('فلل','villas'),land:t('أراضٍ','land'),apartment:t('شقق','apartments'),building:t('مبانٍ','buildings')};
+      var lbl=CATLBL[p.type]||'';
+      var cards=p.deals.map(function(dl,i){
+        var ar=dl.area_m2?fmt(Math.round(dl.area_m2)):'—';
+        var pm=dl.price_m2?fmt(Math.round(dl.price_m2)):'—';
+        return '<div class="pulse-card" style="animation-delay:'+(i*0.07).toFixed(2)+'s">'
+          +'<div class="pd">'+_pulseDate(dl.date)+'</div>'
+          +'<div class="pp">'+fmt(Math.round(dl.total_price||0))+'</div>'
+          +'<div class="pu">'+t('ر.ق','QAR')+'</div>'
+          +'<div class="pm"><span>'+ar+' '+t('م²','m²')+'</span><span class="sep">·</span><span>'+pm+'/'+t('م²','m²')+'</span></div>'
+          +'</div>';
+      }).join('');
+      el.innerHTML='<div class="pulse-band">'+hd
+        +'<p class="pulse-sub">'+t('أحدث الصفقات المسجّلة','Latest registered deals')+(lbl?(' — '+lbl):'')+(district?(' '+esc(district)):'')+'</p>'
+        +'<div class="pulse-grid">'+cards+'</div>'
+        +'<div class="pulse-foot">'+foot+'</div></div>';
+      el.style.display='';
+    })
+    .catch(function(e){});                                     // network / rate-limit → band stays hidden
 }
 
 // Sprint D: Section renderer for brief.sections

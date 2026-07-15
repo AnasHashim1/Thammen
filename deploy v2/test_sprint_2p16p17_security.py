@@ -166,7 +166,7 @@ def test_slowapi_list_form_is_rejected():
 
 
 def test_get_routes_are_rate_limited():
-    """Sprint 2.22.0b.66 (DEBUG T0-3): the 6 read GET endpoints must each
+    """Sprint 2.22.0b.66 (DEBUG T0-3; +/api/pulse b134): the 7 read GET endpoints must each
     carry @limiter.limit + a `request: Request` param (DoS / khazna-depletion
     hardening, defense-in-depth behind Cloudflare). Source-level structural
     check — deterministic, no network, no shared limiter-state pollution
@@ -175,8 +175,9 @@ def test_get_routes_are_rate_limited():
     from pathlib import Path
     src = (Path(__file__).parent / "api.py").read_text(encoding="utf-8")
     lines = src.splitlines()
+    # b134: /api/pulse (redesign v2 «نبض السوق») joins the rate-limited GET surface — b66 hardening.
     GET_ROUTES = ["/api/health", "/api/freshness", "/api/calibration",
-                  "/api/disclaimer", "/api/about", "/api/scope"]
+                  "/api/disclaimer", "/api/about", "/api/scope", "/api/pulse"]
     for path in GET_ROUTES:
         idx = None
         for i, ln in enumerate(lines):

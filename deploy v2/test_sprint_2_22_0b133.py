@@ -80,9 +80,10 @@ check('.ent-promise + .ent-fine CSS defined', '.ent-promise{' in HTML and '.ent-
 
 # ═══ (6) VALUE-NEUTRALITY — refine screen computes nothing; engine/api untouched ═══
 check('refine markup assigns no value', 'v.amount=' not in REF and 'v.low=' not in REF)
-check('ENGINE_VERSION -> b133', 'thammen-sprint2p22p0b133-refine-redesign' in ENG)
-check('SPRINT_TAG -> 2.22.0b.133', "'2.22.0b.133'" in ENG)
-check('no stale b132 tag left', 'b132-input-redesign' not in ENG)
+# b134: version-pin relaxed to the b129/b130 prefix convention (superseded when b134 bumped SPRINT_TAG;
+# the b133 refine guards above are what this test protects — the version string is just the deploy tag).
+check('ENGINE_VERSION present (thammen-sprint…)', 'thammen-sprint2p22p0b' in ENG)
+check('SPRINT_TAG present (2.22.0b.…)', "SPRINT_TAG = '2.22.0b." in ENG)
 
 print('\n%d passed, %d failed' % (passed, failed))
 import sys; sys.exit(1 if failed else 0)

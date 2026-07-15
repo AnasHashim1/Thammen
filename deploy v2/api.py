@@ -43,7 +43,7 @@ from evaluate_property import (
     evaluate_property, BuaBreakdown, PropertyEvaluation,
     compute_max_footprint, estimate_footprint_from_imagery,
 )
-from moj_db import open_db, query_reference, query_trend, init_db
+from moj_db import open_db, query_reference, query_trend, init_db, normalize
 
 # ── Sprint 2.7: Data Freshness Transparency ──
 from data_freshness import (
@@ -873,6 +873,76 @@ async def calibration(request: Request):
     except Exception as e:
         return {"calibration": fresh, "rows": [], "error": str(e)[:200]}
     return {"calibration": fresh, "rows": rows}
+
+
+# ── Sprint 2.22.0b.134 (redesign v2, S2 «نبض السوق») — anonymised recent-deals band ──
+# Contextual: the frontend passes the SAME district + asset_type the engine matched
+# (ev.gis_district_aname, ev.asset_type) → the band shows deals from the user's OWN
+# neighbourhood (the pool behind their number). Anonymised — date · area_m2 · price_m2 ·
+# total_price ONLY (no ref_no, no address; MoJ open data CC BY 4.0). Read-only, rate-limited
+# (b66 DoS hardening), and cached (MoJ data refreshes weekly → a per-key TTL avoids per-view
+# DB hits). VALUE-NEUTRAL: never touches the engine or an amount. Empty/sparse handling lives
+# in the frontend (ANSWERS Q11): count 0 → band hidden; 1-2 → single count line; >=3 → cards.
+_PULSE_CACHE = {}          # (area_norm, category) -> (ts, payload)
+_PULSE_TTL = 3600          # seconds (1h)
+
+
+@app.get("/api/pulse")
+@limiter.limit(";".join(RATE_LIMIT_LIST))
+async def pulse(request: Request, area: str = "", type: str = "villa"):
+    """Sprint 2.22.0b.134: up to 5 most-recent anonymised MoJ deals for one neighbourhood +
+    asset type (+ the total count and date window), for the result-screen «نبض السوق» band.
+    Presentation only — never a computed/valued number; the engine is untouched."""
+    area = (area or "").strip()
+    a = (type or "villa").strip().lower()
+    if "land" in a:      category = "land"
+    elif "villa" in a or "compound" in a: category = "villa"
+    elif "apart" in a:   category = "apartment"
+    elif "build" in a or "tower" in a:    category = "building"
+    else:                category = a
+    empty = {"deals": [], "count": 0, "window": None, "area": area, "type": category}
+    if not area or category not in ("villa", "land", "apartment", "building"):
+        return empty
+    key = (normalize(area), category)
+    now = datetime.now().timestamp()
+    hit = _PULSE_CACHE.get(key)
+    if hit and (now - hit[0]) < _PULSE_TTL:
+        return hit[1]
+    import sqlite3
+    payload = empty
+    if MOJ_DB.exists():
+        try:
+            conn = sqlite3.connect(f"file:{MOJ_DB}?mode=ro", uri=True)
+            conn.row_factory = sqlite3.Row
+            try:
+                deals = [
+                    {"date": r["date"], "area_m2": r["area_m2"],
+                     "price_m2": r["price_m2"], "total_price": r["total_price"]}
+                    for r in conn.execute(
+                        "SELECT date, area_m2, price_m2, total_price FROM transactions "
+                        "WHERE area=? AND category=? AND date IS NOT NULL AND date!='' "
+                        "ORDER BY date DESC LIMIT 5", (key[0], category)
+                    ).fetchall()
+                ]
+                agg = conn.execute(
+                    "SELECT COUNT(*) c, MIN(date) lo, MAX(date) hi FROM transactions "
+                    "WHERE area=? AND category=? AND date IS NOT NULL AND date!=''",
+                    (key[0], category)
+                ).fetchone()
+            finally:
+                conn.close()
+            cnt = (agg["c"] if agg else 0) or 0
+            payload = {
+                "deals": deals,
+                "count": cnt,
+                "window": ({"from": agg["lo"], "to": agg["hi"]} if cnt else None),
+                "area": area, "type": category,
+            }
+        except Exception as e:
+            log.warning(f"/api/pulse error: {str(e)[:200]}")
+            payload = dict(empty, error=True)
+    _PULSE_CACHE[key] = (now, payload)
+    return payload
 
 
 @app.get("/api/disclaimer")
