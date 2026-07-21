@@ -69,9 +69,9 @@ check('map modal Escape-to-close (the b70 pattern) + listener cleanup',
 check('map modal strings t()-wrapped (header/label/cancel)',
       "t('اختر التطبيق','Choose the app')" in MAP and "t('موقع العقار','Property location')" in MAP and
       "t('إلغاء','Cancel')" in MAP)
-check('map links + backdrop-close preserved',
+check('map links + backdrop-close preserved',   # b136 R6: backdrop still closes, now via the unified _mapClose (adds focus-restore)
       'maps.apple.com' in MAP and 'google.com/maps' in MAP and 'waze.com' in MAP and
-      'if(e.target===m)m.remove()' in MAP)
+      'if(e.target===m)_mapClose()' in MAP)
 
 # ── value-invariance + version ──
 check('EN reveal + b54 locked identity intact', 'var EN_ENABLED=true;' in HTML and 'تقييم سوقيّ آليّ' in HTML)

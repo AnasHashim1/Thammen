@@ -37,8 +37,9 @@ HOW = _slice(HTML, 'function _s4bHow(', 'function _s4bScenarios(')
 EVID = _slice(HTML, 'function _s4bEvidence(', 'function _s4bHow(')
 
 print('\n== version bump ==')
-check("ENGINE_VERSION -> b135", "thammen-sprint2p22p0b135-mobile-condition-led" in ENG)
-check("SPRINT_TAG -> 2.22.0b.135", "SPRINT_TAG = '2.22.0b.135'" in ENG)
+# b136 R6/Lesson-2: relax the exact-version pin (b136 bumped the tag; b135's feature checks below still hold)
+check("engine is a valid b-series tag (no exact pin — Lesson-2)",
+      "thammen-sprint2p22p0b" in ENG and "SPRINT_TAG = '2.22.0b." in ENG)
 
 print('\n== (A) condition_led leadership card in _s4bHow ==')
 check("condLead gate on leader==='condition_stratum'", "const condLead=(leader==='condition_stratum')" in HOW)

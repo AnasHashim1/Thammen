@@ -1540,8 +1540,35 @@ function goForm(focusId){
 }
 
 // Sprint 2.14.0 — Scope of Service modal
+// Sprint 2.22.0b.136 (S10 a11y): reusable focus-trap — WAI-ARIA APG dialog pattern. The four modals
+// (betaGate/scopeModal/termsModal/map) already carry role=dialog+aria-modal+aria-label+Escape (b70/b107);
+// this adds the missing focus management: initial-focus into the modal, Tab/Shift+Tab cycle inside it,
+// and focus restoration to the trigger on close. Value-neutral (focus behaviour only — no copy, no value).
+function _focusables(root){
+  return Array.prototype.slice.call(root.querySelectorAll(
+    'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+  )).filter(function(el){return el.offsetParent!==null;});
+}
+function _trapFocus(modal){
+  var prev=document.activeElement;
+  if(!modal.hasAttribute('tabindex'))modal.setAttribute('tabindex','-1');
+  var f=_focusables(modal);
+  try{(f[0]||modal).focus({preventScroll:true});}catch(e){try{(f[0]||modal).focus();}catch(_){}}
+  function onKey(e){
+    if(e.key!=='Tab')return;
+    var items=_focusables(modal); if(!items.length){e.preventDefault();return;}
+    var first=items[0], last=items[items.length-1], a=document.activeElement;
+    if(e.shiftKey){ if(a===first||!modal.contains(a)){e.preventDefault();last.focus();} }
+    else { if(a===last||!modal.contains(a)){e.preventDefault();first.focus();} }
+  }
+  modal.addEventListener('keydown',onKey);
+  return function(){ modal.removeEventListener('keydown',onKey); try{prev&&prev.focus&&prev.focus({preventScroll:true});}catch(e){} };
+}
+var _scopeTrap=null,_termsTrap=null,_gateTrap=null;   // b136 teardown handles
 function openScope(){
-  document.getElementById('scopeModal').style.display='flex';
+  var sm=document.getElementById('scopeModal');
+  sm.style.display='flex';
+  _scopeTrap=_trapFocus(sm);   // b136: focus-trap (initial-focus on the static × close, Tab cycle, restore)
   const c=document.getElementById('scopeContent');
   if(c.dataset.loaded===LANG)return;   // b79: re-render on language switch
   fetch('/api/scope').then(r=>r.json()).then(d=>{
@@ -1556,11 +1583,11 @@ function openScope(){
     c.innerHTML=h;c.dataset.loaded=LANG;
   }).catch(e=>{c.innerHTML='<div style="color:var(--bad)">'+t('تعذّر تحميل نطاق الخدمة','Failed to load the service scope')+'</div>'});
 }
-function closeScope(){document.getElementById('scopeModal').style.display='none'}
+function closeScope(){document.getElementById('scopeModal').style.display='none';if(_scopeTrap){_scopeTrap();_scopeTrap=null;}}   // b136: release trap + restore focus
 
 // Sprint 2.22.0a.24 — Terms & Privacy modal (frontend-only, stores nothing)
-function openTerms(){document.getElementById('termsModal').style.display='flex'}
-function closeTerms(){document.getElementById('termsModal').style.display='none'}
+function openTerms(){var tm=document.getElementById('termsModal');tm.style.display='flex';_termsTrap=_trapFocus(tm);}   // b136: focus-trap
+function closeTerms(){document.getElementById('termsModal').style.display='none';if(_termsTrap){_termsTrap();_termsTrap=null;}}   // b136: release trap + restore focus
 // Sprint 2.22.0b.70 (a11y): Escape closes the two DISMISSABLE modals (scope + terms). The betaGate
 // consent dialog is intentionally NOT Escape-closable (affirmative consent is required).
 document.addEventListener('keydown',function(e){
@@ -1577,8 +1604,16 @@ function ackBeta(){
   try{sessionStorage.setItem('thammen_beta_ack','1');}catch(e){window._betaAck=true;}
   var g=document.getElementById('betaGate');
   if(g)g.style.display='none';
+  if(_gateTrap){_gateTrap();_gateTrap=null;}   // b136: release the gate trap once consent is given
   window.scrollTo(0,0);
 }
+// Sprint 2.22.0b.136 (S10 a11y): if the consent gate is shown on load (not skipped for a returning
+// session by the pre-paint script), trap focus inside it — initial-focus + Tab cycle. No Escape by
+// design (affirmative consent is required); ackBeta releases it. Value-neutral (focus behaviour only).
+document.addEventListener('DOMContentLoaded',function(){
+  var g=document.getElementById('betaGate');
+  if(g&&getComputedStyle(g).display!=='none')_gateTrap=_trapFocus(g);
+});
 
 async function chk(){const b=document.getElementById('statusBar');try{const r=await fetch(API+'/api/health');const d=await r.json();if(d.status==='ok'){const ok=d.moj_db&&(typeof d.moj_db==='object'?d.moj_db.available:d.moj_db);b.innerHTML=ok?(t('متصل','Connected')+' <span class="sdot on"></span>'):(t('متصل — قاعدة البيانات غير جاهزة','Connected — database not ready')+' <span class="sdot off"></span>')}}catch(e){b.innerHTML=t('غير متصل','Offline')+' <span class="sdot off"></span>'}}
 
@@ -2053,8 +2088,12 @@ function openMapPicker(lat,lon){
   // + Escape-to-close (the b70 pattern) + t()-wrap the 3 user-facing strings (EN reveal since b88).
   m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');
   m.setAttribute('aria-label',t('اختر تطبيق الخرائط','Choose a maps app'));
-  m.onclick=e=>{if(e.target===m)m.remove()};
-  const _mapEsc=e=>{if(e.key==='Escape'){m.remove();document.removeEventListener('keydown',_mapEsc);}};
+  // Sprint 2.22.0b.136 (S10 a11y): unify the 3 close paths (backdrop/Escape/button) through _mapClose so
+  // focus is restored to the trigger, and trap focus inside (initial-focus + Tab cycle).
+  let _mapTrap=null;
+  const _mapClose=()=>{document.removeEventListener('keydown',_mapEsc);m.remove();if(_mapTrap)_mapTrap();};
+  const _mapEsc=e=>{if(e.key==='Escape')_mapClose();};
+  m.onclick=e=>{if(e.target===m)_mapClose();};
   document.addEventListener('keydown',_mapEsc);
   const label=encodeURIComponent(t('موقع العقار','Property location'));
   m.innerHTML='<div class="map-modal-content">'+
@@ -2064,9 +2103,11 @@ function openMapPicker(lat,lon){
       '<a href="https://www.google.com/maps?q='+lat+','+lon+'" target="_blank" rel="noopener">Google Maps</a>'+
       '<a href="https://waze.com/ul?ll='+lat+','+lon+'&navigate=yes" target="_blank" rel="noopener">Waze</a>'+
     '</div>'+
-    '<button class="map-modal-close" onclick="this.closest(\'.map-modal\').remove()">'+t('إلغاء','Cancel')+'</button>'+
+    '<button class="map-modal-close">'+t('إلغاء','Cancel')+'</button>'+
     '</div>';
   document.body.appendChild(m);
+  m.querySelector('.map-modal-close').onclick=_mapClose;   // b136: was inline .remove(); now restores focus
+  _mapTrap=_trapFocus(m);   // b136: initial-focus + Tab cycle + restore-on-teardown
 }
 
 function copyResult(){
