@@ -887,6 +887,22 @@ body.lang-en #homeScreen.home{text-align:left}
 .rs-scard .ss{font-size:.74rem;color:var(--muted);line-height:1.65}
 .rs-narr{display:flex;gap:9px;align-items:flex-start;margin-top:14px;font-size:.84rem;color:var(--muted);line-height:1.8}
 .rs-narr .ic{flex-shrink:0;margin-top:2px;color:var(--bronze)}
+/* S9 (b135) — condition-declared leadership card (result screen; the b113/S7 attestation honesty ported here).
+   Tokens only (--primary/--gold/--bronze/--alt/--muted/--light/--ok); inherits #rOut EN ltr (line 750). */
+.rs-cond{background:var(--surface);border:1px solid #d9c7a8;border-radius:14px;padding:20px;margin-bottom:14px;position:relative}
+.rs-cond::before{content:'';position:absolute;top:0;right:20px;left:20px;height:3px;background:var(--bronze);border-radius:0 0 3px 3px}
+.rs-cond .ch{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.rs-cond .ch .flag{font-size:.72rem;font-weight:600;background:var(--primary);color:var(--gold);padding:4px 12px;border-radius:20px}
+.rs-cond .ch .tag{font-size:.66rem;color:var(--bronze);border:1px solid #d9c7a8;padding:3px 9px;border-radius:20px;font-weight:600}
+.rs-cond .cv{font-size:1.9rem;font-weight:700;color:var(--primary);font-feature-settings:'tnum';line-height:1.1}
+.rs-cond .cv .u{font-size:.9rem;font-weight:600;color:var(--muted)}
+.rs-cond .cba{display:inline-flex;align-items:center;gap:9px;margin:12px 0;padding:6px 14px;background:var(--alt);border:1px solid #E8DFCC;border-radius:20px;font-size:.8rem}
+.rs-cond .cba .b4{color:var(--light)}
+.rs-cond .cba .arw{color:var(--ok);font-weight:700}
+.rs-cond .cba .af{color:var(--primary);font-weight:600}
+.rs-cond .cstrip{display:flex;gap:9px;align-items:flex-start;background:var(--primary);color:#fff;border-radius:11px;padding:13px 15px;font-size:.8rem;line-height:1.7}
+.rs-cond .cstrip .ic{flex-shrink:0;color:var(--gold);margin-top:2px}
+.rs-cond .cstrip b{color:var(--gold)}
 .rs-mfold{margin-top:12px;border:1px solid var(--border);border-radius:10px;background:var(--alt);overflow:hidden}
 .rs-mfold>summary{list-style:none;cursor:pointer;padding:11px 14px;font-weight:600;font-size:.8rem;color:var(--primary)}
 .rs-mfold>summary::-webkit-details-marker{display:none}
@@ -932,9 +948,20 @@ body.lang-en #homeScreen.home{text-align:left}
   .rs-stack{grid-template-columns:1fr;gap:10px}
   .rs-scn{grid-template-columns:1fr 1fr;gap:10px}
   .rs-lim .l2{grid-template-columns:1fr;gap:16px}
-  .rs-ctab .row{grid-template-columns:1.1fr .8fr 1.1fr .9fr;padding:11px 12px;gap:6px;font-size:.78rem}
+  /* S9 (b135) — comparable deals TABLE → CARDS on mobile (designer «الصفقات تتحوّل من جدولٍ إلى بطاقات»):
+     hide the head; each body row becomes a 2×2 card — date/area on the right, price/ppm² on the left. */
+  .rs-ctab .head{display:none}
+  .rs-ctab .body{grid-template-columns:1fr auto;grid-template-areas:'d p' 'a m';gap:3px 12px;padding:14px 16px;font-size:.82rem}
+  .rs-ctab .body .d{grid-area:d;font-weight:600}
+  .rs-ctab .body .a{grid-area:a;text-align:right}
+  .rs-ctab .body .p{grid-area:p;text-align:left;font-weight:700}
+  .rs-ctab .body .m{grid-area:m;text-align:left}
+  .rs-cond{padding:18px}
+  .rs-cond .cv{font-size:1.6rem}
+  /* ≥44px touch targets (designer «أهداف لمسٍ ≥٤٤px») */
   .rs-bar{gap:8px;padding:11px 4px}
-  .rs-bar button{padding:10px 13px;font-size:.8rem}
+  .rs-bar button{padding:11px 13px;font-size:.8rem;min-height:44px}
+  .rs-mfold>summary{min-height:44px;box-sizing:border-box;display:flex;align-items:center}
   .rs-bar .amt{flex-basis:100%;margin-bottom:2px}
 }
 body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:ltr}
@@ -2437,13 +2464,20 @@ function _s4bEvidence(d,v){
     return _tr?('<div class="rs-sec rv"><div class="rs-h"><h2>'+t('الأدلّة — اتجاه المنطقة','Evidence — area trend')+'</h2></div><div class="rs-rule"></div>'+_tr+'</div>'):'';
   }
   const geo=(_cmp.basis==='geo_widened'), considered=!!(v.considered_comparables&&!v.comparables);
+  // Sprint 2.22.0b.135 (S9): a condition_stratum_led number came from the owner's ATTESTED condition mapped
+  // to the reliable price-position stratum — NOT from these market deals and NOT from the cost approach. The
+  // «قاد التقديرَ منهجُ الكلفة» frame would MISSTATE the basis (the R-B honesty rule the short report fixed at
+  // b113). This branch gives the honest attestation frame; the genuine cost-led frame is preserved below.
+  const _cl=(v.leadership||{}).rule==='condition_stratum_led';
   const n=_cmp.n||rows.length, shown=_cmp.shown||rows.length;
   const cnt=_cmp.window_label||(n+t(' معاملة',' transactions'));
   // Honest framing — market-led «قرّر رقمك» vs cost-led-considered «لم تقُد الرقم» (compliance, preserved
   // verbatim from the b38/b39/b40 keystone). The cost-led «why» (dispersion failed the reliability bar) +
   // the geo pool size are surfaced here so nothing methodological is lost when the keystone became a table.
   let frame;
-  if(considered){
+  if(considered&&_cl){
+    frame=t('هذه صفقاتُ السوق في منطقتك — لم تقُد رقمَك مباشرةً؛ رقمُك قِيسَ على شريحتها السوقيّة بناءً على إقرارك بحالة العقار (تقديرٌ استرشاديّ، لم يُعايَن ميدانياً).','These are the market transactions in your area — they did not set your number directly; your number was mapped to their market tier based on your condition declaration (an indicative estimate, not inspected on site).');
+  }else if(considered){
     frame=t('اطّلعنا على صفقات السوق في منطقتك لكنّها لم تقُد الرقم — قاد التقديرَ منهجُ الكلفة (DRC).','We reviewed market transactions in your area, but they did not set the number — the cost approach (DRC) led the estimate.');
     if(_cmp.dispersion!=null&&_cmp.pool_n)frame+=' '+t('(الحوض الجغرافيّ فشل حدّ الموثوقيّة: تشتّت ','(the geographic pool failed the reliability bar: dispersion ')+'<span dir="ltr">'+_cmp.dispersion.toFixed(3)+'</span> &gt; <span dir="ltr">0.30</span>'+t('، n=',', n=')+_cmp.pool_n+')';
   }else if(geo){
@@ -2464,6 +2498,7 @@ function _s4bEvidence(d,v){
 }
 function _s4bHow(d,v,acc,how,dense){
   const vs=v.value_stack||{}, ld=v.leadership||{}, leader=ld.leader;
+  const condLead=(leader==='condition_stratum');   // S9 (b135): the owner-attested-condition leadership card
   const rec=d.reconciliation||{}; let chip='';
   if(rec.status==='strong_convergence'){
     chip='<span class="rs-chip ok"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg> '+t('تقاربٌ قويّ','Strong convergence')+((typeof rec.spread_pct==='number'&&isFinite(rec.spread_pct))?(t(' · فارق ',' · gap ')+rec.spread_pct.toFixed(1)+'%'):'')+'</span>';
@@ -2471,6 +2506,17 @@ function _s4bHow(d,v,acc,how,dense){
     chip='<span class="rs-chip warn"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('تباعد المنهجين','Approaches diverge')+'</span>';
   }
   let h='<div class="rs-sec rv"><div class="rs-h"><h2>'+t('كيف وصلنا للرقم','How we got to this number')+'</h2>'+chip+'</div><div class="rs-rule"></div>';
+  // Sprint 2.22.0b.135 (S9) — «بطاقة القيادة بالحالة المُصرَّحة»: when the number is condition_stratum_led
+  // (b113/S7 — the owner attested a condition → the matching RELIABLE market stratum led instead of the
+  // conservative cost floor), a prominent verdict card carries the basis. The market/cost/income cards below
+  // then render as muted CONTEXT (none is the basis). Value-neutral: v.amount / stratum / cost_floor broadcast.
+  if(condLead){
+    const _cw=({good:t('«جيدة»','“good”'),renovated:t('«مُرمّم»','“renovated”'),'new':t('«جديد»','“new”'),excellent:t('«ممتازة»','“excellent”'),'very-good':t('«جيّدة جداً»','“very good”'),very_good:t('«جيّدة جداً»','“very good”')})[(d.user_inputs||{}).condition]||'';
+    h+='<div class="rs-cond"><div class="ch"><span class="flag">'+t('حالة مُصرَّحة','Declared condition')+'</span><span class="tag">'+t('الأساس المعتمد','The adopted basis')+'</span></div>';
+    h+='<div class="cv">'+fmt(v.amount)+' <span class="u">'+t('ر.ق','QAR')+'</span></div>';
+    if(ld.cost_floor!=null)h+='<div class="cba"><span class="b4">'+t('قبل: ','Before: ')+fmt(ld.cost_floor)+'</span><span class="arw" dir="ltr">→</span><span class="af">'+(_cw?(t('بعد تصريح ','After declaring ')+_cw):t('بعد إقرارك بالحالة','After your condition declaration'))+'</span></div>';
+    h+='<div class="cstrip"><svg class=ic aria-hidden=true><use href=#ic-arrow></use></svg><span>'+t('مبنيٌّ على ','Based on your ')+'<b>'+t('حالتك المُصرَّحة','declared condition')+'</b>'+t(' — الشريحة ','— the ')+esc(pick(ld,'stratum_label'))+(ld.stratum_n!=null?(' <span dir="ltr">(n='+ld.stratum_n+')</span>'):'')+'</span></div></div>';
+  }
   h+='<div class="rs-stack">';
   // market
   const mkt=vs.market||{}, mLead=(leader==='market');
