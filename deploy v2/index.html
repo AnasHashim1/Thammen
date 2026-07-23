@@ -1404,6 +1404,8 @@ function _langStored(){try{return localStorage.getItem(_LANG_KEY);}catch(e){retu
 var LANG=(EN_ENABLED&&_langStored()==='en')?'en':'ar';
 function t(ar,en){return (LANG==='en'&&en!=null)?en:ar;}
 function pick(o,base){if(!o)return '';var en=o[base+'_en'];return (LANG==='en'&&en!=null&&en!=='')?en:((o[base+'_ar']!=null)?o[base+'_ar']:'');}
+// b142: pick a bilingual ARRAY (caveat/checklist twins) — the engine emits `{base}_en` alongside `{base}`; falls back to the AR array.
+function pickArr(o,base){if(!o)return [];var en=o[base+'_en'];return (LANG==='en'&&Array.isArray(en))?en:(Array.isArray(o[base])?o[base]:[]);}
 // b140-A: trend-label localization (engine emits Arabic labels raw, no _en twin). Value-neutral display map.
 var TREND_LABEL_EN={'ارتفاع':'Rising','انخفاض':'Falling','استقرار':'Stable','متذبذب':'Volatile','غير محدد':'Undetermined','مستقر':'Stable','صاعد':'Rising','هابط':'Falling','تراجع':'Declining'};
 function trLabel(s){return (LANG==='en'&&s&&TREND_LABEL_EN[s])?TREND_LABEL_EN[s]:(s||'');}
@@ -2618,7 +2620,7 @@ function _s4bScenarios(v){
 }
 function _s4bLimits(d,muc){
   const mu=d.material_uncertainty||{}, lvl=(LANG==='en'?MUC_LEVEL_EN:MUC_LEVEL_AR)[mu.level]||'';
-  const ku=((d.reasoning_trace||{}).known_unknowns)||[];
+  const ku=pickArr(d.reasoning_trace,'known_unknowns');  // b142: EN twin in EN mode
   // «أسئلةٌ قبل الشراء» — generic buyer-education (matches the design); the property-tailored due_diligence
   // brief section stays in the FULL-details fold (renderSection), so nothing broadcast is lost.
   const ddQ=[
@@ -2836,7 +2838,7 @@ function showReport(d){
     if(_rtrR&&_rtrR.known_unknowns&&_rtrR.known_unknowns.length>0){
       h+=_ax();
       h+='<div class="rc"><div class="rt" style="margin-bottom:10px">'+t('ما لا نعرفه (يحتاج فحص ميداني)','What we don\'t know (needs a field inspection)')+'</div><div class="rn">';
-      _rtrR.known_unknowns.forEach(u=>{h+='• '+u+'<br>'});
+      pickArr(_rtrR,'known_unknowns').forEach(u=>{h+='• '+u+'<br>'});  // b142: EN twin in EN mode
       h+='</div></div>';
     }
     // (6) property basis (b9) + footprint (b10).
@@ -4380,7 +4382,8 @@ function renderSection(sec){
       break;
     case 'due_diligence':
       // Sprint 2.4c: backend sends content as array directly, not c.questions_ar
-      const ddItems = Array.isArray(c) ? c : (c.questions_ar || []);
+      // b142: pick the EN twin array (content_en) in EN mode — value-neutral
+      const ddItems = Array.isArray(c) ? pickArr(sec,'content') : (c.questions_ar || []);
       if(ddItems.length){
         body+='<ul class="br-opts">';
         ddItems.forEach(q=>{body+='<li>'+q+'</li>'});

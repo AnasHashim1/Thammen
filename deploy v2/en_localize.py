@@ -167,12 +167,54 @@ CATALOG = {
     "يستند هذا التقدير إلى منهج المقارنة بالمبيعات (VPS 3 / IVS 103)، ضمن RICS Red Book Global Standards (effective 31 January 2025) بما في ذلك معيار نماذج التقييم (VPS 5 / IVS 105)، مع الإفصاح عن عدم اليقين الجوهري (VPGA 10) في التقرير (VPS 6 / IVS 106). النموذج الآلي (AVM) أداة مساعدة ولا يُنتج بمفرده تقييماً نهائياً مطابقاً للمعايير دون مراجعة مُقيِّم مُرخّص.": "This estimate is based on the sales-comparison approach (VPS 3 / IVS 103), within the RICS Red Book Global Standards (effective 31 January 2025), including the valuation-models standard (VPS 5 / IVS 105), with disclosure of material uncertainty (VPGA 10) in the report (VPS 6 / IVS 106). The automated model (AVM) is a support tool and does not by itself produce a final standards-compliant valuation without review by a licensed valuer.",
     "يشير النموذج إلى أن القيمة المقارنة لا تتجاوز قيمة الأرض المجردة؛ القيمة الضمنية للمبنى ≈ صفر (قد يُعتبر عقاراً للتطوير).": "The model indicates that the comparable value does not exceed the bare land value; the implied building value ≈ zero (it may be regarded as a development property).",
     "يفصل ثمّن قيمة الأرض (من معاملات بيع أراضٍ نقية في نفس المنطقة) عن قيمة البناء الضمنية (الفرق بين القيمة الكلية وقيمة الأرض). هذا الفصل يكشف للمستخدم نسبة مساهمة كل عنصر — حسب RICS Red Book.": "Thammen separates the land value (from pure land-sale transactions in the same district) from the implied building value (the difference between the total value and the land value). This separation reveals to the user the contribution share of each component — in accordance with the RICS Red Book.",
+    # ── Sprint 2.22.0b.142 — the caveat/checklist ARRAYS (constant strings): ──
+    # reasoning_trace.known_unknowns + the brief `due_diligence.content` array.
+    # These are index-aligned into `{key}_en` arrays by the attach_en array rule below;
+    # the frontend picks the `_en` array in EN mode (VALUE-INVARIANT — additive only).
+    # known_unknowns — raw_land:
+    "طبيعة التربة وصلاحيتها للبناء (فحص جيوتقنيّ)": "The soil's nature and suitability for building (a geotechnical survey)",
+    "توفّر الخدمات والمرافق للقطعة (كهرباء، ماء، صرف صحّي)": "The availability of services and utilities to the plot (electricity, water, sewage)",
+    "إمكان الفرز الفعليّ وموافقة التخطيط العمرانيّ بوزارة البلدية": "The feasibility of actual subdivision and urban-planning approval from the Ministry of Municipality",
+    "أي ارتفاقات أو قيود تخطيطية خاصّة على القطعة": "Any easements or special planning restrictions on the plot",
+    # known_unknowns — standard (villa/apartment) + the legal item shared with raw_land:
+    "أي التزامات قانونية (رهون، خلافات، إرث، حصص غير مفروزة)": "Any legal obligations (mortgages, disputes, inheritance, undivided shares)",
+    "حالة العقار الداخلية الفعلية (تشطيبات، صيانة، تكييف)": "The property's actual internal condition (finishes, maintenance, air-conditioning)",
+    "تاريخ آخر تجديد فعلي أو حالة الأنظمة (سباكة، كهرباء)": "The date of the last actual renovation or the condition of the systems (plumbing, electricity)",
+    "وضع المستأجر الحالي (إن وُجد) ومدة العقد": "The current tenant's status (if any) and the lease term",
+    "الإطلالة الفعلية والطابق": "The actual view and floor",
+    "ضوضاء البرج/المحيط أو مشاكل خاصة": "Tower/surroundings noise or particular issues",
+    "حالة الحديقة وحوض السباحة (إن وُجد)": "The condition of the garden and swimming pool (if any)",
+    "حالة الجدران الخارجية والسقف": "The condition of the external walls and roof",
+    "تعديلات غير مرخصة من البلدية على البناء الأصلي (تجاوزات الارتدادات أو الارتفاع المسموح)": "Modifications to the original building not licensed by the municipality (setback or permitted-height violations)",
+    "ملاحق وإضافات غير موثقة في السجل العقاري (غرف خدم، مظلات، مسابح، حدائق مضافة)": "Annexes and additions not documented in the real-estate registry (servant rooms, canopies, pools, added gardens)",
+    "التحقق من شهادة إتمام الإشغال / شهادة إنجاز البناء من البلدية": "Verifying the occupancy certificate / building-completion certificate from the municipality",
+    # due_diligence.content — land:
+    "تحقّق من تصنيف المنطقة (R1/R2/R3) من البلدية": "Verify the zoning classification (R1/R2/R3) with the municipality",
+    "اطلب بيان عقاري من وزارة العدل (يكشف الرهونات والخلافات)": "Request a real-estate statement from the Ministry of Justice (it reveals mortgages and disputes)",
+    "تحقّق من خدمات الموقع (كهرباء، ماء، صرف)": "Verify the site's services (electricity, water, drainage)",
+    "اطلب ارتفاع البناء المسموح (طوابق + نسبة بناء + setbacks)": "Ask for the permitted building height (floors + building ratio + setbacks)",
+    "اسأل عن أي قيود قانونية (إرث، حصص غير مفروزة)": "Ask about any legal restrictions (inheritance, undivided shares)",
+    "افحص منسوب الأرض مقارنة بالشارع (تكلفة الردم/الحفر)": "Check the plot's level relative to the street (filling/excavation cost)",
+    "تحقّق من مدى توفّر البنية التحتية (شارع مرصوف، كهرباء قريبة)": "Verify the availability of infrastructure (a paved street, nearby electricity)",
+    # due_diligence.content — villa/building:
+    "اسأل عن عمر البناء الحقيقي (ليس ما يقوله البائع)": "Ask about the real building age (not what the seller says)",
+    "تحقق من تصنيف المنطقة (R1/R2/R3) — يحدد ما يمكنك بناؤه": "Verify the zoning classification (R1/R2/R3) — it determines what you can build",
+    "اطلب فواتير الخدمات (كهرباء/ماء) لآخر سنة": "Request the utility bills (electricity/water) for the last year",
+    "إن كان مؤجراً: اطلب عقود الإيجار الحالية": "If it is rented: request the current lease contracts",
 }
 
 
+# b142: constant caveat/checklist ARRAYS that get a translated `{key}_en` twin
+# (index-aligned; uncataloged items fall back to the Arabic item). `known_unknowns` =
+# reasoning_trace's array; `content` = the brief due_diligence section's array (fires only
+# when `content` is a list-of-strings with ≥1 cataloged item — dict/other `content` untouched).
+_ARR_EN_KEYS = ('known_unknowns', 'content')
+
+
 def attach_en(obj, _depth=0):
-    """Recursively add `{base}_en` siblings from CATALOG. Best-effort / additive /
-    never raises. Returns the same object (mutated in place)."""
+    """Recursively add `{base}_en` siblings from CATALOG (strings) + `{key}_en` twins for the
+    constant caveat/checklist arrays. Best-effort / additive / never raises. Returns the same
+    object (mutated in place)."""
     try:
         if _depth > 40:
             return obj
@@ -185,6 +227,12 @@ def attach_en(obj, _depth=0):
                         en = CATALOG.get(_norm(v))
                         if en is not None:
                             obj[enk] = en
+                elif (k in _ARR_EN_KEYS and isinstance(v, list) and v
+                      and (k + '_en') not in obj
+                      and all(isinstance(x, str) for x in v)
+                      and any(CATALOG.get(_norm(x)) is not None for x in v)):
+                    # a constant caveat/checklist array → additive translated _en twin
+                    obj[k + '_en'] = [CATALOG.get(_norm(x), x) for x in v]
                 else:
                     attach_en(v, _depth + 1)
         elif isinstance(obj, list):

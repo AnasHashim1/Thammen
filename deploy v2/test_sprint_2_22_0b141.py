@@ -43,7 +43,8 @@ print("[known-unknowns de-dup]")
 ck("LIMITS uncapped (ku.forEach)",  "ku.forEach(function(u){h+='<div class=\"li\">" in HTML)
 ck("LIMITS cap REMOVED (no slice(0,6))", "ku.slice(0,6)" not in HTML)
 ck("fold known-unknowns REMOVED (show() rtr)", "rtr.known_unknowns.forEach(u=>{h+='• '+u+'<br>'})" not in HTML)
-ck("full-report known-unknowns KEPT (_rtrR)",  "_rtrR.known_unknowns.forEach(u=>{h+='• '+u+'<br>'})" in HTML)
+# b142 R6: the report known-unknowns read now goes through pickArr (EN twin in EN mode); still KEPT + full.
+ck("full-report known-unknowns KEPT (_rtrR, b142 pickArr)",  "pickArr(_rtrR,'known_unknowns').forEach(u=>{h+='• '+u+'<br>'})" in HTML)
 ck("LIMITS «ما لا نراه بعد» kept", "t('ما لا نراه بعد','What we don\\'t see yet')" in HTML)
 
 # ── (3) «التفاصيل الكاملة» naming collision resolved ─────────────────────────
@@ -63,8 +64,9 @@ ck("old ungated pulse gone", "if(d.district&&d.asset_type){var _pb=document.crea
 
 # ── (5) version + value-neutral ─────────────────────────────────────────────
 print("[version + value-neutral]")
-ck("engine version b141", "thammen-sprint2p22p0b141-result-screen-declutter" in ENG)
-ck("sprint tag b141",     "SPRINT_TAG = '2.22.0b.141'" in ENG)
+# b142 R6 (Lesson-2): version-agnostic — the exact-version pin broke on the b142 bump.
+ck("engine version b-series", "thammen-sprint2p22p0b1" in ENG)
+ck("sprint tag b-series",     "SPRINT_TAG = '2.22.0b.1" in ENG)
 ck("_s4bLimits intact",   "function _s4bLimits(d,muc){" in HTML)
 ck("engine has no result-screen logic (frontend-only)", "def show(" not in ENG and "_s4bTrendSpark" not in ENG)
 
