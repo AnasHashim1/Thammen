@@ -23,9 +23,9 @@ check('rental-note helper -> var(--muted)',
 check('footprint title -> var(--primary)',
       'color:var(--primary)"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg>' in HTML)
 check('cap-note helper -> var(--muted)',
-      'color:var(--muted);margin-top:6px">حُدِّدت مساحة البناء' in HTML)
+      "color:var(--muted);margin-top:6px\">'+t('حُدِّدت مساحة البناء" in HTML)  # b138: t()-wrapped
 check('assumes-typical title -> var(--primary)',
-      'color:var(--primary)">ℹ التقييم يفترض بناءً نموذجياً' in HTML)
+      "color:var(--primary)\">'+t('ℹ التقييم يفترض بناءً نموذجياً" in HTML)  # b138: t()-wrapped
 
 # ---- (2) no sub-AA helper/title hex left; decorative ones preserved ----
 check('only the 2 decorative #8b6e44 remain (gradient + large land-value figure)',

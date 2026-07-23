@@ -377,7 +377,7 @@ def test_t1_2_frontend_renders_historical_framing_when_slope_absent():
     تاريخي' + historical window when backend suppresses slope_pct.
     When slope is present, the original 'اتجاه السوق' framing remains."""
     # Suppressed-path headline
-    assert "trHeadline='اتجاه تاريخي: '" in _INDEX_SRC, (
+    assert "trHeadline=t('اتجاه تاريخي: '" in _INDEX_SRC, (  # b138: t()-wrapped, AR arg verbatim
         "T1.2 frontend: suppressed-path 'اتجاه تاريخي' headline missing"
     )
     assert "tr.historical_window_ar" in _INDEX_SRC, (

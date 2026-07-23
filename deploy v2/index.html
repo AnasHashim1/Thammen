@@ -1976,7 +1976,7 @@ async function run(){
 async function thammenReEvalOverride(area){
   const a=Number(area);
   if(!window._lastSubmit||!isFinite(a)||a<=0||a>10000){
-    alert('يرجى إدخال مساحة صحيحة بين 1 و 10,000 م²');
+    alert(t('يرجى إدخال مساحة صحيحة بين 1 و 10,000 م²','Please enter a valid area between 1 and 10,000 m²'));
     return;
   }
   const bd=JSON.parse(JSON.stringify(window._lastSubmit.body));
@@ -1987,7 +1987,7 @@ async function thammenReEvalOverride(area){
     const banner=document.createElement('div');
     banner.id='_mqReevalBanner';
     banner.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--bronze);color:white;padding:10px 16px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);z-index:1500;font-weight:600';
-    banner.textContent='جاري إعادة التقييم بمساحة '+ a +' م²...';
+    banner.textContent=t('جاري إعادة التقييم بمساحة ','Re-evaluating at ')+ a +t(' م²...',' m²...');
     document.body.appendChild(banner);
   }catch(_){}
   try{
@@ -1999,8 +1999,8 @@ async function thammenReEvalOverride(area){
     show(data);
     window.scrollTo({top:0, behavior:'smooth'});
   }catch(e){
-    if(fRes)fRes.innerHTML='<div class="err" style="margin-top:14px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||'حدث خطأ')+'</div>';
-    else alert('<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||'حدث خطأ'));
+    if(fRes)fRes.innerHTML='<div class="err" style="margin-top:14px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||t('حدث خطأ','An error occurred'))+'</div>';
+    else alert('<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||t('حدث خطأ','An error occurred')));
   }finally{
     const b=document.getElementById('_mqReevalBanner');
     if(b)b.remove();
@@ -2011,7 +2011,7 @@ function thammenReEvalOverrideFromInput(){
   const el=document.getElementById('mqOverrideInput');
   if(!el){return;}
   const v=(el.value||'').trim();
-  if(!v){alert('يرجى إدخال المساحة الجديدة');el.focus();return;}
+  if(!v){alert(t('يرجى إدخال المساحة الجديدة','Please enter the new area'));el.focus();return;}
   thammenReEvalOverride(v);
 }
 
@@ -2056,7 +2056,7 @@ async function thammenReEvalGeometry(){
   const banner=document.createElement('div');
   banner.id='_mqReevalBanner';
   banner.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--bronze);color:white;padding:10px 16px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);z-index:1500;font-weight:600';
-  banner.textContent='جاري تحسين التقييم...';
+  banner.textContent=t('جاري تحسين التقييم...','Refining the valuation...');
   try{document.body.appendChild(banner);}catch(_){}
   try{
     const r=await fetch(API+endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bd)});
@@ -2076,8 +2076,8 @@ async function thammenReEvalGeometry(){
     else{go('results');}
   }catch(e){
     const rr=document.getElementById('refineRes');
-    if(rr)rr.innerHTML='<div class="err" style="margin-top:14px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||'حدث خطأ')+'</div>';
-    else alert('<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||'حدث خطأ'));
+    if(rr)rr.innerHTML='<div class="err" style="margin-top:14px"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||t('حدث خطأ','An error occurred'))+'</div>';
+    else alert('<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+(e.message||t('حدث خطأ','An error occurred')));
   }finally{
     const b=document.getElementById('_mqReevalBanner');
     if(b)b.remove();
@@ -3002,7 +3002,7 @@ function srRecalcPay(){
   const dEl=document.getElementById('srDown'),yEl=document.getElementById('srYears'),rEl=document.getElementById('srRate'),out=document.getElementById('srPay');
   if(!(dEl&&yEl&&rEl&&out))return;
   const p=_srPayment(v.amount||0,parseFloat(dEl.value)||0,parseFloat(yEl.value)||0,parseFloat(rEl.value)||0);
-  out.textContent=p?('≈ '+fmt(p)+' ر.ق/شهر'):'—';
+  out.textContent=p?('≈ '+fmt(p)+t(' ر.ق/شهر',' QAR/month')):'—';
 }
 // ── Sprint 2.22.0b.35 (DEF-UX16): the RESULT-screen buyer financing calculator's live recalc.
 // Reuses _srPayment (the b25 D3 amortization — DRY). Separate ids (bc*) so it never collides
@@ -3012,7 +3012,7 @@ function bcRecalc(){
   const dEl=document.getElementById('bcDown'),yEl=document.getElementById('bcYears'),rEl=document.getElementById('bcRate'),out=document.getElementById('bcPay');
   if(!(dEl&&yEl&&rEl&&out))return;
   const p=_srPayment(v.amount||0,parseFloat(dEl.value)||0,parseFloat(yEl.value)||0,parseFloat(rEl.value)||0);
-  out.textContent=p?(fmt(p)+' ر.ق/شهر'):'—';
+  out.textContent=p?(fmt(p)+t(' ر.ق/شهر',' QAR/month')):'—';
 }
 function openShortReport(){const d=window._lastResult; if(!d)return; showShortReport(d); go('shortReport');}
 function printShortReport(){
@@ -3495,10 +3495,10 @@ function show(d){
         // building area (E15: front 5 · side 3 · rear 3 · the 60% coverage cap) —
         // setback-envelope plots only (the cov-cap/shared methods don't use setbacks).
         var _ctx=(_g.footprint_method==='coverage_cap_shared')
-          ? ('(حصة الوحدة في قطعة مشتركة'+(_g.n_share?' بين '+_g.n_share+' وحدات':'')+') ≈ ')
-          : (_dims&&_dims.length===2?('من أبعاد قطعتك (<span dir="ltr">'+_dims[0]+' × '+_dims[1]+'</span> م)'+(_g.footprint_method==='setback_envelope'?' بعد الارتدادات القانونية (أمامي 5 · جانبي 3 · خلفي 3) وضمن سقف تغطية 60%':'')+' ≈ '):'≈ ');
-        _fph.innerHTML='<svg class=ic aria-hidden=true><use href=#ic-bulb></use></svg> الحدّ الأقصى المُقدَّر '+_ctx+
-          '<strong>'+fmt(_mb)+' م²</strong> — عدّله لواقع مبناك (الفعلي عادةً أصغر).';
+          ? (t('(حصة الوحدة في قطعة مشتركة','(unit share of a plot shared')+(_g.n_share?t(' بين ',' between ')+_g.n_share+t(' وحدات',' units'):'')+') ≈ ')
+          : (_dims&&_dims.length===2?(t('من أبعاد قطعتك (','from your plot dimensions (')+'<span dir="ltr">'+_dims[0]+' × '+_dims[1]+'</span>'+t(' م)',' m)')+(_g.footprint_method==='setback_envelope'?t(' بعد الارتدادات القانونية (أمامي 5 · جانبي 3 · خلفي 3) وضمن سقف تغطية 60%',' after the legal setbacks (front 5 · side 3 · rear 3) and within a 60% coverage cap'):'')+' ≈ '):'≈ ');
+        _fph.innerHTML='<svg class=ic aria-hidden=true><use href=#ic-bulb></use></svg> '+t('الحدّ الأقصى المُقدَّر ','Estimated maximum ')+_ctx+
+          '<strong>'+fmt(_mb)+t(' م²</strong> — عدّله لواقع مبناك (الفعلي عادةً أصغر).',' m²</strong> — adjust it to your actual building (usually smaller).');
       }else{_fph.textContent='';}
     }
   }catch(e){}
@@ -3559,7 +3559,7 @@ function show(d){
   // in the backend string (Operational_Rules #25); Latin in the summary uses &lrm;.
   if(d.rics_methodology_note_ar){
     a8acc+='<details style="margin-bottom:14px;border:1px solid var(--light);border-radius:8px;padding:10px 12px;background:var(--alt)">';
-    a8acc+='<summary style="cursor:pointer;font-weight:600;font-size:.9rem;color:var(--primary)">ℹ المنهجية ومعايير &lrm;RICS / IVS&lrm;</summary>';
+    a8acc+='<summary style="cursor:pointer;font-weight:600;font-size:.9rem;color:var(--primary)">'+t('ℹ المنهجية ومعايير &lrm;RICS / IVS&lrm;','ℹ Methodology and standards &lrm;RICS / IVS&lrm;')+'</summary>';
     a8acc+='<div style="margin-top:8px;line-height:1.7;font-size:.88rem;color:var(--muted)">'+d.rics_methodology_note_ar+'</div>';
     a8acc+='</details>';
   }
@@ -3575,13 +3575,13 @@ function show(d){
   const szm=d.subtype_zoning_mismatch;
   if(szm&&szm.message_ar){
     alerts+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
-    alerts+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> تناقض في تصنيف العقار</div>';
+    alerts+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('تناقض في تصنيف العقار','Property classification conflict')+'</div>';
     alerts+='<div style="line-height:1.7;font-size:.92rem">'+szm.message_ar+'</div>';
     if(szm.data_age_note_ar){
-      alerts+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--warn);font-size:.85rem;color:var(--muted)"><strong>ملاحظة:</strong> '+szm.data_age_note_ar+'</div>';
+      alerts+='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--warn);font-size:.85rem;color:var(--muted)"><strong>'+t('ملاحظة:','Note:')+'</strong> '+szm.data_age_note_ar+'</div>';
     }
     if(szm.recommendation_ar){
-      alerts+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>التوصية:</strong> '+szm.recommendation_ar+'</div>';
+      alerts+='<div style="margin-top:6px;font-size:.85rem;color:var(--muted)"><strong>'+t('التوصية:','Recommendation:')+'</strong> '+szm.recommendation_ar+'</div>';
     }
     alerts+='</div>';
   }
@@ -3596,7 +3596,7 @@ function show(d){
     const isWarn=atr.action==='warn';
     const bdr=isWarn?'var(--warn)':'var(--bad)';
     const bg=isWarn?'var(--warn-bg)':'var(--bad-bg)';
-    const ttl=isWarn?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> تنبيه على تصنيف الأرض':(atr.reason==='building_present'?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> القطعة عليها مبنى':'<svg class=ic aria-hidden=true><use href=#ic-x></use></svg> خارج نطاق التقييم');
+    const ttl=isWarn?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('تنبيه على تصنيف الأرض','Note on land classification'):(atr.reason==='building_present'?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('القطعة عليها مبنى','The plot has a building'):'<svg class=ic aria-hidden=true><use href=#ic-x></use></svg> '+t('خارج نطاق التقييم','Outside valuation scope'));
     alerts+='<div style="background:'+bg+';border:2px solid '+bdr+';border-radius:8px;padding:16px;margin-bottom:14px">';
     alerts+='<div style="font-weight:700;color:'+bdr+';margin-bottom:8px;font-size:1.02rem">'+ttl+'</div>';
     alerts+='<div style="line-height:1.8;font-size:.92rem;white-space:pre-line">'+atr.message_ar+'</div>';
@@ -3617,22 +3617,22 @@ function show(d){
     const eff=mqr.effective_per_villa;
     const coh=(mqr.cohabiting_buildings||[]).filter(x=>x!=null);
     alerts+='<div style="background:var(--warn-bg);border:2px solid var(--warn);border-radius:8px;padding:16px;margin-bottom:14px">';
-    alerts+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> قطعة مشتركة ('+ n +' فلل على نفس القطعة)</div>';
-    alerts+='<div style="line-height:1.7;font-size:.92rem">تقييم مبدئي بقسمة الأرض بالتساوي ('+ (cad!=null?cad:'?') +' ÷ '+ n +' = '+ eff +' م²). لو حصة الأرض الفعلية مختلفة، عدّل المساحة يدوياً.</div>';
+    alerts+='<div style="font-weight:700;color:var(--warn);margin-bottom:8px;font-size:1.02rem"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('قطعة مشتركة (','Shared plot (')+ n +t(' فلل على نفس القطعة)',' villas on the same plot)')+'</div>';
+    alerts+='<div style="line-height:1.7;font-size:.92rem">'+t('تقييم مبدئي بقسمة الأرض بالتساوي (','Preliminary estimate splitting the land equally (')+ (cad!=null?cad:'?') +' ÷ '+ n +' = '+ eff +t(' م²). لو حصة الأرض الفعلية مختلفة، عدّل المساحة يدوياً.',' m²). If the actual land share differs, adjust the area manually.')+'</div>';
     if(coh.length){
-      alerts+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted)">الفيلات الأخرى على نفس الـ PIN: '+ coh.join(', ') +'</div>';
+      alerts+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted)">'+t('الفيلات الأخرى على نفس الـ PIN: ','Other villas on the same PIN: ')+ coh.join(', ') +'</div>';
     }
     if(mqr.user_override_applied){
-      alerts+='<div style="margin-top:10px;padding:8px 12px;background:var(--ok-bg);color:var(--ok);border-radius:6px;font-size:.88rem"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg> تم استخدام المساحة التي حدّدتها يدوياً ('+ eff +' م²)</div>';
+      alerts+='<div style="margin-top:10px;padding:8px 12px;background:var(--ok-bg);color:var(--ok);border-radius:6px;font-size:.88rem"><svg class=ic aria-hidden=true><use href=#ic-check></use></svg> '+t('تم استخدام المساحة التي حدّدتها يدوياً (','Using the area you set manually (')+ eff +t(' م²)',' m²)')+'</div>';
     }
     // Stage-1 transparency: surface stage + confidence so the broker
     // understands this is the first-pass estimate, not the final word.
-    alerts+='<div style="margin-top:8px;font-size:.78rem;color:var(--muted)">المرحلة '+ (mqr.stage||1) +' — ثقة ~'+ (mqr.confidence_pct||70) +'% (تقدير سريع، قابل للتصحيح)</div>';
+    alerts+='<div style="margin-top:8px;font-size:.78rem;color:var(--muted)">'+t('المرحلة ','Stage ')+ (mqr.stage||1) +t(' — ثقة ~',' — confidence ~')+ (mqr.confidence_pct||70) +t('% (تقدير سريع، قابل للتصحيح)','% (a quick estimate, correctable)')+'</div>';
     // Manual override row — the only action in Stage 1 (no toggle).
     alerts+='<div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--warn);display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
-    alerts+='<label style="font-size:.88rem;color:var(--text);font-weight:600">عدّل المساحة (م²):</label>';
+    alerts+='<label style="font-size:.88rem;color:var(--text);font-weight:600">'+t('عدّل المساحة (م²):','Adjust the area (m²):')+'</label>';
     alerts+='<input id="mqOverrideInput" type="number" min="1" max="10000" step="1" placeholder="'+ eff +'" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;width:120px">';
-    alerts+='<button class="copy-btn" onclick="thammenReEvalOverrideFromInput()">إعادة التقييم</button>';
+    alerts+='<button class="copy-btn" onclick="thammenReEvalOverrideFromInput()">'+t('إعادة التقييم','Re-evaluate')+'</button>';
     alerts+='</div>';
     alerts+='</div>';
   }
@@ -3662,12 +3662,12 @@ function show(d){
     if(_ux3NotReady){
       // DEF-UX3: honest stance (no «يتطلب الإيجار», no «منهج الدخل» — the income
       // product isn't ready). The «why» lives on the insufficient-data card below.
-      alerts+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted);line-height:1.6">ثمّن يدعم <strong>الفلل والأراضي</strong> فقط حالياً.</div>';
+      alerts+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted);line-height:1.6">'+t('ثمّن يدعم <strong>الفلل والأراضي</strong> فقط حالياً.','Thammen currently supports <strong>villas and land</strong> only.')+'</div>';
     }else{
       // Sprint 2.22.0b.22 — the «يتطلب:» line drops once the requirement is met
       // (a valuation exists): pre-b22 it kept demanding the rent ABOVE a
       // successful income valuation (Phase-0 §3 stale-qualifier finding).
-      if(ss.requires_user_input_ar&&!hasValuation)alerts+='<div style="margin-top:8px;font-size:.88rem;color:var(--warn)"><strong>يتطلب:</strong> '+ss.requires_user_input_ar+'</div>';
+      if(ss.requires_user_input_ar&&!hasValuation)alerts+='<div style="margin-top:8px;font-size:.88rem;color:var(--warn)"><strong>'+t('يتطلب:','Requires:')+'</strong> '+ss.requires_user_input_ar+'</div>';
       alerts+='<div style="margin-top:8px;font-size:.85rem;color:var(--muted);line-height:1.6">'+ss.disclaimer_ar+'</div>';
     }
     alerts+='</div>';
@@ -3954,29 +3954,29 @@ function show(d){
     const eff=g.effective_footprint_m2;                 // value the engine actually used (post-cap)
     const capFired=confirmed&&eff&&rawFp&&eff<rawFp;    // brief F3: disclose ONLY when the zone cap bit
     h+='<div class="rc" style="border-color:#d9c7a8;background:#faf7f1">';
-    h+='<div class="rt" style="margin-bottom:6px;color:var(--primary)"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg> '+(confirmed?'مساحة البناء الأرضي (مؤكَّد <svg class=ic aria-hidden=true><use href=#ic-check></use></svg>)':'حسّن التقييم (المرحلة 2)')+'</div>';
+    h+='<div class="rt" style="margin-bottom:6px;color:var(--primary)"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg> '+(confirmed?t('مساحة البناء الأرضي (مؤكَّد ','Ground building area (confirmed ')+'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg>)':t('حسّن التقييم (المرحلة 2)','Refine the valuation (Stage 2)'))+'</div>';
     if(confirmed){
-      h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">اعتُمدت مساحة البناء الأرضية: <strong>'+fmt(eff)+' م²</strong></div>';
-      if(capFired) h+='<div class="rn" style="font-size:.8rem;color:var(--muted);margin-top:6px">حُدِّدت مساحة البناء إلى '+fmt(eff)+'م² — أقصى تغطية أرضية مسموحة للقسيمة وفق اشتراطات المنطقة'+(g.zoning_code?(' ('+g.zoning_code+' '+g.zone_max_coverage_pct+'%)'):'')+'.</div>';
+      h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">'+t('اعتُمدت مساحة البناء الأرضية: ','Adopted ground building area: ')+'<strong>'+fmt(eff)+t(' م²',' m²')+'</strong></div>';
+      if(capFired) h+='<div class="rn" style="font-size:.8rem;color:var(--muted);margin-top:6px">'+t('حُدِّدت مساحة البناء إلى ','Building area capped at ')+fmt(eff)+t('م² — أقصى تغطية أرضية مسموحة للقسيمة وفق اشتراطات المنطقة','m² — the maximum ground coverage allowed for the plot under the zone regulations')+(g.zoning_code?(' ('+g.zoning_code+' '+g.zone_max_coverage_pct+'%)'):'')+'.</div>';
     }else{
       // Sprint 2.22.0b.10 — show the MAX-buildable footprint from the plot's own
       // dimensions − legal setbacks (a CEILING; the user corrects DOWN). Falls back
       // to the coverage-cap wording for non-rectangular plots, then the b1 default.
       const mb=g.max_buildable_footprint_m2, dims=g.plot_dims_m, meth=g.footprint_method;
       if(mb&&meth==='setback_envelope'&&dims&&dims.length===2){
-        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">قطعتك ≈ <strong dir="ltr">'+dims[0]+' × '+dims[1]+'</strong> م، والحدّ الأقصى المسموح للبناء ≈ <strong>'+fmt(mb)+' م²</strong> (طابق أرضي'+(g.zoning_code?('، '+g.zoning_code+' '+g.zone_max_coverage_pct+'%'):'')+'). البناء الفعلي عادةً أصغر — أدخِل تفاصيله لتدقيق التقدير:</div>';
+        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">'+t('قطعتك ≈ ','Your plot ≈ ')+'<strong dir="ltr">'+dims[0]+' × '+dims[1]+'</strong>'+t(' م، والحدّ الأقصى المسموح للبناء ≈ ',' m, and the maximum allowed building footprint ≈ ')+'<strong>'+fmt(mb)+t(' م²',' m²')+'</strong>'+t(' (طابق أرضي',' (ground floor')+(g.zoning_code?(t('، ',', ')+g.zoning_code+' '+g.zone_max_coverage_pct+'%'):'')+t('). البناء الفعلي عادةً أصغر — أدخِل تفاصيله لتدقيق التقدير:</div>','). The actual building is usually smaller — enter its details to refine the estimate:</div>');
       }else if(mb&&meth==='coverage_cap_shared'){
-        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">هذه القطعة مشتركة بين <strong>'+(g.n_share||'عدّة')+'</strong> وحدات؛ الحدّ الأقصى للبناء الأرضي <strong>لوحدتك</strong> ≈ <strong>'+fmt(mb)+' م²</strong> (على الحصة الفعلية'+(g.effective_share_m2?(' ≈ '+fmt(g.effective_share_m2)+' م²'):'')+'). البناء الفعلي عادةً أصغر — أدخِل تفاصيله لتدقيق التقدير:</div>';
+        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">'+t('هذه القطعة مشتركة بين ','This plot is shared between ')+'<strong>'+(g.n_share||t('عدّة','several'))+'</strong>'+t(' وحدات؛ الحدّ الأقصى للبناء الأرضي ',' units; the maximum ground building footprint ')+'<strong>'+t('لوحدتك','for your unit')+'</strong> ≈ <strong>'+fmt(mb)+t(' م²',' m²')+'</strong>'+t(' (على الحصة الفعلية',' (on the effective share')+(g.effective_share_m2?(' ≈ '+fmt(g.effective_share_m2)+t(' م²',' m²')):'')+t('). البناء الفعلي عادةً أصغر — أدخِل تفاصيله لتدقيق التقدير:</div>','). The actual building is usually smaller — enter its details to refine the estimate:</div>');
       }else if(mb){
-        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">الحدّ الأقصى المسموح للبناء ≈ <strong>'+fmt(mb)+' م²</strong> (من حدّ التغطية النظامي'+(g.zoning_code?(' '+g.zoning_code+' '+g.zone_max_coverage_pct+'%'):'')+'). أدخِل تفاصيل البناء الفعليّة لتدقيقه:</div>';
+        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.7">'+t('الحدّ الأقصى المسموح للبناء ≈ ','Maximum allowed building footprint ≈ ')+'<strong>'+fmt(mb)+t(' م²',' m²')+'</strong>'+t(' (من حدّ التغطية النظامي',' (from the statutory coverage cap')+(g.zoning_code?(' '+g.zoning_code+' '+g.zone_max_coverage_pct+'%'):'')+t('). أدخِل تفاصيل البناء الفعليّة لتدقيقه:</div>','). Enter the actual building details to refine it:</div>');
       }else{
-        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">هذا تقدير مبدئي يفترض بناءً نموذجياً (المقترح <strong>'+fmt(g.suggested_footprint_m2)+' م²</strong>';
-        if(g.zone_max_coverage_pct) h+=' · حدّ التغطية النظامي '+(g.zoning_code?('('+g.zoning_code+') '):'')+g.zone_max_coverage_pct+'%';
-        h+='). أدخِل تفاصيل البناء الفعليّة لتدقيقه:</div>';
+        h+='<div class="rn" style="font-size:.85rem;color:#555;line-height:1.6">'+t('هذا تقدير مبدئي يفترض بناءً نموذجياً (المقترح ','This is a preliminary estimate assuming a standard building (suggested ')+'<strong>'+fmt(g.suggested_footprint_m2)+t(' م²',' m²')+'</strong>';
+        if(g.zone_max_coverage_pct) h+=t(' · حدّ التغطية النظامي ',' · statutory coverage cap ')+(g.zoning_code?('('+g.zoning_code+') '):'')+g.zone_max_coverage_pct+'%';
+        h+=t('). أدخِل تفاصيل البناء الفعليّة لتدقيقه:</div>','). Enter the actual building details to refine it:</div>');
       }
     }
-    h+='<button onclick="go(\'refine\')" style="margin-top:10px;width:100%;padding:10px;background:var(--bronze);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:.9rem;cursor:pointer">'+(confirmed?'عدّل التفاصيل':'حسّن التقييم (المرحلة 2)')+'</button>';
-    h+='<div class="rn" style="font-size:.78rem;color:#999;margin-top:8px">السرداب (إن وُجد) يُعرض ويُلتقَط لكنه لا يُحرّك تقدير المقارنة.</div>';
+    h+='<button onclick="go(\'refine\')" style="margin-top:10px;width:100%;padding:10px;background:var(--bronze);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:.9rem;cursor:pointer">'+(confirmed?t('عدّل التفاصيل','Edit the details'):t('حسّن التقييم (المرحلة 2)','Refine the valuation (Stage 2)'))+'</button>';
+    h+='<div class="rn" style="font-size:.78rem;color:#999;margin-top:8px">'+t('السرداب (إن وُجد) يُعرض ويُلتقَط لكنه لا يُحرّك تقدير المقارنة.','The basement (if any) is shown and captured but does not move the comparison estimate.')+'</div>';
     h+='</div>';
   }
 
@@ -3989,8 +3989,8 @@ function show(d){
     const noDetails=!ui.floors&&!ui.basement&&!ui.footprint_m2&&!ui.external_majlis&&!ui.annexes;
     if(noDetails){
       h+='<div class="rc" style="border-color:#f4d03f;background:#fffdf3">';
-      h+='<div class="rt" style="margin-bottom:6px;color:var(--primary)">ℹ التقييم يفترض بناءً نموذجياً</div>';
-      h+='<div class="rn" style="font-size:.85rem;color:#666">قد يؤدي إدخال التفاصيل الفعلية للعقار — كالحالة والمساحة الدقيقة والتشطيبات — إلى تعديل جوهري في التقدير.</div>';
+      h+='<div class="rt" style="margin-bottom:6px;color:var(--primary)">'+t('ℹ التقييم يفترض بناءً نموذجياً','ℹ The valuation assumes a standard building')+'</div>';
+      h+='<div class="rn" style="font-size:.85rem;color:#666">'+t('قد يؤدي إدخال التفاصيل الفعلية للعقار — كالحالة والمساحة الدقيقة والتشطيبات — إلى تعديل جوهري في التقدير.','Entering the actual property details — such as condition, exact area, and finishes — may materially change the estimate.')+'</div>';
       h+='</div>';
     }
   }
@@ -4001,14 +4001,14 @@ function show(d){
     const reasons=re.reasons_for_upper_expansion||[];
     const hbuAdj=re.central_value_hbu_adjustment_pct||0;
     if(reasons.length>0||hbuAdj!==0){
-      h+='<div class="rc"><div class="rt" style="margin-bottom:8px">⤴ توسيع النطاق الأعلى (+'+re.upper_bound_expanded_pct.toFixed(0)+'%)</div>';
-      h+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">النقطة المركزية محافظة (وسيط المقارنات). الحد الأعلى يَتسع لِيَعكس خصائص فريدة قد تَفرض علاوة سوقية يَصعب قياسها بدقة من البيانات العامة:</div>';
+      h+='<div class="rc"><div class="rt" style="margin-bottom:8px">'+t('⤴ توسيع النطاق الأعلى (+','⤴ Upper-range expansion (+')+re.upper_bound_expanded_pct.toFixed(0)+'%)</div>';
+      h+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">'+t('النقطة المركزية محافظة (وسيط المقارنات). الحد الأعلى يَتسع لِيَعكس خصائص فريدة قد تَفرض علاوة سوقية يَصعب قياسها بدقة من البيانات العامة:','The central point is conservative (the median of comparables). The upper bound widens to reflect unique features that may command a market premium hard to measure precisely from public data:')+'</div>';
       reasons.forEach(r=>{h+='<span class="loc-tag loc-pos">⤴ '+r+'</span>'});
       if(hbuAdj!==0){
         const sign=hbuAdj>0?'+':'';
         const bg=hbuAdj>0?'#e6f7ed':'#fdecec';
         const color=hbuAdj>0?'#0c7d41':'#a8131c';
-        h+='<div style="margin-top:12px;padding:10px;background:'+bg+';border-radius:6px;font-size:.88rem;color:'+color+'"><strong>HBU:</strong> تعديل النقطة المركزية '+sign+hbuAdj.toFixed(1)+'% — &lrm;RICS VPS 2 / IVS 102&lrm;</div>';
+        h+='<div style="margin-top:12px;padding:10px;background:'+bg+';border-radius:6px;font-size:.88rem;color:'+color+'"><strong>HBU:</strong> '+t('تعديل النقطة المركزية ','central-point adjustment ')+sign+hbuAdj.toFixed(1)+'% — &lrm;RICS VPS 2 / IVS 102&lrm;</div>';
       }
       h+='</div>';
     }
@@ -4026,17 +4026,17 @@ function show(d){
   if(tr&&tr.years&&tr.years.length>0){
     let trHeadline;
     if(tr.slope_pct!=null){
-      trHeadline='اتجاه السوق: '+(tr.label||'')+' ('+tr.slope_pct.toFixed(1)+'%/سنة)';
+      trHeadline=t('اتجاه السوق: ','Market trend: ')+(tr.label||'')+' ('+tr.slope_pct.toFixed(1)+t('%/سنة)','%/yr)');
     } else if(tr.historical_window_ar){
-      trHeadline='اتجاه تاريخي: '+(tr.label||'')+' — '+tr.historical_window_ar;
+      trHeadline=t('اتجاه تاريخي: ','Historical trend: ')+(tr.label||'')+' — '+tr.historical_window_ar;
     } else {
-      trHeadline='اتجاه السوق: '+(tr.label||'');
+      trHeadline=t('اتجاه السوق: ','Market trend: ')+(tr.label||'');
     }
     h+='<div class="rc"><div class="rt" style="margin-bottom:6px">'+trHeadline+'</div>';
     const maxM=Math.max(...tr.years.map(y=>y.median_m2||0));
     h+='<div class="trend-row">';
     tr.years.forEach(y=>{const pct=maxM>0?((y.median_m2||0)/maxM*100):0;
-      h+=`<div class="trend-col" style="height:${Math.max(pct,5)}%" title="${y.year}: ${fmt(y.median_m2)} ر.ق/م² (${y.n} معاملة)"></div>`});
+      h+=`<div class="trend-col" style="height:${Math.max(pct,5)}%" title="${y.year}: ${fmt(y.median_m2)} ${t('ر.ق/م²','QAR/m²')} (${y.n} ${t('معاملة','deals')})"></div>`});
     h+='</div><div class="trend-labels">';
     tr.years.forEach(y=>{h+='<span>'+y.year+'</span>'});
     h+='</div></div>';
@@ -4062,23 +4062,23 @@ function show(d){
     const nl=gf.named_landmarks;
     if(nl){
       (nl.malls||[]).forEach(m=>{
-        const tag=m.walkable?' (يُمشى)':'';
-        items.push({icon:m.walkable?'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>':'⊙',label:m.name_ar+' — '+m.distance_m+'م'+tag,cls:'loc-pos'});
+        const tag=m.walkable?t(' (يُمشى)',' (walkable)'):'';
+        items.push({icon:m.walkable?'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>':'⊙',label:m.name_ar+' — '+m.distance_m+t('م','m')+tag,cls:'loc-pos'});
       });
       (nl.mixed_use_venues||[]).forEach(m=>{
-        const tag=m.walkable?' (يُمشى)':'';
-        items.push({icon:m.walkable?'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>':'◇',label:m.name_ar+' (مختلط) — '+m.distance_m+'م'+tag,cls:'loc-pos'});
+        const tag=m.walkable?t(' (يُمشى)',' (walkable)'):'';
+        items.push({icon:m.walkable?'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>':'◇',label:m.name_ar+t(' (مختلط) — ',' (mixed-use) — ')+m.distance_m+t('م','m')+tag,cls:'loc-pos'});
       });
       (nl.metros||[]).forEach(m=>{
-        const tag=m.walkable?' (يُمشى)':'';
-        items.push({icon:'<svg class=ic aria-hidden=true><use href=#ic-pin></use></svg>',label:m.name_ar+' — '+m.distance_m+'م'+tag,cls:m.walkable?'loc-pos':'loc-neu'});
+        const tag=m.walkable?t(' (يُمشى)',' (walkable)'):'';
+        items.push({icon:'<svg class=ic aria-hidden=true><use href=#ic-pin></use></svg>',label:m.name_ar+' — '+m.distance_m+t('م','m')+tag,cls:m.walkable?'loc-pos':'loc-neu'});
       });
     }
     if(items.length>0){
-      h+='<div class="rc"><div class="rt" style="margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> ما اكتشفه النظام آلياً</div>';
-      h+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">معلومات اكتُشفت من تحليل polygon القطعة + قاعدة المعالم — بدون إدخال من المستخدم.</div>';
+      h+='<div class="rc"><div class="rt" style="margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+t('ما اكتشفه النظام آلياً','What the system detected automatically')+'</div>';
+      h+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">'+t('معلومات اكتُشفت من تحليل polygon القطعة + قاعدة المعالم — بدون إدخال من المستخدم.','Detected from the plot polygon analysis + the landmarks database — no user input.')+'</div>';
       items.forEach(it=>{h+='<span class="loc-tag '+it.cls+'">'+it.icon+' '+it.label+'</span>'});
-      if(gf.plot_area_m2_verified){h+='<div style="margin-top:10px;font-size:.78rem;color:#888">مساحة محقّقة من Cadastre: '+fmt(gf.plot_area_m2_verified)+' م²'+(gf.pd_no?' (PD: '+gf.pd_no+')':'')+'</div>'}
+      if(gf.plot_area_m2_verified){h+='<div style="margin-top:10px;font-size:.78rem;color:#888">'+t('مساحة محقّقة من Cadastre: ','Verified area from Cadastre: ')+fmt(gf.plot_area_m2_verified)+t(' م²',' m²')+(gf.pd_no?' (PD: '+gf.pd_no+')':'')+'</div>'}
       h+='</div>';
     }
   }
@@ -4086,7 +4086,7 @@ function show(d){
   // ── Location features ──
   const lf=d.location_features;
   if(lf&&lf.length>0){
-    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">مميزات الموقع</div>';
+    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">'+t('مميزات الموقع','Location features')+'</div>';
     lf.forEach(f=>{const cls=f.positive===true?'loc-pos':f.positive===false?'loc-neg':'loc-neu';
       const icon=f.positive===true?'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg>':f.positive===false?'<svg class=ic aria-hidden=true><use href=#ic-x></use></svg>':'—';
       h+='<span class="loc-tag '+cls+'">'+icon+' '+f.label+'</span>'});
@@ -4099,7 +4099,7 @@ function show(d){
   // ── Known unknowns ──
   const rtr=d.reasoning_trace;
   if(rtr&&rtr.known_unknowns&&rtr.known_unknowns.length>0){
-    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">ما لا نعرفه (يحتاج فحص ميداني)</div><div class="rn">';
+    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">'+t('ما لا نعرفه (يحتاج فحص ميداني)','What we do not know (needs a field inspection)')+'</div><div class="rn">';
     rtr.known_unknowns.forEach(u=>{h+='• '+u+'<br>'});
     h+='</div></div>';
   }
@@ -4146,7 +4146,7 @@ function show(d){
   // Universal audit-trail link (Sprint 2.22.0a/7), hidden when verification_url is null.
   if(d.verification_url){
     foot+='<div class="verification-footer">';
-    foot+='<a href="'+d.verification_url+'" target="_blank" rel="noopener">تحقّق من التقدير ←</a>';
+    foot+='<a href="'+d.verification_url+'" target="_blank" rel="noopener">'+t('تحقّق من التقدير ←','Verify this estimate →')+'</a>';
     foot+='</div>';
   }
 

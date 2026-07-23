@@ -83,7 +83,7 @@ check('the thmr-grp CSS family defined',
 
 print('\n[3] the setbacks equation (E15) under the building area')
 check('refine hint carries the equation (setback-envelope gated)',
-      "footprint_method==='setback_envelope'?' بعد الارتدادات القانونية (أمامي 5 · جانبي 3 · خلفي 3) وضمن سقف تغطية 60%'" in HTML)
+      "footprint_method==='setback_envelope'?t(' بعد الارتدادات القانونية (أمامي 5 · جانبي 3 · خلفي 3) وضمن سقف تغطية 60%'" in HTML)  # b138: t()-wrapped, AR arg verbatim
 # Re-pointed for DEF-UX13/b32 (R6/Lesson-2): the E15 equation still rides the confirm basis
 # row, but moved from an inline parenthetical to a hover TOOLTIP (cg-tip) — the owner keeps
 # the max-buildable number + «عدّله» CTA; the formula is one hover away.

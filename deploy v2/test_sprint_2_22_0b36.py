@@ -71,7 +71,7 @@ check('badge: honest sub «ثمّن يدعم الفلل والأراضي فقط 
 # the «يتطلب» line now lives in the ELSE branch (NOT shown when _ux3NotReady)
 _if_idx = BADGE.index('if(_ux3NotReady){')
 _else_idx = BADGE.index('}else{', _if_idx)
-_yt_idx = BADGE.index('<strong>يتطلب:</strong>')
+_yt_idx = BADGE.index("<strong>'+t('يتطلب:'")  # b138: t()-wrapped, AR arg verbatim
 check('badge: «يتطلب: الإيجار» line is INSIDE the else branch (suppressed for not-ready)',
       _yt_idx > _else_idx)
 check('badge: the original disclaimer (ss.disclaimer_ar) only renders in the else branch',

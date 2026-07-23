@@ -154,9 +154,9 @@ chk("I2 EN uses 'capitalization rate' (catalog), not 'cap rate'",
     'a calibrated capitalization rate' in HTML)
 
 # ── J. value-neutrality: engine bumped to b137, api untouched ────────────────
-chk("J1 ENGINE_VERSION → b137",
-    "ENGINE_VERSION = 'thammen-sprint2p22p0b137-en-input-refine-screens'" in ENG)
-chk("J2 SPRINT_TAG → 2.22.0b.137", "SPRINT_TAG = '2.22.0b.137'" in ENG)
+chk("J1 ENGINE_VERSION b-series (R6/Lesson-2)",
+    "ENGINE_VERSION = 'thammen-sprint2p22p0b" in ENG)
+chk("J2 SPRINT_TAG b-series (R6/Lesson-2)", "SPRINT_TAG = '2.22.0b." in ENG)
 api = io.open("api.py", encoding="utf-8").read()
 chk("J3 api.py has no b137 marker (untouched)", '2.22.0b.137' not in api)
 
