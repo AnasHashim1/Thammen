@@ -65,7 +65,7 @@ check('hero label → التقييم السوقي (old absent)',
       '<span class="lbl">\'+t(\'التقييم السوقي\',\'Market valuation\')+\'</span>' in HTML
       and '<span class="lbl">التقدير السوقي</span>' not in HTML)
 check('share value line → قيمة التقييم السوقي (old absent)',
-      "'قيمة التقييم السوقي: '+fmt(v.amount)" in HTML
+      "t('قيمة التقييم السوقي: ','Market valuation: ')+fmt(v.amount)" in HTML
       and "'قيمة التقدير السوقي: '+fmt(v.amount)" not in HTML)
 check('home CTA → ابدأ التقييم (old absent)',
       '>ابدأ التقييم</button>' in HTML and '>ابدأ التقدير</button>' not in HTML)

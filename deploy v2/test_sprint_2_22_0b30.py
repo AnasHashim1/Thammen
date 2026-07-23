@@ -38,8 +38,8 @@ chk("emits «حداثة بيانات وزارة العدل»", "حداثة بي�
 # (2) the not-certified label — valued path only (guarded on v.amount)
 chk("not-certified label present", "وليس تقييماً معتمداً" in FN)
 chk("not-certified label guarded on v.amount (valued only)",
-    re.search(r"if\(v\.amount\)lines\.push\('تقييمسوقيّآليّ،وليستقييماًمعتمداً", fn_ns)  # b54 R6: تقدير→تقييم (identity lock); fn_ns is space-stripped
-    or re.search(r"if\(v\.amount\)\s*lines\.push\('تقييم", FN.replace(" ", "")))
+    re.search(r"if\(v\.amount\)lines\.push\(t\('تقييمسوقيّآليّ،وليستقييماًمعتمداً", fn_ns)  # b140 R6: t()-wrapped for EN (AR arg verbatim); fn_ns is space-stripped
+    or re.search(r"if\(v\.amount\)\s*lines\.push\(t\('تقييم", FN.replace(" ", "")))
 
 # (3) provenance — report_ref + verify URL via the shared _verifyUrl, guarded on report_ref
 chk("report_ref line guarded on d.report_ref", "if(d.report_ref)" in fn_ns)

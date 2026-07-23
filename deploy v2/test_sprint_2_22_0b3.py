@@ -22,7 +22,7 @@ def check(name, cond):
 # 1. range headline label is the new lead (unique — count 1).
 check('range headline label «النطاق التقديري السوقي»', 'النطاق التقديري السوقي' in HTML)
 # 2. headline shows the TRUE low–high ending in ' ر.ق' (distinct from showConfirm's cg-unit span).
-check("headline = fmt(v.low) – fmt(v.high) ر.ق", "+fmt(v.low)+' – '+fmt(v.high)+' ر.ق" in HTML)
+check("headline = fmt(v.low) – fmt(v.high) ر.ق", "+fmt(v.low)+' – '+fmt(v.high)+t(' ر.ق',' QAR')" in HTML)  # b140 R6: copy range line ر.ق → t() (AR arg verbatim)
 # 3. range-as-lead semantics KEPT-but-evolved (Sprint 2.22.0b.47 result-screen HERO): the
 # market RANGE is presented as the lead range line on the navy hero band (the old big
 # .rv hl 1.5rem result-screen headline was superseded by the hero — the report keeps its own).

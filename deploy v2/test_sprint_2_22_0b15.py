@@ -65,7 +65,7 @@ check('a20 rics_compliant_status appended to not-certified line', 'rics_complian
 # 10. evidence ONE-ROW summary sits in TIER-1 (drama on evidence, not the figure).
 check('evidence one-row in TIER-1 (t1+=_evOneRow(d))', 't1+=_evOneRow(d);' in HTML)
 # 11. data-freshness caveat + disclaimer + verification route to the always-visible foot (NOT collapsed).
-check('data-freshness caveat → foot', "foot+='<div class=\"dfc s-'+sev+'\">'+d.data_freshness.caveat_ar+'</div>';" in HTML)
+check('data-freshness caveat → foot', "foot+='<div class=\"dfc s-'+sev+'\">'+pick(d.data_freshness,'caveat')+'</div>';" in HTML)  # b140 R6: caveat via pick (EN twin, AR fallback)
 check('disclaimer card → foot', "foot+='<div class=\"rc\" style=\"border-color:var(--warn-bg)\"><div class=\"rn\" style=\"font-size:.8rem\">'+d.disclaimer+'</div></div>';" in HTML)
 check('verification footer → foot', "foot+='<div class=\"verification-footer\">';" in HTML)
 # 12. alert panels (A11 / reality / multi-QARS / scope / sanity) route ABOVE the number (alerts buffer).
@@ -156,7 +156,7 @@ check('ENGINE_VERSION format (thammen-sprint…)', re.search(r"ENGINE_VERSION = 
 check('SPRINT_TAG dotted-numeric format', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
 # R6 / Lesson-2: NO exact version pin (it broke on the b16 bump) — assert only that the engine
 # has moved AT/BEYOND b15 (the pre-b15 tag never returns; format already checked above).
-check('engine at/beyond b15 (b14 tag gone)', "thammen-sprint2p22p0b14" not in ENG)
+check('engine at/beyond b15 (b14 tag gone)', "thammen-sprint2p22p0b14-" not in ENG)  # b140 R6: trailing '-' guards vs the b140 substring (2p22p0b14 ⊂ 2p22p0b140)
 
 passed = sum(1 for _, ok in results if ok)
 for name, ok in results:

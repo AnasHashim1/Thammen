@@ -75,7 +75,7 @@ _yt_idx = BADGE.index("<strong>'+t('يتطلب:'")  # b138: t()-wrapped, AR arg 
 check('badge: «يتطلب: الإيجار» line is INSIDE the else branch (suppressed for not-ready)',
       _yt_idx > _else_idx)
 check('badge: the original disclaimer (ss.disclaimer_ar) only renders in the else branch',
-      BADGE.index('ss.disclaimer_ar') > _else_idx)
+      BADGE.index("pick(ss,'disclaimer')") > _else_idx)  # b140 R6: raw ss.disclaimer_ar → pick(ss,'disclaimer') (still else-branch only)
 
 # ── 3. surface 2 — insufficient-data box: honest header/why + CTA suppressed ──
 # b48 de-emoji (R6/Lesson-2): the 🚧 emoji became an inline-SVG icon (<use href=#ic-alert>);

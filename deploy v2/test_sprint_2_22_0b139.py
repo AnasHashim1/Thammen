@@ -165,7 +165,7 @@ for tmpl in [
 ]:
     ok(tmpl in EU, f'_ar template unchanged: {tmpl[:32]}')
 # version bump present
-ok("SPRINT_TAG = '2.22.0b.139'" in EU, 'SPRINT_TAG bumped to b139')
-ok('thammen-sprint2p22p0b139-en-brief-backend-twins' in EU, 'ENGINE_VERSION b139')
+ok("SPRINT_TAG = '2.22.0b." in EU, 'SPRINT_TAG b-series (version-agnostic #R6)')
+ok('thammen-sprint2p22p0b1' in EU, 'ENGINE_VERSION b-series (version-agnostic #R6)')
 
 print(f'test_sprint_2_22_0b139: {_p}/{_p} PASS')

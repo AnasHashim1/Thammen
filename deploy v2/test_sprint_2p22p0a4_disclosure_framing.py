@@ -200,7 +200,7 @@ def test_E_rename_deferred_E_still_renders():
     # E (service_scope.disclaimer_ar) rename DEFERRED per Rule #47 — it must
     # still render as today (no silent disappearance).
     _check(
-        'ss.disclaimer_ar' in _INDEX_SRC,
+        "pick(ss,'disclaimer')" in _INDEX_SRC,  # b140 R6: Layer E still renders (via pick, AR fallback) — Rule #47 intent preserved
         'test_E_rename_deferred_E_still_renders',
         'service_scope.disclaimer_ar (Layer E) render hook missing',
     )
