@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b138-en-result-fossils'
-SPRINT_TAG = '2.22.0b.138'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b139-en-brief-backend-twins'
+SPRINT_TAG = '2.22.0b.139'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -2041,16 +2041,19 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
 
     annual_rent = None
     rent_source = None
+    rent_source_en = None          # b139 EN twin
     rent_caveats = []
 
     if rental_income and rental_income > 0:
         annual_rent = rental_income * 12
         rent_source = 'actual_provided'
         rent_source_ar = 'إفادة العميل (الإيجار الفعلي)'
+        rent_source_en = 'Client statement (actual rent)'
     elif v3_rent_data and v3_rent_data.get('annual_median'):
         annual_rent = v3_rent_data['annual_median']
         rent_source = 'rent_reference_municipality'
         rent_source_ar = f"وسيط البلدية (n={v3_rent_data.get('n')})"
+        rent_source_en = f"Municipality median (n={v3_rent_data.get('n')})"
         rent_caveats.append(
             'الإيجار من وسيط البلدية — قد يختلف للمنطقة الفرعية بـ ±30%'
         )
@@ -2091,6 +2094,7 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
         'monthly_rent': round(annual_rent / 12),
         'rent_source': rent_source,
         'rent_source_ar': rent_source_ar,
+        'rent_source_en': rent_source_en,
         'opex_ratio': opex_ratio,
         'noi': round(noi),
         'cap_rate': cap_rate,
@@ -2099,6 +2103,12 @@ def _build_income_crosscheck(rental_income, v3_rent_data, asset_type, primary_va
             f'(عينة n={cap_provenance.get("sample_size")}، {cap_provenance.get("confidence")})'
             if cap_provenance.get('source') == 'calibrated'
             else f'معدل رسملة {cap_rate*100:.1f}% (نموذجي لـ {asset_type})'
+        ),
+        'cap_rate_label_en': (
+            f'Calibrated capitalization rate {cap_rate*100:.1f}% '
+            f'(sample n={cap_provenance.get("sample_size")}, {cap_provenance.get("confidence")})'
+            if cap_provenance.get('source') == 'calibrated'
+            else f'Capitalization rate {cap_rate*100:.1f}% (typical for {asset_type})'
         ),
         'cap_rate_provenance': cap_provenance,
         'gross_yield': round(gross_yield, 4) if gross_yield else None,
@@ -2231,7 +2241,9 @@ def _build_investor_sections(income, v3_rent, primary):
             'annual_rent_gross': income.get('annual_rent'),
             'cap_rate_pct': round((income.get('cap_rate') or 0) * 100, 2),
             'cap_rate_label_ar': income.get('cap_rate_label_ar'),
+            'cap_rate_label_en': income.get('cap_rate_label_en'),   # b139 EN passthrough (interpolated)
             'rent_source_ar': income.get('rent_source_ar'),
+            'rent_source_en': income.get('rent_source_en'),         # b139 EN passthrough
         },
     })
 
@@ -2264,6 +2276,10 @@ def _build_investor_sections(income, v3_rent, primary):
                     'income_value': round(noi / cap, -3),
                     'delta_label_ar': (
                         'الأساس' if delta_pct == 0
+                        else f'{"+" if delta_pct > 0 else ""}{delta_pct}%'
+                    ),
+                    'delta_label_en': (
+                        'Base' if delta_pct == 0
                         else f'{"+" if delta_pct > 0 else ""}{delta_pct}%'
                     ),
                 })
@@ -2334,6 +2350,10 @@ def _build_investor_sections_fallback(asset_type, primary, plot_area_m2, v3_rent
             f"وسيط الإيجار للمنطقة (n={v3_rent.get('n', '?')}, "
             f"ثقة={v3_rent.get('confidence', '?')})"
         )
+        rent_source_en = (          # b139 EN twin (interpolated)
+            f"Area rent median (n={v3_rent.get('n', '?')}, "
+            f"confidence={v3_rent.get('confidence', '?')})"
+        )
     else:
         # Estimate from cap rate × value
         annual_implied = val * cap_rate / (1 - 0.23)  # add back OPEX to get gross
@@ -2341,6 +2361,10 @@ def _build_investor_sections_fallback(asset_type, primary, plot_area_m2, v3_rent
         rent_source = (
             f'تقدير من معدّل الرسملة نموذجي ({cap_rate*100:.1f}%) — '
             f'لا توجد بيانات إيجار فعلية للمنطقة'
+        )
+        rent_source_en = (          # b139 EN twin (interpolated)
+            f'Estimated from a typical capitalization rate ({cap_rate*100:.1f}%) — '
+            f'no actual rent data for the area'
         )
 
     annual_gross = estimated_monthly * 12 if estimated_monthly else 0
@@ -2362,6 +2386,7 @@ def _build_investor_sections_fallback(asset_type, primary, plot_area_m2, v3_rent
             'net_yield_pct': round(net_yield * 100, 2),
             'cap_rate_pct': round(actual_cap * 100, 2),
             'rent_source_ar': rent_source,
+            'rent_source_en': rent_source_en,
             'opex_ratio': 0.23,
             'caveat_ar': (
                 'لم تقدّم إيجاراً فعلياً ولم تتوفر بيانات إيجار موثوقة للمنطقة. '
@@ -2410,6 +2435,10 @@ def _build_investor_sections_fallback(asset_type, primary, plot_area_m2, v3_rent
                 'implied_value': implied_value,
                 'delta_label_ar': (
                     'الأساس' if delta == 0
+                    else f'{"+" if delta > 0 else ""}{delta}%'
+                ),
+                'delta_label_en': (
+                    'Base' if delta == 0
                     else f'{"+" if delta > 0 else ""}{delta}%'
                 ),
             })
@@ -3112,6 +3141,7 @@ def _try_hybrid_apartments_response(
         'tier': 'T2',
         'n_raw': n_used,
         'role_ar': 'إعلانات بيع شقق — لوسيل',
+        'role_en': 'Apartment sale listings — Lusail',
         'url_template': 'propertyfinder.qa/en/buy/lusail/apartments-for-sale.html',
         'calibration_status': 'provisional_broker_experience_grounded',
     }]
@@ -3331,6 +3361,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
                 'cap_rate_pct': round(c * 100, 2),
                 'income_value': round(noi / c, -3),
                 'delta_label_ar': 'الأساس' if delta == 0 else ('+' if delta > 0 else '') + f'{delta}%',
+                'delta_label_en': 'Base' if delta == 0 else ('+' if delta > 0 else '') + f'{delta}%',
             })
 
     # ── Investor brief sections (rebuilt locally) ──
@@ -3345,6 +3376,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
                 'annual_rent_gross': annual_rent,
                 'cap_rate_pct': round(cap_rate * 100, 2),
                 'cap_rate_label_ar': f'معدل رسملة {cap_rate*100:.1f}% (نموذجي لـ {asset_label_ar})',
+                'cap_rate_label_en': f'Capitalization rate {cap_rate*100:.1f}% (typical for this asset class)',
                 'rent_source_ar': rent_source_ar,
             },
         },
@@ -3358,6 +3390,10 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
                 'role_ar': (
                     f'القيمة الأساسية المعتمدة لـ "{asset_label_ar}" (منهج الدخل '
                     'هو المنهج الأنسب لهذه الفئة وفق RICS Income Approach)'
+                ),
+                'role_en': (
+                    'Adopted primary value for this asset class (the Income Approach '
+                    'is the most appropriate method for this category per the RICS Income Approach)'
                 ),
                 'method_label_ar': 'منهج الدخل (RICS Income Approach)',
             },
@@ -3391,6 +3427,11 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
             else 'أعلى من قيمة الدخل' if gap_pct > 5
             else 'مطابق لقيمة الدخل'
         )
+        position_en = (
+            'below the income value' if gap_pct < -5
+            else 'above the income value' if gap_pct > 5
+            else 'in line with the income value'
+        )
         sections.insert(0, {
             'id': 'verdict',
             'title_ar': 'مقارنة السعر بقيمة الدخل',
@@ -3400,6 +3441,7 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
                 'gap_pct': listing_gap_pct,
                 'position': 'above_market' if gap_pct > 5 else 'below_market' if gap_pct < -5 else 'at_market',
                 'description_ar': f'السعر {position_ar} بـ {abs(gap_pct):.1f}%. القيمة محسوبة من الإيجار المُقدَّم بمنهج الدخل.',
+                'description_en': f'The price is {position_en} by {abs(gap_pct):.1f}%. The value is computed from the provided rent via the Income Approach.',
             },
         })
 
@@ -3445,14 +3487,17 @@ def _build_fast_income_only_response(zone, street, building, loc, plot, asset_ty
             'annual_rent': annual_rent,
             'monthly_rent': rental_income,
             'rent_source_ar': 'إفادة العميل',
+            'rent_source_en': 'Client statement',
             'noi': noi,
             'opex_ratio': opex_ratio,
             'cap_rate': cap_rate,
             'cap_rate_label_ar': f'معدل رسملة {cap_rate*100:.1f}% (نموذجي لـ {asset_label_ar})',
+            'cap_rate_label_en': f'Capitalization rate {cap_rate*100:.1f}% (typical for this asset class)',
             'gross_yield': gross_yield,
             'net_yield': net_yield,
             'method_label_ar': 'منهج الدخل (RICS Income Approach)',
             'role_ar': 'القيمة الأساسية المعتمدة',
+            'role_en': 'Adopted primary value',
         },
         'reconciliation': {
             'status': 'income_only',
@@ -6969,9 +7014,11 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'monthly_rent': income['monthly_rent'],
             'rent_source': income['rent_source'],
             'rent_source_ar': income['rent_source_ar'],
+            'rent_source_en': income.get('rent_source_en'),   # b139 EN passthrough
             'noi': income['noi'],
             'cap_rate': income['cap_rate'],
             'cap_rate_label_ar': income['cap_rate_label_ar'],
+            'cap_rate_label_en': income.get('cap_rate_label_en'),  # b139 EN passthrough (interpolated)
             'gross_yield': income['gross_yield'],
             'net_yield': income['net_yield'],
             'yield_flag_ar': income['yield_flag_ar'],

@@ -55,6 +55,7 @@ class MarketPosition:
     gap_pct: Optional[float] = None
     position_label: str = 'no_benchmark'
     description_ar: str = ''
+    description_en: str = ''        # Sprint 2.22.0b.139 — EN twin (interpolated → site-authored)
 
     # تحفظات إن وُجدت
     caveats: List[str] = field(default_factory=list)
@@ -69,6 +70,7 @@ class MarketPosition:
             'gap_pct': self.gap_pct,
             'position_label': self.position_label,
             'description_ar': self.description_ar,
+            'description_en': self.description_en,
             'caveats': self.caveats,
         }
 
@@ -122,6 +124,43 @@ def _describe_position_ar(label: str, gap_pct: float, n: Optional[int]) -> str:
     return ""
 
 
+def _describe_position_en(label: str, gap_pct: float, n: Optional[int]) -> str:
+    """English mirror of _describe_position_ar (Sprint 2.22.0b.139) — descriptive
+    only, prompts verification, never a verdict. Interpolated (gap %, n) so it is
+    site-authored here rather than in the en_localize constant catalog."""
+    n_str = f" (reference n={n})" if n else ""
+
+    if label == 'no_benchmark':
+        return "No sufficient benchmark for comparison. Check similar listings in the area."
+
+    if label == 'at_market':
+        return (f"The price is within the normal market range (deviation {gap_pct:+.1f}%){n_str}. "
+                f"A field review and negotiation are the deciding factors.")
+
+    if label == 'below_market':
+        return (f"The price is {abs(gap_pct):.1f}% below the benchmark{n_str}. "
+                f"Check the reason for the gap: property condition, obligations "
+                f"(assignment/instalments), title status, building age.")
+
+    if label == 'far_below_market':
+        return (f"The price is {abs(gap_pct):.1f}% below the benchmark{n_str} — an unusually large gap. "
+                f"Gaps this large usually have a cause: legal issues (assignment, dispute, unsubdivided), "
+                f"poor condition (needs demolition/renovation), financial obligations (instalments), or a "
+                f"mistaken listing. Verification is mandatory before proceeding.")
+
+    if label == 'above_market':
+        return (f"The price is {gap_pct:.1f}% above the benchmark{n_str}. "
+                f"It may be justified (higher finishes, prime location, a view) or not. "
+                f"Compare with similar listings in the same tower/compound.")
+
+    if label == 'far_above_market':
+        return (f"The price is {gap_pct:.1f}% above the benchmark{n_str} — a large gap. "
+                f"If the justifications (location/area/finish) are not clear, the market will likely "
+                f"not accept this price and the listing will linger.")
+
+    return ""
+
+
 def compute_position(
     listing_price: Optional[float] = None,
     benchmark_price: Optional[float] = None,
@@ -149,6 +188,7 @@ def compute_position(
             benchmark_source=benchmark_source,
             position_label='no_benchmark',
             description_ar='لا يوجد سعر مُعلن أو مرجع كافٍ.',
+            description_en='No listing price or sufficient benchmark available.',
             caveats=listing_caveats or [],
         )
 
@@ -156,6 +196,7 @@ def compute_position(
     gap_pct = (gap_qar / benchmark_price) * 100
     label = _classify_position(gap_pct)
     desc = _describe_position_ar(label, gap_pct, benchmark_n)
+    desc_en = _describe_position_en(label, gap_pct, benchmark_n)
 
     return MarketPosition(
         listing_qar=listing_price,
@@ -166,6 +207,7 @@ def compute_position(
         gap_pct=round(gap_pct, 1),
         position_label=label,
         description_ar=desc,
+        description_en=desc_en,
         caveats=listing_caveats or [],
     )
 

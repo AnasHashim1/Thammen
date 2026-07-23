@@ -503,6 +503,7 @@ def build_stock_strata_result(
         'land_reference': {
             **land_ref,
             'source_ar': 'وسيط معاملات بيع أراضي مسجَّلة في نفس المنطقة (MoJ)',
+            'source_en': 'Median of registered land-sale transactions in the same district (MoJ)',
         },
         'strata':           strata,
         'dominant_stratum': {

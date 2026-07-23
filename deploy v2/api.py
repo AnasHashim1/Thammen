@@ -626,6 +626,7 @@ def _simplify_evaluation(ev: PropertyEvaluation, detailed: bool = False) -> dict
             'gap_pct': ev.market_position.get('gap_pct'),
             'position_label': ev.market_position.get('position_label'),  # 'above_market' etc.
             'description_ar': ev.market_position.get('description_ar'),
+            'description_en': ev.market_position.get('description_en'),  # b139 EN twin
             'caveats': ev.market_position.get('caveats', []),
         }
     elif ev.listing_comparison:
@@ -634,6 +635,7 @@ def _simplify_evaluation(ev: PropertyEvaluation, detailed: bool = False) -> dict
         result['market_position'] = {
             'gap_pct': getattr(lc, 'gap_pct', None),
             'description_ar': 'بيانات وصفية غير متوفرة',
+            'description_en': 'Descriptive data not available',  # b139 EN twin
         }
 
     # Rental (if provided) — now includes itemized cost breakdown in v2

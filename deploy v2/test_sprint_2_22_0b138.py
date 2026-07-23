@@ -14,9 +14,9 @@ fails = []
 def ck(cond, msg):
     if not cond: fails.append(msg)
 
-# 1. version bump (format-agnostic per R6/Lesson-2 elsewhere, exact here for the new tag)
-ck("thammen-sprint2p22p0b138-en-result-fossils" in EV, "ENGINE_VERSION not b138")
-ck("SPRINT_TAG = '2.22.0b.138'" in EV, "SPRINT_TAG not b138")
+# 1. version bump (format-agnostic per R6/Lesson-2 — relaxed at the b139 bump)
+ck("thammen-sprint2p22p0b" in EV, "ENGINE_VERSION not a b-series tag")
+ck("SPRINT_TAG = '2.22.0b." in EV, "SPRINT_TAG not a 2.22.0b tag")
 
 # 2. i18n infra intact -> value-neutral (t returns arg1 when AR; EN live but AR default)
 ck("function t(ar,en){return (LANG==='en'&&en!=null)?en:ar;}" in H, "t() def changed")

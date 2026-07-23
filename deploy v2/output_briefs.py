@@ -669,7 +669,9 @@ def _buyer_brief(evaluation, rent_data, adjustments, uncertainty, income_value):
                 'muc_clause_ar': unc.get('muc_clause_ar'),
                 'muc_clause_en': unc.get('muc_clause_en'),
                 'muc_basis_ar': unc.get('muc_basis_ar'),
+                'muc_basis_en': unc.get('muc_basis_en'),                                  # b139 EN twin
                 'muc_review_recommendation_ar': unc.get('muc_review_recommendation_ar'),
+                'muc_review_recommendation_en': unc.get('muc_review_recommendation_en'),  # b139 EN twin
             },
         })
 
@@ -1018,7 +1020,9 @@ def _valuer_brief(evaluation, rent_data, adjustments, uncertainty, income_value)
                 'muc_clause_ar': unc.get('muc_clause_ar'),
                 'muc_clause_en': unc.get('muc_clause_en'),
                 'muc_basis_ar': unc.get('muc_basis_ar'),
+                'muc_basis_en': unc.get('muc_basis_en'),                                  # b139 EN twin
                 'muc_review_recommendation_ar': unc.get('muc_review_recommendation_ar'),
+                'muc_review_recommendation_en': unc.get('muc_review_recommendation_en'),  # b139 EN twin
             },
         })
 
