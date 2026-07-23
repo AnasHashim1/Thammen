@@ -104,8 +104,8 @@ ck("old raw known_unknowns read gone (result)", "const ku=((d.reasoning_trace||{
 
 # ── (5) version ─────────────────────────────────────────────────────────────
 print("[version]")
-ck("engine version b142", "thammen-sprint2p22p0b142-en-caveat-checklist-arrays" in ENG)
-ck("sprint tag b142", "SPRINT_TAG = '2.22.0b.142'" in ENG)
+ck("engine version format (b-series)", "thammen-sprint2p22p0b" in ENG)
+ck("sprint tag format (2.22.0b)", "SPRINT_TAG = '2.22.0b." in ENG)
 
 print("\n%d passed, %d failed" % (passed, failed))
 sys.exit(1 if failed else 0)

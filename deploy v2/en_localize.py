@@ -201,6 +201,21 @@ CATALOG = {
     "تحقق من تصنيف المنطقة (R1/R2/R3) — يحدد ما يمكنك بناؤه": "Verify the zoning classification (R1/R2/R3) — it determines what you can build",
     "اطلب فواتير الخدمات (كهرباء/ماء) لآخر سنة": "Request the utility bills (electricity/water) for the last year",
     "إن كان مؤجراً: اطلب عقود الإيجار الحالية": "If it is rented: request the current lease contracts",
+    # ── Sprint 2.22.0b.143 — the remaining result-screen scope disclaimers/requires ──
+    # (Sprint B slice 2). All CONSTANT strings → the scalar attach_en rule fills
+    # `service_scope.disclaimer_en`/`requires_user_input_en` (both already `pick()`-read on
+    # the result screen since b140). land/compound_large/apartment/unknown were already
+    # covered above; these 9 close the villa (the main valued-path leak) + the limited/
+    # refusal scopes. VALUE-INVARIANT — additive only; `_ar` untouched.
+    "تقييم الفلل المستقلة يستخدم مقارنة مع صفقات وزارة العدل في نفس المنطقة والشريحة (صفقات آخر 24 شهراً). لا يدخل في التقييم تأثير حالة المبنى الداخلية، التشطيبات، أو الإطلالة.": "The valuation of standalone villas uses comparison with Ministry of Justice transactions in the same area and size bracket (the last 24 months). The effect of the building's internal condition, finishes, or view is not taken into account in the valuation.",
+    "تقييم المجمعات الصغيرة يستخدم سجلات \"مجمع فلل\" في وزارة العدل. يصلح للمجمعات حتى 15,027 م² (أكبر مجمع فلل مسجّل في وزارة العدل). المجمعات الأكبر تحتاج منهجية الدخل (Income Approach).": "The valuation of small compounds uses the \"villa compound\" records in the Ministry of Justice. It is suitable for compounds up to 15,027 m² (the largest villa compound registered in the Ministry of Justice). Larger compounds require the income approach (Income Approach).",
+    "الأبراج تُسجَّل بأرقام مرجعية موحَّدة في وزارة العدل بدلاً من مقارنات سعر/م². التقييم يتطلب إفادة الدخل التشغيلي السنوي.": "Towers are registered under unified reference numbers in the Ministry of Justice rather than price/m² comparables. The valuation requires a statement of the annual operating income.",
+    "الإيجار السنوي الإجمالي للبرج": "The tower's gross annual rent",
+    "القصور (>3,000 م² قطعة) ليس لها مقارنات MoJ كافية (n=5 شركاء فقط في كامل قطر). التقدير يتركّب من قيمة الأرض + تكلفة بناء تقديرية. الفروقات الفعلية مع السوق قد تصل ±30%.": "Palaces (plots > 3,000 m²) do not have sufficient Ministry of Justice comparables (only n=5 partners in all of Qatar). The estimate is composed of the land value + an estimated construction cost. Actual differences from the market may reach ±30%.",
+    "ميزانية البناء الأصلية (إن أمكن) ومساحة البناء الإجمالية": "The original construction budget (if available) and the total built-up area",
+    "العقارات التجارية (محلات، مكاتب، مولات) خارج نطاق ثمّن. بيانات الإيجارات والصفقات التجارية غير متاحة عبر مصادر عامة. يلزم التواصل مع شركات تقييم متخصصة (Cushman & Wakefield، JLL، Knight Frank Qatar).": "Commercial properties (shops, offices, malls) are outside Thammen's scope. Rental and commercial transaction data are not available through public sources. Specialist valuation firms should be contacted (Cushman & Wakefield, JLL, Knight Frank Qatar).",
+    "العقارات الصناعية والمستودعات خارج نطاق ثمّن. تقييمها يتطلب خبرة متخصصة في التصنيف الصناعي والاستخدام.": "Industrial properties and warehouses are outside Thammen's scope. Their valuation requires specialist expertise in industrial classification and use.",
+    "المزارع والأراضي الزراعية خارج نطاق ثمّن. تقييمها يعتمد على جودة التربة، حقوق المياه، الإنتاجية — عوامل غير متاحة بالنسبة لنا.": "Farms and agricultural land are outside Thammen's scope. Their valuation depends on soil quality, water rights, and productivity — factors that are not available to us.",
 }
 
 
