@@ -51,10 +51,12 @@ check('SECONDARY = «حسّن التقييم» (alt) → refine',
       "<button class=\"thmr-btn alt\" onclick=\"go(\\'refine\\')\">'+t('حسّن التقييم'" in SR)
 check('the old 4-button row is GONE (scroll-to-srPage2 button + «الملحق المتخصص ↓» removed)',
       "scrollIntoView({behavior:'smooth'})" not in SR and 'الملحق المتخصص ↓' not in SR)
-check('the demoted actions are compact text links (thmr-links: full report + full details)',
+# b141 R6: the go('results') link was relabeled «التفاصيل الكاملة» → «النتيجة» (it navigates
+# BACK to the result screen; the old label collided with «التقرير الكامل» + the result-screen fold).
+check('the demoted actions are compact text links (thmr-links: full report + result)',
       "h+='<div class=\"thmr-links no-print\">" in SR and
       "<a onclick=\"openReport()\">'+t('التقرير الكامل'" in SR and
-      "<a onclick=\"go(\\'results\\')\">'+t('التفاصيل الكاملة'" in SR)
+      "<a onclick=\"go(\\'results\\')\">'+t('النتيجة'" in SR)
 check('.thmr-links CSS present', '.thmr-links{' in HTML and '.thmr-links a{' in HTML)
 check('.fnote content-hint CSS present', '.thmr-fold>summary .fnote{' in HTML)
 check('closed-fold hide rule present (the Chromium <details> quirk fix, b46 precedent, scoped)',

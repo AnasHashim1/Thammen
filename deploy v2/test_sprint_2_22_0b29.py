@@ -5,8 +5,8 @@ FRONTEND-ONLY / VALUE-INVARIANT. Reads the REAL index.html (E14) and pins:
   (1) the post-refine landing branch inside thammenReEvalGeometry (short-first,
       gated: non-valuer + b20-journey family [villa/house/raw_land] + amount>0);
   (2) run()'s confirm routing UNTOUCHED (the v4 two-path);
-  (3) the signed two buttons in the short report («التفاصيل الكاملة» -> b15 screen
-      + «التقرير الكامل» -> the full report) + the wrapper relabel;
+  (3) the signed two buttons in the short report («النتيجة» -> b15 result screen  [b141: was
+      «التفاصيل الكاملة»] + «التقرير الكامل» -> the full report) + the wrapper relabel;
   (4) the report screen's wrapper UNTOUCHED;
   (5) a Python mirror of the landing gate over the 8 routing shapes.
 
@@ -64,15 +64,17 @@ chk("run(): does NOT short-land (no showShortReport in run())",
     "showShortReport" not in run_fn)
 
 # ── (3) the signed actions (b103 R6: the 4-button row → 2 buttons [PDF primary + refine]
-#        + a compact links row; «التفاصيل الكاملة» / «التقرير الكامل» moved into thmr-links,
-#        same onclick targets, both still reachable — the b29 intent preserved) ──────────────
+#        + a compact links row; the go('results') link / the wrapper button moved into thmr-links,
+#        same onclick targets, both still reachable — the b29 intent preserved.
+#        b141 R6: the go('results') label was renamed «التفاصيل الكاملة» → «النتيجة» — it navigates
+#        BACK to the result screen; the old label collided with «التقرير الكامل» + the result-fold.) ──
 _sr_after = HTML[HTML.find("function showShortReport"):]
 links_row = (re.search(r"thmr-links no-print\">(.*?)</div>'", _sr_after, re.S) or [None, ""])[1] if re.search(r"thmr-links no-print\">(.*?)</div>'", _sr_after, re.S) else ""
 btn_rows = re.findall(r"thmr-btns[^>]*\">(.*?)</div>'", _sr_after, re.S)
 valued_btn = next((r for r in btn_rows if "حسّن التقييم" in r), "")
-chk("short report: «التفاصيل الكاملة» present in the compact links row (b103)", "التفاصيل الكاملة" in links_row)
-chk("short report: «التفاصيل الكاملة» targets go('results') (the b15 screen)",
-    "onclick=\"go('results')\">'+t('التفاصيل الكاملة','Full details')" in links_row.replace("\\'", "'"))
+chk("short report: «النتيجة» (go-results) present in the compact links row (b103)", "النتيجة" in links_row)
+chk("short report: «النتيجة» targets go('results') (the b15 result screen)",
+    "onclick=\"go('results')\">'+t('النتيجة','Result')" in links_row.replace("\\'", "'"))
 chk("short report: «التقرير الكامل» (الكامل) still targets openReport()",
     "openReport()" in links_row and "التقرير الكامل" in links_row)
 chk("short report: the primary CTA row = PDF + «حسّن التقييم» (b103 architecture)",
@@ -84,11 +86,12 @@ chk("short report: refusal stub still routes to openReport (untouched)",
 msr = re.search(r"id=\"shortReportScreen\".*?<div id=\"srOut\"", HTML, re.S)
 sr_wrap = msr.group(0) if msr else ""
 sr_wrap_buttons = re.findall(r"<button[^>]*>([^<]*)</button>", sr_wrap)
-chk("shortReportScreen wrapper: button relabeled «→ التفاصيل الكاملة» (old label gone from buttons)",
-    any("→ التفاصيل الكاملة" in b for b in sr_wrap_buttons)
-    and not any("رجوع للنتيجة" in b for b in sr_wrap_buttons))
-chk("shortReportScreen wrapper: still targets go('results')",  # b88 R6: data-en attr added, still → go('results') + AR label
-    re.search(r"onclick=\"go\('results'\)\"[^>]*>→ التفاصيل الكاملة", sr_wrap))
+chk("shortReportScreen wrapper: button relabeled «→ النتيجة» (b141: was «→ التفاصيل الكاملة»; old labels gone)",
+    any("→ النتيجة" in b for b in sr_wrap_buttons)
+    and not any("رجوع للنتيجة" in b for b in sr_wrap_buttons)
+    and not any("→ التفاصيل الكاملة" in b for b in sr_wrap_buttons))
+chk("shortReportScreen wrapper: still targets go('results')",  # b88 R6: data-en attr added; b141: label → «النتيجة»
+    re.search(r"onclick=\"go\('results'\)\"[^>]*>→ النتيجة", sr_wrap))
 
 # ── (4) the FULL report screen's wrapper untouched ───────────────────────────
 mrep = re.search(r"id=\"reportScreen\".*?<div id=\"repOut\"", HTML, re.S)

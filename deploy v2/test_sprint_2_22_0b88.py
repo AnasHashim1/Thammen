@@ -57,9 +57,10 @@ ok(HTML.count('data-en="← New valuation"') == 2, "both new-valuation buttons (
 ok('data-en="← Back to result">→ رجوع للنتيجة</button>' in HTML,
    "back-to-result button: data-en added + AR preserved")
 ok(HTML.count('data-en="← Back to result"') == 2, "both back-to-result buttons (refine+report) wrapped")
-# «→ التفاصيل الكاملة» (short report) → data-en
-ok('data-en="← Full details">→ التفاصيل الكاملة</button>' in HTML,
-   "full-details button: data-en added + AR preserved")
+# the short-report wrapper nav-back button → data-en (b141 R6: relabeled «→ التفاصيل الكاملة» →
+# «→ النتيجة» / "← Result", since it navigates back to the result screen; data-en still present)
+ok('data-en="← Result">→ النتيجة</button>' in HTML,
+   "result nav button: data-en added + AR preserved")
 
 # ── 5. RESULTS DISCLAIMER (.disc): each AR line wrapped in a data-en span ─────
 ok('data-en="This automated market valuation is indicative and based on publicly available Ministry of Justice data.">' in HTML,

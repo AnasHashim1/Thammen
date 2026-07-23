@@ -82,8 +82,9 @@ ck("gloss raw gone", ">معدّل الرسملة: نسبة صافي الدخل �
 
 # ── (5) version + AR byte-identical guardrails + value-neutrality ────────────
 print("[version + value-neutral]")
-ck("engine version b140", "thammen-sprint2p22p0b140-en-visible-fossils" in ENG)
-ck("sprint tag b140",     "SPRINT_TAG = '2.22.0b.140'" in ENG)
+# b141 R6 (Lesson-2): version-agnostic — the exact-version pin broke on the b141 bump.
+ck("engine version b-series", "thammen-sprint2p22p0b1" in ENG and "-" in ENG)
+ck("sprint tag b-series",     "SPRINT_TAG = '2.22.0b.1" in ENG)
 # AR survives (t() first-arg / pick returns _ar): the original Arabic literals still present
 ck("AR literal survives (value)", "'قيمة التقييم السوقي: '" in HTML)
 ck("AR literal survives (honesty)","'تقييم سوقيّ آليّ، وليس تقييماً معتمداً.'" in HTML)

@@ -1351,7 +1351,7 @@ body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:lt
   <div class="rwrap">
     <!-- b29: المختصر صار هبوطاً افتراضياً بعد التحسين — «رجوع للنتيجة» تُصبح غير صادقة
          لمن لم يرَ النتيجة بعد؛ «التفاصيل الكاملة» صادقة على مسارَي الدخول معاً. -->
-    <button class="bbtn no-print" onclick="go('results')" data-en="← Full details">→ التفاصيل الكاملة</button>
+    <button class="bbtn no-print" onclick="go('results')" data-en="← Result">→ النتيجة</button>
     <div id="srOut" class="thmr"></div>
   </div>
 </div>
@@ -2632,7 +2632,7 @@ function _s4bLimits(d,muc){
   h+='<div class="l2">';
   if(ku.length){
     h+='<div><div class="lh">'+t('ما لا نراه بعد','What we don\'t see yet')+'</div>';
-    ku.slice(0,6).forEach(function(u){h+='<div class="li"><span class="b" style="color:var(--warn)">·</span><span>'+esc(u)+'</span></div>';});
+    ku.forEach(function(u){h+='<div class="li"><span class="b" style="color:var(--warn)">·</span><span>'+esc(u)+'</span></div>';});  // b141: uncapped (was slice(0,6)) — the full list now lives ONCE here; the fold dup removed
     h+='</div>';
   }
   h+='<div><div class="lh">'+t('أسئلةٌ قبل الشراء','Questions before buying')+'</div>';
@@ -3344,7 +3344,7 @@ function showShortReport(d){
   // (now-collapsed) srFold2 summary right below IS the opener. ════
   h+='<div class="thmr-btns"><button class="thmr-btn no-print" onclick="printShortReport()">'+t('حفظ / مشاركة PDF','Save / share PDF')+'</button>'
     +'<button class="thmr-btn alt" onclick="go(\'refine\')">'+t('حسّن التقييم','Refine the valuation')+'</button></div>';
-  h+='<div class="thmr-links no-print"><a onclick="openReport()">'+t('التقرير الكامل','Full report')+'</a><a onclick="go(\'results\')">'+t('التفاصيل الكاملة','Full details')+'</a></div>';
+  h+='<div class="thmr-links no-print"><a onclick="openReport()">'+t('التقرير الكامل','Full report')+'</a><a onclick="go(\'results\')">'+t('النتيجة','Result')+'</a></div>';
   h+='</div>';
   // ════ Page 2 — ملحق المختصّين (the PDF contract §٦–٩) ════
   // Sprint 2.22.0b.103 (R1): page-2 now FOLDS by default — the exact b90/srFold pattern.
@@ -4025,6 +4025,9 @@ function show(d){
   // compatible: when slope_pct is present (fresh data + low MUC,
   // rare today at 148-day staleness), the original "اتجاه السوق"
   // headline with the (X.X%/سنة) parenthetical still renders.
+  // b141 note: the T1.2 «اتجاه تاريخي» honesty framing lives ONLY here — this fold
+  // trend is intentionally KEPT (deduping it vs the EVIDENCE sparkline is deferred to a
+  // signed honesty review, since it would drop the signed a3/T1.2 suppressed-slope reframe).
   const tr=d.trend;
   if(tr&&tr.years&&tr.years.length>0){
     let trHeadline;
@@ -4099,13 +4102,9 @@ function show(d){
   // ── Sprint 2.16.0: Stock Stratification (Rule E4) ── (b17: shared builder)
   h+=_strataHtml(d);
 
-  // ── Known unknowns ──
-  const rtr=d.reasoning_trace;
-  if(rtr&&rtr.known_unknowns&&rtr.known_unknowns.length>0){
-    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">'+t('ما لا نعرفه (يحتاج فحص ميداني)','What we do not know (needs a field inspection)')+'</div><div class="rn">';
-    rtr.known_unknowns.forEach(u=>{h+='• '+u+'<br>'});
-    h+='</div></div>';
-  }
+  // ── Known unknowns ── (b141 declutter): the full known-unknowns list now renders ONCE — in the
+  // always-visible LIMITS section (_s4bLimits, now uncapped). The duplicate fold card was removed
+  // (nothing lost — LIMITS shows the complete list). The full report keeps its own known-unknowns card.
 
   // ── Sprint 2.22.0b.125 (S4b): build the remaining flat design sections. SCENARIOS (b23 what-ifs, new
   // to the result screen) + LIMITS (the full MUC clause + known-unknowns + due-diligence + «دون تسوية
@@ -4116,7 +4115,7 @@ function show(d){
   if(hasValuation){
     secScn=_s4bScenarios(v);
     secLim=_s4bLimits(d,muc);
-    secFull='<div class="rs-sec rv"><details class="rs-full"><summary><span class="lt"><svg class=ic aria-hidden=true><use href=#ic-search></use></svg> '+t('التفاصيل الكاملة (التحليل والمقارنات)','Full details (analysis and comparables)')+'</span><span class="plus"></span></summary><div class="fbody">'
+    secFull='<div class="rs-sec rv"><details class="rs-full"><summary><span class="lt"><svg class=ic aria-hidden=true><use href=#ic-search></use></svg> '+t('تحليل إضافيّ (التفاصيل والمقارنات)','Deeper analysis (details &amp; comparables)')+'</span><span class="plus"></span></summary><div class="fbody">'
       +_info
       +(_briefSecs?('<div class="rc" style="background:transparent;border:none;box-shadow:none;padding:0;margin:8px 0 4px"><div class="rt" style="font-size:1.05rem">'+_briefTitle+'</div></div>'+_briefSecs):'')
       +a8acc+h
@@ -4174,7 +4173,7 @@ function show(d){
   // b134 (S2 «نبض السوق»): inject the contextual band into the DOM after the hero (before the first
   // evidence .rs-sec), then load it async. Built in the DOM — NOT the pinned assembly string (b15/b31/
   // b52/b125), so the flat-order pins stay byte-identical. Value-neutral display-only.
-  try{if(d.district&&d.asset_type){var _pb=document.createElement('div');_pb.className='rs-sec';_pb.id='pulseBand';_pb.style.display='none';var _fs=o.querySelector('.rs-sec');if(_fs){_fs.parentNode.insertBefore(_pb,_fs);}else{o.appendChild(_pb);}_loadPulse(d.district,d.asset_type);}}catch(e){}
+  try{if(hasValuation&&d.district&&d.asset_type){var _pb=document.createElement('div');_pb.className='rs-sec';_pb.id='pulseBand';_pb.style.display='none';var _fs=o.querySelector('.rs-sec');if(_fs){_fs.parentNode.insertBefore(_pb,_fs);}else{o.appendChild(_pb);}_loadPulse(d.district,d.asset_type);}}catch(e){}  // b141 B1: gate on hasValuation — the pulse band must not render under a refusal card
 }
 
 // b134 (redesign v2 — S2 «نبض السوق»): fetch + render the contextual recent-deals band on the result

@@ -78,9 +78,11 @@ check('service-scope badge → alerts', "alerts+='<div style=\"background:'+scop
 # 13. the scratch `h` is collapsed into ONE TIER-2 «التفاصيل الكاملة» accordion (valued) / flat (refusal).
 # b48 re-point: the 🔎 emoji in the accordion title became an inline-SVG icon — pin the title text + wiring.
 # b125 R6 (S4b): the analytical scratch `h` + a8acc now live inside the FULL-DETAILS fold
-# (secFull, <details class="rs-full"> «التفاصيل الكاملة (التحليل والمقارنات)»), not a t2 accordion. Nothing lost.
+# (secFull, <details class="rs-full">), not a t2 accordion. Nothing lost.
+# b141 R6: the fold LABEL was renamed «التفاصيل الكاملة (التحليل والمقارنات)» → «تحليل إضافيّ (التفاصيل والمقارنات)»
+# to resolve the naming collision with «التقرير الكامل» (the deepest artifact). Scratch+a8acc wiring unchanged.
 check('detail scratch → FULL-DETAILS fold (valued, secFull)',
-      "التفاصيل الكاملة (التحليل والمقارنات)" in HTML and '+a8acc+h' in HTML and 'details class="rs-full"' in HTML)
+      "تحليل إضافيّ (التفاصيل والمقارنات)" in HTML and '+a8acc+h' in HTML and 'details class="rs-full"' in HTML)
 check('detail scratch → flat (refusal)', 'else { flat+=h; }' in HTML)
 check('scratch consumed before assembly', "h='';  // scratch consumed" in HTML)
 # 14. basic-info → its own TIER-2 accordion. (b31/DEF-UX11 re-point: the full evidence panel is no

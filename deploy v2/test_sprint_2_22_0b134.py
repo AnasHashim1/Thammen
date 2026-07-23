@@ -59,8 +59,10 @@ LP = HTML[_ls:_ls + 2600] if _ls >= 0 else ''
 check('_loadPulse present', bool(LP))
 check('fetches /api/pulse with area + type', "fetch('/api/pulse?area='" in LP and "'&type='" in LP)
 check('contextual: called with d.district + d.asset_type', '_loadPulse(d.district,d.asset_type)' in HTML)
-check('band injected (DOM, not the pinned assembly string) only when district + asset_type exist',
-      "_pb.id='pulseBand'" in HTML and 'if(d.district&&d.asset_type)' in HTML
+# b141 R6: the gate was TIGHTENED to also require hasValuation (the band must not render under a
+# refusal card). Contextual district+asset_type still required; DOM-inject (not the assembly string).
+check('band injected (DOM) only when hasValuation + district + asset_type exist',
+      "_pb.id='pulseBand'" in HTML and 'if(hasValuation&&d.district&&d.asset_type)' in HTML
       and 'h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;' in HTML)
 check('ANSWERS Q11: count 0 → band stays hidden (never fabricate)', 'if(!p||!p.count||p.count<1)return' in LP)
 check('ANSWERS Q11: sparse (<3) → single count line, no cards', 'p.deals.length<3' in LP and 'pulse-line' in LP)
