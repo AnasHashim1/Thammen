@@ -19,7 +19,7 @@ def check(name, cond):
 check('fpHint helper -> var(--muted)',
       'id="fpHint" class="rn" style="font-size:.75rem;color:var(--muted)' in HTML)
 check('rental-note helper -> var(--muted)',
-      'color:var(--muted);margin-top:3px">إيجار فعلي' in HTML)
+      'color:var(--muted);margin-top:3px"' in HTML and '>إيجار فعلي' in HTML)  # b137 R6: rental note got data-en; muted color preserved
 check('footprint title -> var(--primary)',
       'color:var(--primary)"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg>' in HTML)
 check('cap-note helper -> var(--muted)',

@@ -728,6 +728,10 @@ body.lang-en{direction:ltr;text-align:left}
 body.lang-en #betaGate,body.lang-en .bgate,body.lang-en #homeScreen,body.lang-en #formScreen{direction:ltr}
 body.lang-en .bg-note,body.lang-en .bg-ack,body.lang-en #formScreen .ftitle,body.lang-en #formScreen .br-note,body.lang-en #formScreen label{text-align:left}
 body.lang-en #formScreen input,body.lang-en #formScreen select{text-align:left}
+/* Sprint 2.22.0b.137 (S11) — EN dir-flip for the REFINE screen (its static text got data-en in b137). */
+body.lang-en #refineScreen{direction:ltr}
+body.lang-en #refineScreen .ftitle,body.lang-en #refineScreen .rn,body.lang-en #refineScreen .br-note,body.lang-en #refineScreen .ent-promise,body.lang-en #refineScreen .ent-fine,body.lang-en #refineScreen summary,body.lang-en #refineScreen label{text-align:left}
+body.lang-en #refineScreen input,body.lang-en #refineScreen select{text-align:left}
 body.lang-en #betaGate .bg-en{display:none}
 body.lang-en #scopeModal>div{direction:ltr!important;text-align:left!important}
 /* Sprint 2.22.0b.80 — EN dir-flip for the SHORT report ONLY (#srOut); the result (#resultsScreen) + full report (#repOut) keep RTL until their own sprints. */
@@ -1159,14 +1163,14 @@ body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:lt
       </div>
       <div class="ent-lbl" data-en="Property type">نوع العقار</div>
       <div class="ent-types">
-        <div class="ent-type sel" id="tabAddr" onclick="selTab('address')" data-en="Villa / building">
+        <div class="ent-type sel" id="tabAddr" onclick="selTab('address')">
           <svg class="eti" aria-hidden="true"><use href="#ic-home"></use></svg>
-          <div class="etn">فيلا أو مبنى</div>
+          <div class="etn" data-en="Villa / building">فيلا أو مبنى</div>
           <div class="etm" data-en="by address">بالعنوان</div>
         </div>
-        <div class="ent-type" id="tabLand" onclick="selTab('land')" data-en="Land / plot">
+        <div class="ent-type" id="tabLand" onclick="selTab('land')">
           <svg class="eti" aria-hidden="true"><use href="#ic-ruler"></use></svg>
-          <div class="etn">أرض / قطعة</div>
+          <div class="etn" data-en="Land / plot">أرض / قطعة</div>
           <div class="etm" data-en="by plot no. (PIN)">بالرقم المساحي (PIN)</div>
         </div>
       </div>
@@ -1202,78 +1206,79 @@ body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:lt
   </div>
   <div class="fwrap">
     <button class="bbtn" onclick="go('results')" data-en="← Back to result">→ رجوع للنتيجة</button>
-    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg> تفاصيل العقار (المرحلة 2)</div>
+    <div class="ftitle"><svg class=ic aria-hidden=true><use href=#ic-ruler></use></svg> <span data-en="Property details (Stage 2)">تفاصيل العقار (المرحلة 2)</span></div>
     <!-- Sprint 2.22.0b.27 (م4 — signed): the refine fields regrouped into the THREE
          v3-contract groups, each TAGGED by its real effect (يحرّك التقدير / يدقّق
          مرتكز التكلفة / اختياري للإثراء). Every field id is UNCHANGED (the re-eval
          JS reads by id). towerRentSection stays OUTSIDE the groups (the 2.16.10/b22
          tower flow reveals + focuses it — keeping it ungrouped preserves that path). -->
     <div class="ent-card">
-      <div class="rn" style="font-size:.85rem;color:var(--muted);margin-bottom:12px;line-height:1.6">أجب بما تعرفه فقط — كل مجموعة موسومة بأثرها الحقيقي، واترك ما لا تعرفه فارغاً.</div>
+      <div class="rn" style="font-size:.85rem;color:var(--muted);margin-bottom:12px;line-height:1.6" data-en="Answer only what you know — each group is tagged by its real effect; leave what you don't know blank.">أجب بما تعرفه فقط — كل مجموعة موسومة بأثرها الحقيقي، واترك ما لا تعرفه فارغاً.</div>
       <!-- b133 (redesign v2 «التحسين»): the qualitative range promise — ANSWERS #13. «±8%» never
            existed; the numeric range appears only AFTER recompute, from the real field. -->
       <div class="ent-promise"><svg class="ic" aria-hidden="true"><use href="#ic-chart"></use></svg><span data-en="Every detail you add narrows the range and lifts confidence. The updated range appears after recalculation.">كلّما أضفت تفصيلاً، ضاق النطاق وارتفعت الثقة. النطاق المحدَّث يظهر بعد إعادة الحساب.</span></div>
       <!-- Sprint 2.16.10 — tower/compound rental split (revealed by applyAssetToForm
            when the asset is a tower / compound_large / apartment_building). -->
       <div id="towerRentSection" class="tower-only" style="display:none;background:var(--alt);border-right:3px solid var(--bronze);padding:10px 12px;margin-bottom:10px;border-radius:0 6px 6px 0">
-        <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px">
+        <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px" data-en="&lt;strong&gt;For towers and large compounds:&lt;/strong&gt; If you don't know the total, enter the unit details instead — the total is computed automatically.">
           <strong>للأبراج والمجمعات الكبيرة:</strong> إذا لم تعرف الإجمالي،
           أدخل تفاصيل الوحدات بدلاً منه. سيُحسب الإجمالي تلقائياً.
         </div>
         <div class="fr2">
-          <div class="fg"><label>عدد الوحدات في البرج</label><input type="number" id="unitCount" placeholder="مثال: 80" min="1" max="500"></div>
-          <div class="fg"><label>متوسط الإيجار الشهري لكل وحدة (ر.ق)</label><input type="number" id="avgRentPerUnit" placeholder="مثال: 12000" min="1"></div>
+          <div class="fg"><label data-en="Number of units in the tower">عدد الوحدات في البرج</label><input type="number" id="unitCount" placeholder="مثال: 80" data-en-ph="e.g. 80" min="1" max="500"></div>
+          <div class="fg"><label data-en="Average monthly rent per unit (QAR)">متوسط الإيجار الشهري لكل وحدة (ر.ق)</label><input type="number" id="avgRentPerUnit" placeholder="مثال: 12000" data-en-ph="e.g. 12000" min="1"></div>
         </div>
       </div>
       <details class="thmr-grp" open>
-        <summary><span class="gnum">١</span>الهندسة <span class="tagfx move">يحرّك التقييم</span><span class="garrow">‹</span></summary>
+        <summary><span class="gnum">١</span><span data-en="Geometry">الهندسة</span> <span class="tagfx move" data-en="Moves the valuation">يحرّك التقييم</span><span class="garrow">‹</span></summary>
         <div class="gbody">
           <div class="fr2">
-            <div class="fg"><label>عدد الطوابق فوق الأرض</label><select id="floors"><option value="">— اختر —</option><option value="1">طابق واحد (أرضي)</option><option value="2">طابقان (أرضي + أول)</option><option value="3">ثلاثة (أرضي + أول + ثاني)</option><option value="4">أربعة</option></select></div>
-            <div class="fg"><label>سرداب (تحت الأرض)</label><select id="basement"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد سرداب</option></select></div>
-            <div class="fg"><label>بنتهاوس (نصف طابق علوي)</label><select id="penthouse"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد بنتهاوس</option></select></div>
+            <div class="fg"><label data-en="Floors above ground">عدد الطوابق فوق الأرض</label><select id="floors"><option value="" data-en="— choose —">— اختر —</option><option value="1" data-en="One floor (ground)">طابق واحد (أرضي)</option><option value="2" data-en="Two (ground + first)">طابقان (أرضي + أول)</option><option value="3" data-en="Three (ground + first + second)">ثلاثة (أرضي + أول + ثاني)</option><option value="4" data-en="Four">أربعة</option></select></div>
+            <div class="fg"><label data-en="Basement (below ground)">سرداب (تحت الأرض)</label><select id="basement"><option value="" data-en="— choose —">— اختر —</option><option value="0" data-en="None">لا يوجد</option><option value="1" data-en="Has a basement">يوجد سرداب</option></select></div>
+            <div class="fg"><label data-en="Penthouse (half upper floor)">بنتهاوس (نصف طابق علوي)</label><select id="penthouse"><option value="" data-en="— choose —">— اختر —</option><option value="0" data-en="None">لا يوجد</option><option value="1" data-en="Has a penthouse">يوجد بنتهاوس</option></select></div>
           </div>
           <div class="fr2">
-            <div class="fg"><label>عدد الملاحق</label><select id="annexes"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">ملحق واحد</option><option value="2">ملحقان</option><option value="3">ثلاثة</option></select></div>
-            <div class="fg"><label>مجلس خارجي منفصل</label><select id="externalMajlis"><option value="">— اختر —</option><option value="0">لا يوجد</option><option value="1">يوجد</option></select></div>
+            <div class="fg"><label data-en="Number of annexes">عدد الملاحق</label><select id="annexes"><option value="" data-en="— choose —">— اختر —</option><option value="0" data-en="None">لا يوجد</option><option value="1" data-en="One annex">ملحق واحد</option><option value="2" data-en="Two annexes">ملحقان</option><option value="3" data-en="Three">ثلاثة</option></select></div>
+            <div class="fg"><label data-en="Separate external majlis">مجلس خارجي منفصل</label><select id="externalMajlis"><option value="" data-en="— choose —">— اختر —</option><option value="0" data-en="None">لا يوجد</option><option value="1" data-en="Present">يوجد</option></select></div>
           </div>
           <div class="fr2">
-            <div class="fg"><label>تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من أبعاد القطعة" min="0"><div id="fpHint" class="rn" style="font-size:.75rem;color:var(--muted);margin-top:5px;line-height:1.5"></div></div>
+            <div class="fg"><label data-en="Estimated ground floor area (m²)">تقدير مساحة البناء الأرضي (م²)</label><input type="number" id="footprintM2" placeholder="اختياري — يُقدَّر تلقائياً من أبعاد القطعة" data-en-ph="optional — auto-estimated from the plot dimensions" min="0"><div id="fpHint" class="rn" style="font-size:.75rem;color:var(--muted);margin-top:5px;line-height:1.5"></div></div>
             <div class="fg"></div>
           </div>
         </div>
       </details>
       <details class="thmr-grp">
-        <summary><span class="gnum">٢</span>العمر والحالة <span class="tagfx tune">يدقّق مرتكز التكلفة</span><span class="garrow">‹</span></summary>
+        <summary><span class="gnum">٢</span><span data-en="Age and condition">العمر والحالة</span> <span class="tagfx tune" data-en="Refines the cost anchor">يدقّق مرتكز التكلفة</span><span class="garrow">‹</span></summary>
         <div class="gbody">
           <div class="fr2">
-            <div class="fg"><label>عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" min="0" max="100"><div style="font-size:.72rem;color:var(--muted);margin-top:3px">العمر المسجَّل في النظام حدٌّ أدنى (مسح GIS) — إدخال العمر الفعلي يرفع الدقّة.</div></div>
-            <div class="fg"><label>حالة العقار</label><select id="condition"><option value="">— اختر —</option><option value="new">جديد / لم يُسكن</option><option value="good">جيدة</option><option value="renovated">مُرمّم</option><option value="maintenance">يحتاج صيانة</option><option value="teardown">آيل للسقوط / يجب هدمه</option></select></div>
+            <div class="fg"><label data-en="Estimated building age (years)">عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" data-en-ph="optional — e.g. 12" min="0" max="100"><div style="font-size:.72rem;color:var(--muted);margin-top:3px" data-en="The age recorded in the system is a lower bound (GIS survey) — entering the actual age raises precision.">العمر المسجَّل في النظام حدٌّ أدنى (مسح GIS) — إدخال العمر الفعلي يرفع الدقّة.</div></div>
+            <div class="fg"><label data-en="Property condition">حالة العقار</label><select id="condition"><option value="" data-en="— choose —">— اختر —</option><option value="new" data-en="New / unoccupied">جديد / لم يُسكن</option><option value="good" data-en="Good">جيدة</option><option value="renovated" data-en="Renovated">مُرمّم</option><option value="maintenance" data-en="Needs maintenance">يحتاج صيانة</option><option value="teardown" data-en="Dilapidated / must be demolished">آيل للسقوط / يجب هدمه</option></select></div>
           </div>
           <div class="fr2">
-            <div class="fg"><label>تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="">— اختر —</option><option value="0">لا</option><option value="1">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
+            <div class="fg"><label data-en="Luxury finish (for older buildings)">تشطيب فاخر (للمباني القديمة)</label><select id="isLuxury"><option value="" data-en="— choose —">— اختر —</option><option value="0" data-en="No">لا</option><option value="1" data-en="Yes — high-end finish + recent full renovation">نعم — تشطيب راقٍ + ترميم كامل حديث</option></select></div>
             <div class="fg"></div>
           </div>
           <!-- Sprint 2.22.0b.113 (S7 / الجوهر): the neutral opt-in note + the Gemini-C2 inspection-consequence
-               friction (an honest deterrent against over-claiming — NOT a «unlock your higher value» dark pattern). -->
-          <div class="br-note" style="margin-top:2px;line-height:1.7">◆ حالتك تُغيّر الرقم: إقرارٌ إيجابيّ (جيدة/مُرمّم/جديد) قد يرفع التقدير إلى شريحة عقارك السوقيّة، وإقرارٌ أدنى قد يخفضه — والرقم يبقى <strong>استرشاديّاً</strong>. وأيّ عدم دقّةٍ في إقرارك تجعله غير صالحٍ عند الفحص الميدانيّ من البنوك أو المشترين.</div>
+               friction (an honest deterrent against over-claiming — NOT a «unlock your higher value» dark pattern).
+               b137 (S11): the EN twin keeps the b113-signed honesty (indicative + invalid under field inspection). -->
+          <div class="br-note" style="margin-top:2px;line-height:1.7" data-en="◆ Your condition changes the figure: a positive attestation (good/renovated/new) may lift the estimate to your property's market bracket, and a lower one may reduce it — the figure remains &lt;strong&gt;indicative&lt;/strong&gt;. Any inaccuracy in your attestation renders it invalid under a field inspection by banks or buyers.">◆ حالتك تُغيّر الرقم: إقرارٌ إيجابيّ (جيدة/مُرمّم/جديد) قد يرفع التقدير إلى شريحة عقارك السوقيّة، وإقرارٌ أدنى قد يخفضه — والرقم يبقى <strong>استرشاديّاً</strong>. وأيّ عدم دقّةٍ في إقرارك تجعله غير صالحٍ عند الفحص الميدانيّ من البنوك أو المشترين.</div>
         </div>
       </details>
       <details class="thmr-grp">
-        <summary><span class="gnum">٣</span>معلومات مالية <span class="tagfx opt">اختياري للإثراء</span><span class="garrow">‹</span></summary>
+        <summary><span class="gnum">٣</span><span data-en="Financial information">معلومات مالية</span> <span class="tagfx opt" data-en="Optional enrichment">اختياري للإثراء</span><span class="garrow">‹</span></summary>
         <div class="gbody">
           <div class="fr2">
-            <div class="fg"><label id="rentalIncomeLabel">الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" min="0"><div class="rn" style="font-size:.72rem;color:var(--muted);margin-top:3px">إيجار فعلي + معدّل رسملة معايَر لمنطقتك ⇒ قد يقود الدخلُ التقدير.</div></div>
-            <div class="fg"><label>الإيجار الشهري المتوقع (ر.ق)</label><input type="number" id="potentialRental" placeholder="تقدير" min="0"></div>
+            <div class="fg"><label id="rentalIncomeLabel" data-en="Current monthly rent (QAR)">الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" data-en-ph="if any" min="0"><div class="rn" style="font-size:.72rem;color:var(--muted);margin-top:3px" data-en="Actual rent + a calibrated capitalization rate for your area ⇒ income may lead the estimate.">إيجار فعلي + معدّل رسملة معايَر لمنطقتك ⇒ قد يقود الدخلُ التقدير.</div></div>
+            <div class="fg"><label data-en="Expected monthly rent (QAR)">الإيجار الشهري المتوقع (ر.ق)</label><input type="number" id="potentialRental" placeholder="تقدير" data-en-ph="estimate" min="0"></div>
           </div>
           <div class="fr2">
-            <div class="fg"><label>السعر المطلوب (ر.ق)</label><input type="number" id="askingPrice" placeholder="اختياري" min="0"><div style="font-size:.72rem;color:var(--muted);margin-top:3px">لا يؤثّر على التقدير — يُعرَض للمقارنة في تقريرك فقط (الأسعار المعلنة ليست أدلّة).</div></div>
+            <div class="fg"><label data-en="Asking price (QAR)">السعر المطلوب (ر.ق)</label><input type="number" id="askingPrice" placeholder="اختياري" data-en-ph="optional" min="0"><div style="font-size:.72rem;color:var(--muted);margin-top:3px" data-en="Does not affect the estimate — shown for comparison in your report only (advertised prices are not evidence).">لا يؤثّر على التقدير — يُعرَض للمقارنة في تقريرك فقط (الأسعار المعلنة ليست أدلّة).</div></div>
             <div class="fg"></div>
           </div>
         </div>
       </details>
     </div>
-    <button class="sbtn" id="refineBtn" onclick="thammenReEvalGeometry()">احسب التقييم المُحسَّن</button>
+    <button class="sbtn" id="refineBtn" onclick="thammenReEvalGeometry()" data-en="Calculate the refined valuation">احسب التقييم المُحسَّن</button>
     <!-- b133: closing indicative-estimate line (honesty — aligns with «ليس تقييماً معتمداً»). -->
     <div class="ent-fine" data-en="The result stays an indicative estimate — details improve its accuracy, they do not make it a certified valuation.">تبقى النتيجة تقديراً استرشاديّاً — التفاصيل تحسّن دقّته لا تجعله تقييماً معتمداً.</div>
     <div id="refineRes"></div>
@@ -1479,8 +1484,8 @@ function applyAssetToForm(assetType){
   if(section)section.style.display=towerLike?'block':'none';
   if(lbl){
     lbl.textContent=towerLike
-      ? 'إجمالي الإيجار الشهري للبرج (ر.ق)'
-      : 'الإيجار الشهري الحالي (ر.ق)';
+      ? t('إجمالي الإيجار الشهري للبرج (ر.ق)','Gross monthly rent for the tower (QAR)')
+      : t('الإيجار الشهري الحالي (ر.ق)','Current monthly rent (QAR)');
   }
 }
 

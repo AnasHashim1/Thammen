@@ -63,7 +63,7 @@ check('HTML: cap-rate plain gloss',      'نسبة صافي الدخل' in HTML)
 check('HTML: «جارٍ الاتصال»',            'جارٍ الاتصال' in HTML)
 check('HTML: no «جاري الاتصال»',         'جاري الاتصال' not in HTML)
 check('HTML: dual «طابقان (أرضي + أول)»', 'طابقان (أرضي + أول)' in HTML)
-check('HTML: dual «ملحقان» option',      '<option value="2">ملحقان</option>' in HTML)
+check('HTML: dual «ملحقان» option',      'value="2"' in HTML and '>ملحقان</option>' in HTML)  # b137 R6: option got data-en; dual form preserved
 check('HTML: «نسبتها إلى الأرض»',        'نسبتها إلى الأرض' in HTML)
 check('HTML: hcred margin-top:18px',     re.search(r'\.hcred\{[^}]*margin-top:18px', HTML) is not None)
 

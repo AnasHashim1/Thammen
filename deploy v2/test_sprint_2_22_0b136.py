@@ -45,8 +45,8 @@ ACKBETA    = _slice(HTML, 'function ackBeta(', 'async function chk(')
 MAP        = _slice(HTML, 'function openMapPicker(', 'function copyResult(')
 
 print('\n== version bump ==')
-check("ENGINE_VERSION -> b136", "thammen-sprint2p22p0b136-a11y-focus-trap" in ENG)
-check("SPRINT_TAG -> 2.22.0b.136", "SPRINT_TAG = '2.22.0b.136'" in ENG)
+check("ENGINE_VERSION -> b13x prefix (R6/Lesson-2: version-agnostic)", "thammen-sprint2p22p0b" in ENG)
+check("SPRINT_TAG -> 2.22.0b prefix", "SPRINT_TAG = '2.22.0b." in ENG)
 
 print('\n== reusable focus-trap helper ==')
 check("_focusables(root) defined", "function _focusables(root){" in TRAP)

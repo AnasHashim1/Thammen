@@ -81,8 +81,9 @@ check('home footer disclaimer → هذا التقييم السوقيّ الآل�
       'هذا التقييم السوقيّ الآليّ إرشاديّ ومبنيّ على بيانات وزارة العدل المتاحة للعموم.' in HTML
       and 'هذا التقدير إرشاديّ ومبنيّ على بيانات وزارة العدل المتاحة للعموم.' not in HTML)
 check('refine group tag → يحرّك التقييم (old absent)',
-      '<span class="tagfx move">يحرّك التقييم</span>' in HTML
-      and '<span class="tagfx move">يحرّك التقدير</span>' not in HTML)
+      # b137 R6: tagfx span got data-en; identity lock (تقييم, not تقدير) preserved
+      'class="tagfx move"' in HTML and '>يحرّك التقييم</span>' in HTML
+      and '>يحرّك التقدير</span>' not in HTML)
 check('refine-feature name → حسّن التقييم (rendered, old رendered absent)',
       # b125 R6: the S4b sticky action bar shortened the refine CTA to «حسّن التقييم» (was «… — أضف تفاصيل
       # مبناك», too long beside 2 other buttons). The b54 terminology lock (تقييم, NOT تقدير) is preserved.

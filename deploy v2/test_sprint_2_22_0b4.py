@@ -45,7 +45,7 @@ check('teardown reno = (False,False)', E._condition_to_reno('teardown') == (Fals
 # 7. CLI accepts teardown
 check('CLI --condition includes teardown', "'fair', 'poor', 'teardown'" in ENG)
 # 8. index.html dropdown option + disclosure render
-check('dropdown «آيل للسقوط / يجب هدمه» value=teardown', 'value="teardown">آيل للسقوط' in HTML)
+check('dropdown «آيل للسقوط / يجب هدمه» value=teardown', 'value="teardown"' in HTML and 'آيل للسقوط / يجب هدمه' in HTML)  # b137 R6: teardown option got data-en; value + label preserved
 check('teardown disclosure render (v.teardown.note_ar)', ('v.teardown' in HTML) and ('v.teardown.note_ar' in HTML))
 # 8b. luxury-new premium via Cost Approach / DRC (B-2b, Lever-1 — R7 UP; V002/V003 calibrated)
 check('LUXURY_CONSTRUCTION_QAR_PER_M2 ~3000-4500', 3000 <= E.LUXURY_CONSTRUCTION_QAR_PER_M2 <= 4500)

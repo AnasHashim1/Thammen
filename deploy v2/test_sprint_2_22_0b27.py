@@ -52,11 +52,12 @@ check('refine block extracted', len(REF) > 500)
 check('exactly THREE thmr-grp groups', REF.count('<details class="thmr-grp"') == 3)
 check('group ١ الهندسة OPEN by default + tagged «يحرّك التقييم»',  # b54 R6: تقدير→تقييم (identity lock)
       '<details class="thmr-grp" open>' in REF
-      and 'الهندسة <span class="tagfx move">يحرّك التقييم</span>' in REF)
+      # b137 R6/Lesson-2: refine summary text wrapped in <span data-en> (structure changed; AR text + tagfx preserved)
+      and '>الهندسة</span>' in REF and 'class="tagfx move"' in REF and '>يحرّك التقييم</span>' in REF)
 check('group ٢ العمر والحالة tagged «يدقّق مرتكز التكلفة»',
-      'العمر والحالة <span class="tagfx tune">يدقّق مرتكز التكلفة</span>' in REF)
+      '>العمر والحالة</span>' in REF and 'class="tagfx tune"' in REF and '>يدقّق مرتكز التكلفة</span>' in REF)
 check('group ٣ معلومات مالية tagged «اختياري للإثراء»',
-      'معلومات مالية <span class="tagfx opt">اختياري للإثراء</span>' in REF)
+      '>معلومات مالية</span>' in REF and 'class="tagfx opt"' in REF and '>اختياري للإثراء</span>' in REF)
 _ids = ('floors', 'basement', 'penthouse', 'annexes', 'externalMajlis', 'footprintM2',
         'buildingAge', 'condition', 'isLuxury', 'rentalIncome', 'potentialRental',
         'askingPrice', 'unitCount', 'avgRentPerUnit', 'rentalIncomeLabel', 'fpHint')
