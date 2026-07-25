@@ -295,26 +295,37 @@ def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0,
     if budget_exceeded:
         confidence = 'medium' if confidence == 'high' else confidence
 
-    # Evidence string (Arabic)
+    # Evidence string (Arabic) + its EN twin (Sprint 2.22.0b.144 — the result-screen
+    # Geometric Findings card reads `pick(ca,'evidence')` since b140; the same street
+    # interpolations ride both languages. ADDITIVE display copy — never feeds the value.
     main_st_numbers = sorted({s[1] for s in main_streets})
     local_st_numbers = sorted({s[1] for s in local_streets})
     all_street_label = []
+    all_street_label_en = []
     if main_st_numbers:
         all_street_label.append(f'شوارع رئيسية: {main_st_numbers}')
+        all_street_label_en.append(f'main streets: {main_st_numbers}')
     if local_st_numbers:
         all_street_label.append(f'شوارع داخلية: {local_st_numbers}')
+        all_street_label_en.append(f'internal streets: {local_st_numbers}')
     street_list_str = '، '.join(all_street_label)
+    street_list_str_en = ', '.join(all_street_label_en)
 
     if is_corner and main_road_adjacent:
         evidence = f'زاوية مع شارع رئيسي ({street_list_str})'
+        evidence_en = f'Corner plot on a main street ({street_list_str_en})'
     elif is_corner:
         evidence = f'زاوية على شوارع داخلية متعددة ({street_list_str})'
+        evidence_en = f'Corner plot on multiple internal streets ({street_list_str_en})'
     elif main_road_adjacent:
         evidence = f'مطل على شارع رئيسي ({street_list_str})'
+        evidence_en = f'Fronting a main street ({street_list_str_en})'
     elif edges_with_road >= 1:
         evidence = f'مطل على شارع داخلي ({street_list_str})'
+        evidence_en = f'Fronting an internal street ({street_list_str_en})'
     else:
         evidence = 'لم يُكتشف شارع مجاور — قطعة داخلية محتملة'
+        evidence_en = 'No adjacent street detected — possibly an interior plot'
 
     return {
         'is_corner': is_corner,
@@ -331,6 +342,7 @@ def detect_corner(polygon: dict, road_search_buffer_m: float = 15.0,
         'budget_exceeded': budget_exceeded,
         'time_taken_s': round(time.time() - start_time, 2),
         'evidence_ar': evidence,
+        'evidence_en': evidence_en,   # b144 — EN twin (display-only)
         'confidence': confidence,
         'edge_details': edge_evidence[:10],
     }
@@ -423,11 +435,13 @@ def analyze_adjacent_zoning(centroid_lat: float, centroid_lon: float,
 
     if has_industrial:
         # Industrial adjacency is NEGATIVE, not positive
+        _ind_codes = ", ".join(c for c in adjacent_codes if c in INDUSTRIAL_CODES)
         return {
             'hbu_potential': False,
             'industrial_adjacency': True,
             'potential_pct': -0.10,
-            'evidence_ar': f'تصنيف صناعي مجاور ({", ".join(c for c in adjacent_codes if c in INDUSTRIAL_CODES)}) — قد يَخفض القيمة',
+            'evidence_ar': f'تصنيف صناعي مجاور ({_ind_codes}) — قد يَخفض القيمة',
+            'evidence_en': f'Adjacent industrial zoning ({_ind_codes}) — may reduce the value',   # b144
             'adjacent_zones': sorted(adjacent_codes),
         }
 
@@ -443,23 +457,34 @@ def analyze_adjacent_zoning(centroid_lat: float, centroid_lon: float,
     if has_mixed_use:
         potential_pct = 0.20
         flag = 'استخدام مختلط مجاور (MU)'
+        flag_en = 'adjacent mixed use (MU)'
     elif has_commercial:
+        _com_codes = ", ".join(c for c in adjacent_codes if c in TRUE_COMMERCIAL_CODES)
         potential_pct = 0.25
-        flag = f'تجاري مجاور ({", ".join(c for c in adjacent_codes if c in TRUE_COMMERCIAL_CODES)})'
+        flag = f'تجاري مجاور ({_com_codes})'
+        flag_en = f'adjacent commercial ({_com_codes})'
     else:
         potential_pct = 0.10
         flag = 'تصنيف كثافة أعلى مجاور'
+        flag_en = 'adjacent higher-density zoning'
 
     evidence = (
         f'إمكانية تعديل رخصة: {flag} ({", ".join(sorted(adjacent_codes))}). '
         f'القيمة قد ترتفع بـ +{int(potential_pct*100)}% '
         f'إذا تم اعتماد التعديل (‎RICS HBU — VPS 2 / IVS 102‎).'
     )
+    # b144 — EN twin (display-only; same interpolations; never feeds the value)
+    evidence_en = (
+        f'Rezoning potential: {flag_en} ({", ".join(sorted(adjacent_codes))}). '
+        f'The value may rise by +{int(potential_pct*100)}% '
+        f'if the change is approved (RICS HBU — VPS 2 / IVS 102).'
+    )
 
     return {
         'hbu_potential': True,
         'potential_pct': potential_pct,
         'evidence_ar': evidence,
+        'evidence_en': evidence_en,
         'adjacent_zones': sorted(adjacent_codes),
         'trigger': flag,
     }

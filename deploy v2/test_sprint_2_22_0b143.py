@@ -111,8 +111,8 @@ ck("index.html has NO b143 marker (frontend untouched)", "b143" not in HTML and 
 
 # ── (5) engine version ───────────────────────────────────────────────────────
 print("\n[version]")
-ck("ENGINE_VERSION b143", "thammen-sprint2p22p0b143" in ENG)
-ck("SPRINT_TAG 2.22.0b.143", "SPRINT_TAG = '2.22.0b.143'" in ENG)
+ck("ENGINE_VERSION format (b-series)", "thammen-sprint2p22p0b" in ENG)
+ck("SPRINT_TAG format (2.22.0b)", "SPRINT_TAG = '2.22.0b." in ENG)
 
 print(f"\n{'='*54}\n  {passed} passed, {failed} failed\n{'='*54}")
 sys.exit(1 if failed else 0)

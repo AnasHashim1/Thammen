@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b143-en-scope-disclaimers'
-SPRINT_TAG = '2.22.0b.143'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b144-en-geometric-evidence'
+SPRINT_TAG = '2.22.0b.144'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -7283,6 +7283,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 'main_streets': corner.get('main_streets', []),
                 'local_streets': corner.get('local_streets', []),
                 'evidence_ar': corner.get('evidence_ar'),
+                'evidence_en': corner.get('evidence_en'),   # b144 — EN twin passthrough
                 'confidence': corner.get('confidence'),
                 'note_ar': (
                     'هذه الخصائص قد تَفرض علاوة سوقية. النقطة المركزية '
@@ -7298,6 +7299,7 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
                 'industrial_adjacency': hbu.get('industrial_adjacency', False),
                 'potential_pct': hbu.get('potential_pct', 0),
                 'evidence_ar': hbu.get('evidence_ar'),
+                'evidence_en': hbu.get('evidence_en'),   # b144 — EN twin passthrough
                 'adjacent_zones': hbu.get('adjacent_zones', []),
                 'rics_reference': 'RICS VPS 2 / IVS 102 — Highest and Best Use',
             }
