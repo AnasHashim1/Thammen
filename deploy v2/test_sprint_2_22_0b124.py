@@ -45,8 +45,8 @@ check('_countUp exists (from S0) + lands on fmt(target)',
 check('confidence meter gated on a NUMERIC accuracy.score (no invented number)',
       "if(acc&&typeof acc.score==='number'&&isFinite(acc.score)){" in H)
 check('score clamped 0..100', 'var _cscore=Math.max(0,Math.min(100,Math.round(acc.score)));' in H)
-check('label read from the bare acc.label (AR), NOT pick (no label_ar twin)',
-      "var _clbl=acc.label||'';" in H)
+check('label read from the bare acc.label via pickBare (b146: attach_en emits label_en beside the bare key)',
+      "var _clbl=pickBare(acc,'label');" in H)
 check('explanation via pick (explanation_ar + _en when it lands)', "var _cexp=pick(acc,'explanation')||'';" in H)
 check('explanation escaped (b57 XSS insurance)', "<div class=\"cnote\">'+esc(_cexp)+'</div>" in H)
 check('score also counts up (data-countup on the /100 figure)',

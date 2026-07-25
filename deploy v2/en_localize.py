@@ -240,6 +240,23 @@ CATALOG = {
     "معاينة ميدانية قبل اتخاذ قرار شراء/بيع": "A field inspection before making a buy/sell decision",
     "أدخل تفاصيل العقار (طوابق، سرداب، حالة) للحصول على تقييم أدق": "Enter the property details (floors, basement, condition) for a more accurate valuation",
     "للتوافق مع معايير RICS Red Book Global Standards (effective 31 January 2025) و IVS (effective 31 January 2025): يلزم فحص ميداني + تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement (VPS 1).": "To comply with the RICS Red Book Global Standards (effective 31 January 2025) and IVS (effective 31 January 2025): a field inspection + individual adjustment of the comparables + documentation of the building condition + Terms of Engagement (VPS 1) are required.",
+    # ── Sprint 2.22.0b.146 — the BARE-KEY leaks the adversarial completeness lens caught ──
+    # (fields with NO `_ar` suffix, invisible to the `_ar`-scan + the scalar rule):
+    # the compliance-foot disclaimer (every result) — BOTH live variants (main + fast paths):
+    "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي للقرار، ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS. للأغراض الرسمية (قروض، محاكم، تقارير محاسبية) يلزم مُقيِّم معتمد.": "Thammen compiles market data from government sources and active listings. This is an informational analysis for decision support and is not considered an official appraisal report issued by a licensed valuer under the RICS/IVS standards. For official purposes (loans, courts, accounting reports), a certified valuer is required.",
+    "ثمّن يجمع البيانات السوقية من المصادر الحكومية والإعلانات النشطة. هذا تحليل معلوماتي، ولا يُعتبر تقرير تثمين رسمي صادر عن مثمّن مرخّص وفق معايير RICS/IVS.": "Thammen compiles market data from government sources and active listings. This is an informational analysis and is not considered an official appraisal report issued by a licensed valuer under the RICS/IVS standards.",
+    # accuracy.label (the hero confidence meter, every valued result):
+    "شواهد محدودة": "Limited evidence",
+    "تقدير تقريبي": "Approximate estimate",
+    "بيانات غير كافية": "Insufficient data",
+    # location_features[].label (the «مميزات الموقع» card, every valued villa) — the
+    # FINAL transformed labels; several were already cataloged (b78/b140):
+    "على شارع رئيسي": "On a main street",
+    "بناء حديث جداً": "Very recent build",
+    "بناء حديث": "Recent build",
+    "بناء قديم نسبياً": "Relatively old build",
+    "بناء قديم": "Old build",
+    "ارتفاع مسموح: أرضي + أول + سطح": "Permitted height: ground + first + roof",
 }
 
 
@@ -258,7 +275,24 @@ _TEMPLATES = (
      'The rental data is limited (n={0})'),
     (re.compile(r'^الشريحة المباشرة ضعيفة \(n=1\) — تم التعويض بالتوسيع الجغرافي \(n=(\d+) معاملة بعد التوسيع، RICS VPS 3 / IVS 103\)$'),
      'The direct bracket is weak (n=1) — compensated by geographic widening (n={0} transactions after widening, RICS VPS 3 / IVS 103)'),
+    # b146 — the bare-key interpolated shapes:
+    (re.compile(r'^(\d+) معاملة، منها (\d+) خلال 24 شهراً$'),
+     '{0} transactions, of which {1} within the last 24 months'),
+    (re.compile(r'^منطقة سكنية خاصة \(([^)]+)\)([A-Za-z0-9 /-]*)$'),
+     'Private residential zone ({0}){1}'),
+    (re.compile(r'^ارتفاع مسموح: ([A-Za-z0-9+ /-]+)$'),
+     'Permitted height: {0}'),
 )
+
+
+# b146 — BARE-KEY scalar fields (no `_ar` suffix — the engine emits the Arabic under the
+# bare key) that the result screen renders raw: the compliance-foot `disclaimer` (every
+# result), `accuracy.label` (the hero meter), `comparables.window_label` (the evidence
+# header), `location_features[].label`. When resolvable via CATALOG/_TEMPLATES, emit an
+# additive `{key}_en` sibling; the frontend `pickBare()` reads it in EN mode. The generic
+# `label` key is safe: resolvability-gated + never clobbers an engine-authored `_en`
+# (e.g. the b23 scenarios items already carry `label_en`).
+_BARE_EN_KEYS = ('disclaimer', 'label', 'window_label')
 
 
 def _item_en(s_norm):
@@ -300,6 +334,12 @@ def attach_en(obj, _depth=0):
                         en = CATALOG.get(_norm(v))
                         if en is not None:
                             obj[enk] = en
+                elif (k in _BARE_EN_KEYS and isinstance(v, str)
+                      and (k + '_en') not in obj):
+                    # b146 — a bare-key Arabic scalar (no _ar suffix); resolvability-gated
+                    en = _item_en(_norm(v))
+                    if en is not None:
+                        obj[k + '_en'] = en
                 elif (k in _ARR_EN_KEYS and isinstance(v, list) and v
                       and (k + '_en') not in obj
                       and all(isinstance(x, str) for x in v)

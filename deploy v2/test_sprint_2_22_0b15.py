@@ -66,7 +66,7 @@ check('a20 rics_compliant_status appended to not-certified line', 'rics_complian
 check('evidence one-row in TIER-1 (t1+=_evOneRow(d))', 't1+=_evOneRow(d);' in HTML)
 # 11. data-freshness caveat + disclaimer + verification route to the always-visible foot (NOT collapsed).
 check('data-freshness caveat → foot', "foot+='<div class=\"dfc s-'+sev+'\">'+pick(d.data_freshness,'caveat')+'</div>';" in HTML)  # b140 R6: caveat via pick (EN twin, AR fallback)
-check('disclaimer card → foot', "foot+='<div class=\"rc\" style=\"border-color:var(--warn-bg)\"><div class=\"rn\" style=\"font-size:.8rem\">'+d.disclaimer+'</div></div>';" in HTML)
+check('disclaimer card → foot', "foot+='<div class=\"rc\" style=\"border-color:var(--warn-bg)\"><div class=\"rn\" style=\"font-size:.8rem\">'+pickBare(d,'disclaimer')+'</div></div>';" in HTML)  # b146 R6: bare-key bilingual read, same card/placement
 check('verification footer → foot', "foot+='<div class=\"verification-footer\">';" in HTML)
 # 12. alert panels (A11 / reality / multi-QARS / scope / sanity) route ABOVE the number (alerts buffer).
 # b48 re-point (R6/Lesson-2): the ⚠️ emoji became an inline-SVG icon — keep the Arabic + the alerts wrapper.

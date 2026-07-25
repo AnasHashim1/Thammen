@@ -155,7 +155,7 @@ check("E2 matched-market header «قرّرت رقمك»", 'قرّرت رقمك' 
 check("E3 numeric rows in a dir=ltr table (Rule #25)", 'dir="ltr"' in _ev and 'rs-ctab' in _ev)
 check("E4 renders the CC BY 4.0 source line", 'CC BY 4.0' in _ev)
 check("E5 lives in the _s4bEvidence section builder (value-invariant, not t1)", 't1+=' not in _ev)
-check("E6 window_label surfaced when present", '_cmp.window_label' in _ev)
+check("E6 window_label surfaced when present", "pickBare(_cmp,'window_label')" in _ev)  # b146 R6: bilingual read, still surfaced
 check("E7 'shown of n' disclosure when capped", 'shown' in _ev and '_cmp.n' in _ev)
 
 print("\n── F. privacy contract (E12) — end-to-end anonymity ──")

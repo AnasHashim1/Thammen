@@ -1406,6 +1406,9 @@ function t(ar,en){return (LANG==='en'&&en!=null)?en:ar;}
 function pick(o,base){if(!o)return '';var en=o[base+'_en'];return (LANG==='en'&&en!=null&&en!=='')?en:((o[base+'_ar']!=null)?o[base+'_ar']:'');}
 // b142: pick a bilingual ARRAY (caveat/checklist twins) — the engine emits `{base}_en` alongside `{base}`; falls back to the AR array.
 function pickArr(o,base){if(!o)return [];var en=o[base+'_en'];return (LANG==='en'&&Array.isArray(en))?en:(Array.isArray(o[base])?o[base]:[]);}
+// b146: pick a BARE-KEY bilingual scalar — the Arabic lives under the bare key `k` (no _ar
+// suffix) and attach_en emits `{k}_en` beside it; falls back to the bare Arabic value.
+function pickBare(o,k){if(!o)return '';var en=o[k+'_en'];return (LANG==='en'&&en!=null&&en!=='')?en:((o[k]!=null)?o[k]:'');}
 // b140-A: trend-label localization (engine emits Arabic labels raw, no _en twin). Value-neutral display map.
 var TREND_LABEL_EN={'ارتفاع':'Rising','انخفاض':'Falling','استقرار':'Stable','متذبذب':'Volatile','غير محدد':'Undetermined','مستقر':'Stable','صاعد':'Rising','هابط':'Falling','تراجع':'Declining'};
 function trLabel(s){return (LANG==='en'&&s&&TREND_LABEL_EN[s])?TREND_LABEL_EN[s]:(s||'');}
@@ -2521,7 +2524,7 @@ function _s4bEvidence(d,v){
   // b113). This branch gives the honest attestation frame; the genuine cost-led frame is preserved below.
   const _cl=(v.leadership||{}).rule==='condition_stratum_led';
   const n=_cmp.n||rows.length, shown=_cmp.shown||rows.length;
-  const cnt=_cmp.window_label||(n+t(' معاملة',' transactions'));
+  const cnt=pickBare(_cmp,'window_label')||(n+t(' معاملة',' transactions'));   // b146 — bare-key EN twin
   // Honest framing — market-led «قرّر رقمك» vs cost-led-considered «لم تقُد الرقم» (compliance, preserved
   // verbatim from the b38/b39/b40 keystone). The cost-led «why» (dispersion failed the reliability bar) +
   // the geo pool size are surfaced here so nothing methodological is lost when the keystone became a table.
@@ -3730,7 +3733,7 @@ function show(d){
     // could not type (the same honesty class as b36's apartment refusal). Known-type
     // refusals (compound needs rent, etc.) keep their input-unlock CTA unchanged.
     if(!_ux3NotReady&&d.asset_type==='unknown'){
-      var _rrRec=(d.refusal_reason&&d.refusal_reason.recommendation_ar)||null;
+      var _rrRec=(d.refusal_reason&&pick(d.refusal_reason,'recommendation'))||null;   // b146 — the twin exists (b78); pure bypass fix
       if(_rrRec)flat+='<div class="rr-recommendation" style="display:inline-block;max-width:520px;text-align:right"><strong>'+t('التوصية:','Recommendation:')+'</strong> '+_rrRec+'</div>';
     }else if(!_ux3NotReady){
       var ssReq=(d.service_scope&&d.service_scope.requires_user_input_ar)||null;
@@ -3802,7 +3805,7 @@ function show(d){
     // → no meter (never an invented number). explanation_ar carries «مبني على N صفقة …». Value-invariant.
     if(acc&&typeof acc.score==='number'&&isFinite(acc.score)){
       var _cscore=Math.max(0,Math.min(100,Math.round(acc.score)));
-      var _clbl=acc.label||'';                    // engine broadcasts a bare `label` (AR)
+      var _clbl=pickBare(acc,'label');            // b146 — bare `label` + attach_en's label_en twin
       var _cexp=pick(acc,'explanation')||'';       // explanation_ar (+ _en when it lands, b117-class)
       t1+='<div class="rconf"><div class="cw"><span class="cdot"></span>'+(_clbl?'<span class="clbl">'+_clbl+'</span>':'')+'<span class="cbar"><i style="width:'+_cscore+'%"></i></span><span class="cscore"><span data-countup="'+_cscore+'">'+_cscore+'</span>/100</span></div>'+(_cexp?'<div class="cnote">'+esc(_cexp)+'</div>':'')+'</div>';
     }
@@ -4097,7 +4100,7 @@ function show(d){
     h+='<div class="rc"><div class="rt" style="margin-bottom:10px">'+t('مميزات الموقع','Location features')+'</div>';
     lf.forEach(f=>{const cls=f.positive===true?'loc-pos':f.positive===false?'loc-neg':'loc-neu';
       const icon=f.positive===true?'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg>':f.positive===false?'<svg class=ic aria-hidden=true><use href=#ic-x></use></svg>':'—';
-      h+='<span class="loc-tag '+cls+'">'+icon+' '+f.label+'</span>'});
+      h+='<span class="loc-tag '+cls+'">'+icon+' '+pickBare(f,'label')+'</span>'});   // b146
     h+='</div>';
   }
 
@@ -4145,7 +4148,7 @@ function show(d){
     foot+='<div class="dfc s-'+sev+'">'+pick(d.data_freshness,'caveat')+'</div>';
   }
   if(d.disclaimer){
-    foot+='<div class="rc" style="border-color:var(--warn-bg)"><div class="rn" style="font-size:.8rem">'+d.disclaimer+'</div></div>';
+    foot+='<div class="rc" style="border-color:var(--warn-bg)"><div class="rn" style="font-size:.8rem">'+pickBare(d,'disclaimer')+'</div></div>';   // b146 — bare-key EN twin
   }
   // Universal audit-trail link (Sprint 2.22.0a/7), hidden when verification_url is null.
   if(d.verification_url){
@@ -4458,8 +4461,12 @@ function renderSection(sec){
     case 'gaps':
     case 'reasoning_trace':
       // Generic dump for these
+      // b146 — the _en-twin guard (fixes the b142 side-effect: the valuer trace dumped BOTH
+      // known_unknowns AND known_unknowns_en): _en keys are never dumped under their own
+      // name; instead the value is PICKED per LANG under the clean key name.
       Object.keys(c).forEach(k=>{
-        const val=c[k];
+        if(k.endsWith('_en'))return;
+        const val=(LANG==='en'&&c[k+'_en']!=null)?c[k+'_en']:c[k];
         if(val==null||k==='disclaimer')return;
         if(typeof val==='string'&&val.length<200)body+=row(prettify(k),val);
         else if(typeof val==='number')body+=row(prettify(k),fmt(val));
@@ -4484,7 +4491,7 @@ function renderSection(sec){
       }
       if(Array.isArray(c.sources)&&c.sources.length){
         const s=c.sources[0];
-        body+='<div class="br-note" style="margin-top:8px;font-size:.78rem">'+t('المصدر: ','Source: ')+(s.role_ar||s.source)+' (n='+(s.n||0)+t('، Tier ',', Tier ')+(s.tier||'')+')</div>';
+        body+='<div class="br-note" style="margin-top:8px;font-size:.78rem">'+t('المصدر: ','Source: ')+(pick(s,'role')||s.source)+' (n='+(s.n||0)+t('، Tier ',', Tier ')+(s.tier||'')+')</div>';   // b146 — role_en exists (b139)
       }
       if(c.note_ar)body+='<div class="br-note" style="margin-top:8px">'+pick(c,'note')+'</div>';
       if(c.footer_ar)body+='<div class="br-note" style="margin-top:6px;font-size:.75rem;color:var(--muted)">'+pick(c,'footer')+'</div>';

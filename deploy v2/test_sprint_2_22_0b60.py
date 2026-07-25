@@ -45,8 +45,8 @@ check('b36 apartment/tower title untouched',
 check('unknown branch exists (before the known-type CTA)',
       "if(!_ux3NotReady&&d.asset_type==='unknown'){" in HTML)
 check('recommendation rendered from refusal_reason.recommendation_ar (reuses .rr-recommendation)',
-      "class=\"rr-recommendation\"" in HTML and 'd.refusal_reason&&d.refusal_reason.recommendation_ar' in HTML
-      and "<strong>'+t('التوصية:'" in HTML)  # b138: t()-wrapped, AR arg verbatim
+      "class=\"rr-recommendation\"" in HTML and "d.refusal_reason&&pick(d.refusal_reason,'recommendation')" in HTML
+      and "<strong>'+t('التوصية:'" in HTML)  # b138: t()-wrapped; b146 R6: pick() bilingual read (the AR twin still drives the render)
 check('known-type refusals KEEP their input-unlock CTA (else-if branch)',
       '}else if(!_ux3NotReady){' in HTML)
 # the rent CTA must live ONLY in the else-if (known-type) branch, not the unknown branch.
