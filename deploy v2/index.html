@@ -4447,11 +4447,11 @@ function renderSection(sec){
       if(_bLvl)body+=row(t('مستوى التحفظ','Uncertainty level'),levelLabels[_bLvl]||_bLvl,levelCls[_bLvl]||'');
       if(c.factors&&c.factors.length){
         body+='<div style="margin-top:10px;font-weight:600">'+t('العوامل:','Factors:')+'</div><ul class="br-opts">';
-        c.factors.forEach(f=>{body+='<li>'+f+'</li>'});body+='</ul>';
+        pickArr(c,'factors').forEach(f=>{body+='<li>'+f+'</li>'});body+='</ul>';   // b145 — EN twin array in EN mode
       }
       if(c.recommendations&&c.recommendations.length){
         body+='<div style="margin-top:10px;font-weight:600;color:var(--ok)">'+t('التوصيات:','Recommendations:')+'</div><ul class="br-opts">';
-        c.recommendations.forEach(r=>{body+='<li>'+r+'</li>'});body+='</ul>';
+        pickArr(c,'recommendations').forEach(r=>{body+='<li>'+r+'</li>'});body+='</ul>';   // b145
       }
       break;
     case 'sources':

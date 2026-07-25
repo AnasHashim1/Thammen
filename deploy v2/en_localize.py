@@ -216,14 +216,72 @@ CATALOG = {
     "العقارات التجارية (محلات، مكاتب، مولات) خارج نطاق ثمّن. بيانات الإيجارات والصفقات التجارية غير متاحة عبر مصادر عامة. يلزم التواصل مع شركات تقييم متخصصة (Cushman & Wakefield، JLL، Knight Frank Qatar).": "Commercial properties (shops, offices, malls) are outside Thammen's scope. Rental and commercial transaction data are not available through public sources. Specialist valuation firms should be contacted (Cushman & Wakefield, JLL, Knight Frank Qatar).",
     "العقارات الصناعية والمستودعات خارج نطاق ثمّن. تقييمها يتطلب خبرة متخصصة في التصنيف الصناعي والاستخدام.": "Industrial properties and warehouses are outside Thammen's scope. Their valuation requires specialist expertise in industrial classification and use.",
     "المزارع والأراضي الزراعية خارج نطاق ثمّن. تقييمها يعتمد على جودة التربة، حقوق المياه، الإنتاجية — عوامل غير متاحة بالنسبة لنا.": "Farms and agricultural land are outside Thammen's scope. Their valuation depends on soil quality, water rights, and productivity — factors that are not available to us.",
+    # ── Sprint 2.22.0b.145 — the MUC `factors` + `recommendations` arrays (Sprint B slice 4). ──
+    # The brief material_uncertainty section renders `pickArr(c,'factors'/'recommendations')`;
+    # the CONSTANT items live here, the number-interpolated ones in _TEMPLATES below. The
+    # api-level attach_en post-pass sees the FINAL arrays (after every engine mutation site —
+    # the :4900 insert, the :7401 widening replacement, the :7616 dispersion append) → the
+    # index-aligned `_en` twins can never drift. VALUE-INVARIANT — additive only.
+    # factors — constants:
+    "لا توجد صفقات مقارنة في وزارة العدل": "There are no comparable transactions in the Ministry of Justice records",
+    "لا توجد بيانات إيجار — منهج الدخل غير مطبَّق": "There is no rental data — the income approach is not applied",
+    "لا يوجد اتجاه زمني كافٍ — التعديل الزمني غير مطبَّق": "There is no sufficient time trend — the time adjustment is not applied",
+    "لم يتم فحص العقار ميدانياً — تقييم مكتبي فقط": "The property has not been inspected in the field — a desktop valuation only",
+    "المساحة المبنية غير معلومة — تقدير بنسبة من القطعة": "The built-up area is unknown — estimated as a proportion of the plot",
+    "مصاريف تشغيل تقديريّة ضمن الفحص الدخليّ": "Estimated operating expenses within the income cross-check",
+    "رسوم الخدمات تقديرية — ليست مُتحقَّقة لهذا المبنى": "The service charges are estimated — not verified for this building",
+    "رسوم الخدمات مُبلَّغة (ليست مُتحقَّقة من مصدر أصلي)": "The service charges are reported (not verified from an original source)",
+    "قد يؤدي إدخال التفاصيل الفعلية للعقار — كالحالة والمساحة الدقيقة والتشطيبات — إلى تعديل جوهري في التقدير.": "Entering the property's actual details — such as the condition, the exact area, and the finishes — may materially adjust the estimate.",
+    "تشتت المقارنات مرتفع (نوع البناء والحالة غير مؤكدين) — اعتمد النطاق المعروض لا الرقم المفرد": "The dispersion of the comparables is high (the built type and condition are unconfirmed) — rely on the displayed range, not the single figure",
+    # recommendations — constants:
+    "ابحث في مناطق مجاورة أو وسّع النافذة الزمنية": "Search neighbouring areas or widen the time window",
+    "أضف مناطق مجاورة أو وسّع النافذة لـ 36 شهر": "Add neighbouring areas or widen the window to 36 months",
+    "معاينة الموقع + بيان عقاري قبل قرار الشراء/البيع": "A site inspection + a real-estate statement before a buy/sell decision",
+    "معاينة ميدانية قبل اتخاذ قرار شراء/بيع": "A field inspection before making a buy/sell decision",
+    "أدخل تفاصيل العقار (طوابق، سرداب، حالة) للحصول على تقييم أدق": "Enter the property details (floors, basement, condition) for a more accurate valuation",
+    "للتوافق مع معايير RICS Red Book Global Standards (effective 31 January 2025) و IVS (effective 31 January 2025): يلزم فحص ميداني + تعديل فردي للمقارنات + توثيق حالة المبنى + Terms of Engagement (VPS 1).": "To comply with the RICS Red Book Global Standards (effective 31 January 2025) and IVS (effective 31 January 2025): a field inspection + individual adjustment of the comparables + documentation of the building condition + Terms of Engagement (VPS 1) are required.",
 }
 
 
+# ── Sprint 2.22.0b.145 — templates for the NUMBER-INTERPOLATED MUC factor shapes ──
+# (a constant catalog cannot match `n={X}`). Keys are regexes over the NORMALIZED
+# Arabic; the EN format re-inserts the captured numbers. Array-item lookup only —
+# the scalar `_ar` rule is untouched (scope discipline, b145).
+_TEMPLATES = (
+    (re.compile(r'^عينة وزارة العدل صغيرة جداً \(n=(\d+)\) — لا يمكن إنتاج وسيط موثوق$'),
+     'The Ministry of Justice sample is very small (n={0}) — a reliable median cannot be produced'),
+    (re.compile(r'^عينة وزارة العدل محدودة \(n=(\d+)\) — الوسيط إرشادي فقط$'),
+     'The Ministry of Justice sample is limited (n={0}) — the median is indicative only'),
+    (re.compile(r'^عينة وزارة العدل معقولة لكنها تحت الحد المثالي \(n=(\d+)\)$'),
+     'The Ministry of Justice sample is reasonable but below the ideal threshold (n={0})'),
+    (re.compile(r'^بيانات الإيجار محدودة \(n=(\d+)\)$'),
+     'The rental data is limited (n={0})'),
+    (re.compile(r'^الشريحة المباشرة ضعيفة \(n=1\) — تم التعويض بالتوسيع الجغرافي \(n=(\d+) معاملة بعد التوسيع، RICS VPS 3 / IVS 103\)$'),
+     'The direct bracket is weak (n=1) — compensated by geographic widening (n={0} transactions after widening, RICS VPS 3 / IVS 103)'),
+)
+
+
+def _item_en(s_norm):
+    """EN for one (normalized) array item: exact CATALOG hit, else a _TEMPLATES match.
+    Returns None when neither resolves (the caller falls back to the Arabic item)."""
+    en = CATALOG.get(s_norm)
+    if en is not None:
+        return en
+    if isinstance(s_norm, str):
+        for _rx, _fmt in _TEMPLATES:
+            m = _rx.match(s_norm)
+            if m:
+                return _fmt.format(*m.groups())
+    return None
+
+
 # b142: constant caveat/checklist ARRAYS that get a translated `{key}_en` twin
-# (index-aligned; uncataloged items fall back to the Arabic item). `known_unknowns` =
+# (index-aligned; unresolvable items fall back to the Arabic item). `known_unknowns` =
 # reasoning_trace's array; `content` = the brief due_diligence section's array (fires only
-# when `content` is a list-of-strings with ≥1 cataloged item — dict/other `content` untouched).
-_ARR_EN_KEYS = ('known_unknowns', 'content')
+# when `content` is a list-of-strings with ≥1 resolvable item — dict/other `content` untouched).
+# b145: += the MUC `factors` + `recommendations` arrays (rendered by the brief MU section via
+# pickArr); their interpolated items resolve via _TEMPLATES (see _item_en below).
+_ARR_EN_KEYS = ('known_unknowns', 'content', 'factors', 'recommendations')
 
 
 def attach_en(obj, _depth=0):
@@ -245,9 +303,11 @@ def attach_en(obj, _depth=0):
                 elif (k in _ARR_EN_KEYS and isinstance(v, list) and v
                       and (k + '_en') not in obj
                       and all(isinstance(x, str) for x in v)
-                      and any(CATALOG.get(_norm(x)) is not None for x in v)):
-                    # a constant caveat/checklist array → additive translated _en twin
-                    obj[k + '_en'] = [CATALOG.get(_norm(x), x) for x in v]
+                      and any(_item_en(_norm(x)) is not None for x in v)):
+                    # a caveat/checklist/factor array → additive translated _en twin
+                    # (b145: items resolve via CATALOG or the _TEMPLATES; unresolvable
+                    # items fall back to the Arabic item — index-aligned either way)
+                    obj[k + '_en'] = [(_item_en(_norm(x)) or x) for x in v]
                 else:
                     attach_en(v, _depth + 1)
         elif isinstance(obj, list):
