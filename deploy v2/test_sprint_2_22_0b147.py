@@ -135,8 +135,9 @@ check('H1 show() never assigns to the headline figures',
       not re.search(r"\bv\.(amount|low|high|method|rule)\s*=[^=]", SHOW))
 check('H2 api.py carries no b147 marker (untouched)', '_autoFindingsHtml' not in API)
 check('H3 engine version bumped to the b-series format',
+      # b148 R6/Lesson-2: version-agnostic (the exact-tag pin broke on the next bump)
       re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None
-      and 'b147' in ENG)
+      and re.search(r"SPRINT_TAG = '2\.22\.0b\.\d+'", ENG) is not None)
 check('H4 SPRINT_TAG format', re.search(r"SPRINT_TAG = '\d+\.\d+\.\d+", ENG) is not None)
 check('H5 the b125 flat sections survive (secEv/secHow/secScn/secLim)',
       'secEv+secHow+secScn+secLim' in SHOW)

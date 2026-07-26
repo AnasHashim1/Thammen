@@ -1230,7 +1230,7 @@ body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:lt
         </div>
       </div>
       <details class="thmr-grp" open>
-        <summary><span class="gnum">١</span><span data-en="Geometry">الهندسة</span> <span class="tagfx move" data-en="Moves the valuation">يحرّك التقييم</span><span class="garrow">‹</span></summary>
+        <summary><span class="gnum" data-en="1">١</span><span data-en="Geometry">الهندسة</span> <span class="tagfx move" data-en="Moves the valuation">يحرّك التقييم</span><span class="garrow">‹</span></summary>
         <div class="gbody">
           <div class="fr2">
             <div class="fg"><label data-en="Floors above ground">عدد الطوابق فوق الأرض</label><select id="floors"><option value="" data-en="— choose —">— اختر —</option><option value="1" data-en="One floor (ground)">طابق واحد (أرضي)</option><option value="2" data-en="Two (ground + first)">طابقان (أرضي + أول)</option><option value="3" data-en="Three (ground + first + second)">ثلاثة (أرضي + أول + ثاني)</option><option value="4" data-en="Four">أربعة</option></select></div>
@@ -1248,7 +1248,7 @@ body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:lt
         </div>
       </details>
       <details class="thmr-grp">
-        <summary><span class="gnum">٢</span><span data-en="Age and condition">العمر والحالة</span> <span class="tagfx tune" data-en="Refines the cost anchor">يدقّق مرتكز التكلفة</span><span class="garrow">‹</span></summary>
+        <summary><span class="gnum" data-en="2">٢</span><span data-en="Age and condition">العمر والحالة</span> <span class="tagfx tune" data-en="Refines the cost anchor">يدقّق مرتكز التكلفة</span><span class="garrow">‹</span></summary>
         <div class="gbody">
           <div class="fr2">
             <div class="fg"><label data-en="Estimated building age (years)">عمر البناء التقديري (سنوات)</label><input type="number" id="buildingAge" placeholder="اختياري — مثال: 12" data-en-ph="optional — e.g. 12" min="0" max="100"><div style="font-size:.72rem;color:var(--muted);margin-top:3px" data-en="The age recorded in the system is a lower bound (GIS survey) — entering the actual age raises precision.">العمر المسجَّل في النظام حدٌّ أدنى (مسح GIS) — إدخال العمر الفعلي يرفع الدقّة.</div></div>
@@ -1265,7 +1265,7 @@ body.lang-en #rOut .rs-viz .vtrack,body.lang-en #rOut .rs-trend svg{direction:lt
         </div>
       </details>
       <details class="thmr-grp">
-        <summary><span class="gnum">٣</span><span data-en="Financial information">معلومات مالية</span> <span class="tagfx opt" data-en="Optional enrichment">اختياري للإثراء</span><span class="garrow">‹</span></summary>
+        <summary><span class="gnum" data-en="3">٣</span><span data-en="Financial information">معلومات مالية</span> <span class="tagfx opt" data-en="Optional enrichment">اختياري للإثراء</span><span class="garrow">‹</span></summary>
         <div class="gbody">
           <div class="fr2">
             <div class="fg"><label id="rentalIncomeLabel" data-en="Current monthly rent (QAR)">الإيجار الشهري الحالي (ر.ق)</label><input type="number" id="rentalIncome" placeholder="إن وُجد" data-en-ph="if any" min="0"><div class="rn" style="font-size:.72rem;color:var(--muted);margin-top:3px" data-en="Actual rent + a calibrated capitalization rate for your area ⇒ income may lead the estimate.">إيجار فعلي + معدّل رسملة معايَر لمنطقتك ⇒ قد يقود الدخلُ التقدير.</div></div>
@@ -1405,7 +1405,8 @@ var LANG=(EN_ENABLED&&_langStored()==='en')?'en':'ar';
 function t(ar,en){return (LANG==='en'&&en!=null)?en:ar;}
 function pick(o,base){if(!o)return '';var en=o[base+'_en'];return (LANG==='en'&&en!=null&&en!=='')?en:((o[base+'_ar']!=null)?o[base+'_ar']:'');}
 // b142: pick a bilingual ARRAY (caveat/checklist twins) — the engine emits `{base}_en` alongside `{base}`; falls back to the AR array.
-function pickArr(o,base){if(!o)return [];var en=o[base+'_en'];return (LANG==='en'&&Array.isArray(en))?en:(Array.isArray(o[base])?o[base]:[]);}
+// b148: += the `_ar`-suffixed fallback (`options_ar`/`options_en`) — the bare-key callers are unchanged (o[base] is still tried first).
+function pickArr(o,base){if(!o)return [];var en=o[base+'_en'];if(LANG==='en'&&Array.isArray(en))return en;return Array.isArray(o[base])?o[base]:(Array.isArray(o[base+'_ar'])?o[base+'_ar']:[]);}
 // b146: pick a BARE-KEY bilingual scalar — the Arabic lives under the bare key `k` (no _ar
 // suffix) and attach_en emits `{k}_en` beside it; falls back to the bare Arabic value.
 function pickBare(o,k){if(!o)return '';var en=o[k+'_en'];return (LANG==='en'&&en!=null&&en!=='')?en:((o[k]!=null)?o[k]:'');}
@@ -2577,7 +2578,7 @@ function _repTrend(d){
     h+='</div>';
   }
   if(tr.suppressed_reason_ar)h+='<div class="rn" style="font-size:.72rem;margin-top:6px">'+pick(tr,'suppressed_reason')+'</div>';
-  else if(tr.label)h+='<div class="rn" style="font-size:.74rem;margin-top:6px">'+t('الاتجاه العام: ','Overall trend: ')+esc(tr.label)+'</div>';
+  else if(tr.label)h+='<div class="rn" style="font-size:.74rem;margin-top:6px">'+t('الاتجاه العام: ','Overall trend: ')+esc(pickBare(tr,'label')||trLabel(tr.label))+'</div>';  // b148: the engine `label_en` bare-key twin (b146)
   return h+'</div>';
 }
 // ── Sprint 2.22.0b.125 (S4b) — result-screen EVIDENCE section builders. Flat, scroll-revealed (.rv),
@@ -3496,7 +3497,7 @@ function showShortReport(d){
   // §٨ — شفافية الأدلّة (b104 register fix: «— بلا تجميل» was a marketing/colloquial tail → dropped;
   // formal «شفافية الأدلّة». The PDF three cards; leader-aware middle card).
   h+='<div class="thmr-card"><div class="thmr-seclbl"><span class="n">'+t('٨','8')+'</span>'+t('شفافية الأدلّة','Evidence transparency')+'</div>';
-  if(_n!=null)h+='<div class="thmr-row"><span class="k"><b>'+_n+t(' صفقة</b> في شريحة مساحتك',' sales</b> in your size bracket')+(v.window_used?(' ('+v.window_used+')'):'')+t(' — والمثالي إحصائياً 20+',' — the statistical ideal is 20+')+'</span><span class="v" style="font-weight:400">'+t('لذلك تجد كلمة «استرشادي»','that is why you see the word “indicative”')+'</span></div>';
+  if(_n!=null)h+='<div class="thmr-row"><span class="k"><b>'+_n+t(' صفقة</b> في شريحة مساحتك',' sales</b> in your size bracket')+(v.window_used?(' ('+pickBare(v,'window_used')+')'):'')+t(' — والمثالي إحصائياً 20+',' — the statistical ideal is 20+')+'</span><span class="v" style="font-weight:400">'+t('لذلك تجد كلمة «استرشادي»','that is why you see the word “indicative”')+'</span></div>';
   if(cs==='cost'){
     h+='<div class="thmr-row"><span class="k"><b>'+(_mn!=null?_mn:'—')+t(' فقط</b> تشبه بيتك فعلاً (عمراً وفئة)',' only</b> truly resemble your home (age and class)')+'</span><span class="v" style="font-weight:400">'+t('ولهذا قادت الكلفةُ الرقمَ لا أسعار الجيران','which is why cost led the number, not neighbours’ prices')+'</span></div>';
     h+='<div class="thmr-row"><span class="k">'+t('الجغرافي الكامل','Full geographic')+'</span><span class="v"><span dir="ltr">n='+(_gn!=null?_gn:'—')+' · '+(_gd!=null?_gd:'—')+'</span>'+((_gd!=null&&_gd>=((ld&&ld.thresholds||{}).dispersion_t||0.30))?t(' (>'+(((ld&&ld.thresholds||{}).dispersion_t)||0.30)+' متنافر)',' (>'+(((ld&&ld.thresholds||{}).dispersion_t)||0.30)+' dispersed)'):'')+'</span></div>';
@@ -4322,9 +4323,10 @@ function renderSection(sec){
       break;
     case 'next_steps':
       if(c.note_ar)body+='<div class="br-note">'+pick(c,'note')+'</div>';
-      if(c.options_ar&&c.options_ar.length){
+      const _nsOpts=pickArr(c,'options');  // b148: EN twin (`options_en`) when present
+      if(_nsOpts.length){
         body+='<ul class="br-opts">';
-        c.options_ar.forEach(o=>{body+='<li>'+o+'</li>'});
+        _nsOpts.forEach(o=>{body+='<li>'+o+'</li>'});
         body+='</ul>';
       }
       break;

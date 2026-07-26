@@ -257,6 +257,20 @@ CATALOG = {
     "بناء قديم نسبياً": "Relatively old build",
     "بناء قديم": "Old build",
     "ارتفاع مسموح: أرضي + أول + سطح": "Permitted height: ground + first + roof",
+    # ── Sprint 2.22.0b.148 — the refusal brief's `next_steps` BODY (English heading over an
+    # Arabic body on every apartment/tower refusal; the interpolated `note_ar` of the
+    # classification path is engine-emitted instead — see evaluate_unified ASSET_TYPE_EN):
+    "إفادة الإيجار الشهري الفعلي (لتقييم بمنهج الدخل)":
+        "A statement of the actual monthly rent (for a valuation by the income approach)",
+    "سعر الإعلان أو سعر المالك (لمقارنة سوقية)":
+        "The listing price or the owner's price (for a market comparison)",
+    "لتقييم نهائي وموثوق:": "For a final and reliable valuation:",
+    "إذا كان الإيجار الفعلي أقل بكثير → السعر مرتفع":
+        "If the actual rent is much lower → the price is high",
+    "إذا كان الإيجار الفعلي أعلى أو مساوياً → السعر منطقي":
+        "If the actual rent is higher or equal → the price is reasonable",
+    "أعد الطلب مع الإيجار الشهري للتقييم الكامل":
+        "Resubmit the request with the monthly rent for the full valuation",
 }
 
 
@@ -282,6 +296,9 @@ _TEMPLATES = (
      'Private residential zone ({0}){1}'),
     (re.compile(r'^ارتفاع مسموح: ([A-Za-z0-9+ /-]+)$'),
      'Permitted height: {0}'),
+    # b148 — the refusal `next_steps.options_ar` interpolated item (the implied-rent path):
+    (re.compile(r'^أكّد أو انفِ: هل الإيجار الفعلي قريب من ([\d,]+) ر\.ق/شهر؟$'),
+     'Confirm or deny: is the actual rent close to {0} QAR/month?'),
 )
 
 
@@ -292,7 +309,10 @@ _TEMPLATES = (
 # additive `{key}_en` sibling; the frontend `pickBare()` reads it in EN mode. The generic
 # `label` key is safe: resolvability-gated + never clobbers an engine-authored `_en`
 # (e.g. the b23 scenarios items already carry `label_en`).
-_BARE_EN_KEYS = ('disclaimer', 'label', 'window_label')
+# b148: += `window_used` — the a14 evidence-window disclosure («{n36} معاملة، منها {n24} خلال
+# 24 شهراً»), rendered RAW by the short report on every matched-bracket result. Its shape is
+# ALREADY covered by the b146 window-split template, so listing the key here is the whole fix.
+_BARE_EN_KEYS = ('disclaimer', 'label', 'window_label', 'window_used')
 
 
 def _item_en(s_norm):
@@ -317,6 +337,13 @@ def _item_en(s_norm):
 # pickArr); their interpolated items resolve via _TEMPLATES (see _item_en below).
 _ARR_EN_KEYS = ('known_unknowns', 'content', 'factors', 'recommendations')
 
+# b148: the `_ar`-SUFFIXED array variant. The refusal brief's `next_steps.content.options_ar`
+# is a list-of-strings under an `_ar` key — invisible to BOTH the scalar `_ar` rule (it tests
+# `isinstance(v, str)`) and the bare-key array rule above. It renders on EVERY apartment/tower
+# refusal, so in EN the section showed an English heading over an Arabic body. Emits
+# `{k[:-3]}_en` (→ `options_en`); the frontend `pickArr(c,'options')` reads it.
+_ARR_AR_KEYS = ('options_ar',)
+
 
 def attach_en(obj, _depth=0):
     """Recursively add `{base}_en` siblings from CATALOG (strings) + `{key}_en` twins for the
@@ -340,6 +367,13 @@ def attach_en(obj, _depth=0):
                     en = _item_en(_norm(v))
                     if en is not None:
                         obj[k + '_en'] = en
+                elif (k in _ARR_AR_KEYS and isinstance(v, list) and v
+                      and (k[:-3] + '_en') not in obj
+                      and all(isinstance(x, str) for x in v)
+                      and any(_item_en(_norm(x)) is not None for x in v)):
+                    # b148 — an `_ar`-suffixed string array → `{base}_en` (index-aligned;
+                    # unresolvable items fall back to the Arabic item)
+                    obj[k[:-3] + '_en'] = [(_item_en(_norm(x)) or x) for x in v]
                 elif (k in _ARR_EN_KEYS and isinstance(v, list) and v
                       and (k + '_en') not in obj
                       and all(isinstance(x, str) for x in v)

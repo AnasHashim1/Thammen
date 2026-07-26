@@ -60,7 +60,9 @@ check('#11: land-grid time-adjustment % in a dir=ltr island (pct_display, +/− 
 # ── (5) trend chart (reliably broadcast) reuses the .trend-row markup + honest suppressed path ──
 check('trend chart: .trend-col bars from tr.years + labels + suppressed/label note',
       "const ys=tr.years||[];" in HTML and 'class="trend-col"' in HTML and
-      "if(tr.suppressed_reason_ar)" in HTML and "esc(tr.label)" in HTML)
+      # b148 R6: the label read became bilingual (pickBare → the b146 `label_en` twin);
+      # the trend-chart structure + the honest suppressed path are unchanged.
+      "if(tr.suppressed_reason_ar)" in HTML and "esc(pickBare(tr,'label')" in HTML)
 
 # ── (6) CSS + CC BY attribution + de-emoji ──
 check('.rep-comp table CSS present (header unit, bare-number columns)',

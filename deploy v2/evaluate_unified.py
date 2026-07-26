@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b147-result-screen-role'
-SPRINT_TAG = '2.22.0b.147'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b148-visible-en-fossils'
+SPRINT_TAG = '2.22.0b.148'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -2527,6 +2527,24 @@ ASSET_TYPE_AR = {
     'unknown':            'غير محدد',
 }
 
+# Sprint 2.22.0b.148 — the EN twin of ASSET_TYPE_AR (wording locked to the frontend
+# `ASSET_EN` map, b80). Used ONLY to emit the `_en` twin of the refusal brief's
+# INTERPOLATED `next_steps.note_ar` (the constant-string catalog cannot cover an
+# interpolated address/area/label). Display-copy — never a valuation input.
+ASSET_TYPE_EN = {
+    'standalone_villa':   'Standalone villa',
+    'compound_small':     'Small villa compound',
+    'compound_large':     'Large villa compound',
+    'apartment_building': 'Apartment building',
+    'tower':              'Residential tower',
+    'palace':             'Palace',
+    'raw_land':           'Vacant land',
+    'commercial':         'Commercial',
+    'industrial':         'Industrial',
+    'agricultural':       'Farm',
+    'unknown':            'Unspecified',
+}
+
 
 # ── Sprint 2.11: GIS context preservation for fast/out-of-scope paths ──
 # Historically the 4 _build_fast_*_response + _build_out_of_scope_response
@@ -2853,6 +2871,14 @@ def _build_fast_insufficient_data_response(zone, street, building, loc, plot, as
                     'note_ar': (
                         f'العنوان {zone}/{street}/{building} تابع لمساحة {plot.pdarea:,.0f} م² '
                         f'مُصنَّف كـ "{asset_label_ar}". لتحليل آلي يرجى تزويدنا بأحد التاليين:'
+                    ),
+                    # b148 — the EN twin (same interpolations; the constant-string catalog
+                    # cannot cover an interpolated address/area/label). Display-copy only.
+                    'note_en': (
+                        f'Address {zone}/{street}/{building} sits on a plot of '
+                        f'{plot.pdarea:,.0f} m², classified as '
+                        f'"{ASSET_TYPE_EN.get(asset_type, asset_type)}". For an automated '
+                        f'analysis please provide one of the following:'
                     ),
                     'options_ar': [
                         'إفادة الإيجار الشهري الفعلي (لتقييم بمنهج الدخل)',
@@ -5265,7 +5291,7 @@ def evaluate_thammen(
                                     'finish': _cost_av['finish'],
                                     'assumptions_ar': ('افتراضات: تشطيب {f} · معامل احتفاظ {r} · '
                                                        'عمر النظام (CGIS) أساس الاحتساب (E26)'
-                                                       ).format(f=_cost_av['finish'],
+                                                       ).format(f=_finish_label_ar(_cost_av['finish']),  # b148
                                                                 r=_cost_av['retention']),
                                     'assumptions_en': ('Assumptions: finish {f} · retention factor {r} · '  # b87
                                                        'system (CGIS) age is the basis (E26)'
@@ -5327,7 +5353,7 @@ def evaluate_thammen(
                                     'finish': _cost_av['finish'],
                                     'assumptions_ar': ('افتراضات: تشطيب {f} · معامل احتفاظ {r} · '
                                                        'عمر النظام (CGIS) أساس الاحتساب (E26)'
-                                                       ).format(f=_cost_av['finish'],
+                                                       ).format(f=_finish_label_ar(_cost_av['finish']),  # b148
                                                                 r=_cost_av['retention']),
                                     'assumptions_en': ('Assumptions: finish {f} · retention factor {r} · '  # b87
                                                        'system (CGIS) age is the basis (E26)'
@@ -6120,6 +6146,23 @@ COST_RCN_BY_FINISH = {
     'luxury': 3500,
 }
 COST_RCN_DEFAULT = 2200                  # no-input finish = ordinary (§9 #4)
+
+# Sprint 2.22.0b.148 — the ARABIC display label of the finish enum. The `assumptions_ar`
+# strings interpolated the RAW ENGLISH enum («افتراضات: تشطيب ordinary …») — an English
+# token inside Arabic copy. Display-only: the enum still drives COST_RCN_BY_FINISH; the
+# EN twin keeps the English word (it reads correctly there).
+COST_FINISH_LABEL_AR = {
+    'shell': 'عظم', 'عظم': 'عظم',
+    'ordinary': 'عاديّ', 'average': 'عاديّ',
+    'good': 'جيّد', 'very-good': 'جيّد جداً', 'very_good': 'جيّد جداً',
+    'high': 'راقٍ',
+    'luxury': 'فاخر',
+}
+
+
+def _finish_label_ar(finish):
+    """Arabic display label for a finish enum (unknown/empty → the ordinary default)."""
+    return COST_FINISH_LABEL_AR.get((finish or '').strip().lower(), 'عاديّ')
 COST_ECONOMIC_LIFE_Y = 50                # §5 (reproduces the valuer; within the 40-60 band)
 COST_RESIDUAL_FLOOR = 0.27               # a sound shell retains value (§5; ordinary 2200×0.27≈594≈PO 600).
 COST_RESIDUAL_FLOOR_LUX = 0.31           # Sprint 2.22.0b.13 (D-1): high/luxury stock retains MORE residual
@@ -6258,7 +6301,8 @@ def _valuation_scenarios(amount, low, high, land_floor, footprint_max_m2, footpr
                     'high': _r100k(round(c['value'] * 1.10)),
                     'assumptions_ar': ('منهج التكلفة: تشطيب {f} · معامل احتفاظ {r} · '
                                        'مساحة بناء ≈ {b} م² (قابلة للتعديل).').format(
-                                           f=finish, r=c['retention'], b=c['bua_m2']),
+                                           f=_finish_label_ar(finish),  # b148
+                                           r=c['retention'], b=c['bua_m2']),
                     'assumptions_en': ('Cost approach: finish {f} · retention factor {r} · '  # b87
                                        'built-up area ≈ {b} m² (adjustable).').format(
                                            f=finish, r=c['retention'], b=c['bua_m2']),
