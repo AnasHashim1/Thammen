@@ -41,9 +41,13 @@ check('secEv buffer built (=_s4bEvidence)', 'secEv+=_s4bEvidence(d,v)' in _show)
 check('secHow buffer built (=_s4bHow)', 'secHow+=_s4bHow(d,v,acc,how,_dense)' in _show)
 check('secScn buffer built (=_s4bScenarios)', 'secScn=_s4bScenarios(v)' in _show)
 check('secLim buffer built (=_s4bLimits)', 'secLim=_s4bLimits(d,muc)' in _show)
-check('secFull fold built', 'secFull=' in _show and 'rs-full' in _show)
+# b147 R6: the «تحليل إضافيّ» fold is REMOVED — it re-rendered ~70% of the full report inside the
+# result screen. Intent preserved: the analytical detail still has a home — the full report, which
+# b147 completed with the four blocks it had lacked (_autoFindingsHtml). Nothing lost.
+check('analytical detail lives in the full report (b147)',
+      '_autoFindingsHtml(' in HTML and '_axWrap(_autoFindingsHtml(' in HTML and 'secFull=' not in _show)
 check('assembly is the flat design order',
-      'h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;' in _show)
+      'h=head+alerts+t1+secEv+secHow+secScn+secLim+_info+secNudge+foot+t3;' in _show)
 check('reveal-on-scroll hook wired', "_revealOnScroll('#rOut .rs-sec.rv')" in _show)
 check('the b31 «كيف وصلنا» accordion is GONE from show()',
       "_acc('<svg class=ic aria-hidden=true><use href=#ic-search></use></svg> '+t('كيف وصلنا لهذا الرقم؟'" not in _show)

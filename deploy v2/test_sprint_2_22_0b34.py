@@ -60,10 +60,13 @@ check('_acc(title,inner,open) helper still supports the open arg',
 check('no v.amount / low / high mutation in show()', not re.search(r'v\.(amount|low|high)\s*=[^=]', SHOW))
 # only the «كيف وصلنا» accordion is density-driven this sprint (single-purpose); the other
 # accordions are NOT forced open (basic-info / report / full-details stay folded for everyone).
-check('basic-info NOT density-forced (single-purpose) — b125: _info moves into the FULL-details fold',
-      # b125 R6: the basic-info accordion became part of the collapsed FULL-details fold (secFull), which
-      # is NOT density-driven (folded for everyone). Only the HOW methodology fold respects _dense.
-      '+_info' in SHOW and 'secFull=' in SHOW and re.search(r"secFull[^\n]*_dense", SHOW) is None)
+check('basic-info NOT density-forced (single-purpose) — b147: the basics moved to the full report',
+      # b125 R6: the basic-info accordion became part of the collapsed FULL-details fold (secFull).
+      # b147 R6: that fold is REMOVED — the property-BASICS rows now live only in the report's
+      # «بيانات العقار الأساسية» card (they were the measured duplication the PO flagged); `_info`
+      # keeps ONLY the map ACTION, which the report has no equivalent for. Intent preserved: nothing
+      # on the result screen is opened/forced by audience density except the HOW methodology fold.
+      '_info' in SHOW and 'secFull=' not in SHOW and re.search(r"_info[^\n]*_dense", SHOW) is None)
 check('engine broadcasts audience (the recon premise: no server change needed)',
       "'audience': audience" in ENG)
 check('no api.py change implied — frontend-only (engine diff = the 2 version lines; checked via git separately)', True)

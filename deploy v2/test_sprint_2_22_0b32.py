@@ -79,7 +79,11 @@ check('pbRows: age-estimate row is after the early-return too',
       _ret_at < _pb_body.index('building_age_estimate'))
 check('confirm calls pbRows in basis-only mode', 'pbRows(d.property_basis,true)' in SHOWCONFIRM)
 # the OTHER call-sites stay full (no flag) → byte-identical pbRows there.
-check('results pbRows call-site unchanged (full panel)', HTML.count('pbRows(d.property_basis)') >= 2)
+# b147 R6: the b32 INTENT — the confirm-screen simplification must not leak into the OTHER call
+# sites — still holds: the confirm passes basisOnly=true while the full report keeps the FULL panel.
+# (The result-screen call site is gone with the b147 de-duplication; the report is its home.)
+check('confirm stays basis-only while the full-panel call site is untouched',
+      'pbRows(d.property_basis,true)' in HTML and 'pbRows(d.property_basis)' in HTML)
 check('refine carries the age hint (so (19) is a MOVE, not a loss)',
       'العمر المسجَّل في النظام حدٌّ أدنى' in HTML)
 

@@ -37,9 +37,12 @@ check('methodology bare line → how (NOT always-visible)',
 # section (_s4bLimits, a <details open> that carries the «تحفّظ متوسط» chip). Still NOT always-visible
 # (the chip + «ليس معتمداً» line remain in t1); the full VPGA-10 clause is one click away. Same intent.
 check('the full MUC clause folds inside the LIMITS section (was the _mucFold accordion)',
-      'if(muc)h+=muc;' in HTML and 'function _s4bLimits(d,muc){' in HTML and "details class=\"rs-lim\" open" in HTML)
+      # b147 R6 (ب — PO-signed): the LIMITS section now folds CLOSED by default behind its own
+      # «عدم اليقين: {level}» chip. The b52 INTENT is unchanged and reinforced: the full VPGA-10
+      # clause is still BUILT and one click away — folded, never deleted.
+      'if(muc)h+=muc;' in HTML and 'function _s4bLimits(d,muc){' in HTML and 'details class="rs-lim"' in HTML)
 check('valued assembly places LIMITS (with the folded MUC) after the sections',
-      'h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;' in HTML)
+      'h=head+alerts+t1+secEv+secHow+secScn+secLim+_info+secNudge+foot+t3;' in HTML)
 check('the MUC level CHIP + «ليس تقييماً معتمداً» line stay always-visible in t1 (not folded)',
       'عدم اليقين الجوهري: ' in HTML and 'ليس تقييماً معتمداً' in HTML)
 check('full MVU clause STILL built via _mucCardHtml (not deleted)',

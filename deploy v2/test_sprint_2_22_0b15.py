@@ -37,7 +37,7 @@ for b in ['let head=', 'let alerts=', 'let muc=', 'let a8acc=', 'let t1=', 'let 
 # (secEv/secHow/secScn/secLim/secFull); the assembly is now head+alerts+t1+…sections…+foot+t3 (t3 = the
 # sticky action bar). The full MVU clause folds inside the LIMITS section (_s4bLimits(d,muc)).
 check('valued assembly head+alerts+t1+flat-sections+foot+t3 (b125 S4b)',
-      'h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;' in HTML)
+      'h=head+alerts+t1+secEv+secHow+secScn+secLim+_info+secNudge+foot+t3;' in HTML)
 # 6. refusal assembly preserves pre-b15 flat order (compliance still shown).
 check('refusal assembly head+muc+a8acc+alerts+flat+foot', 'h=head+muc+a8acc+alerts+flat+foot;' in HTML)
 
@@ -81,8 +81,10 @@ check('service-scope badge → alerts', "alerts+='<div style=\"background:'+scop
 # (secFull, <details class="rs-full">), not a t2 accordion. Nothing lost.
 # b141 R6: the fold LABEL was renamed «التفاصيل الكاملة (التحليل والمقارنات)» → «تحليل إضافيّ (التفاصيل والمقارنات)»
 # to resolve the naming collision with «التقرير الكامل» (the deepest artifact). Scratch+a8acc wiring unchanged.
-check('detail scratch → FULL-DETAILS fold (valued, secFull)',
-      "تحليل إضافيّ (التفاصيل والمقارنات)" in HTML and '+a8acc+h' in HTML and 'details class="rs-full"' in HTML)
+# b147 R6: the FULL-DETAILS fold is REMOVED. The detail now lives in the full report, which b147
+# completed (_autoFindingsHtml). The scratch is still built so the REFUSAL path is unchanged.
+check('detail scratch → the full report (b147); scratch still built for the refusal path',
+      '_axWrap(_autoFindingsHtml(' in HTML and 'h+=_autoFindingsHtml(d,v,hasValuation);' in HTML)
 check('detail scratch → flat (refusal)', 'else { flat+=h; }' in HTML)
 check('scratch consumed before assembly', "h='';  // scratch consumed" in HTML)
 # 14. basic-info → its own TIER-2 accordion. (b31/DEF-UX11 re-point: the full evidence panel is no
@@ -90,8 +92,10 @@ check('scratch consumed before assembly', "h='';  // scratch consumed" in HTML)
 #     accordion alongside the 9-note parade; assertion below + test_sprint_2_22_0b31.py own the new shape.)
 # b48 re-point: the 🏠 emoji became an inline-SVG icon — pin the title text + wiring.
 # b125 R6 (S4b): basic-info (`_info`) now lives inside the FULL-DETAILS fold (secFull), not a t2 accordion.
-check('basic-info (_info) → FULL-DETAILS fold (secFull)',
-      "t('بيانات العقار الأساسية','Property basics')" in HTML and 'secFull=' in HTML and '+_info' in HTML)
+# b147 R6: the property-BASICS rows were the measured duplication — they now live only in the
+# report's «بيانات العقار الأساسية» card. `_info` keeps ONLY the map action (no report equivalent).
+check('basic-info → the full report; the map ACTION stays on the result screen (b147)',
+      "t('بيانات العقار الأساسية','Property basics')" in HTML and 'openMapPicker(' in HTML and 'secFull=' not in HTML)
 # b125 R6 (S4b): the full evidence panel now folds inside the _s4bHow «تفاصيل منهجيّة» fold (how + panel).
 check('full evidence panel → _s4bHow methodology fold (b31/b125)',
       'const mbody=how+evidencePanelHtml(d,acc);' in HTML)
@@ -99,8 +103,13 @@ check('full evidence panel → _s4bHow methodology fold (b31/b125)',
 # b48 re-point: the 📄 emoji became an inline-SVG icon — pin the title expression + wiring.
 # b125 R6 (S4b): the brief sections (valued) now render inside the FULL-DETAILS fold (secFull) via
 # _briefSecs/_briefTitle, not a t2 accordion. The refusal path keeps them flat (check below).
-check('brief sections → FULL-DETAILS fold (valued, _briefSecs)',
-      "pick(br,'title')||t('تفاصيل التقرير','Report details')" in HTML and '_briefSecs=_secs;' in HTML and '+_briefSecs' in HTML)
+# b147 R6: the FULL-DETAILS fold is removed, so the brief sections no longer render on the result
+# screen — they render in the FULL REPORT (showReport iterates br.sections via renderSection, with the
+# signed D8 skips). Intent preserved: every broadcast brief section still reaches the user.
+check('brief sections → the full report (b147); nothing broadcast is lost',
+      "pick(br,'title')||t('تفاصيل التقرير','Report details')" in HTML
+      and '_briefSecs=_secs;' in HTML
+      and 'h+=renderSection(sec);' in HTML)
 check('brief sections → flat (refusal verbatim)', "flat+='<div class=\"rc\" style=\"background:transparent;border:none;padding:0;box-shadow:none;margin-bottom:6px\"><div class=\"rt\" style=\"font-size:1.15rem;margin-bottom:0\">'+(pick(br,'title')||t('التقرير','Report'))+'</div></div>';" in HTML)
 
 # ── TIER-3 actions ──

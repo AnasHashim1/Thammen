@@ -2248,6 +2248,115 @@ function _decompHtml(d,v,hasValuation){
   }
   return out;
 }
+// ── Sprint 2.22.0b.147: shared builder — the four auto-detected/explanatory blocks that used to
+// live ONLY inside the result screen's «تحليل إضافيّ» fold. Moved verbatim to the full report so the
+// report is genuinely complete (it lacked range_expansion, geometric_factors, location_features and
+// the a3/T1.2 trend framing). Display-only; VALUE-INVARIANT. ──
+function _autoFindingsHtml(d,v,hasValuation){
+  let h='';
+  // ── Range Expansion Explanation (when valuation is present) ──
+  if(hasValuation&&v.range_expansion){
+    const re=v.range_expansion;
+    const reasons=re.reasons_for_upper_expansion||[];
+    const hbuAdj=re.central_value_hbu_adjustment_pct||0;
+    if(reasons.length>0||hbuAdj!==0){
+      h+='<div class="rc"><div class="rt" style="margin-bottom:8px">'+t('⤴ توسيع النطاق الأعلى (+','⤴ Upper-range expansion (+')+re.upper_bound_expanded_pct.toFixed(0)+'%)</div>';
+      h+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">'+t('النقطة المركزية محافظة (وسيط المقارنات). الحد الأعلى يَتسع لِيَعكس خصائص فريدة قد تَفرض علاوة سوقية يَصعب قياسها بدقة من البيانات العامة:','The central point is conservative (the median of comparables). The upper bound widens to reflect unique features that may command a market premium hard to measure precisely from public data:')+'</div>';
+      reasons.forEach(r=>{h+='<span class="loc-tag loc-pos">⤴ '+r+'</span>'});
+      if(hbuAdj!==0){
+        const sign=hbuAdj>0?'+':'';
+        const bg=hbuAdj>0?'#e6f7ed':'#fdecec';
+        const color=hbuAdj>0?'#0c7d41':'#a8131c';
+        h+='<div style="margin-top:12px;padding:10px;background:'+bg+';border-radius:6px;font-size:.88rem;color:'+color+'"><strong>HBU:</strong> '+t('تعديل النقطة المركزية ','central-point adjustment ')+sign+hbuAdj.toFixed(1)+'% — &lrm;RICS VPS 2 / IVS 102&lrm;</div>';
+      }
+      h+='</div>';
+    }
+  }
+
+  // ── Trend card ──
+  // Sprint 2.22.0a.3 T1.2 (rework): when backend suppresses slope_pct
+  // (MoJ stale OR MUC high/critical), reframe headline to
+  // "اتجاه تاريخي" + the historical-window string, instead of
+  // "اتجاه السوق" with a current-rate parenthetical. Backwards-
+  // compatible: when slope_pct is present (fresh data + low MUC,
+  // rare today at 148-day staleness), the original "اتجاه السوق"
+  // headline with the (X.X%/سنة) parenthetical still renders.
+  // b141 note: the T1.2 «اتجاه تاريخي» honesty framing lives ONLY here — this fold
+  // trend is intentionally KEPT (deduping it vs the EVIDENCE sparkline is deferred to a
+  // signed honesty review, since it would drop the signed a3/T1.2 suppressed-slope reframe).
+  const tr=d.trend;
+  if(tr&&tr.years&&tr.years.length>0){
+    let trHeadline;
+    if(tr.slope_pct!=null){
+      trHeadline=t('اتجاه السوق: ','Market trend: ')+trLabel(tr.label||'')+' ('+tr.slope_pct.toFixed(1)+t('%/سنة)','%/yr)');
+    } else if(tr.historical_window_ar){
+      trHeadline=t('اتجاه تاريخي: ','Historical trend: ')+trLabel(tr.label||'')+' — '+pick(tr,'historical_window');
+    } else {
+      trHeadline=t('اتجاه السوق: ','Market trend: ')+trLabel(tr.label||'');
+    }
+    h+='<div class="rc"><div class="rt" style="margin-bottom:6px">'+trHeadline+'</div>';
+    const maxM=Math.max(...tr.years.map(y=>y.median_m2||0));
+    h+='<div class="trend-row">';
+    tr.years.forEach(y=>{const pct=maxM>0?((y.median_m2||0)/maxM*100):0;
+      h+=`<div class="trend-col" style="height:${Math.max(pct,5)}%" title="${y.year}: ${fmt(y.median_m2)} ${t('ر.ق/م²','QAR/m²')} (${y.n} ${t('معاملة','deals')})"></div>`});
+    h+='</div><div class="trend-labels">';
+    tr.years.forEach(y=>{h+='<span>'+y.year+'</span>'});
+    h+='</div></div>';
+  }
+
+  // ── Geometric Findings ──
+  const gf=d.geometric_factors;
+  if(gf){
+    const items=[];
+    const ca=gf.corner_analysis;
+    if(ca){
+      let icon='|',cls='loc-neu';
+      if(ca.is_corner){icon='⊿';cls='loc-pos'}
+      else if(ca.main_road_adjacent){icon='═';cls='loc-pos'}
+      items.push({icon:icon,label:pick(ca,'evidence'),cls:cls});
+    }
+    const hbu=gf.hbu_analysis;
+    if(hbu){
+      const cls=hbu.industrial_adjacency?'loc-neg':'loc-pos';
+      const icon=hbu.industrial_adjacency?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>':'<svg class=ic aria-hidden=true><use href=#ic-arrow></use></svg>';
+      items.push({icon:icon,label:pick(hbu,'evidence'),cls:cls});
+    }
+    const nl=gf.named_landmarks;
+    if(nl){
+      (nl.malls||[]).forEach(m=>{
+        const tag=m.walkable?t(' (يُمشى)',' (walkable)'):'';
+        items.push({icon:m.walkable?'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>':'⊙',label:pick(m,'name')+' — '+m.distance_m+t('م','m')+tag,cls:'loc-pos'});
+      });
+      (nl.mixed_use_venues||[]).forEach(m=>{
+        const tag=m.walkable?t(' (يُمشى)',' (walkable)'):'';
+        items.push({icon:m.walkable?'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>':'◇',label:pick(m,'name')+t(' (مختلط) — ',' (mixed-use) — ')+m.distance_m+t('م','m')+tag,cls:'loc-pos'});
+      });
+      (nl.metros||[]).forEach(m=>{
+        const tag=m.walkable?t(' (يُمشى)',' (walkable)'):'';
+        items.push({icon:'<svg class=ic aria-hidden=true><use href=#ic-pin></use></svg>',label:pick(m,'name')+' — '+m.distance_m+t('م','m')+tag,cls:m.walkable?'loc-pos':'loc-neu'});
+      });
+    }
+    if(items.length>0){
+      h+='<div class="rc"><div class="rt" style="margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+t('ما اكتشفه النظام آلياً','What the system detected automatically')+'</div>';
+      h+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">'+t('معلومات اكتُشفت من تحليل polygon القطعة + قاعدة المعالم — بدون إدخال من المستخدم.','Detected from the plot polygon analysis + the landmarks database — no user input.')+'</div>';
+      items.forEach(it=>{h+='<span class="loc-tag '+it.cls+'">'+it.icon+' '+it.label+'</span>'});
+      if(gf.plot_area_m2_verified){h+='<div style="margin-top:10px;font-size:.78rem;color:#888">'+t('مساحة محقّقة من Cadastre: ','Verified area from Cadastre: ')+fmt(gf.plot_area_m2_verified)+t(' م²',' m²')+(gf.pd_no?' (PD: '+gf.pd_no+')':'')+'</div>'}
+      h+='</div>';
+    }
+  }
+
+  // ── Location features ──
+  const lf=d.location_features;
+  if(lf&&lf.length>0){
+    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">'+t('مميزات الموقع','Location features')+'</div>';
+    lf.forEach(f=>{const cls=f.positive===true?'loc-pos':f.positive===false?'loc-neg':'loc-neu';
+      const icon=f.positive===true?'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg>':f.positive===false?'<svg class=ic aria-hidden=true><use href=#ic-x></use></svg>':'—';
+      h+='<span class="loc-tag '+cls+'">'+icon+' '+pickBare(f,'label')+'</span>'});   // b146
+    h+='</div>';
+  }
+
+  return h;
+}
 function _substHtml(d,v,hasValuation){
   let out='';
   if(hasValuation&&v.building_substantiality){
@@ -2632,12 +2741,15 @@ function _s4bLimits(d,muc){
     t('تحقّق من تصنيف المنطقة (R1 / R2 / R3)','Check the zoning class (R1 / R2 / R3)'),
     t('اطلب فواتير الخدمات لآخر سنة','Request the last year’s utility bills')
   ];
-  let h='<div class="rs-sec rv"><details class="rs-lim" open><summary><span class="lt"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('حدود هذا التقدير','Limits of this estimate')+(lvl?(' <span class="lchip">'+t('عدم اليقين: ','Uncertainty: ')+lvl+'</span>'):'')+'</span><span class="plus"></span></summary><div class="lbody">';
+  // b147 (ب — PO-signed): collapsed by default behind its own «عدم اليقين: {level}» chip. The b52
+  // precedent: the full VPGA-10 clause FOLDS (never deleted) — the MUC level chip + the «ليس تقييماً
+  // معتمداً» line stay always-visible in TIER-1, so no compliance surface is hidden, only tiered.
+  let h='<div class="rs-sec rv"><details class="rs-lim"><summary><span class="lt"><svg class=ic aria-hidden=true><use href=#ic-alert></use></svg> '+t('حدود هذا التقدير','Limits of this estimate')+(lvl?(' <span class="lchip">'+t('عدم اليقين: ','Uncertainty: ')+lvl+'</span>'):'')+'</span><span class="plus"></span></summary><div class="lbody">';
   if(muc)h+=muc;  // the full RICS MUC clause (was the b52 _mucFold; compliance — never collapsed away, folds with its own section)
   h+='<div class="l2">';
   if(ku.length){
     h+='<div><div class="lh">'+t('ما لا نراه بعد','What we don\'t see yet')+'</div>';
-    ku.forEach(function(u){h+='<div class="li"><span class="b" style="color:var(--warn)">·</span><span>'+esc(u)+'</span></div>';});  // b141: uncapped (was slice(0,6)) — the full list now lives ONCE here; the fold dup removed
+    ku.forEach(function(u){h+='<div class="li"><span class="b" style="color:var(--warn)">·</span><span>'+esc(u)+'</span></div>';});  // b141: uncapped (was capped at six) — the full list now lives ONCE here; the duplicate card removed
     h+='</div>';
   }
   h+='<div><div class="lh">'+t('أسئلةٌ قبل الشراء','Questions before buying')+'</div>';
@@ -2837,6 +2949,7 @@ function showReport(d){
     }
     h+=_substHtml(d,v,hasValuation);
     h+=_axWrap(_strataHtml(d));
+    h+=_axWrap(_autoFindingsHtml(d,v,hasValuation));   // b147: moved from the result-screen fold
     const _rtrR=d.reasoning_trace;
     if(_rtrR&&_rtrR.known_unknowns&&_rtrR.known_unknowns.length>0){
       h+=_ax();
@@ -3532,7 +3645,8 @@ function show(d){
   let secHow='';  // HOW WE GOT HERE — reconciliation chip + 3-value stack + leadership narrative + methodology fold
   let secScn='';  // SCENARIOS — what-if cards + the «استدلالاً بالسعر لا معاينةً» honesty line
   let secLim='';  // LIMITS — MUC clause + known-unknowns + due-diligence + «دون تسوية زمنية» + RICS
-  let secFull=''; // FULL DETAILS fold — the analytical blocks + brief + basics + evidence panel (nothing lost)
+  let secNudge='';// b147 — the «يفترض بناءً نموذجياً» honesty nudge, PROMOTED out of the removed fold
+                  // to sit beside the «حسّن التقييم» CTA (it is decision-relevant, not an annex).
   let _info='';   // property-basics card (built inside the valued block; consumed by the FULL-details fold)
   let flat='';    // refusal path: shared panels rendered FLAT (byte-equivalent to pre-b15)
   let foot='';    // ALWAYS-VISIBLE compliance foot (freshness / disclaimer / verification)
@@ -3751,23 +3865,19 @@ function show(d){
   if(hasValuation){
     // Basic property data → TIER-2 accordion (b15: removed from BEFORE the number; the title now
     // lives on the accordion summary, so the inner card drops its own header). Inner HTML verbatim.
-    _info='<div class="rc"><div class="rg">';
-    if(d.address)_info+=ri(t('العنوان','Address'),esc(d.address),0,1);
-    if(d.district)_info+=ri(t('المنطقة','District'),esc(d.district));
-    if(d.plot_area_m2)_info+=ri(t('مساحة الأرض','Plot area'),fmt(d.plot_area_m2)+t(' م²',' m²'));
-    if(d.asset_type)_info+=ri(t('نوع العقار','Property type'),esc((d.asset_type==='unknown'&&d.asset_type_ar)?d.asset_type_ar:t(ASSET_AR[d.asset_type]||d.asset_type,ASSET_EN[d.asset_type]||d.asset_type)));
-    const pi=d.property_info||{};
-    if(pi.zoning)_info+=ri(t('التصنيف','Zoning'),pi.zoning);
-    if(pi.permitted_height)_info+=ri(t('الارتفاع المسموح','Permitted height'),pi.permitted_height);
-    _info+=pbRows(d.property_basis);  // Sprint 2.22.0b.9 — PIN/electricity/water/age-floor
-    _info+='</div>';
+    // ── Sprint 2.22.0b.147 «دور شاشة النتيجة» ──
+    // The property-BASICS rows (address · district · plot area · type · zoning · permitted height ·
+    // the b9 PIN/electricity/water/age-floor) are exactly the «تفاصيل العقار» the PO measured as
+    // duplicated: they render again, in full, in the report's «بيانات العقار الأساسية» card. They are
+    // dropped from the result screen (the report is the document; this is the decision surface).
+    // The MAP BUTTON is NOT a document detail — it is an ACTION, and it exists ONLY here (the report
+    // has no map). It is therefore preserved and promoted into the visible flow. ──
     if(d.gps&&d.gps.lat&&d.gps.lon){
       const lat=d.gps.lat,lon=d.gps.lon;
-      _info+='<div class="map-links">';
+      _info+='<div class="rc"><div class="map-links">';
       _info+='<button class="map-btn-main" onclick="openMapPicker('+Number(lat)+','+Number(lon)+')"><svg class=ic aria-hidden=true><use href=#ic-pin></use></svg> '+t('افتح موقع العقار في الخريطة','Open the property location on the map')+'</button>';
-      _info+='</div>';
+      _info+='</div></div>';
     }
-    _info+='</div>';
 
     // ── TIER-1: the figure — Sprint 2.22.0b.47 result-screen HERO (<svg class=ic aria-hidden=true><use href=#ic-star></use></svg>1). Evolves the signed b3
     // range-as-lead: leads with a CONFIDENT CENTRAL FIGURE (the median = v.amount) on a navy band
@@ -3996,113 +4106,22 @@ function show(d){
     const ui=d.user_inputs||{};
     const noDetails=!ui.floors&&!ui.basement&&!ui.footprint_m2&&!ui.external_majlis&&!ui.annexes;
     if(noDetails){
-      h+='<div class="rc" style="border-color:#f4d03f;background:#fffdf3">';
-      h+='<div class="rt" style="margin-bottom:6px;color:var(--primary)">'+t('ℹ التقييم يفترض بناءً نموذجياً','ℹ The valuation assumes a standard building')+'</div>';
-      h+='<div class="rn" style="font-size:.85rem;color:#666">'+t('قد يؤدي إدخال التفاصيل الفعلية للعقار — كالحالة والمساحة الدقيقة والتشطيبات — إلى تعديل جوهري في التقدير.','Entering the actual property details — such as condition, exact area, and finishes — may materially change the estimate.')+'</div>';
-      h+='</div>';
+      // b147: PROMOTED from the removed «تحليل إضافيّ» fold into the always-visible flow (secNudge),
+      // right above the CTA bar — an honesty nudge tied to «حسّن التقييم» belongs on the decision surface.
+      secNudge+='<div class="rc" style="border-color:#f4d03f;background:#fffdf3">';
+      secNudge+='<div class="rt" style="margin-bottom:6px;color:var(--primary)">'+t('ℹ التقييم يفترض بناءً نموذجياً','ℹ The valuation assumes a standard building')+'</div>';
+      secNudge+='<div class="rn" style="font-size:.85rem;color:#666">'+t('قد يؤدي إدخال التفاصيل الفعلية للعقار — كالحالة والمساحة الدقيقة والتشطيبات — إلى تعديل جوهري في التقدير.','Entering the actual property details — such as condition, exact area, and finishes — may materially change the estimate.')+'</div>';
+      secNudge+='</div>';
     }
   }
 
-  // ── Range Expansion Explanation (when valuation is present) ──
-  if(hasValuation&&v.range_expansion){
-    const re=v.range_expansion;
-    const reasons=re.reasons_for_upper_expansion||[];
-    const hbuAdj=re.central_value_hbu_adjustment_pct||0;
-    if(reasons.length>0||hbuAdj!==0){
-      h+='<div class="rc"><div class="rt" style="margin-bottom:8px">'+t('⤴ توسيع النطاق الأعلى (+','⤴ Upper-range expansion (+')+re.upper_bound_expanded_pct.toFixed(0)+'%)</div>';
-      h+='<div class="rn" style="font-size:.82rem;margin-bottom:10px;color:#555">'+t('النقطة المركزية محافظة (وسيط المقارنات). الحد الأعلى يَتسع لِيَعكس خصائص فريدة قد تَفرض علاوة سوقية يَصعب قياسها بدقة من البيانات العامة:','The central point is conservative (the median of comparables). The upper bound widens to reflect unique features that may command a market premium hard to measure precisely from public data:')+'</div>';
-      reasons.forEach(r=>{h+='<span class="loc-tag loc-pos">⤴ '+r+'</span>'});
-      if(hbuAdj!==0){
-        const sign=hbuAdj>0?'+':'';
-        const bg=hbuAdj>0?'#e6f7ed':'#fdecec';
-        const color=hbuAdj>0?'#0c7d41':'#a8131c';
-        h+='<div style="margin-top:12px;padding:10px;background:'+bg+';border-radius:6px;font-size:.88rem;color:'+color+'"><strong>HBU:</strong> '+t('تعديل النقطة المركزية ','central-point adjustment ')+sign+hbuAdj.toFixed(1)+'% — &lrm;RICS VPS 2 / IVS 102&lrm;</div>';
-      }
-      h+='</div>';
-    }
-  }
+  // ── Sprint 2.22.0b.147 «دور شاشة النتيجة»: range-expansion + the a3/T1.2 trend card + geometric
+  // findings + location features are now built by the shared _autoFindingsHtml and MOVED to the full
+  // report, which lacked all four. Kept HERE at the original position so the `h` scratch is unchanged
+  // for the REFUSAL path (`flat+=h` — byte-identical order preserved); on the valued path `h` is now
+  // discarded with the removed fold. The signed a3/T1.2 «اتجاه تاريخي» framing travels with the card. ──
+  h+=_autoFindingsHtml(d,v,hasValuation);
 
-  // ── Trend card ──
-  // Sprint 2.22.0a.3 T1.2 (rework): when backend suppresses slope_pct
-  // (MoJ stale OR MUC high/critical), reframe headline to
-  // "اتجاه تاريخي" + the historical-window string, instead of
-  // "اتجاه السوق" with a current-rate parenthetical. Backwards-
-  // compatible: when slope_pct is present (fresh data + low MUC,
-  // rare today at 148-day staleness), the original "اتجاه السوق"
-  // headline with the (X.X%/سنة) parenthetical still renders.
-  // b141 note: the T1.2 «اتجاه تاريخي» honesty framing lives ONLY here — this fold
-  // trend is intentionally KEPT (deduping it vs the EVIDENCE sparkline is deferred to a
-  // signed honesty review, since it would drop the signed a3/T1.2 suppressed-slope reframe).
-  const tr=d.trend;
-  if(tr&&tr.years&&tr.years.length>0){
-    let trHeadline;
-    if(tr.slope_pct!=null){
-      trHeadline=t('اتجاه السوق: ','Market trend: ')+trLabel(tr.label||'')+' ('+tr.slope_pct.toFixed(1)+t('%/سنة)','%/yr)');
-    } else if(tr.historical_window_ar){
-      trHeadline=t('اتجاه تاريخي: ','Historical trend: ')+trLabel(tr.label||'')+' — '+pick(tr,'historical_window');
-    } else {
-      trHeadline=t('اتجاه السوق: ','Market trend: ')+trLabel(tr.label||'');
-    }
-    h+='<div class="rc"><div class="rt" style="margin-bottom:6px">'+trHeadline+'</div>';
-    const maxM=Math.max(...tr.years.map(y=>y.median_m2||0));
-    h+='<div class="trend-row">';
-    tr.years.forEach(y=>{const pct=maxM>0?((y.median_m2||0)/maxM*100):0;
-      h+=`<div class="trend-col" style="height:${Math.max(pct,5)}%" title="${y.year}: ${fmt(y.median_m2)} ${t('ر.ق/م²','QAR/m²')} (${y.n} ${t('معاملة','deals')})"></div>`});
-    h+='</div><div class="trend-labels">';
-    tr.years.forEach(y=>{h+='<span>'+y.year+'</span>'});
-    h+='</div></div>';
-  }
-
-  // ── Geometric Findings ──
-  const gf=d.geometric_factors;
-  if(gf){
-    const items=[];
-    const ca=gf.corner_analysis;
-    if(ca){
-      let icon='|',cls='loc-neu';
-      if(ca.is_corner){icon='⊿';cls='loc-pos'}
-      else if(ca.main_road_adjacent){icon='═';cls='loc-pos'}
-      items.push({icon:icon,label:pick(ca,'evidence'),cls:cls});
-    }
-    const hbu=gf.hbu_analysis;
-    if(hbu){
-      const cls=hbu.industrial_adjacency?'loc-neg':'loc-pos';
-      const icon=hbu.industrial_adjacency?'<svg class=ic aria-hidden=true><use href=#ic-alert></use></svg>':'<svg class=ic aria-hidden=true><use href=#ic-arrow></use></svg>';
-      items.push({icon:icon,label:pick(hbu,'evidence'),cls:cls});
-    }
-    const nl=gf.named_landmarks;
-    if(nl){
-      (nl.malls||[]).forEach(m=>{
-        const tag=m.walkable?t(' (يُمشى)',' (walkable)'):'';
-        items.push({icon:m.walkable?'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>':'⊙',label:pick(m,'name')+' — '+m.distance_m+t('م','m')+tag,cls:'loc-pos'});
-      });
-      (nl.mixed_use_venues||[]).forEach(m=>{
-        const tag=m.walkable?t(' (يُمشى)',' (walkable)'):'';
-        items.push({icon:m.walkable?'<svg class=ic aria-hidden=true><use href=#ic-home></use></svg>':'◇',label:pick(m,'name')+t(' (مختلط) — ',' (mixed-use) — ')+m.distance_m+t('م','m')+tag,cls:'loc-pos'});
-      });
-      (nl.metros||[]).forEach(m=>{
-        const tag=m.walkable?t(' (يُمشى)',' (walkable)'):'';
-        items.push({icon:'<svg class=ic aria-hidden=true><use href=#ic-pin></use></svg>',label:pick(m,'name')+' — '+m.distance_m+t('م','m')+tag,cls:m.walkable?'loc-pos':'loc-neu'});
-      });
-    }
-    if(items.length>0){
-      h+='<div class="rc"><div class="rt" style="margin-bottom:8px"><svg class=ic aria-hidden=true><use href=#ic-tool></use></svg> '+t('ما اكتشفه النظام آلياً','What the system detected automatically')+'</div>';
-      h+='<div class="rn" style="font-size:.8rem;margin-bottom:10px;color:#666">'+t('معلومات اكتُشفت من تحليل polygon القطعة + قاعدة المعالم — بدون إدخال من المستخدم.','Detected from the plot polygon analysis + the landmarks database — no user input.')+'</div>';
-      items.forEach(it=>{h+='<span class="loc-tag '+it.cls+'">'+it.icon+' '+it.label+'</span>'});
-      if(gf.plot_area_m2_verified){h+='<div style="margin-top:10px;font-size:.78rem;color:#888">'+t('مساحة محقّقة من Cadastre: ','Verified area from Cadastre: ')+fmt(gf.plot_area_m2_verified)+t(' م²',' m²')+(gf.pd_no?' (PD: '+gf.pd_no+')':'')+'</div>'}
-      h+='</div>';
-    }
-  }
-
-  // ── Location features ──
-  const lf=d.location_features;
-  if(lf&&lf.length>0){
-    h+='<div class="rc"><div class="rt" style="margin-bottom:10px">'+t('مميزات الموقع','Location features')+'</div>';
-    lf.forEach(f=>{const cls=f.positive===true?'loc-pos':f.positive===false?'loc-neg':'loc-neu';
-      const icon=f.positive===true?'<svg class=ic aria-hidden=true><use href=#ic-check></use></svg>':f.positive===false?'<svg class=ic aria-hidden=true><use href=#ic-x></use></svg>':'—';
-      h+='<span class="loc-tag '+cls+'">'+icon+' '+pickBare(f,'label')+'</span>'});   // b146
-    h+='</div>';
-  }
 
   // ── Sprint 2.16.0: Stock Stratification (Rule E4) ── (b17: shared builder)
   h+=_strataHtml(d);
@@ -4117,14 +4136,17 @@ function show(d){
   // EVERY analytical block accumulated in `h` (decomposition · substantiality · geometry · range-expansion
   // · geometric findings · location features · strata · known-unknowns) + the a8 RICS/IVS note + property
   // basics (_info) + the brief sections — nothing lost, just collapsed. Refusal path: flat (byte-equivalent). ──
+  // ── Sprint 2.22.0b.147 «دور شاشة النتيجة» (PO-signed أ+ب): the «تحليل إضافيّ» fold is REMOVED.
+  // Measured on live b146: it re-rendered ~70% of the full report inside the result screen (the screen
+  // expanded to 16.3 mobile screens — LONGER than the «detailed» report at 13.7). Everything it held has
+  // a home: _info → the report's «بيانات العقار الأساسية» · _briefSecs → the report's brief sections ·
+  // a8acc → the report's methodology annex · the `h` scratch → the report (decomposition/substantiality/
+  // strata already there; range-expansion + trend + geometric findings + location features MOVED by the
+  // b147 _autoFindingsHtml). The result screen is now a DECISION surface; the full report is the complete
+  // artifact, one tap away in the sticky bar. VALUE-INVARIANT — display reorganization only. ──
   if(hasValuation){
     secScn=_s4bScenarios(v);
     secLim=_s4bLimits(d,muc);
-    secFull='<div class="rs-sec rv"><details class="rs-full"><summary><span class="lt"><svg class=ic aria-hidden=true><use href=#ic-search></use></svg> '+t('تحليل إضافيّ (التفاصيل والمقارنات)','Deeper analysis (details &amp; comparables)')+'</span><span class="plus"></span></summary><div class="fbody">'
-      +_info
-      +(_briefSecs?('<div class="rc" style="background:transparent;border:none;box-shadow:none;padding:0;margin:8px 0 4px"><div class="rt" style="font-size:1.05rem">'+_briefTitle+'</div></div>'+_briefSecs):'')
-      +a8acc+h
-      +'</div></details></div>';
   }
   else { flat+=h; }
   h='';  // scratch consumed → reused for the final assembly below
@@ -4164,7 +4186,7 @@ function show(d){
   // The «تحفّظ مادي: {level}» chip + the «ليس تقييماً معتمداً» line stay always-visible in t1; the full
   // VPGA-10 clause is one click away inside LIMITS. VALUE-INVARIANT — display reorganization only. ──
   if(hasValuation){
-    h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;
+    h=head+alerts+t1+secEv+secHow+secScn+secLim+_info+secNudge+foot+t3;   // b147: fold dropped; map + nudge kept visible
   }else{
     h=head+muc+a8acc+alerts+flat+foot;
   }

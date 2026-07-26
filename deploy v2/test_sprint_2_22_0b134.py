@@ -63,7 +63,7 @@ check('contextual: called with d.district + d.asset_type', '_loadPulse(d.distric
 # refusal card). Contextual district+asset_type still required; DOM-inject (not the assembly string).
 check('band injected (DOM) only when hasValuation + district + asset_type exist',
       "_pb.id='pulseBand'" in HTML and 'if(hasValuation&&d.district&&d.asset_type)' in HTML
-      and 'h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;' in HTML)
+      and 'h=head+alerts+t1+secEv+secHow+secScn+secLim+_info+secNudge+foot+t3;' in HTML)
 check('ANSWERS Q11: count 0 → band stays hidden (never fabricate)', 'if(!p||!p.count||p.count<1)return' in LP)
 check('ANSWERS Q11: sparse (<3) → single count line, no cards', 'p.deals.length<3' in LP and 'pulse-line' in LP)
 check('ANSWERS Q11: >=3 → cards grid', 'pulse-grid' in LP and 'pulse-card' in LP)

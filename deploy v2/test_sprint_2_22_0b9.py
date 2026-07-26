@@ -86,7 +86,12 @@ finally:
 print('=== index.html wiring ===')
 html = open(os.path.join(os.path.dirname(__file__), 'index.html'), encoding='utf-8').read()
 ok('pbRows helper defined', 'function pbRows(' in html)
-ok('pbRows called in showConfirm/results', html.count('pbRows(d.property_basis)') >= 2)
+# b147 R6: the property-BASICS rows left the result screen (they duplicated the report's
+# «بيانات العقار الأساسية» card — the measured duplication the PO flagged). The b9 INTENT is
+# preserved: the PIN / electricity / water / age-floor still surface to the user — on the confirm
+# screen (basis-only, b32) and in FULL in the report. Both call sites asserted below.
+ok('pbRows called in showConfirm (basis-only) + the full report (full panel)',
+   'pbRows(d.property_basis,true)' in html and 'pbRows(d.property_basis)' in html)
 ok('renders الرقم المساحي', 'الرقم المساحي' in html)
 ok('renders رقم الكهرباء', 'رقم الكهرباء' in html)
 ok('renders عمر البناء التقديري', 'عمر البناء التقديري' in html)

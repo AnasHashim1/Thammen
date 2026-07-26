@@ -32,7 +32,7 @@ check('the `how` notes + full evidence panel fold into ONE «تفاصيل منه
 # b125 R6: «كيف وصلنا» (secHow) is assembled BEFORE secFull (which now holds basic-info) — the b31
 # «evidence-before-basic-info» order is preserved by the flat assembly.
 check('«كيف وصلنا» (secHow) precedes basic-info (now in secFull) in the flat assembly',
-      'secHow+secScn+secLim+secFull' in HTML
+      'secHow+secScn+secLim' in HTML
       and "t('بيانات العقار الأساسية','Property basics')" in HTML)
 # the standalone «جودة الأدلّة (تفصيل)» accordion is GONE (folded into «كيف وصلنا»).
 check('standalone «جودة الأدلّة (تفصيل)» accordion REMOVED (folded)',
@@ -104,7 +104,7 @@ check('no mutation of v.amount/v.low/v.high', not re.search(r'\bv\.(amount|low|h
 # b125 R6 (S4b): the valued lower half was rebuilt from accordions into flat scroll-revealed sections;
 # the full MUC clause now folds inside the LIMITS section (secLim / _s4bLimits), not a separate _mucFold.
 check('valued assembly (b125 S4b flat sections)',
-      'h=head+alerts+t1+secEv+secHow+secScn+secLim+secFull+foot+t3;' in HTML)
+      'h=head+alerts+t1+secEv+secHow+secScn+secLim+_info+secNudge+foot+t3;' in HTML)
 
 # ── 8. engine version (format only — R6 / Lesson-2: no exact pin) ──
 check('ENGINE_VERSION format (thammen-sprint…)', re.search(r"ENGINE_VERSION = 'thammen-sprint\d+p\d+p\d+", ENG) is not None)

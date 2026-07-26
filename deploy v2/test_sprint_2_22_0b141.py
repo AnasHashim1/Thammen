@@ -49,7 +49,11 @@ ck("LIMITS «ما لا نراه بعد» kept", "t('ما لا نراه بعد','
 
 # ── (3) «التفاصيل الكاملة» naming collision resolved ─────────────────────────
 print("[naming]")
-ck("fold → «تحليل إضافيّ»", "t('تحليل إضافيّ (التفاصيل والمقارنات)','Deeper analysis (details &amp; comparables)')" in HTML)
+# b147 R6: the fold itself is REMOVED (it re-rendered ~70% of the full report inside the result
+# screen). The b141 INTENT — «التفاصيل الكاملة» must name exactly one thing — now holds a fortiori:
+# there is no competing result-screen fold title at all.
+ck("no competing result-screen fold title (b147: fold removed)",
+   "details class=\"rs-full\"" not in HTML and "Deeper analysis" not in HTML)
 ck("old fold title gone", "التفاصيل الكاملة (التحليل والمقارنات)" not in HTML)
 ck("short-report back button → «النتيجة»", 'data-en="← Result">→ النتيجة</button>' in HTML)
 ck("short-report link → «النتيجة»", "<a onclick=\"go(\\'results\\')\">'+t('النتيجة','Result')+'</a>" in HTML)

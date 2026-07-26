@@ -107,8 +107,11 @@ check('refusal path wired (h2 + facts + CTA)',
       "t('تعذّر تحديد نوع العقار','Could not determine the property type')" in SHOW and
       "t('العنوان:','Address:')" in SHOW and
       "t('→ أضف الإيجار أو سعر الإعلان','→ Add the rent or the listing price')" in SHOW)
-check('asset label via t(ASSET_AR,ASSET_EN) in show() (info + refusal)',
-      "t(ASSET_AR[d.asset_type]||d.asset_type,ASSET_EN[d.asset_type]||d.asset_type)" in SHOW and
+# b147 R6: the basics row that carried the first expression moved to the full report with the rest
+# of «بيانات العقار الأساسية». The b83 INTENT — the asset label is bilingual on every surface that
+# renders it — is unchanged: the report keeps the info form, show() keeps the refusal form.
+check('asset label via t(ASSET_AR,ASSET_EN) — report (info) + show() (refusal)',
+      "t(ASSET_AR[d.asset_type]||d.asset_type,ASSET_EN[d.asset_type]||d.asset_type)" in HTML and
       "ASSET_EN[d.asset_type]||d.asset_type_ar||d.asset_type||'this property'" in SHOW)
 
 # ---- (7) VALUE-INVARIANCE: AR verbatim + scoped no-bare-insertion + value-math untouched ----
