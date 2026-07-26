@@ -98,9 +98,12 @@ print('\n=== C. VILLA — same defect, DELIBERATELY out of scope (deferred) ==='
 villa_ref = mk_ref('villa', 30, 4000.0, 2_300_000.0, EMPTY_1500)
 vv = apply_moj_strategy('standalone_villa', 2000.0, villa_ref)
 ck(vv.bracket_fallback is True, 'C1 the flag fires for villa too (honest signal)')
-ck(abs(vv.moj_median_total - 2_300_000.0) < 1,
-   'C2 villa total is NOT changed by b149 (land-only gate)', f'got {vv.moj_median_total}')
-ck(not any('b149' in n for n in vv.notes), 'C3 no b149 note on the villa path')
+# b150 R6 re-point: b149 shipped land-only and asserted the villa did NOT move. b150 is
+# the signed sibling that extends the SAME fix to the villa pool (bidirectional), so the
+# villa now IS size-aware. b149's own LAND behaviour (A/B/F blocks) is untouched.
+ck(abs(vv.moj_median_total - 2000.0 * 4000.0) < 1,
+   'C2 villa total is now size-aware too (b150 extended the b149 fix)', f'got {vv.moj_median_total}')
+ck(any('b150' in n or 'b149' in n for n in vv.notes), 'C3 the villa path discloses the basis change')
 
 print('\n=== D. guards — never crash, never invent ===')
 no_ppm2 = {'area': 'T', 'categories': {'land': {
@@ -170,8 +173,8 @@ else:
 print('\n=== G. value-invariance contract + version ===')
 src_ep = Path('evaluate_property.py').read_text(encoding='utf-8')
 src_eu = Path('evaluate_unified.py').read_text(encoding='utf-8')
-ck("moj_cat == 'land'" in src_ep and 'total_median = plot_area_m2 * per_m2' in src_ep,
-   'G1 the fix is gated on the LAND category at the fallback site')
+ck('total_median = plot_area_m2 * per_m2' in src_ep,
+   'G1 the size-aware assignment lives at the fallback site (b150: both pools)')
 ck('bracket_fallback=bracket_fallback' in src_ep, 'G2 the flag is threaded into MoJValuation')
 ck(Path('api.py').read_text(encoding='utf-8').find('b149') == -1,
    'G3 api.py UNTOUCHED by b149')

@@ -65,8 +65,16 @@ ck('A3 build_reference 900-1500 bracket n == residential-only count (non-residen
    b915.get('n') == len(res_915), f"bracket_n={b915.get('n')} res={len(res_915)}")
 
 print('=== B. VILLA byte-gate: the villa pool was ALREADY A1-filtered → identical to b100 ===')
+# b150 R6 re-point (VALUE-AFFECTING, PO-signed — NOT a masking edit):
+# the المعراض probe uses plot=300, whose villa size bracket (0-400) is EMPTY in that area,
+# so it lands on the empty-bracket fallback that Sprint 2.22.0b.150 corrected from a
+# size-BLIND category total median (2,572,445 = 8,575 ر.ق/م² for a 300 m² villa) to the
+# size-aware basis (300 × category ppm² median = 768,000). The INPUT is deliberately left
+# unchanged — moving the probe to a populated bracket would hide a real value movement.
+# b102's own intent (the residential-usage filter left villa values untouched) is unaffected:
+# the other three probes sit in populated brackets and stay byte-identical.
 B100 = {'بو هامور': (500, 2357895), 'مريخ': (700, 5100000),
-        'المعمورة': (650, 3741176), 'المعراض': (300, 2572445)}
+        'المعمورة': (650, 3741176), 'المعراض': (300, 768000)}
 for a, (p, expect) in B100.items():
     v = villa(a, p)
     ck(f'B {a} villa total unchanged == {expect:,}',

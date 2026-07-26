@@ -663,15 +663,26 @@ def apply_moj_strategy(asset_type: str, plot_area_m2: float,
         # big-plot ppm², against a 1.5×–3× understatement today. Nationally the
         # size gradient is mild (1500+ = 0.79× the 400-600 ppm², n=238).
         #
-        # LAND-ONLY by measurement, not by preference: land is market-only (b20
-        # emits DRC ≡ land value), so the fix is self-contained. The villa pool has
-        # the SAME defect (measured: 95 of 288 (area,bracket) probes fall back, up
-        # to 7.07×), but a villa market median feeds the b20 leadership gate + the
-        # E25 rail, so it needs its own signed blast-radius. Deferred, not ignored.
-        if moj_cat == 'land' and per_m2 and plot_area_m2:
+        # ── Sprint 2.22.0b.150: the same fix extended to the VILLA pool (PO-signed) ──
+        # b149 shipped this LAND-only because a villa market median also feeds the b20
+        # leadership gate + the E25 rail. b150 measured that blast radius: 95 affected
+        # (area,bracket) villa cells — 81 UP (median 2.67×, max 7.07×) and 14 DOWN
+        # (median 0.69×, min 0.06×). The fix is BIDIRECTIONAL because the defect is:
+        # a size-blind SALE-PRICE median UNDER-states a big plot in a small-plot pool
+        # and OVER-states a small plot in a big-plot pool. Both are the same error.
+        # The downward cases are corrections, not regressions — e.g. جليعة carried a
+        # 61,800,000 category total median (from ONE sale) and applied it to a 750 m²
+        # villa; the size-aware basis gives 3,776,250.
+        # Downward exposure is thin by measurement: 0 of the 14 reach cat_n >= 20, so
+        # none can become a confident Case-1 headline; only 3 reach n >= 5 (روضة
+        # الحمامة 15 · لوسيل 69 12 · مدينة الشمال 7) where the headline is already
+        # `comparison_thin`/preliminary and heavily caveated. 23 of the upward cells
+        # DO reach n >= 20. A downward market move can also flip cost_led → e25_capped
+        # (cost >= market) — measured + asserted in test_sprint_2_22_0b150.py.
+        if per_m2 and plot_area_m2:
             total_median = plot_area_m2 * per_m2
             notes.append(
-                f'b149: size-aware fallback — total = plot {plot_area_m2:,.0f} m² × '
+                f'b149/b150: size-aware fallback — total = plot {plot_area_m2:,.0f} m² × '
                 f'category ppm² median {per_m2:,.0f} = {total_median:,.0f} '
                 f'(the size-blind category total median was '
                 f'{_safe_get(cat_data, "total_price", "median") or 0:,.0f})'
