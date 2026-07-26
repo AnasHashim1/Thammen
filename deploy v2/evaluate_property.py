@@ -372,6 +372,10 @@ class MoJValuation:
     bracket_ppm2_dispersion: Optional[float] = None  # (a) 36mo ppm² (p75-p25)/median; gated vs 0.30
     bracket_window_used: Optional[str] = None        # (b) recent/total split string when n is a 36mo count
     bracket_transactions: Optional[list] = None      # Sprint 2.22.0b.38 (DEF-UX1): the subject-bracket MoJ rows that produced the median (anonymous; display-only; surfaced only when the market leads via this bracket)
+    # Sprint 2.22.0b.149: True when the subject's SIZE BRACKET was empty and the
+    # area-wide category median was used instead. Consumed by the headline's
+    # source line so it never claims «نفس الشريحة» for an out-of-bracket subject.
+    bracket_fallback: bool = False
 
 
 @dataclass
@@ -616,6 +620,7 @@ def apply_moj_strategy(asset_type: str, plot_area_m2: float,
 
     # Use bracket if reliable, otherwise fall back to overall category stats
     notes = []
+    bracket_fallback = False   # b149: True when the subject's size bracket is EMPTY
     if bracket and bracket.get('n', 0) >= 10:
         n = bracket['n']
         per_m2 = bracket.get('price_per_m2_median')
@@ -637,6 +642,40 @@ def apply_moj_strategy(asset_type: str, plot_area_m2: float,
         reliable = n >= 20
         notes.append(f'No transactions in bracket {bracket_key}; using overall {moj_cat} median')
         strategy_label = f'MoJ {moj_cat} (overall, n={n})'
+        bracket_fallback = True
+        # ── Sprint 2.22.0b.149: SIZE-AWARE fallback total (LAND) ──────────────
+        # The category `total_price.median` is SIZE-BLIND: it is the median SALE
+        # PRICE of the area's land pool (dominated by the common 400-900 m² plots),
+        # so applying it to an out-of-bracket subject values a 1500 m² plot at the
+        # price of a 525 m² one. Measured on سميسمة/70312306: 1,515,002 (blind) vs
+        # 4,681,500 (= plot × ppm² median) — a 3.09× understatement, and 93 ر.ق/قدم²
+        # against a 290 ر.ق/قدم² evidence median.
+        #
+        # It also SPLIT THE BASIS of the displayed range: est_low/est_high below
+        # already use `plot_area × category ppm² quartiles` (size-aware), while the
+        # headline read this blind total — so the number sat outside its own range
+        # and the b59 clamp had to drag `low` down onto it (masking, not fixing).
+        #
+        # Empirical basis for ppm² × area (RICS VPS 3 / IVS 103 comparability):
+        # across the 14 affected areas that DO have big-plot evidence, the
+        # 900-1500 bracket ppm² median vs the category ppm² median is 0.96 (median;
+        # range 0.71–1.12) — i.e. the category ppm² is a ~4%-optimistic proxy for
+        # big-plot ppm², against a 1.5×–3× understatement today. Nationally the
+        # size gradient is mild (1500+ = 0.79× the 400-600 ppm², n=238).
+        #
+        # LAND-ONLY by measurement, not by preference: land is market-only (b20
+        # emits DRC ≡ land value), so the fix is self-contained. The villa pool has
+        # the SAME defect (measured: 95 of 288 (area,bracket) probes fall back, up
+        # to 7.07×), but a villa market median feeds the b20 leadership gate + the
+        # E25 rail, so it needs its own signed blast-radius. Deferred, not ignored.
+        if moj_cat == 'land' and per_m2 and plot_area_m2:
+            total_median = plot_area_m2 * per_m2
+            notes.append(
+                f'b149: size-aware fallback — total = plot {plot_area_m2:,.0f} m² × '
+                f'category ppm² median {per_m2:,.0f} = {total_median:,.0f} '
+                f'(the size-blind category total median was '
+                f'{_safe_get(cat_data, "total_price", "median") or 0:,.0f})'
+            )
 
     # ── Sprint 2.22.0a.13: thin-cell credibility (VILLA-only, total-price median) ──
     # Per-cell 36mo-capped fallback implemented as continuous P2 shrinkage: blend the
@@ -738,6 +777,8 @@ def apply_moj_strategy(asset_type: str, plot_area_m2: float,
         # has data (the fallback-to-overall path leaves `bracket` empty → None). Anonymous.
         bracket_transactions=(bracket.get('transactions')
                               if isinstance(bracket, dict) else None),
+        # Sprint 2.22.0b.149: the subject's size bracket was empty (area-wide basis).
+        bracket_fallback=bracket_fallback,
     )
 
 

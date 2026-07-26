@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b148-visible-en-fossils'
-SPRINT_TAG = '2.22.0b.148'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b149-land-size-aware-fallback'
+SPRINT_TAG = '2.22.0b.149'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -1417,6 +1417,16 @@ def _select_primary_comparison(ev, geo_v2, user_age=False) -> Optional[dict]:
         _bwin = getattr(ev.valuation, 'bracket_window_used', None) if ev.valuation else None
         _bdisp = getattr(ev.valuation, 'bracket_ppm2_dispersion', None) if ev.valuation else None
         _win_sfx = ' (صفقات آخر 36 شهراً)' if _bwin else ''
+        # Sprint 2.22.0b.149: when the subject's size bracket was EMPTY, the median is
+        # the AREA-WIDE one applied to the subject's area — it is NOT «نفس الشريحة».
+        # Say so. (JSON surface: `valuation.source_ar`; no render site today.)
+        _bfb = bool(getattr(ev.valuation, 'bracket_fallback', False)) if ev.valuation else False
+        _src = (
+            f'وسيط سعر المتر في المنطقة ({bracket_n} معاملة) مطبَّقاً على مساحة العقار '
+            f'— لا صفقات مسجَّلة في شريحة مساحته{_win_sfx}'
+            if _bfb else
+            f'وسيط {bracket_n} معاملة في نفس الشريحة والمنطقة{_win_sfx}'
+        )
         return {
             'value': bracket_value,
             'low':   ev.valuation.estimated_value_low,
@@ -1424,7 +1434,7 @@ def _select_primary_comparison(ev, geo_v2, user_age=False) -> Optional[dict]:
             'method': 'comparison_bracket',
             'method_label_ar': 'مقارنة شريحية مباشرة (‎RICS VPS 3 / IVS 103‎)',
             'n': bracket_n,
-            'source_ar': f'وسيط {bracket_n} معاملة في نفس الشريحة والمنطقة{_win_sfx}',
+            'source_ar': _src,
             'window_used': _bwin,        # (vi)(b) recent/total split → Methodology brief
             'ppm2_dispersion': _bdisp,   # (vi)(a) 36mo ppm² dispersion → _stage1_dispersion_gate
             # Sprint 2.22.0b.38 (DEF-UX1): the subject-bracket rows that produced this median.

@@ -174,8 +174,10 @@ E.attach_en(_b)
 check('V2 the b142 bare-key array rule still fires', isinstance(_b.get('content_en'), list))
 check('V3 api.py untouched by this sprint (no b148 marker)',
       'b148' not in io.open(os.path.join(HERE, 'api.py'), encoding='utf-8').read())
-check('V4 engine tag bumped to the b-series b148',
-      "SPRINT_TAG = '2.22.0b.148'" in ENG and 'thammen-sprint2p22p0b148' in ENG)
+# b149 R6/Lesson-2 re-point: version-agnostic FORMAT check (the exact b148 pin broke on
+# the b149 bump — the project's own "no exact version pins" rule). Intent preserved.
+check('V4 engine tag is a b-series sprint tag',
+      "SPRINT_TAG = '2.22.0b." in ENG and 'thammen-sprint2p22p0b' in ENG)
 check('V5 no valuation field is assigned by the b148 edits',
       "'amount':" not in "".join(
           l for l in ENG.splitlines() if 'b148' in l))
