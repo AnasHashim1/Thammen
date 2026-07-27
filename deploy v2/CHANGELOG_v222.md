@@ -7,6 +7,7 @@
 **Class:** 🟡 **DISPLAY + TIER / VALUE-INVARIANT** — `api.py` + the valuation engine
 UNTOUCHED; `amount/low/high/method/rule/leadership` byte-identical (measured, §5).
 **Gate-2:** PO-SIGNED 2026-07-27 — option **«ج مُصحَّحة»**.
+**Gate-1:** PO «انشر» → **SHIPPED Heroku v314** (commit `a87c548`, origin in sync).
 
 ---
 
@@ -153,6 +154,20 @@ discloses the basis, so the user is not misled about what produced the number.
 git push origin master
 git -C "C:/Thammen" subtree push --prefix "deploy v2" heroku master
 ```
+
+## 6b. Live smoke v314 (browser-UA #61, body-via-file #62) — PASS
+
+**6-fixture value byte-gate BYTE-IDENTICAL to v313:** 54/541/6 **2,400,000** [2.4M–5.4M] ·
+56/647/6 **3,800,000** [3.1M–3.8M] · 55/296/13 **2,600,000** [2.0M–2.6M] · 56/565/21
+**2,400,000** [2.2M–2.6M] · 52/903/90 **refusal** · **PIN 70312306 4,800,000** [4.3M–5.0M].
+
+**The fix live:** land 70312306 → `evidence_capped=true`, «شواهد محدودة» / 60, the false
+size-match claim **ABSENT**, the honest line **PRESENT**. Control 56/565/21 (populated
+bracket) → `evidence_capped=false`, «شواهد كافية» / 85, its original sentence **preserved**
+(there the size match is TRUE, so it correctly stays). Rule #52 closed MEASURED.
+
+*(56/565/21 attempt 1 returned an empty body — the documented cold-dyno H12 pattern on the
+heavy multi-QARS path, not a defect; the warm retry was byte-identical.)*
 
 ## 7. Verification curl
 
