@@ -42,8 +42,13 @@ ck('UncertaintyLevel muc_basis_ar UNCHANGED (AR)', bool(_u.muc_basis_ar) and re.
 EU = io.open('evaluate_unified.py', encoding='utf-8').read()
 n_ar = len(re.findall(r"'explanation_ar':", EU))
 n_en = len(re.findall(r"'explanation_en':", EU))
-ck('accuracy: an explanation_en beside EVERY explanation_ar (n_ar==n_en, all 6 tiers)',
-   n_ar == n_en and n_ar == 6)
+# b151 R6/Lesson-2 re-point: the guard's INTENT is PARITY (every AR tier has an EN twin)
+# plus "no tier was deleted". The exact `== 6` was a snapshot of the tier count at b117
+# time; b151 legitimately adds a 7th branch (the capped size-bracket-fallback tier), so
+# the count is pinned as a FLOOR, not an equality. Parity itself is unchanged and is the
+# assertion that actually protects the EN surface.
+ck('accuracy: an explanation_en beside EVERY explanation_ar (parity, no tier lost)',
+   n_ar == n_en and n_ar >= 6)
 ck('accuracy EN tiers keep the honest caveats (deviate / certified valuer / No valuation produced)',
    'may deviate' in EU and 'certified valuer' in EU and 'No valuation was produced' in EU)
 ck('accuracy EN tiers use {n} where the AR does (dynamic — not a static string)',

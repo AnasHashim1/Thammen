@@ -1716,7 +1716,10 @@ function _evidenceRatings(d){
   // 1 — اكتمال بيانات العقار: coverage of REAL user inputs (moves only via refine)
   var c1=L; if(confirmed&&ui.condition){c1=S;} else if(confirmed){c1=M;}
   // 2 — جودة المقارنات: n_transactions + method (RICS thresholds n≥20 reliable / 10-19 indicative)
-  var c2=L; if(n&&n>=20&&meth==='comparison_bracket'){c2=S;} else if(n&&n>=10){c2=M;}
+  // b151: on the size-bracket FALLBACK path `n` counts the AREA-WIDE pool, not the subject's
+  // own bracket. The engine broadcasts ONE decision (`evidence_capped`) — read it, never
+  // re-derive the bracket rule here (a duplicated rule drifts; the b135 lesson).
+  var c2=L; if(n&&n>=20&&meth==='comparison_bracket'&&!v.evidence_capped){c2=S;} else if(n&&n>=10){c2=M;}
   // 3 — حداثة بيانات السوق: MoJ freshness tier (market-wide; stale today → محدود for all)
   var c3=L; if(ft&&ft!=='stale'){c3=(ft.indexOf('fresh')>=0||ft.indexOf('current')>=0)?S:M;}
   // 4 — جودة توصيف المبنى: building only; condition never verified → caps at متوسط; N/A land

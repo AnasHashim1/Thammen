@@ -43,8 +43,8 @@ from scope_of_service import classify_asset_scope, scope_to_dict
 # Bump this ONE constant when shipping a new Sprint. All response
 # paths and /api/health surface the same string — no more drift.
 # ════════════════════════════════════════════════════════════════════
-ENGINE_VERSION = 'thammen-sprint2p22p0b150-villa-size-aware-fallback'
-SPRINT_TAG = '2.22.0b.150'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
+ENGINE_VERSION = 'thammen-sprint2p22p0b151-fallback-evidence-tier'
+SPRINT_TAG = '2.22.0b.151'          # for /api/health "3.1.0-sprint{SPRINT_TAG}"
 
 # ════════════════════════════════════════════════════════════════════
 # Sprint 2.22.0a/2: tier_label TYPE category emission (KICKOFF §4.3 + F1).
@@ -357,6 +357,42 @@ CAP_RATES_BY_ASSET = {
 MIN_N_RELIABLE   = 20  # full confidence
 MIN_N_INDICATIVE = 10  # use with caveat
 MIN_N_BOUND_ONLY = 5   # bounds only
+
+# ── Sprint 2.22.0b.151: evidence tier on the SIZE-BRACKET FALLBACK path ────────
+# When the subject's own size bracket is EMPTY (b149/b150 `bracket_fallback`), the
+# headline is the AREA-WIDE ppm² median applied to the subject's area — the pool is
+# NOT size-matched. `n` then counts the whole category, so an n>=20 category made the
+# accuracy badge read «شواهد كافية» (score 85) for a subject with ZERO transactions in
+# its own bracket — measured live on 70312306 (land, 1500 m², n=26).
+#
+# The cap is keyed on the MEASURED basis error, not on plot size or on preference.
+# Back-test (GATE2_b150 §B — predicted vs ACTUAL bracket median, |log| error of the
+# shipped `ppm² × area` basis; lower is better):
+#     villa 400-600  0.073 │ land 400-600  0.104 │ villa 600-900 0.106 │ land 600-900 0.135
+#     ────────────────── measured cliff (0.135 → 0.188) ──────────────────
+#     land 900-1500  0.188 │ villa 0-400   0.272 │ villa 900-1500 0.347
+#     land 1500+     0.448 │ villa 1500+   0.869
+# The error is U-shaped: the MID brackets are tight (7–14% typical), and BOTH tails
+# degrade — the LARGE tail worst (up to 87%). So the tier is kept only where the basis
+# is measurably tight, and capped at «شواهد محدودة» everywhere else on this path.
+# (PO-signed 2026-07-27, option «ج مُصحَّحة». The handoff's original «cap small plots
+# only» was INVERTED by this table: 0-400 (0.272) is not the weakest — 1500+ is. The
+# «+5%» figure that suggested it measures the basis's IMPROVEMENT, not its ACCURACY.)
+_FALLBACK_TIGHT_BRACKETS = ('400-600', '600-900')
+
+
+def _evidence_capped(primary):
+    """b151 — PURE. True when the evidence tier must be capped at «شواهد محدودة».
+
+    Fires only on the size-bracket fallback path (`bracket_fallback`) AND only for
+    the brackets whose measured basis error sits above the cliff (see the table on
+    _FALLBACK_TIGHT_BRACKETS). Fail-safe to CAPPED: an unknown/missing bracket on a
+    fallback is treated as not-tight (we cannot claim tightness we have not measured).
+    Never fires when the subject's own bracket had data — those paths are untouched.
+    """
+    if not isinstance(primary, dict) or not primary.get('bracket_fallback'):
+        return False
+    return primary.get('size_bracket') not in _FALLBACK_TIGHT_BRACKETS
 
 # Operating expense ratio (Qatar typical for residential)
 OPEX_RATIO_RESIDENTIAL = 0.23   # maintenance + vacancy + management
@@ -1437,6 +1473,11 @@ def _select_primary_comparison(ev, geo_v2, user_age=False) -> Optional[dict]:
             'source_ar': _src,
             'window_used': _bwin,        # (vi)(b) recent/total split → Methodology brief
             'ppm2_dispersion': _bdisp,   # (vi)(a) 36mo ppm² dispersion → _stage1_dispersion_gate
+            # Sprint 2.22.0b.151: the accuracy tier + the evidence axis need to know that
+            # this n counts the AREA-WIDE pool, not the subject's own size bracket.
+            'bracket_fallback': _bfb,
+            'size_bracket': (getattr(ev.valuation, 'size_bracket', None)
+                             if ev.valuation else None),
             # Sprint 2.22.0b.38 (DEF-UX1): the subject-bracket rows that produced this median.
             # Stashed on `primary`; SURFACED only when the market leads via this bracket (gated in
             # the b4-region — leader=='market' AND method=='comparison_bracket'). Anonymous (E12).
@@ -7016,6 +7057,11 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             'source_ar':    primary['source_ar'],
             'n_transactions': primary['n'],
             'window_used':  primary.get('window_used'),  # (vi)(b) Methodology-brief window surface
+            # Sprint 2.22.0b.151: broadcast the fallback state so the frontend evidence
+            # axis reads ONE engine-computed decision instead of re-deriving the rule in
+            # JS (the b135 drift class). `evidence_capped` is the tier decision itself.
+            'bracket_fallback': bool(primary.get('bracket_fallback')),
+            'evidence_capped':  _evidence_capped(primary),
         }
     else:
         output['valuation'] = {
@@ -7097,7 +7143,39 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
     n = output.get('moj_sample_size', 0) or 0
     # Sprint 2.22.0a.2 C3: relabel "تقدير موثوق" / "تقدير إرشادي" tier
     # badges to شواهد taxonomy (Anas-locked override per resume KICKOFF).
-    if primary and primary['method'] == 'comparison_bracket' and n >= 20:
+    # ── Sprint 2.22.0b.151: the size-bracket FALLBACK path ────────────────────
+    # Two distinct defects were measured live on 70312306 (land, 1500 m², n=26):
+    #  (1) FALSE CLAIM — the explanation asserted the comparables are close «في النوع
+    #      والمساحة» while the SAME payload's `source_ar` said «لا صفقات مسجَّلة في
+    #      شريحة مساحته». The explanation IS rendered (hero confidence meter + the
+    #      evidence panel); `source_ar` is not. So the rendered sentence was the false
+    #      one. Corrected here for EVERY fallback (capped or not) — this is a factual
+    #      defect, not a tier preference.
+    #  (2) TIER — «شواهد كافية» (85) on an out-of-bracket subject. Capped per the
+    #      measured basis error (PO-signed «ج مُصحَّحة»); see _FALLBACK_TIGHT_BRACKETS.
+    _bfb = bool(primary.get('bracket_fallback')) if primary else False
+    _cap = _evidence_capped(primary)
+    # The honest basis sentence — states what the pool actually is, and what it is not.
+    _fb_ar = (f'مبني على {n} صفقة بيع فعلية مسجلة في وزارة العدل لعقارات من نفس النوع '
+              f'في المنطقة — لا صفقات مسجَّلة في شريحة مساحة عقارك، فطُبِّق وسيط سعر '
+              f'المتر في المنطقة على مساحته.')
+    _fb_en = (f'Based on {n} actual sale transactions registered with the Ministry of '
+              f'Justice for properties of the same type in the area — no registered '
+              f'transactions in your property\'s size bracket, so the area\'s median '
+              f'price per m² was applied to its area.')
+
+    if primary and primary['method'] == 'comparison_bracket' and n >= 20 and _cap:
+        output['accuracy'] = {
+            'score': 60,
+            'label': 'شواهد محدودة',
+            'tier': 'medium',
+            # Linguist: «صُنِّفت الشواهد محدودة» would need the accusative; the codebase's
+            # established house phrasing «في فئة "شواهد محدودة"» (see the MU notes) avoids
+            # it AND names the exact badge the user sees — clearer and consistent.
+            'explanation_ar': _fb_ar + ' ولأنّ مساحته خارج الشرائح ذات الأدلّة المتقاربة، وُضِع التقدير في فئة "شواهد محدودة".',
+            'explanation_en': _fb_en + ' And because its area falls outside the size brackets with closely-matching evidence, the estimate is placed in the "Limited evidence" tier.',
+        }
+    elif primary and primary['method'] == 'comparison_bracket' and n >= 20:
         output['accuracy'] = {
             'score': 85,
             'label': 'شواهد كافية',
@@ -7105,8 +7183,10 @@ def _build_unified_output(ev, primary, cost, income, reconciliation, v3_result,
             # Sprint 2.22.0a.2 §9 precision pass: reframed old wording
             # to honest comparable scope (district + bracket match, not
             # property-level similarity).
-            'explanation_ar': f'مبني على {n} صفقة بيع فعلية مسجلة في وزارة العدل لعقارات قريبة في النوع والمساحة ضمن نفس المنطقة.',
-            'explanation_en': f'Based on {n} actual sale transactions registered with the Ministry of Justice for properties close in type and size within the same area.',
+            'explanation_ar': (_fb_ar if _bfb else
+                               f'مبني على {n} صفقة بيع فعلية مسجلة في وزارة العدل لعقارات قريبة في النوع والمساحة ضمن نفس المنطقة.'),
+            'explanation_en': (_fb_en if _bfb else
+                               f'Based on {n} actual sale transactions registered with the Ministry of Justice for properties close in type and size within the same area.'),
         }
     elif primary and primary['method'] in ('comparison_bracket', 'comparison_widened') and n >= 20:
         output['accuracy'] = {
